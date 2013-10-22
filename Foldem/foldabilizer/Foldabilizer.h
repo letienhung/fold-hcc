@@ -5,7 +5,7 @@
 
 class foldem_widget;
 
-class foldabilizer : public SurfaceMeshModePlugin
+class Foldabilizer : public SurfaceMeshModePlugin
 {
 	Q_OBJECT
 	Q_INTERFACES(ModePlugin)
@@ -17,7 +17,7 @@ class foldabilizer : public SurfaceMeshModePlugin
 	void decorate();
 
 public:
-    foldabilizer();
+    Foldabilizer();
 
 private:
 	foldem_widget *widget;
