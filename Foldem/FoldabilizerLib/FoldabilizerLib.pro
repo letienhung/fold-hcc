@@ -1,3 +1,6 @@
+load($$[STARLAB])
+load($$[SURFACEMESH])
+
 TEMPLATE = lib
 CONFIG += staticlib
 
@@ -15,9 +18,12 @@ DESTDIR = $$PWD/$$CFG/lib
 HEADERS += \
     Graph.h \
     Node.h \
-    Edge.h
+    Edge.h \
+    FoldabilizerLibGlobal.h \
+    Box.h
 
 SOURCES += \
     Graph.cpp \
     Node.cpp \
-    Edge.cpp
+    Edge.cpp \
+    Box.cpp

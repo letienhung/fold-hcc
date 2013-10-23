@@ -1,9 +1,6 @@
 #pragma once
 
-#include "Eigen/Dense"
-
-typedef Eigen::Vector3d Vect3d;
-typedef Vect3d Point;
+#include "FoldabilizerLibGlobal.h"
 
 class Node;
 
