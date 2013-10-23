@@ -13,7 +13,11 @@ TARGET = FoldabilizerLib
 DESTDIR = $$PWD/$$CFG/lib
 
 HEADERS += \
-    Graph.h
+    Graph.h \
+    Node.h \
+    Edge.h
 
 SOURCES += \
-    Graph.cpp
+    Graph.cpp \
+    Node.cpp \
+    Edge.cpp
