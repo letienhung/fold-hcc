@@ -13,23 +13,23 @@ Graph::Graph(QString &fname)
 
 Graph::~Graph()
 {
-    if(nodeList.size())
-		clearList();
+    clearList();
 }
 
 void Graph::clearList()
 {
-    int mSize = nodeList.size();
-	for (int i = 0; i < mSize; i++)
-	{
-        delete nodeList[i];
+    int nSize = nodes.size();
+	if(nSize){
+		for (int i = 0; i < nSize; i++)
+			delete nodes[i];
+		nodes.clear();
+		edges.clear();
 	}
-    nodeList.clear();
 }
 
 void Graph::addCNode(Node* node)
 {
-    nodeList.push_back(node);
+    nodes.push_back(node);
 }
 
 bool Graph::parseHCC(QString &fname)
@@ -45,12 +45,12 @@ std::vector<Node *> Graph::getAdjnode(Node* node);
 
 std::vector<Node *> Graph::getLeafnode()
 {
-	std::vector<CuboidNode *> leafnodes;
+	std::vector<Node *> leafnodes;
 	
-    int mSize = nodeList.size();
-	for(int i = 0; i < mSize; i++)
-        if (nodeList[i]->HingeList.size() == 1)
-            leafnodes.push_back(nodeList[i]);
+    int nSize = nodes.size();
+	for(int i = 0; i < nSize; i++)
+        if (nodes[i]->edgeList.size() == 1)
+            leafnodes.push_back(nodes[i]);
 
    return leafnodes;
 }

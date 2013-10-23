@@ -14,24 +14,24 @@ Edge::Edge()
     node2 = NULL;
 }
 
-Edge::Edge(Point &mfrom, Point &mto, Node* mNode1, Node* mNode2)
+Edge::Edge(Point &f, Point &t, Node* n1, Node* n2)
 {
-	from = mfrom;
-	to = mto;
+	from = f;
+	to = t;
 
 	isFolded = false;
 	
-    node1 = mNode1;
-    node2 = mNode2;
+    node1 = n1;
+    node2 = n2;
 
 	angle = calAngle();
 	score = calScore();
 }
 
-void Edge::setCuboid(Node* mNode1, Node* mNode2)
+void Edge::setCuboid(Node* n1, Node* n2)
 {
-    node1 = mNode1;
-    node2 = mNode2;
+    node1 = n1;
+    node2 = n2;
 }
 
 Node* Edge::getNode1()

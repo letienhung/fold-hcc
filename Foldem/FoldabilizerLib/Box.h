@@ -5,12 +5,14 @@
 class Box
 {
 public:
-    Box();
+	Box(){}
+	Box(Point& c, QVector<Vector3>& axis, Vector3& scale);
+	~Box(){}
 
 private:
-	Point center;
-	QVector<Vector3> axis;
-	Vector3 scale;
+	Point mCenter;
+	QVector<Vector3> mAxis;
+	Vector3 mScale;
 };
 
 

@@ -8,7 +8,7 @@ class Edge
 {
 public:
     Edge();
-    Edge(Point &mfrom, Point &mto, Node* mNode1, Node* mNode2);
+    Edge(Point &f, Point &t, Node* n1, Node* n2);
     ~Edge(){}
 
 public:
@@ -23,7 +23,7 @@ public:
 	Point to;
 
 public:
-    void setCuboid(Node* mNode1, Node* mNode2);
+    void setCuboid(Node* n1, Node* n2);
 
     Node* getNode1();
     Node* getNode2();

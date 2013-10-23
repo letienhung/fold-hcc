@@ -17,8 +17,10 @@ public:
 	bool parseHCC(QString &fname);
 
 	// Add elements
+	void addNode(QString id, Box b);
     void addNode(Node* node);
-
+	void removeNode(Node* node);
+	void addEdge();
 
 	//Get the list of adjacent nodes of the given node
     std::vector<Node *> getAdjnode(Node* node);

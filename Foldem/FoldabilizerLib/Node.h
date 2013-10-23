@@ -1,28 +1,26 @@
 #pragma once
 
+#include "Box.h"
+#include "FoldabilizerLibGlobal.h"
+
 class Edge;
 
 class Node
 {
 public:
-    Node();
-    Node(Point &c, std::vector<Vect3d>& axis,
-               Vect3d &mScale, std::vector<Edge* > &mEdgeList);
+	Node(){}
+    Node(Box &b, QVector<Edge* > &eList);
     ~Node();
 
 public:
-
-
     //Get the list of adjacent nodes
-    std::vector<Node *> getAdjnodes();
+    QVector<Node *> getAdjnodes();
 
 private:
-    Point center;
-	std::vector<Vect3d> axis;
-	Vect3d scale;
+    Box mBox; 
 
 public:
-    std::vector<Edge* > edgeList;
+    QVector<Edge* > edgeList;
 
 };
 
