@@ -3,7 +3,7 @@
 #include "Box.h"
 #include "FoldabilizerLibGlobal.h"
 
-class Edge;
+#include "Edge.h"
 
 class Node
 {

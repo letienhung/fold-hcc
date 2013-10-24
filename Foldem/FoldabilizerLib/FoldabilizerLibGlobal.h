@@ -3,4 +3,5 @@
 #include <QVector>
 #include <QString>
 
-#include <surface_mesh/Surface_mesh.h>
+#include "SurfaceMeshModel.h"
+using namespace SurfaceMesh;

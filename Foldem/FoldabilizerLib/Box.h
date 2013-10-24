@@ -10,9 +10,9 @@ public:
 	~Box(){}
 
 private:
-	Point mCenter;
-	QVector<Vector3> mAxis;
-	Vector3 mScale;
+	Point Center;
+	QVector<Vector3> Axis;
+	Vector3 Extent;
 };
 
 

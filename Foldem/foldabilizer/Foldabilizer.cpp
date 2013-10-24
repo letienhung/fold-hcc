@@ -2,15 +2,12 @@
 #include "foldem_widget.h"
 #include "StarlabDrawArea.h"
 
-// Debug
-#include "Graph.h"
 
 Foldabilizer::Foldabilizer()
 {
 	widget = NULL;
 
-	// Debug
-	Graph *g = new Graph();
+	Point debugpoint;
 }
 
 void Foldabilizer::create()

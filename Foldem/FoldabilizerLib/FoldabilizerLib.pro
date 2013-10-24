@@ -1,5 +1,6 @@
 load($$[STARLAB])
 load($$[SURFACEMESH])
+StarlabTemplate(none)
 
 TEMPLATE = lib
 CONFIG += staticlib
@@ -20,10 +21,12 @@ HEADERS += \
     Node.h \
     Edge.h \
     FoldabilizerLibGlobal.h \
-    Box.h
+    Box.h \
+    IntersectBoxBox.h
 
 SOURCES += \
     Graph.cpp \
     Node.cpp \
     Edge.cpp \
-    Box.cpp
+    Box.cpp \
+    IntersectBoxBox.cpp
