@@ -23,11 +23,11 @@ void Graph::clearList()
 		for (int i = 0; i < nSize; i++)
 			delete nodes[i];
 		nodes.clear();
-		edges.clear();
+        links.clear();
 	}
 }
 
-void Graph::addCNode(Node* node)
+void Graph::addNode(Node* node)
 {
     nodes.push_back(node);
 }
@@ -38,18 +38,18 @@ bool Graph::parseHCC(QString &fname)
 	return false;
 }
 
-std::vector<Node *> Graph::getAdjnode(Node* node);
+QVector<Node *> Graph::getAdjnode(Node* node)
 {
     return node->getAdjnodes();
 }
 
-std::vector<Node *> Graph::getLeafnode()
+QVector<Node *> Graph::getLeafnode()
 {
-	std::vector<Node *> leafnodes;
+	QVector<Node *> leafnodes;
 	
     int nSize = nodes.size();
 	for(int i = 0; i < nSize; i++)
-        if (nodes[i]->edgeList.size() == 1)
+        if (nodes[i]->linkList.size() == 1)
             leafnodes.push_back(nodes[i]);
 
    return leafnodes;

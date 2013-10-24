@@ -19,7 +19,7 @@ DESTDIR = $$PWD/$$CFG/lib
 HEADERS += \
     Graph.h \
     Node.h \
-    Edge.h \
+    Link.h \
     FoldabilizerLibGlobal.h \
     Box.h \
     IntersectBoxBox.h
@@ -27,6 +27,6 @@ HEADERS += \
 SOURCES += \
     Graph.cpp \
     Node.cpp \
-    Edge.cpp \
+    Link.cpp \
     Box.cpp \
     IntersectBoxBox.cpp

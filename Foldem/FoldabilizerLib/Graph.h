@@ -3,7 +3,7 @@
 #include "FoldabilizerLibGlobal.h"
 
 #include "Node.h"
-#include "Edge.h"
+#include "Link.h"
 
 class Graph
 {
@@ -17,21 +17,21 @@ public:
 	bool parseHCC(QString &fname);
 
 	// Add elements
-	void addNode(QString id, Box b);
+	void addNode(QString& id, Box& b);
     void addNode(Node* node);
 	void removeNode(Node* node);
-	void addEdge();
+    void addLink();
 
 	//Get the list of adjacent nodes of the given node
-    std::vector<Node *> getAdjnode(Node* node);
+    QVector<Node *> getAdjnode(Node* node);
 	//Get the list of leaf CCs within the HCC graph
-    std::vector<Node *> getLeafnode();
+    QVector<Node *> getLeafnode();
 
-	QVector<Edge*> getEdges(Node* n);
+    QVector<Link*> getLinks(Node* n);
 
 public:
     QVector<Node*> nodes;
-	QVector<Edge*> edges;
+    QVector<Link*> links;
 
 private:
 	void clearList();

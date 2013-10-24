@@ -3,13 +3,15 @@
 #include "Box.h"
 #include "FoldabilizerLibGlobal.h"
 
-#include "Edge.h"
+#include "Link.h"
+
+//class Link;
 
 class Node
 {
 public:
 	Node(){}
-    Node(Box &b, QVector<Edge* > &eList);
+    Node(Box &b, QVector<Link* > &lList);
     ~Node();
 
 public:
@@ -20,7 +22,8 @@ private:
     Box mBox; 
 
 public:
-    QVector<Edge* > edgeList;
+    QVector<Link* > linkList;
+	QString id;
 
 };
 

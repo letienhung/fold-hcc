@@ -1,24 +1,28 @@
 #include "Node.h"
+//#include "Link.h"
+
 #include <QDebug>
 
-Node::Node(Box &b, QVector<Edge* > &eList)
+Node::Node(Box &b, QVector<Link* > &lList)
 {
 	mBox = b;
-    edgeList = eList;
+    linkList = lList;
 }
 
 Node::~Node()
 {
-    int mSize = edgeList.size();
+    int mSize = linkList.size();
     if(mSize){
 		for(int i = 0; i < mSize; i++)
-			if(edgeList[i])
-				delete edgeList[i];   
-        edgeList.clear();
+            if(linkList[i])
+                delete linkList[i];
+        linkList.clear();
 	}
 }
 
 QVector<Node *> Node::getAdjnodes()
 {
-    //TODO
+	QVector<Node *> adjNodes;
+	//TODO
+	return adjNodes;
 }
