@@ -11,7 +11,7 @@ class Node
 {
 public:
 	Node(){}
-    Node(Box &b, QVector<Link* > &lList);
+    Node(Box &b, QString &id);
     ~Node();
 
 public:
@@ -23,7 +23,7 @@ private:
 
 public:
     QVector<Link* > linkList;
-	QString id;
+	QString mID;
 
 };
 

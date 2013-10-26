@@ -3,10 +3,10 @@
 
 #include <QDebug>
 
-Node::Node(Box &b, QVector<Link* > &lList)
+Node::Node(Box &b, QString &id)
 {
 	mBox = b;
-    linkList = lList;
+	mID = id;
 }
 
 Node::~Node()
