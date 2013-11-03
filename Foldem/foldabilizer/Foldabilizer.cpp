@@ -7,7 +7,7 @@ Foldabilizer::Foldabilizer()
 {
 	widget = NULL;
 
-	Point debugpoint;
+	hccGraph = new Graph();
 }
 
 void Foldabilizer::create()
@@ -29,7 +29,7 @@ void Foldabilizer::destroy()
 
 void Foldabilizer::decorate()
 {
-
+	hccGraph->draw();
 }
 
 Q_EXPORT_PLUGIN(Foldabilizer)

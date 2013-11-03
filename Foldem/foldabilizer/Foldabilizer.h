@@ -3,6 +3,8 @@
 #include "interfaces/ModePluginDockWidget.h"
 #include "SurfaceMeshPlugins.h"
 
+#include "Graph.h"
+
 class foldem_widget;
 
 class Foldabilizer : public SurfaceMeshModePlugin
@@ -21,6 +23,7 @@ public:
 
 private:
 	foldem_widget *widget;
+	Graph *hccGraph;
 };
 
 

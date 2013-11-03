@@ -2,7 +2,7 @@
 
 Graph::Graph()
 {
-	//Todo
+	makeL();
 }
 
 Graph::Graph(QString &fname)
@@ -141,4 +141,28 @@ Node* Graph::getNode(QString& id)
 	foreach(Node* n, nodes)
 		if(n->mID == id)
 			return n;
+}
+
+void Graph::draw()
+{
+	foreach(Node *n, nodes) n->draw();
+	foreach(Link *l, links) l->draw();
+}
+
+
+void Graph::makeL()
+{
+	QVector<Vector3> xyz;
+	xyz.push_back(Vector3(1, 0, 0));
+	xyz.push_back(Vector3(0, 1, 0));
+	xyz.push_back(Vector3(0, 0, 1));
+
+	Box vBox(Point(-0.5, 2, 0), xyz, Vector3(0.5, 2, 2));
+	Box hBox(Point(2, -0.5, 0), xyz, Vector3(2, 0.5, 2));
+
+	Node* vNode = new Node(vBox, "vBox");
+	Node* hNode = new Node(hBox, "hBox");
+
+	this->addNode(vNode);
+	this->addNode(hNode);
 }

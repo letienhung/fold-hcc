@@ -31,10 +31,15 @@ public:
     //Get the links of a node
     QVector<Link*> getLinks(Node* n);
 
+	// Visualize
+	void draw();
+	void makeL();
+
 public:
     QVector<Node*> nodes;
     QVector<Link*> links;
 
 private:
 	void clearList();
+
 };

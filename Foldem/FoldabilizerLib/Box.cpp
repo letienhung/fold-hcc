@@ -2,16 +2,16 @@
 
 Box::Box(Point& c, QVector<Vector3>& axis, Vector3& ext)
 {
-	mCenter = c;
-	mAxis = axis;
-	mExtent = ext;
+	Center = c;
+	Axis = axis;
+	Extent = ext;
 }
 
 Box &Box::operator =(const Box &b)
 {
-	mCenter = b.mCenter;
-	mAxis = b.mAxis;
-	mExtent = b.mExtent;
+	Center = b.Center;
+	Axis = b.Axis;
+	Extent = b.Extent;
 
     return *this;
 }

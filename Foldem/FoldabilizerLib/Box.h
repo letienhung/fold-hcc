@@ -11,10 +11,10 @@ public:
 
 	Box &operator =(const Box &);
 
-private:
-	Point mCenter;
-	QVector<Vector3> mAxis;
-	Vector3 mExtent;
+public:
+	Point Center;
+	QVector<Vector3> Axis;
+	Vector3 Extent;
 };
 
 
