@@ -30,6 +30,8 @@ void Foldabilizer::destroy()
 void Foldabilizer::decorate()
 {
 	hccGraph->draw();
+	drawArea()->setSceneRadius(10);
+	drawArea()->camera()->showEntireScene();
 }
 
 Q_EXPORT_PLUGIN(Foldabilizer)

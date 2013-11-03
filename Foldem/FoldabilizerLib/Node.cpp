@@ -77,6 +77,5 @@ void Node::drawBox(Box &box)
 
 	PolygonSoup ps;
 	foreach(QVector<Point> f, faces) ps.addPoly(f, Qt::blue);
-	//ps.drawQuads(true);
-	ps.draw();
+	ps.drawQuads(true);
 }
