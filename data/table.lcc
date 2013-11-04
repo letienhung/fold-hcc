@@ -1,0 +1,28 @@
+<!--LCC Version = "1.0"-->
+<Graph>
+<Amount BoxAmount = "7" LinkAmount = "6"/>
+<BoxPool>
+<Box ID = "Leg001" centerX = "0.510117" centerY = "-0.510108" centerZ = "-0.004502" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.022481" ExtentY = "0.0224805" ExtentZ = "0.427734"/>
+
+<Box ID = "Leg002" centerX = "0.510117" centerY = "0.510757" centerZ = "-0.004502" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.022481" ExtentY = "0.022485" ExtentZ = "0.427734"/>
+
+<Box ID = "Leg003" centerX = "-0.509916" centerY = "0.510757" centerZ = "-0.004502" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.0224805" ExtentY = "0.022485" ExtentZ = "0.427734"/>
+
+<Box ID = "Leg004" centerX = "-0.509916" centerY = "-0.510108" centerZ = "-0.004502" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.0224805" ExtentY = "0.0224805" ExtentZ = "0.427734"/>
+
+<Box ID = "Side001" centerX = "-0.02961" centerY = "0.507213" centerZ = "0.263328" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.394011" ExtentY = "0.0147655" ExtentZ = "0.127411"/>
+
+<Box ID = "Side002" centerX = "-0.02961" centerY = "-0.520367" centerZ = "0.263328" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.394011" ExtentY = "0.0147655" ExtentZ = "0.127411"/>
+
+<Box ID = "Top" centerX = "0" centerY = "0" centerZ = "0.410981" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.637641" ExtentY = "0.637641" ExtentZ = "0.0212545"/>
+
+</BoxPool>
+<LinkPool>
+<Link ID = "0" Box1ID = "Leg001" Box2ID = "Top" FromX = "0.119076" FromY = "-0.192656" FromZ = "-2.72716e-017" ToX = "0.895924" ToY = "-0.822344" ToZ = "2.72716e-017"/>
+<Link ID = "1" Box1ID = "Leg002" Box2ID = "Top" FromX = "0.164811" FromY = "0.143406" FromZ = "-2.87061e-017" ToX = "0.850189" ToY = "0.871594" ToZ = "2.87061e-017"/>
+<Link ID = "2" Box1ID = "Leg003" Box2ID = "Top" FromX = "-0.826418" FromY = "0.892586" FromZ = "7.10257e-018" ToX = "-0.188582" ToY = "0.122414" ToZ = "-7.10257e-018"/>
+<Link ID = "3" Box1ID = "Leg004" Box2ID = "Top" FromX = "-0.876054" FromY = "-0.845387" FromZ = "1.45406e-017" ToX = "-0.138946" ToY = "-0.169613" ToZ = "-1.45406e-017"/>
+<Link ID = "4" Box1ID = "Side001" Box2ID = "Top" FromX = "-0.035" FromY = "0.0075" FromZ = "0.2625" ToX = "-0.035" ToY = "1.0075" ToZ = "0.2625"/>
+<Link ID = "5" Box1ID = "Side002" Box2ID = "Top" FromX = "-0.035" FromY = "-0.0075" FromZ = "0.2625" ToX = "-0.035" ToY = "-1.0075" ToZ = "0.2625"/>
+</LinkPool>
+</Graph>
