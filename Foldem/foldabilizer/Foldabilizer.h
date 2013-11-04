@@ -18,12 +18,17 @@ class Foldabilizer : public SurfaceMeshModePlugin
 	void destroy();
 	void decorate();
 
+	void resetScene();
+
 public:
     Foldabilizer();
 
-private:
 	foldem_widget *widget;
 	Graph *hccGraph;
+
+public slots:
+	void createL();
+	void createChair();
 };
 
 

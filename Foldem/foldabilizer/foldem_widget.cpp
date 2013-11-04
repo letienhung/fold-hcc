@@ -7,10 +7,11 @@ foldem_widget::foldem_widget(Foldabilizer *f, QWidget *parent) :
 {
     ui->setupUi(this);
 
-	plugin = f;
+	fold = f;
 
 	// singnal and slots
-
+	fold->connect(ui->createL, SIGNAL(clicked()), SLOT(createL()));
+	fold->connect(ui->createChair, SIGNAL(clicked()), SLOT(createChair()));
 }
 
 

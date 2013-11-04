@@ -2,10 +2,9 @@
 
 Graph::Graph()
 {
-	makeL();
 }
 
-Graph::Graph(QString &fname)
+Graph::Graph(QString fname)
 {
 	if(!parseHCC(fname))
 		qDebug()<<"Failed to load HCC file!\n";
@@ -13,18 +12,16 @@ Graph::Graph(QString &fname)
 
 Graph::~Graph()
 {
-    clearList();
+    clear();
 }
 
-void Graph::clearList()
+void Graph::clear()
 {
-    int nSize = nodes.size();
-	if(nSize){
-		for (int i = 0; i < nSize; i++)
-			delete nodes[i];
-		nodes.clear();
-        links.clear();
-	}
+	foreach(Node* n, nodes) delete n;
+	foreach(Link* l, links) delete l;
+
+	nodes.clear();
+	links.clear();
 }
 
 void Graph::addNode(Node* node)
@@ -32,7 +29,7 @@ void Graph::addNode(Node* node)
     nodes.push_back(node);
 }
 
-bool Graph::parseHCC(QString &fname)
+bool Graph::parseHCC(QString fname)
 {
 	QFile file(fname);
 	file.open(QIODevice::ReadOnly);
@@ -119,9 +116,9 @@ bool Graph::parseHCC(QString &fname)
 	return true;
 }
 
-QVector<Node *> Graph::getAdjnode(Node* node)
+QVector<Node *> Graph::getAdjacentNodes(QString nodeID)
 {
-    return node->getAdjnodes();
+    return this->getNode(nodeID)->getAdjnodes();
 }
 
 QVector<Node *> Graph::getLeafnode()
@@ -136,11 +133,10 @@ QVector<Node *> Graph::getLeafnode()
    return leafnodes;
 }
 
-Node* Graph::getNode(QString& id)
+Node* Graph::getNode(QString id)
 {
 	foreach(Node* n, nodes)
-		if(n->mID == id)
-			return n;
+		if(n->mID == id) return n;
 }
 
 void Graph::draw()
@@ -152,17 +148,79 @@ void Graph::draw()
 
 void Graph::makeL()
 {
+	this->clear();
+
 	QVector<Vector3> xyz;
 	xyz.push_back(Vector3(1, 0, 0));
 	xyz.push_back(Vector3(0, 1, 0));
 	xyz.push_back(Vector3(0, 0, 1));
 
 	Box vBox(Point(-0.5, 2, 0), xyz, Vector3(0.5, 2, 2));
-	Box hBox(Point(2, -0.5, 0), xyz, Vector3(2, 0.5, 2));
-
 	Node* vNode = new Node(vBox, "vBox");
+
+	Box hBox(Point(2, -0.5, 0), xyz, Vector3(2, 0.5, 2));
 	Node* hNode = new Node(hBox, "hBox");
 
 	this->addNode(vNode);
 	this->addNode(hNode);
+}
+
+void Graph::makeChair()
+{
+	this->clear();
+
+	QVector<Vector3> xyz;
+	xyz.push_back(Vector3(1, 0, 0));
+	xyz.push_back(Vector3(0, 1, 0));
+	xyz.push_back(Vector3(0, 0, 1));
+
+	Box backBox(Point(0.25, 2, 0), xyz, Vector3(0.25, 2, 2));
+	Node* backNode = new Node(backBox, "back");
+
+	Box seatBox(Point(2, -0.5, 0), xyz, Vector3(2, 0.5, 2));
+	Node* seatNode = new Node(seatBox, "seat");
+
+	Box legBox0(Point(0.25, -3, 1.75), xyz, Vector3(0.25, 2, 0.25));
+	Node* legNode0 = new Node(legBox0, "leg0");
+
+	Box legBox1(Point(0.25, -3, -1.75), xyz, Vector3(0.25, 2, 0.25));
+	Node* legNode1 = new Node(legBox1, "leg1");
+
+	Box legBox2(Point(3.75, -3, 1.75), xyz, Vector3(0.25, 2, 0.25));
+	Node* legNode2 = new Node(legBox2, "leg2");
+
+	Box legBox3(Point(3.75, -3, -1.75), xyz, Vector3(0.25, 2, 0.25));
+	Node* legNode3 = new Node(legBox3, "leg3");
+
+	this->addNode(backNode);
+	this->addNode(seatNode);
+	this->addNode(legNode0);
+	this->addNode(legNode1);
+	this->addNode(legNode2);
+	this->addNode(legNode3);
+}
+
+void Graph::computeAABB()
+{
+	if (nodes.isEmpty())
+	{
+		center = Vector3(0, 0, 0);
+		radius = 1;
+	}
+	else
+	{
+		bbmin = Point( FLT_MAX,  FLT_MAX,  FLT_MAX);
+		bbmax = Point(-FLT_MAX, -FLT_MAX, -FLT_MAX);	
+
+		foreach(Node* n, nodes)	{
+			QVector<Point> conners = n->getBoxConners();
+			foreach(Point p, conners) {
+				bbmin = minimize(bbmin, p);
+				bbmax = maximize(bbmax, p);
+			}		
+		}
+
+		center = (bbmin + bbmax) * 0.5f;
+		radius = (bbmax - bbmin).norm() * 0.5f;
+	}
 }

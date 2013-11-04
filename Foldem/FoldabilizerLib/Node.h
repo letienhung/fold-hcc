@@ -20,11 +20,11 @@ public:
 
 	// Visualize
 	void draw();
-	void drawBox(Box &box);
+	void drawBox();
 
-private:
-	QVector<Point> getBoxConners( Box &box);
-	QVector< QVector<Point> > getBoxFaces( Box &box);
+	// Geoemtry
+	QVector<Point> getBoxConners();
+	QVector< QVector<Point> > getBoxFaces();
 
 private:
     Box mBox; 

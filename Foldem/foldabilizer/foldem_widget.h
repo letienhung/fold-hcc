@@ -17,6 +17,6 @@ public:
 
 private:
     Ui::foldem_widget *ui;
-	Foldabilizer *plugin;
+	Foldabilizer *fold;
 };
 
