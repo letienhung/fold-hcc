@@ -7,6 +7,7 @@ Node::Node(Box b, QString id)
 {
 	mBox = b;
 	mID = id;
+	mColor = qRandomColor();
 }
 
 Node::~Node()
@@ -70,6 +71,6 @@ void Node::drawBox()
 	QVector< QVector<Point> > faces = getBoxFaces();
 
 	PolygonSoup ps;
-	foreach(QVector<Point> f, faces) ps.addPoly(f, Qt::blue);
+	foreach(QVector<Point> f, faces) ps.addPoly(f, mColor);
 	ps.drawQuads(true);
 }

@@ -1,6 +1,7 @@
 #include "Foldabilizer.h"
 #include "foldem_widget.h"
 #include "StarlabDrawArea.h"
+#include <QFileDialog>
 
 
 Foldabilizer::Foldabilizer()
@@ -64,6 +65,20 @@ void Foldabilizer::createT()
 void Foldabilizer::createX()
 {
 	hccGraph->makeX();
+	resetScene();
+}
+
+void Foldabilizer::createU()
+{
+	hccGraph->makeU();
+	resetScene();
+}
+
+void Foldabilizer::loadGraph()
+{
+	QString fileName = QFileDialog::getOpenFileName(0, "Import Mesh", "..\\..\\data", "Mesh Files (*.lcc)"); 
+
+	hccGraph->parseHCC(fileName);
 	resetScene();
 }
 

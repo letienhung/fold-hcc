@@ -31,6 +31,8 @@ void Graph::addNode(Node* node)
 
 bool Graph::parseHCC(QString fname)
 {
+	this->clear();
+
 	QFile file(fname);
 	file.open(QIODevice::ReadOnly);
 
@@ -201,6 +203,34 @@ void Graph::makeX()
 
 	this->addNode(vNode);
 	this->addNode(hNode);
+}
+
+
+void Graph::makeU()
+{
+	this->clear();
+
+	QVector<Vector3> xyz;
+	xyz.push_back(Vector3(1, 0, 0));
+	xyz.push_back(Vector3(0, 1, 0));
+	xyz.push_back(Vector3(0, 0, 1));
+
+	Box lbBox(Point(0.5, 2, 0), xyz, Vector3(0.5, 2, 0.5));
+	Node* lbNode = new Node(lbBox, "left-bottom");
+
+	Box ltBox(Point(0.5, 6, 0), xyz, Vector3(0.5, 2, 0.5));
+	Node* ltNode = new Node(ltBox, "left-bottom");
+
+	Box hBox(Point(3, -0.5, 0), xyz, Vector3(3, 0.5, 0.5));
+	Node* hNode = new Node(hBox, "horizontal");
+
+	Box rBox(Point(5.5, 2, 0), xyz, Vector3(0.5, 2, 0.5));
+	Node* rNode = new Node(rBox, "left-bottom");
+
+	this->addNode(lbNode);
+	this->addNode(ltNode);
+	this->addNode(hNode);
+	this->addNode(rNode);
 }
 
 

@@ -22,17 +22,16 @@ public:
 	void draw();
 	void drawBox();
 
-	// Geoemtry
+	// Geometry
 	QVector<Point> getBoxConners();
 	QVector< QVector<Point> > getBoxFaces();
 
-private:
-    Box mBox; 
-
 public:
-    QVector<Link* > linkList;
-	QString mID;
+	QString		mID;
+	Box			mBox;
+	QColor		mColor;
 
+	QVector<Link* > linkList;
 };
 
 // Vertex ID of face corners

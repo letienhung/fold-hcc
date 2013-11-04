@@ -35,6 +35,7 @@ public:
 	void makeL();
 	void makeT();
 	void makeX();
+	void makeU();
 	void makeChair();
 
 	// Geometry property

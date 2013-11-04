@@ -30,7 +30,9 @@ public slots:
 	void createL();
 	void createT();
 	void createX();
+	void createU();
 	void createChair();
+	void loadGraph();
 };
 
 
