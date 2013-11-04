@@ -28,6 +28,8 @@ public:
 
 public slots:
 	void createL();
+	void createT();
+	void createX();
 	void createChair();
 };
 

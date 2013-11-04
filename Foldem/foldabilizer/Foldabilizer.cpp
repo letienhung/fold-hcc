@@ -36,7 +36,7 @@ void Foldabilizer::resetScene()
 {
 	if (hccGraph){
 		hccGraph->computeAABB();
-		drawArea()->setSceneRadius(hccGraph->radius);
+		drawArea()->setSceneBoundingBox(qglviewer::Vec(hccGraph->bbmin), qglviewer::Vec(hccGraph->bbmax));
 	}
 
 	drawArea()->camera()->showEntireScene();
@@ -52,6 +52,18 @@ void Foldabilizer::createL()
 void Foldabilizer::createChair()
 {
 	hccGraph->makeChair();
+	resetScene();
+}
+
+void Foldabilizer::createT()
+{
+	hccGraph->makeT();
+	resetScene();
+}
+
+void Foldabilizer::createX()
+{
+	hccGraph->makeX();
 	resetScene();
 }
 

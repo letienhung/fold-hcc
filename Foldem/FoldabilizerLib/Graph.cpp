@@ -165,6 +165,45 @@ void Graph::makeL()
 	this->addNode(hNode);
 }
 
+void Graph::makeT()
+{
+	this->clear();
+
+	QVector<Vector3> xyz;
+	xyz.push_back(Vector3(1, 0, 0));
+	xyz.push_back(Vector3(0, 1, 0));
+	xyz.push_back(Vector3(0, 0, 1));
+
+	Box vBox(Point(0, -2, 0), xyz, Vector3(0.5, 2, 2));
+	Node* vNode = new Node(vBox, "vBox");
+
+	Box hBox(Point(0, 0.5, 0), xyz, Vector3(2, 0.5, 2));
+	Node* hNode = new Node(hBox, "hBox");
+
+	this->addNode(vNode);
+	this->addNode(hNode);
+}
+
+void Graph::makeX()
+{
+	this->clear();
+
+	QVector<Vector3> xyz;
+	xyz.push_back(Vector3(1, 0, 0));
+	xyz.push_back(Vector3(0, 1, 0));
+	xyz.push_back(Vector3(0, 0, 1));
+
+	Box vBox(Point(0, 0, 0.5), xyz, Vector3(0.5, 4, 0.5));
+	Node* vNode = new Node(vBox, "vBox");
+
+	Box hBox(Point(0, 0, -0.5), xyz, Vector3(4, 0.5, 0.5));
+	Node* hNode = new Node(hBox, "hBox");
+
+	this->addNode(vNode);
+	this->addNode(hNode);
+}
+
+
 void Graph::makeChair()
 {
 	this->clear();
@@ -224,3 +263,4 @@ void Graph::computeAABB()
 		radius = (bbmax - bbmin).norm() * 0.5f;
 	}
 }
+

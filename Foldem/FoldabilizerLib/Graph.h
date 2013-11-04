@@ -33,6 +33,8 @@ public:
 	// Visualize
 	void draw();
 	void makeL();
+	void makeT();
+	void makeX();
 	void makeChair();
 
 	// Geometry property
