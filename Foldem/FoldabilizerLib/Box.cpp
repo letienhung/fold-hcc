@@ -1,6 +1,6 @@
 #include "Box.h"
 
-Box::Box(Point& c, QVector<Vector3>& axis, Vector3& ext)
+Box::Box(const Point& c, const QVector<Vector3>& axis, const Vector3& ext)
 {
 	Center = c;
 	Axis = axis;

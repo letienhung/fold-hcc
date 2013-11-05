@@ -8,12 +8,12 @@ Node::Node(Box b, QString id)
 	mBox = b;
 	mID = id;
 	mColor = qRandomColor();
+	mColor.setAlphaF(0.5);
 }
 
 Node::~Node()
 {
 }
-
 
 void Node::draw()
 {
@@ -66,5 +66,30 @@ void Node::drawBox()
 	PolygonSoup ps;
 	foreach(QVector<Point> f, faces) ps.addPoly(f, mColor);
 	ps.drawQuads(true);
+}
+
+// return a direction that is perpendicular to hing_axis on the dihedral plane
+Vec3d Node::dihedralDirection( Vec3d hinge_axis )
+{
+	// hinge is along one axis, thus perpendicular to two others which span the dihedral plane
+	// dd is the axis with larger extent
+	for(int i = 0; i < 3; i++){
+		if (cross(mBox.Axis[i], hinge_axis).norm() < 0.1)
+		{
+			if (mBox.Extent[(i+1)%3] >= mBox.Extent[(i+2)%3])
+				return mBox.Axis[(i+1)%3];
+			else
+				return mBox.Axis[(i+2)%3];
+		}
+	}
+
+	// hinge is perpendicular to one node axis, which is also perpendicular to the dihedral plane
+	// dd is the cross product of hinge and that node axis
+	foreach(Vector3 v, mBox.Axis){
+		if (abs(dot(v, hinge_axis)) < 0.1)
+			return cross(v, hinge_axis);
+	}
+
+	return Vec3d();
 }
 

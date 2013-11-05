@@ -15,11 +15,11 @@ public:
 public:
 	// Modifier
     void addNode(Node* node);
-	void addLink(QString nid1, QString nid2);
+	void addLink(Link* link);
 	void removeNode(QString nodeID);
 	void removeLink(Link* link);
 
-	// Accessor
+	// Accessors
 	Node* getNode(QString id);
 	Link* getLink(QString nid1, QString nid2);
 

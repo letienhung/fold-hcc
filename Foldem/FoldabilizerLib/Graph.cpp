@@ -29,12 +29,8 @@ void Graph::addNode(Node* node)
     nodes.push_back(node);
 }
 
-void Graph::addLink( QString nid1, QString nid2 )
+void Graph::addLink( Link* link)
 {
-	Node *n1 = getNode(nid1), *n2 = getNode(nid2);
-	if (NULL == n1 || NULL == n2) return;
-
-	Link *link = new Link(n1, n2);
 	links.push_back(link);
 }
 
@@ -169,7 +165,7 @@ bool Graph::parseHCC(QString fname)
 			QString box1ID = node_2.toElement().attribute("Box1ID");
 			QString box2ID = node_2.toElement().attribute("Box2ID");
 
-			this->addLink(box1ID, box2ID);
+			// to do: add link
 
 			node_2 = node_2.nextSibling();
 		}
@@ -182,8 +178,8 @@ bool Graph::parseHCC(QString fname)
 
 void Graph::draw()
 {
-	foreach(Node *n, nodes) n->draw();
 	foreach(Link *l, links) l->draw();
+	foreach(Node *n, nodes) n->draw();
 }
 
 void Graph::makeL()
@@ -203,6 +199,8 @@ void Graph::makeL()
 
 	this->addNode(vNode);
 	this->addNode(hNode);
+
+	this->addLink(new Link(vNode, hNode, Vector3(0,0,0), Vector3(0,0,1)));
 }
 
 void Graph::makeT()
@@ -217,11 +215,17 @@ void Graph::makeT()
 	Box vBox(Point(0, -2, 0), xyz, Vector3(0.5, 2, 2));
 	Node* vNode = new Node(vBox, "vBox");
 
-	Box hBox(Point(0, 0.5, 0), xyz, Vector3(2, 0.5, 2));
+	QVector<Vector3> rot_xyz;
+	rot_xyz.push_back(Vector3(1, 0, 1));
+	rot_xyz.push_back(Vector3(0, 1, 0));
+	rot_xyz.push_back(Vector3(-1, 0, 1));
+
+	Box hBox(Point(0, 0.5, 0), rot_xyz, Vector3(2, 0.5, 2));
 	Node* hNode = new Node(hBox, "hBox");
 
 	this->addNode(vNode);
 	this->addNode(hNode);
+	this->addLink(new Link(vNode, hNode, Vector3(0,0,0), Vector3(0,0,1)));
 }
 
 void Graph::makeX()
@@ -241,6 +245,8 @@ void Graph::makeX()
 
 	this->addNode(vNode);
 	this->addNode(hNode);
+
+	this->addLink(new Link(vNode, hNode, Vector3(0,0,0), Vector3(0,0,1)));
 }
 
 void Graph::makeU()

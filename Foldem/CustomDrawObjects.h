@@ -91,6 +91,9 @@ public:
 	}
 
 	void drawQuads(bool isColored = true){
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 		glBegin(GL_QUADS);
 		for(int i = 0; i < (int) polys.size(); i++)
 		{

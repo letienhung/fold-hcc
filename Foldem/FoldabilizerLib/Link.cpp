@@ -1,20 +1,22 @@
 #include "Link.h"
 #include "Node.h"
+#include "../CustomDrawObjects.h"
 
-Link::Link()
+Link::Link(Node* n1, Node* n2, Point c, Vec3d a)
+	:node1(n1), node2(n2), center(c), axis(a)
 {
-    node1 = NULL;
-    node2 = NULL;
-}
+	// dihedral directions
+	this->v1 = node1->dihedralDirection(this->axis).normalized();
+	this->v2 = node2->dihedralDirection(this->axis).normalized();
 
-Link::Link(Node* n1, Node* n2)
-{
-    node1 = n1;
-    node2 = n2;
+	// dihedral frames
 }
 
 void Link::draw()
 {
+	FrameSoup fs(1);
+	fs.addFrame(axis, v1, v2, center);
+	fs.draw();
 }
 
 bool Link::hasNode( QString nodeID )

@@ -2,19 +2,17 @@
 
 #include "FoldabilizerLibGlobal.h"
 
-class Box
+struct Box
 {
-public:
-	Box(){}
-	Box(Point& c, QVector<Vector3>& axis, Vector3& ext);
-	~Box(){}
-
-	Box &operator =(const Box &);
-
-public:
 	Point Center;
 	QVector<Vector3> Axis;
 	Vector3 Extent;
+
+	Box(){}
+	Box(const Point& c, const QVector<Vector3>& axis, const Vector3& ext);
+	~Box(){}
+
+	Box &operator =(const Box &);
 };
 
 

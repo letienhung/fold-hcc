@@ -10,23 +10,23 @@
 class Node
 {
 public:
-	Node(){}
+	QString		mID;
+	Box			mBox;
+	QColor		mColor;
+
     Node(Box b, QString id);
     ~Node();
 
 public:
-	// Visualize
-	void draw();
-	void drawBox();
-
 	// Geometry
 	QVector<Point> getBoxConners();
 	QVector< QVector<Point> > getBoxFaces();
 
-public:
-	QString		mID;
-	Box			mBox;
-	QColor		mColor;
+	Vec3d dihedralDirection(Vec3d hinge_axis);
+
+	// Visualize
+	void draw();
+	void drawBox();
 };
 
 // Vertex ID of face corners
