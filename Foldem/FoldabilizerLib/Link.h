@@ -12,18 +12,17 @@ public:
     ~Link(){}
 
 public:
-	double angle;
-
-public:
-    void setNode(Node* n1, Node* n2);
-
-    Node* getNode1();
-    Node* getNode2();
+	bool  hasNode(QString nodeID);
+	Node* getNode(QString nodeID);
+	Node* otherNode(QString nodeID);
 
 	void draw();
-						  
-private:
+		
+public:
     Node *node1;
     Node *node2;
+
+	Point orig;
+	Vector3 
 };
 

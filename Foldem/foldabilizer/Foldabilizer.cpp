@@ -4,6 +4,8 @@
 #include <QFileDialog>
 
 
+QString DEFAULT_FILE_PATH = "..\\..\\data";
+
 Foldabilizer::Foldabilizer()
 {
 	widget = NULL;
@@ -80,6 +82,8 @@ void Foldabilizer::loadGraph()
 
 	hccGraph->parseHCC(fileName);
 	resetScene();
+
+	DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
 }
 
 Q_EXPORT_PLUGIN(Foldabilizer)

@@ -22,11 +22,13 @@ HEADERS += \
     Link.h \
     FoldabilizerLibGlobal.h \
     Box.h \
-    IntersectBoxBox.h
+    IntersectBoxBox.h \
+    Frame.h
 
 SOURCES += \
     Graph.cpp \
     Node.cpp \
     Link.cpp \
     Box.cpp \
-    IntersectBoxBox.cpp
+    IntersectBoxBox.cpp \
+    Frame.cpp

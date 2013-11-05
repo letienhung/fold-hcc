@@ -29,6 +29,73 @@ void Graph::addNode(Node* node)
     nodes.push_back(node);
 }
 
+void Graph::addLink( QString nid1, QString nid2 )
+{
+	Node *n1 = getNode(nid1), *n2 = getNode(nid2);
+	if (NULL == n1 || NULL == n2) return;
+
+	Link *link = new Link(n1, n2);
+	links.push_back(link);
+}
+
+void Graph::removeNode( QString nodeID )
+{
+	// remove incident links
+	foreach(Link* l, links)	{
+		if (l->hasNode(nodeID))
+			removeLink(l);
+	}
+
+	// find
+	int idx = -1;
+	for (int i = 0; i < nodes.size(); i++)	{
+		if (nodes[i]->mID == nodeID) {
+			idx = i;
+			break;
+		}
+	}
+	if (idx == -1) return;
+
+	// deallocate and remove
+	delete nodes[idx];
+	nodes.remove(idx);
+}
+
+void Graph::removeLink( Link* link )
+{
+	// find and remove
+	for (int i = 0; i < links.size(); i++)	{
+		if (links[i] == link) {
+			links.remove(i);
+			break;
+		}
+	}
+
+	// deallocate
+	delete link;
+}
+
+
+Node* Graph::getNode(QString id)
+{
+	foreach(Node* n, nodes)
+		if(n->mID == id) return n;
+
+	return NULL;
+}
+
+Link* Graph::getLink( QString nid1, QString nid2 )
+{
+	foreach(Link* l, links)	{
+		if (l->hasNode(nid1) && l->hasNode(nid2))
+			return l;
+	}
+
+	return NULL;
+}
+
+
+
 bool Graph::parseHCC(QString fname)
 {
 	this->clear();
@@ -102,14 +169,7 @@ bool Graph::parseHCC(QString fname)
 			QString box1ID = node_2.toElement().attribute("Box1ID");
 			QString box2ID = node_2.toElement().attribute("Box2ID");
 
-			Link* link = new Link();
-			Node *n1 = getNode(box1ID);
-			Node *n2 = getNode(box2ID);
-			link->setNode(n1, n2);
-
-			n1->linkList.push_back(link);
-			n2->linkList.push_back(link);
-			links.push_back(link);
+			this->addLink(box1ID, box2ID);
 
 			node_2 = node_2.nextSibling();
 		}
@@ -118,35 +178,13 @@ bool Graph::parseHCC(QString fname)
 	return true;
 }
 
-QVector<Node *> Graph::getAdjacentNodes(QString nodeID)
-{
-    return this->getNode(nodeID)->getAdjnodes();
-}
 
-QVector<Node *> Graph::getLeafnode()
-{
-	QVector<Node *> leafnodes;
-	
-    int nSize = nodes.size();
-	for(int i = 0; i < nSize; i++)
-        if (nodes[i]->linkList.size() == 1)
-            leafnodes.push_back(nodes[i]);
-
-   return leafnodes;
-}
-
-Node* Graph::getNode(QString id)
-{
-	foreach(Node* n, nodes)
-		if(n->mID == id) return n;
-}
 
 void Graph::draw()
 {
 	foreach(Node *n, nodes) n->draw();
 	foreach(Link *l, links) l->draw();
 }
-
 
 void Graph::makeL()
 {
@@ -205,7 +243,6 @@ void Graph::makeX()
 	this->addNode(hNode);
 }
 
-
 void Graph::makeU()
 {
 	this->clear();
@@ -221,10 +258,10 @@ void Graph::makeU()
 	Box ltBox(Point(0.5, 6, 0), xyz, Vector3(0.5, 2, 0.5));
 	Node* ltNode = new Node(ltBox, "left-bottom");
 
-	Box hBox(Point(3, -0.5, 0), xyz, Vector3(3, 0.5, 0.5));
+	Box hBox(Point(4, -0.5, 0), xyz, Vector3(4, 0.5, 0.5));
 	Node* hNode = new Node(hBox, "horizontal");
 
-	Box rBox(Point(5.5, 2, 0), xyz, Vector3(0.5, 2, 0.5));
+	Box rBox(Point(7.5, 2, 0), xyz, Vector3(0.5, 2, 0.5));
 	Node* rNode = new Node(rBox, "left-bottom");
 
 	this->addNode(lbNode);
@@ -232,7 +269,6 @@ void Graph::makeU()
 	this->addNode(hNode);
 	this->addNode(rNode);
 }
-
 
 void Graph::makeChair()
 {
@@ -293,4 +329,6 @@ void Graph::computeAABB()
 		radius = (bbmax - bbmin).norm() * 0.5f;
 	}
 }
+
+
 

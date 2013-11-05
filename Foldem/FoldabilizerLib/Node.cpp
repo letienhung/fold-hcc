@@ -12,15 +12,8 @@ Node::Node(Box b, QString id)
 
 Node::~Node()
 {
-	linkList.clear();
 }
 
-QVector<Node *> Node::getAdjnodes()
-{
-	QVector<Node *> adjNodes;
-	//TODO
-	return adjNodes;
-}
 
 void Node::draw()
 {
@@ -74,3 +67,4 @@ void Node::drawBox()
 	foreach(QVector<Point> f, faces) ps.addPoly(f, mColor);
 	ps.drawQuads(true);
 }
+

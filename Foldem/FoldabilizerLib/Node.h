@@ -15,9 +15,6 @@ public:
     ~Node();
 
 public:
-    //Get the list of adjacent nodes
-    QVector<Node *> getAdjnodes();
-
 	// Visualize
 	void draw();
 	void drawBox();
@@ -30,8 +27,6 @@ public:
 	QString		mID;
 	Box			mBox;
 	QColor		mColor;
-
-	QVector<Link* > linkList;
 };
 
 // Vertex ID of face corners

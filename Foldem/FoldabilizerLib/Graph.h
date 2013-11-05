@@ -15,17 +15,13 @@ public:
 public:
 	// Modifier
     void addNode(Node* node);
-    void addLink(Link* link);
 	void addLink(QString nid1, QString nid2);
 	void removeNode(QString nodeID);
-	void removeLink(QString nid1, QString nid2);
+	void removeLink(Link* link);
 
-	// Accessors
+	// Accessor
 	Node* getNode(QString id);
 	Link* getLink(QString nid1, QString nid2);
-    QVector<Node *> getAdjacentNodes(QString nodeID);
-    QVector<Node *> getLeafnode();
-    QVector<Link*> getLinks(Node* n);
 
 	// Parse from file
 	bool parseHCC(QString fname);
