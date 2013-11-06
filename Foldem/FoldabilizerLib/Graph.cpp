@@ -1,4 +1,5 @@
 #include "Graph.h"
+#include "xmlWriter.h"
 
 Graph::Graph()
 {
@@ -123,9 +124,9 @@ bool Graph::parseHCC(QString fname)
 		while(!node_2.isNull())
 		{
 			QString id = node_2.toElement().attribute("ID");
-			Point center = Point(node_2.toElement().attribute("centerX").toDouble(),
-				                 node_2.toElement().attribute("centerY").toDouble(),
-								 node_2.toElement().attribute("centerZ").toDouble());
+			Point center = Point(node_2.toElement().attribute("CenterX").toDouble(),
+				                 node_2.toElement().attribute("CenterY").toDouble(),
+								 node_2.toElement().attribute("CenterZ").toDouble());
 
 			QVector<Vector3> axis;
 			axis.push_back(Vector3(node_2.toElement().attribute("Axis0X").toDouble(),
@@ -160,12 +161,25 @@ bool Graph::parseHCC(QString fname)
 
 		while(!node_2.isNull())
 		{
-			int id = node_2.toElement().attribute("ID").toInt();
+			//int id = node_2.toElement().attribute("ID").toInt();
 
 			QString box1ID = node_2.toElement().attribute("Box1ID");
 			QString box2ID = node_2.toElement().attribute("Box2ID");
 
-			// to do: add link
+			Vector3 from = Vector3(node_2.toElement().attribute("CenterX").toDouble(),
+			node_2.toElement().attribute("CenterY").toDouble(),
+			node_2.toElement().attribute("CenterZ").toDouble());
+
+			Vector3 to = Vector3(node_2.toElement().attribute("ToX").toDouble(),
+			node_2.toElement().attribute("ToY").toDouble(),
+			node_2.toElement().attribute("ToZ").toDouble());
+			
+			/*Node *n1 = getNode(box1ID);
+			Node *n2 = getNode(box2ID);
+			Link* link = new Link();
+			link->setNode(n1, n2);
+
+			this->addLink(box1ID, box2ID);*/
 
 			node_2 = node_2.nextSibling();
 		}
@@ -174,6 +188,70 @@ bool Graph::parseHCC(QString fname)
 	return true;
 }
 
+bool Graph::saveHCC(QString fname)
+{
+	if(fname.isNull())
+		return false;
+
+	QFile file(fname);//.toStdString().c_str());
+	file.open(QIODevice::WriteOnly);
+	if(!file.isOpen()) return false;
+	XmlWriter xw(&file);
+
+	xw.setAutoNewLine(true);	
+	xw.writeRaw("\<!--LCC Version = \"1.0\"--\>\n\<Graph\>");
+	xw.newLine();
+
+	AttrMap amount_attrs;
+	amount_attrs.insert("BoxAmount", QString::number(nodes.size()));
+	amount_attrs.insert("LinkAmount", QString::number(links.size()));
+	xw.writeAtomTag("Amount", amount_attrs);
+
+	xw.writeOpenTag("BoxPool");
+	for(int i=0; i < nodes.size(); i++)
+	{
+		AttrMap box_attrs;
+		box_attrs.insert("ID", nodes[i]->mID);
+		box_attrs.insert("CenterX", QString::number(nodes[i]->mBox.Center.x()));
+		box_attrs.insert("CenterY", QString::number(nodes[i]->mBox.Center.y()));
+		box_attrs.insert("CenterZ", QString::number(nodes[i]->mBox.Center.z()));
+		box_attrs.insert("Axis0X", QString::number(nodes[i]->mBox.Axis[0].x()));
+		box_attrs.insert("Axis0Y", QString::number(nodes[i]->mBox.Axis[0].y()));
+		box_attrs.insert("Axis0Z", QString::number(nodes[i]->mBox.Axis[0].z()));
+		box_attrs.insert("Axis1X", QString::number(nodes[i]->mBox.Axis[1].x()));
+		box_attrs.insert("Axis1Y", QString::number(nodes[i]->mBox.Axis[1].y()));
+		box_attrs.insert("Axis1Z", QString::number(nodes[i]->mBox.Axis[1].z()));
+		box_attrs.insert("Axis2X", QString::number(nodes[i]->mBox.Axis[2].x()));
+		box_attrs.insert("Axis2Y", QString::number(nodes[i]->mBox.Axis[2].y()));
+		box_attrs.insert("Axis2Z", QString::number(nodes[i]->mBox.Axis[2].z()));
+		box_attrs.insert("ExtentX", QString::number(nodes[i]->mBox.Extent.x()));
+		box_attrs.insert("ExtentY", QString::number(nodes[i]->mBox.Extent.y()));
+		box_attrs.insert("ExtentZ", QString::number(nodes[i]->mBox.Extent.z()));
+		xw.writeAtomTag("Box", box_attrs);
+	}
+	xw.writeCloseTag("BoxPool");
+
+	xw.writeOpenTag("LinkPool");
+	for(int i=0; i < links.size(); i++)
+	{
+		AttrMap link_attrs;
+		link_attrs.insert("Box1ID", links[i]->node1->mID);
+		link_attrs.insert("Box1ID", links[i]->node2->mID);
+		link_attrs.insert("CenterX", QString::number(links[i]->center.x()));
+		link_attrs.insert("CenterY ", QString::number(links[i]->center.y()));
+		link_attrs.insert("CenterZ", QString::number(links[i]->center.z()));
+		link_attrs.insert("ToX ", QString::number(links[i]->center.x()+links[i]->axis.x()));
+		link_attrs.insert("ToY ", QString::number(links[i]->center.y()+links[i]->axis.y()));
+		link_attrs.insert("ToZ", QString::number(links[i]->center.z()+links[i]->axis.z()));
+		xw.writeAtomTag("Link", link_attrs);
+	}
+	xw.writeCloseTag("LinkPool");
+
+	xw.writeRaw("\<\/Graph\>");
+	file.close();
+
+	return true;
+}
 
 
 void Graph::draw()

@@ -25,6 +25,8 @@ public:
 
 	// Parse from file
 	bool parseHCC(QString fname);
+	// Save HCC file
+	bool saveHCC(QString fname);
 
 	// Visualize
 	void draw();
