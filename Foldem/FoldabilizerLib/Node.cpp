@@ -7,8 +7,9 @@ Node::Node(Box b, QString id)
 {
 	mBox = b;
 	mID = id;
-	mColor = qRandomColor();
-	mColor.setAlphaF(0.5);
+	mColor = qRandomColor(); mColor.setAlphaF(0.5);
+
+	isFixed = false;
 }
 
 Node::~Node()
@@ -69,17 +70,19 @@ void Node::drawBox()
 }
 
 // return a direction that is perpendicular to hing_axis on the dihedral plane
-Vec3d Node::dihedralDirection( Vec3d hinge_axis )
+SurfaceMesh::Vec3d Node::dihedralDirection( Vec3d hinge_pos, Vec3d hinge_axis )
 {
 	// hinge is along one axis, thus perpendicular to two others which span the dihedral plane
 	// dd is the axis with larger extent
 	for(int i = 0; i < 3; i++){
 		if (cross(mBox.Axis[i], hinge_axis).norm() < 0.1)
 		{
-			if (mBox.Extent[(i+1)%3] >= mBox.Extent[(i+2)%3])
-				return mBox.Axis[(i+1)%3];
-			else
-				return mBox.Axis[(i+2)%3];
+			Vec3d dd = (mBox.Extent[(i+1)%3] >= mBox.Extent[(i+2)%3]) ?
+						mBox.Axis[(i+1)%3] : mBox.Axis[(i+2)%3];
+			Vec3d h2n = (mBox.Center - hinge_pos).normalized();
+
+			if (dot(dd, h2n) < 0) dd *= -1;
+			return dd;
 		}
 	}
 
@@ -91,5 +94,23 @@ Vec3d Node::dihedralDirection( Vec3d hinge_axis )
 	}
 
 	return Vec3d();
+}
+
+Frame Node::getFrame()
+{
+	return Frame(mBox.Center, mBox.Axis[0], mBox.Axis[1], mBox.Axis[2]);
+}
+
+void Node::translate( Vector3 t )
+{
+	mBox.Center += t;
+}
+
+void Node::setFrame( Frame f )
+{
+	mBox.Center = f.c;
+	mBox.Axis[0] = f.r;
+	mBox.Axis[1] = f.s;
+	mBox.Axis[2] = f.t;
 }
 

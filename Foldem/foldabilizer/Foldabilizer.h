@@ -33,6 +33,7 @@ public slots:
 	void createU();
 	void createChair();
 	void loadGraph();
+	void jump();
 };
 
 

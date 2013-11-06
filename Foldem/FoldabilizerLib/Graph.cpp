@@ -303,7 +303,7 @@ void Graph::makeT()
 
 	this->addNode(vNode);
 	this->addNode(hNode);
-	this->addLink(new Link(vNode, hNode, Vector3(0,0,0), Vector3(0,0,1)));
+	this->addLink(new Link(vNode, hNode, Vector3(0.5,0,0), Vector3(0,0,1)));
 }
 
 void Graph::makeX()
@@ -412,6 +412,24 @@ void Graph::computeAABB()
 		center = (bbmin + bbmax) * 0.5f;
 		radius = (bbmax - bbmin).norm() * 0.5f;
 	}
+}
+
+QVector<Link*> Graph::getLinks( QString nodeID )
+{
+	QVector<Link*> ls;
+	foreach(Link* l, links){
+		if (l->hasNode(nodeID)) ls.push_back(l);
+	}
+
+	return ls;
+}
+
+void Graph::jump()
+{
+	//nodes[0]->translate(Vector3(0.2, 0.2, 0.2));
+	nodes[0]->isFixed = true;
+	links[0]->changeAngle();
+	links[0]->fix();
 }
 
 

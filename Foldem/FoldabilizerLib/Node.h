@@ -14,6 +14,8 @@ public:
 	Box			mBox;
 	QColor		mColor;
 
+	bool		isFixed;
+
     Node(Box b, QString id);
     ~Node();
 
@@ -22,7 +24,12 @@ public:
 	QVector<Point> getBoxConners();
 	QVector< QVector<Point> > getBoxFaces();
 
-	Vec3d dihedralDirection(Vec3d hinge_axis);
+	Frame getFrame();
+	void setFrame(Frame f);
+	Vec3d dihedralDirection(Vec3d hinge_pos, Vec3d hinge_axis);
+
+	// Tranfromation
+	void translate(Vector3 t);
 
 	// Visualize
 	void draw();

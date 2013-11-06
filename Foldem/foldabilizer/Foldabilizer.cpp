@@ -86,4 +86,10 @@ void Foldabilizer::loadGraph()
 	DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
 }
 
+void Foldabilizer::jump()
+{
+	hccGraph->jump();
+	resetScene();
+}
+
 Q_EXPORT_PLUGIN(Foldabilizer)

@@ -22,6 +22,7 @@ public:
 	// Accessors
 	Node* getNode(QString id);
 	Link* getLink(QString nid1, QString nid2);
+	QVector<Link*> getLinks(QString nodeID);
 
 	// Parse from file
 	bool parseHCC(QString fname);
@@ -41,6 +42,9 @@ public:
 	Point bbmin, bbmax, center;
 	Scalar radius;
 	void computeAABB();
+
+	// Jump
+	void jump();
 
 
 public:
