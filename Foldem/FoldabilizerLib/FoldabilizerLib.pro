@@ -23,7 +23,8 @@ HEADERS += \
     FoldabilizerLibGlobal.h \
     Box.h \
     IntersectBoxBox.h \
-    Frame.h
+    Frame.h \
+    xmlWriter.h
 
 SOURCES += \
     Graph.cpp \
@@ -31,4 +32,5 @@ SOURCES += \
     Link.cpp \
     Box.cpp \
     IntersectBoxBox.cpp \
-    Frame.cpp
+    Frame.cpp \
+    xmlWriter.cpp
