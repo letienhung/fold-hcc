@@ -426,11 +426,12 @@ QVector<Link*> Graph::getLinks( QString nodeID )
 
 void Graph::jump()
 {
-	//nodes[0]->translate(Vector3(0.2, 0.2, 0.2));
+	if (nodes.isEmpty()) return;
+
+	nodes[0]->translate(Vector3(0.1, 0.1, 0.1));
+	nodes[0]->changeScaleFactor();
+	nodes[1]->changeScaleFactor();
 	nodes[0]->isFixed = true;
 	links[0]->changeAngle();
 	links[0]->fix();
 }
-
-
-

@@ -2,6 +2,7 @@
 
 #include "FoldabilizerLibGlobal.h"
 #include "Frame.h"
+#include "Box.h"
 
 class Node;
 
@@ -30,7 +31,7 @@ public:
 	Frame frame1, frame2;		// dihedral frames
 
 	struct LinkRecord{
-		Vec3d c, cpa, cpv1, cpv2;
+		Vec3d uc, c, cpa, cpv1, cpv2;
 	}link_record1, link_record2;			// link records in node frames
 
 	struct NodeRecord{
@@ -43,9 +44,9 @@ public:
 private:
 	void updateDihedralVectors(bool fix_v1);
 	void updateDihedralFrames();
-	LinkRecord createLinkRecord(Frame node_frame);
+	LinkRecord createLinkRecord(Box& node_box);
 	NodeRecord createNodeRecord(Frame node_frame, Frame dl_frame);
-	void recoverLinkFromRecord(LinkRecord lr, Frame node_frame);
+	void recoverLinkFromRecord(LinkRecord lr, Box& node_box);
 	Frame recoverNodeFrameFromRecord(NodeRecord nr, Frame dl_frame);
 	
 

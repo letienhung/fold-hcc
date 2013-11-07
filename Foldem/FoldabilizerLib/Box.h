@@ -2,7 +2,7 @@
 
 #include "FoldabilizerLibGlobal.h"
 
-struct Box
+struct Box 
 {
 	Point Center;
 	QVector<Vector3> Axis;
@@ -13,6 +13,12 @@ struct Box
 	~Box(){}
 
 	Box &operator =(const Box &);
+
+	Vector3 getCoordinates(Vector3 p);
+	Vector3 getPosition(Vector3 coord);
+
+	Vector3 getUniformCoordinates(Vector3 p);
+	Vector3 getUniformPosition(Vector3 coord);
 };
 
 

@@ -5,11 +5,14 @@
 
 Node::Node(Box b, QString id)
 {
-	mBox = b;
+	mBox = b; 
 	mID = id;
 	mColor = qRandomColor(); mColor.setAlphaF(0.5);
 
 	isFixed = false;
+
+	originalExtent = mBox.Extent;
+	scaleFactor = 1.0;
 }
 
 Node::~Node()
@@ -96,7 +99,7 @@ SurfaceMesh::Vec3d Node::dihedralDirection( Vec3d hinge_pos, Vec3d hinge_axis )
 	return Vec3d();
 }
 
-Frame Node::getFrame()
+Frame Node::getFrame()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
 {
 	return Frame(mBox.Center, mBox.Axis[0], mBox.Axis[1], mBox.Axis[2]);
 }
@@ -112,5 +115,13 @@ void Node::setFrame( Frame f )
 	mBox.Axis[0] = f.r;
 	mBox.Axis[1] = f.s;
 	mBox.Axis[2] = f.t;
+}
+
+void Node::changeScaleFactor()
+{
+	scaleFactor -= 0.1;
+	if (scaleFactor < 0.5) scaleFactor = 2;
+
+	mBox.Extent = scaleFactor * originalExtent;
 }
 

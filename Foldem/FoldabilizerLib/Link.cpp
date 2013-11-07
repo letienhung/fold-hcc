@@ -19,8 +19,8 @@ Link::Link(Node* n1, Node* n2, Point c, Vec3d a)
 	Frame node2_frame = node2->getFrame();
 
 	// create link record in node frames
-	link_record1 = createLinkRecord(node1_frame);
-	link_record2 = createLinkRecord(node2_frame);
+	link_record1 = createLinkRecord(node1->mBox);
+	link_record2 = createLinkRecord(node2->mBox);
 
 	// create node records in dihedral frames
 	node1_record = createNodeRecord(node1_frame, frame1);
@@ -49,16 +49,20 @@ Node* Link::getNode( QString nodeID )
 	return (nodeID == node1->mID)? node1 : node2;
 }
 
-Link::LinkRecord Link::createLinkRecord( Frame node_frame )
+Link::LinkRecord Link::createLinkRecord( Box& node_box )
 {
 	LinkRecord lr;
-	lr.c = node_frame.coordinates(center);
-	lr.cpa = node_frame.coordinates(center + axis);
-	lr.cpv1 = node_frame.coordinates(center + v1);
-	lr.cpv2 = node_frame.coordinates(center + v2);
+	lr.uc = node_box.getUniformCoordinates(center);
+
+	lr.c = node_box.getCoordinates(center);
+	lr.cpa = node_box.getCoordinates(center + axis);
+	lr.cpv1 = node_box.getCoordinates(center + v1);
+	lr.cpv2 = node_box.getCoordinates(center + v2);
 
 	return lr;
 }
+
+
 
 Link::NodeRecord Link::createNodeRecord( Frame node_frame, Frame dl_frame )
 {
@@ -78,30 +82,34 @@ void Link::fix()
 
 	// distinguish between fixed and free
 	Node *fixed_node, *free_node;
-	LinkRecord fixed_lr;
+	LinkRecord fixed_lr, free_lr;
 	NodeRecord free_nr;
 	if (node1->isFixed)	{
 		fixed_node = node1; free_node = node2;
-		fixed_lr = link_record1;
+		fixed_lr = link_record1; free_lr = link_record2;
 		free_nr = node2_record;
 	}else{
 		fixed_node = node2; free_node = node1;
-		fixed_lr = link_record2;
+		fixed_lr = link_record2; free_lr = link_record1;
 		free_nr = node1_record;
 	}
 
 	// fix hinge position and orientation from fixed node
-	this->recoverLinkFromRecord(fixed_lr, fixed_node->getFrame());
+	this->recoverLinkFromRecord(fixed_lr, fixed_node->mBox);
 
 	// fix hinge angle
 	updateDihedralVectors(node1->isFixed);
 
 	// fix dihedral frames
 	updateDihedralFrames();
-
+	
 	// fix node on the other end
+	// step 1: fix the original box
 	Frame free_dlf = (node1->isFixed)? frame2 : frame1;
-	free_node->setFrame( this->recoverNodeFrameFromRecord(free_nr, free_dlf) );
+	free_node->setFrame( this->recoverNodeFrameFromRecord(free_nr, free_dlf) ); 
+	// step 2: the current box differs by a scale factor, which can be fixed by a translation
+	Vector3 link_center_on_free_node = free_node->mBox.getUniformPosition(free_lr.uc);
+	free_node->mBox.Center += center - link_center_on_free_node;
 }
 
 void Link::changeAngle()
@@ -110,12 +118,15 @@ void Link::changeAngle()
 	if (angle < 0) angle = angle_suf;
 }
 
-void Link::recoverLinkFromRecord( LinkRecord lr, Frame node_frame )
+
+void Link::recoverLinkFromRecord( LinkRecord lr, Box& node_box )
 {
-	this->center = node_frame.position(lr.c);
-	this->axis = node_frame.position(lr.cpa) - this->center;
-	this->v1 = node_frame.position(lr.cpv1) - this->center;
-	this->v2 = node_frame.position(lr.cpv2) - this->center;
+	this->center = node_box.getUniformPosition(lr.uc);
+
+	Vector3 c	= node_box.getPosition(lr.c);
+	this->axis	= node_box.getPosition(lr.cpa)  - c;
+	this->v1	= node_box.getPosition(lr.cpv1) - c;
+	this->v2	= node_box.getPosition(lr.cpv2) - c;
 }
 
 Frame Link::recoverNodeFrameFromRecord( NodeRecord nr, Frame dl_frame )
@@ -137,12 +148,14 @@ void Link::updateDihedralFrames()
 
 void Link::updateDihedralVectors( bool isV1Fixed )
 {
-	Vec3d fixed_v = isV1Fixed ? v1 : v2;
-	Vec3d proj = cross(this->axis, fixed_v);
-
-	Vec3d free_v = cos(angle) * fixed_v + sin(angle) * proj;
-	free_v.normalize();
-
-	if (isV1Fixed) v2 = free_v;
-	else v1 = free_v;
+	if (isV1Fixed)
+	{
+		Vector3 proj = cross(this->axis, v1);
+		v2 = (cos(angle) * v1 + sin(angle) * proj).normalized();
+	}
+	else
+	{
+		Vector3 proj = cross(v2, this->axis);
+		v1 = (cos(angle) * v2 + sin(angle) * proj).normalized();
+	}
 }
