@@ -45,7 +45,9 @@ public:
 
 	// Jump
 	void jump();
-
+	void restoreConfiguration();
+	bool isEmpty();
+	void resetTags();
 
 public:
     QVector<Node*> nodes;
@@ -53,4 +55,5 @@ public:
 
 private:
 	void clear();
+
 };

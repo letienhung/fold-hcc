@@ -8,7 +8,12 @@ Link::Link(Node* n1, Node* n2, Point c, Vec3d a)
 	// dihedral directions
 	this->v1 = node1->dihedralDirection(center, axis).normalized();
 	this->v2 = node2->dihedralDirection(center, axis).normalized();
-	if (dot(cross(v1, v2), axis) < 0) axis *= -1;
+	double dot_cross_prod = dot(cross(v1, v2), axis);
+	if ( abs(dot_cross_prod) < 0.01)
+	{
+		axis *= -1; // TO FIX
+	}
+	else if (dot_cross_prod < 0) axis *= -1;
 
 	// update dihedral frames and angle
 	this->updateDihedralFrames();
@@ -25,13 +30,27 @@ Link::Link(Node* n1, Node* n2, Point c, Vec3d a)
 	// create node records in dihedral frames
 	node1_record = createNodeRecord(node1_frame, frame1);
 	node2_record = createNodeRecord(node2_frame, frame2);
+
+	// tag
+	isFixed = false;
+	isBroken = false;
+	isNailed = false;
 }
 
 void Link::draw()
 {
-	FrameSoup fs(1);
+	if (isBroken || isNailed) return;
+	
+	FrameSoup fs(1.0);
 	fs.addFrame(axis, v1, v2, center);
 	fs.draw();
+
+	if (isFixed)
+	{
+		PointSoup ps(15.0);
+		ps.addPoint(center, Qt::red);
+		ps.draw();
+	}
 }
 
 bool Link::hasNode( QString nodeID )
@@ -75,10 +94,11 @@ Link::NodeRecord Link::createNodeRecord( Frame node_frame, Frame dl_frame )
 	return nr;
 }
 
-void Link::fix()
+bool Link::fix()
 {
-	// special case: both nodes are fixed
-	if (node1->isFixed && node2->isFixed) return; 
+	// cases where no fix is needed
+	if (isBroken || isFixed) return false;
+	if (node1->isFixed && node2->isFixed) return false; 
 
 	// distinguish between fixed and free
 	Node *fixed_node, *free_node;
@@ -110,6 +130,11 @@ void Link::fix()
 	// step 2: the current box differs by a scale factor, which can be fixed by a translation
 	Vector3 link_center_on_free_node = free_node->mBox.getUniformPosition(free_lr.uc);
 	free_node->mBox.Center += center - link_center_on_free_node;
+
+	// mark the tag
+	free_node->isFixed = true;
+	this->isFixed = true;
+	return true;
 }
 
 void Link::changeAngle()

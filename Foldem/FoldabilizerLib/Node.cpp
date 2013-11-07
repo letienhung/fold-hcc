@@ -21,7 +21,15 @@ Node::~Node()
 
 void Node::draw()
 {
-	drawBox();
+	PolygonSoup ps;
+	foreach(QVector<Point> f, getBoxFaces()) ps.addPoly(f, mColor);
+
+	// draw faces
+	ps.drawQuads(true);
+
+	// highlight wireframes
+	if (isFixed) 
+		ps.drawWireframes(2.0, Qt::white);	
 }
 
 QVector<Point> Node::getBoxConners()
@@ -61,15 +69,6 @@ QVector< QVector<Point> > Node::getBoxFaces()
 	}	
 
 	return faces;
-}
-
-void Node::drawBox()
-{
-	QVector< QVector<Point> > faces = getBoxFaces();
-
-	PolygonSoup ps;
-	foreach(QVector<Point> f, faces) ps.addPoly(f, mColor);
-	ps.drawQuads(true);
 }
 
 // return a direction that is perpendicular to hing_axis on the dihedral plane

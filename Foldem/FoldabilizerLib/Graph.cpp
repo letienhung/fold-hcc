@@ -72,7 +72,6 @@ void Graph::removeLink( Link* link )
 	delete link;
 }
 
-
 Node* Graph::getNode(QString id)
 {
 	foreach(Node* n, nodes)
@@ -91,7 +90,15 @@ Link* Graph::getLink( QString nid1, QString nid2 )
 	return NULL;
 }
 
+QVector<Link*> Graph::getLinks( QString nodeID )
+{
+	QVector<Link*> ls;
+	foreach(Link* l, links){
+		if (l->hasNode(nodeID)) ls.push_back(l);
+	}
 
+	return ls;
+}
 
 bool Graph::parseHCC(QString fname)
 {
@@ -253,7 +260,6 @@ bool Graph::saveHCC(QString fname)
 	return true;
 }
 
-
 void Graph::draw()
 {
 	foreach(Link *l, links) l->draw();
@@ -336,11 +342,11 @@ void Graph::makeU()
 	xyz.push_back(Vector3(0, 1, 0));
 	xyz.push_back(Vector3(0, 0, 1));
 
+	Box ltBox(Point(0.5, 6, 0), xyz, Vector3(0.5, 2, 0.5));
+	Node* ltNode = new Node(ltBox, "left-top");
+
 	Box lbBox(Point(0.5, 2, 0), xyz, Vector3(0.5, 2, 0.5));
 	Node* lbNode = new Node(lbBox, "left-bottom");
-
-	Box ltBox(Point(0.5, 6, 0), xyz, Vector3(0.5, 2, 0.5));
-	Node* ltNode = new Node(ltBox, "left-bottom");
 
 	Box hBox(Point(4, -0.5, 0), xyz, Vector3(4, 0.5, 0.5));
 	Node* hNode = new Node(hBox, "horizontal");
@@ -348,10 +354,14 @@ void Graph::makeU()
 	Box rBox(Point(7.5, 2, 0), xyz, Vector3(0.5, 2, 0.5));
 	Node* rNode = new Node(rBox, "left-bottom");
 
-	this->addNode(lbNode);
 	this->addNode(ltNode);
+	this->addNode(lbNode);
 	this->addNode(hNode);
 	this->addNode(rNode);
+
+	this->addLink(new Link(ltNode, lbNode, Vector3(1,4,0), Vector3(0,0,1)));
+	this->addLink(new Link(lbNode, hNode, Vector3(1,0,0), Vector3(0,0,1)));
+	this->addLink(new Link(hNode, rNode, Vector3(7,0,0), Vector3(0,0,1)));
 }
 
 void Graph::makeChair()
@@ -414,24 +424,40 @@ void Graph::computeAABB()
 	}
 }
 
-QVector<Link*> Graph::getLinks( QString nodeID )
-{
-	QVector<Link*> ls;
-	foreach(Link* l, links){
-		if (l->hasNode(nodeID)) ls.push_back(l);
-	}
-
-	return ls;
-}
-
 void Graph::jump()
 {
-	if (nodes.isEmpty()) return;
+	//foreach(Node* n, nodes) n->changeScaleFactor();
+	foreach(Link* l, links) l->changeAngle();
+}
 
-	nodes[0]->translate(Vector3(0.1, 0.1, 0.1));
-	nodes[0]->changeScaleFactor();
-	nodes[1]->changeScaleFactor();
+
+void Graph::restoreConfiguration()
+{
+	if(isEmpty()) return;
+	this->resetTags();
+
+	// starting from node[0]
+	QQueue<Node*> activeNodes;
+	activeNodes.enqueue(nodes[0]);
 	nodes[0]->isFixed = true;
-	links[0]->changeAngle();
-	links[0]->fix();
+
+	while (!activeNodes.isEmpty())
+	{
+		Node* anode = activeNodes.dequeue();
+		foreach(Link* l, getLinks(anode->mID))
+		{
+			if (l->fix()) activeNodes.enqueue(l->otherNode(anode->mID));
+		}
+	}
+}
+
+bool Graph::isEmpty()
+{
+	return nodes.isEmpty();
+}
+
+void Graph::resetTags()
+{
+	foreach(Node* n, nodes) n->isFixed = false;
+	foreach(Link* l, links) l->isFixed = false;
 }

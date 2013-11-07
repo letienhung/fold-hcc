@@ -2,6 +2,7 @@
 
 #include <QVector>
 #include <QString>
+#include <QQueue>
 #include <QtXml/QDomDocument>
 #include <QFile>
 

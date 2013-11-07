@@ -93,8 +93,12 @@ void Foldabilizer::loadGraph()
 
 void Foldabilizer::jump()
 {
-	hccGraph->jump();
-	resetScene();
+	if (!hccGraph->isEmpty())
+	{
+		hccGraph->jump();
+		hccGraph->restoreConfiguration();
+		resetScene();
+	}
 }
 
 Q_EXPORT_PLUGIN(Foldabilizer)

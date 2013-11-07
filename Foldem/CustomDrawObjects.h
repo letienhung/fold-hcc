@@ -107,6 +107,22 @@ public:
 		glEnd();
 	}
 
+	void drawWireframes(float width, QColor c)
+	{
+		glDisable(GL_LIGHTING);
+		glLineWidth(width);
+		glColorQt(c);
+		glBegin(GL_LINES);
+		foreach(QVector<QVector3> poly, polys){
+			for(int i = 0; i < (int) poly.size(); i++){
+				glVertQt(poly[i]);
+				glVertQt(poly[(i+1) % poly.size()]);
+			}
+		}
+		glEnd();
+		glEnable(GL_LIGHTING);
+	}
+
 	void addPoly(const QVector<QVector3>& points, const QColor& c = Qt::red){
 		if(points.size() < 3) return;
 		else
@@ -116,7 +132,6 @@ public:
 		polys_normals.push_back(QVector3D::crossProduct(points[1] - points[0], points[2] - points[0]).normalized());
 		polys_colors.push_back(c);
 	}
-
 
 	void addPoly(const QVector<Vector3>& points, const QColor& c = Qt::red){
 		QVector<QVector3> q_points;
@@ -159,11 +174,6 @@ public:
 	void addLine(const QVector3& p1, const QVector3& p2, const QColor& c = Qt::blue){
 		lines.push_back( qMakePair(p1,p2) );
 		lines_colors.push_back(c);
-	}
-
-	void addLines()
-	{
-
 	}
 };
 
@@ -409,7 +419,7 @@ public:
 		int ci = colorOffset;
 
 		glDisable(GL_LIGHTING);
-		glLineWidth(1);
+		glLineWidth(3);
 		glBegin(GL_LINES);
 		for(int i = 0; i < (int) frames.size(); i++){
 			QVector3 X=frames[i][0],Y=frames[i][1],Z=frames[i][2];
@@ -420,7 +430,7 @@ public:
 		}
 		glEnd();
 
-		glPointSize(3);
+		glPointSize(6);
 		glBegin(GL_POINTS);
 		for(int i = 0; i < (int) frames.size(); i++){
 			QVector3 X=frames[i][0],Y=frames[i][1],Z=frames[i][2];

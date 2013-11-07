@@ -38,7 +38,6 @@ public:
 
 	// Visualize
 	void draw();
-	void drawBox();
 };
 
 // Vertex ID of face corners

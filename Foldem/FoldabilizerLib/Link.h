@@ -30,13 +30,17 @@ public:
 	double angle_suf;			// 0 < angle_suf < pi
 	Frame frame1, frame2;		// dihedral frames
 
-	struct LinkRecord{
+	struct LinkRecord{			// link records in node frames
 		Vec3d uc, c, cpa, cpv1, cpv2;
-	}link_record1, link_record2;			// link records in node frames
+	}link_record1, link_record2;
 
-	struct NodeRecord{
+	struct NodeRecord{			// node records in dihedral frames
 		Vec3d c, cpr, cps, cpt;
-	}node1_record, node2_record;			// node records in dihedral frames
+	}node1_record, node2_record;
+
+	bool isFixed;				// tags used for restore configuration
+	bool isBroken;
+	bool isNailed;
 
     Link(Node* n1, Node* n2, Point c, Vec3d a);
     ~Link(){};
@@ -56,7 +60,7 @@ public:
 	Node* otherNode(QString nodeID);
 
 	void changeAngle();
-	void fix();
+	bool fix();
 
 	void draw();
 };
