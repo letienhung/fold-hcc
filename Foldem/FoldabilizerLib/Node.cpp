@@ -124,3 +124,8 @@ void Node::changeScaleFactor()
 	mBox.Extent = scaleFactor * originalExtent;
 }
 
+void Node::fix()
+{
+	mBox.Extent = scaleFactor * originalExtent;
+}
+

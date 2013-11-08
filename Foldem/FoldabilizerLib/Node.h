@@ -35,6 +35,7 @@ public:
 	// Transformation
 	void translate(Vector3 t);
 	void changeScaleFactor();
+	void fix();
 
 	// Visualize
 	void draw();

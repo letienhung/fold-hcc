@@ -364,6 +364,11 @@ void Graph::makeU()
 	Link* nailedLink = new Link(hNode, rNode, Vector3(7,0,0), Vector3(0,0,1));
 	//nailedLink->isNailed = true;
 	this->addLink(nailedLink);
+
+	nodes[0]->scaleFactor = 0.9;
+	nodes[0]->scaleFactor = 1.2;
+	nodes[0]->scaleFactor = 0.6;
+	nodes[0]->scaleFactor = 1.8;
 }
 
 void Graph::makeChair()
@@ -424,10 +429,6 @@ void Graph::computeAABB()
 
 void Graph::jump()
 {
-	nodes[0]->scaleFactor = 0.9;
-	nodes[0]->scaleFactor = 1.2;
-	nodes[0]->scaleFactor = 0.6;
-	nodes[0]->scaleFactor = 1.8;
 	foreach(Node* n, nodes) n->changeScaleFactor();
 	foreach(Link* l, links) l->changeAngle();
 }
@@ -438,10 +439,12 @@ void Graph::restoreConfiguration()
 	if(isEmpty()) return;
 	this->resetTags();
 
-	// starting from node[0]
 	QQueue<Node*> activeNodes;
-	activeNodes.enqueue(nodes[0]);
+
+	// starting from node[0]
+	nodes[0]->fix();
 	nodes[0]->isFixed = true;
+	activeNodes.enqueue(nodes[0]);
 
 	while (!activeNodes.isEmpty())
 	{
