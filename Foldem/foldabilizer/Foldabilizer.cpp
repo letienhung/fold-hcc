@@ -3,6 +3,7 @@
 #include "StarlabDrawArea.h"
 #include <QFileDialog>
 
+#include <QProcess>
 
 QString DEFAULT_FILE_PATH = "..\\..\\data";
 
@@ -38,7 +39,6 @@ void Foldabilizer::decorate()
 void Foldabilizer::resetScene()
 {
 	if (hccGraph){
-		//hccGraph->computeAABB();
 		drawArea()->setSceneBoundingBox(qglviewer::Vec(hccGraph->bbmin), qglviewer::Vec(hccGraph->bbmax));
 	}
 
@@ -49,6 +49,13 @@ void Foldabilizer::resetScene()
 void Foldabilizer::createL()
 {
 	hccGraph->makeL();
+	hccGraph->computeAABB();
+	resetScene();
+}
+
+void Foldabilizer::createI()
+{
+	hccGraph->makeI();
 	hccGraph->computeAABB();
 	resetScene();
 }
@@ -97,7 +104,7 @@ void Foldabilizer::jump()
 	{
 		hccGraph->jump();
 		hccGraph->restoreConfiguration();
-		resetScene();
+		drawArea()->updateGL();
 	}
 }
 

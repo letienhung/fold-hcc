@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>300</height>
+    <height>357</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -26,52 +26,59 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
+   <item row="0" column="1">
     <widget class="QPushButton" name="createL">
      <property name="text">
       <string>create L</string>
      </property>
     </widget>
    </item>
-   <item row="0" column="1">
-    <widget class="QPushButton" name="createChair">
+   <item row="0" column="2">
+    <widget class="QPushButton" name="createT">
      <property name="text">
-      <string>create Chair</string>
+      <string>create T</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="1">
-    <widget class="QPushButton" name="load_hcc">
+   <item row="0" column="0">
+    <widget class="QPushButton" name="createI">
      <property name="text">
-      <string>Load HCC</string>
+      <string>create I</string>
      </property>
     </widget>
    </item>
    <item row="1" column="0">
-    <widget class="QPushButton" name="createT">
+    <widget class="QPushButton" name="createU">
      <property name="text">
-      <string>createT</string>
+      <string>create U</string>
      </property>
     </widget>
    </item>
    <item row="1" column="1">
     <widget class="QPushButton" name="createX">
      <property name="text">
-      <string>createX</string>
+      <string>create X</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QPushButton" name="createChair">
+     <property name="text">
+      <string>create Chair</string>
      </property>
     </widget>
    </item>
    <item row="2" column="0">
-    <widget class="QPushButton" name="createU">
-     <property name="text">
-      <string>createU</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
     <widget class="QPushButton" name="jumpButton">
      <property name="text">
       <string>Jump</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="QPushButton" name="load_hcc">
+     <property name="text">
+      <string>Load HCC</string>
      </property>
     </widget>
    </item>

@@ -11,7 +11,10 @@ Link::Link(Node* n1, Node* n2, Point c, Vec3d a)
 	double dot_cross_prod = dot(cross(v1, v2), axis);
 	if ( abs(dot_cross_prod) < 0.01)
 	{
-		axis *= -1; // TO FIX
+		// the angle is close to \pi
+		Vector3 hn1 = node1->mBox.Center - center;
+		Vector3 hn2 = node2->mBox.Center - center;
+		if (dot(cross(hn1, hn2), axis) > 0) axis *= -1;
 	}
 	else if (dot_cross_prod < 0) axis *= -1;
 
@@ -139,6 +142,8 @@ bool Link::fix()
 
 void Link::changeAngle()
 {
+	if (isNailed) return;
+
 	angle -= 0.1;
 	if (angle < 0) angle = angle_suf;
 }

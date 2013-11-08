@@ -27,6 +27,7 @@ public:
 	Graph *hccGraph;
 
 public slots:
+	void createI();
 	void createL();
 	void createT();
 	void createX();
@@ -34,6 +35,7 @@ public slots:
 	void createChair();
 	void loadGraph();
 	void jump();
+
 };
 
 

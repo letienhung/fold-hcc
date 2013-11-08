@@ -31,6 +31,7 @@ public:
 
 	// Visualize
 	void draw();
+	void makeI();
 	void makeL();
 	void makeT();
 	void makeX();

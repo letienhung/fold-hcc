@@ -266,14 +266,26 @@ void Graph::draw()
 	foreach(Node *n, nodes) n->draw();
 }
 
+void Graph::makeI()
+{
+	this->clear();
+	QVector<Vector3> xyz = XYZ();
+
+	Box tBox(Point(0.5, 6, 0), xyz, Vector3(0.5, 2, 0.5));
+	Node* tNode = new Node(tBox, "top");
+
+	Box bBox(Point(0.5, 2, 0), xyz, Vector3(0.5, 2, 0.5));
+	Node* bNode = new Node(bBox, "bottom");
+
+	this->addNode(tNode);
+	this->addNode(bNode);
+	this->addLink(new Link(tNode, bNode, Vector3(1,4,0), Vector3(0,0,1)));
+}
+
 void Graph::makeL()
 {
 	this->clear();
-
-	QVector<Vector3> xyz;
-	xyz.push_back(Vector3(1, 0, 0));
-	xyz.push_back(Vector3(0, 1, 0));
-	xyz.push_back(Vector3(0, 0, 1));
+	QVector<Vector3> xyz = XYZ();
 
 	Box vBox(Point(-0.5, 2, 0), xyz, Vector3(0.5, 2, 2));
 	Node* vNode = new Node(vBox, "vBox");
@@ -290,11 +302,7 @@ void Graph::makeL()
 void Graph::makeT()
 {
 	this->clear();
-
-	QVector<Vector3> xyz;
-	xyz.push_back(Vector3(1, 0, 0));
-	xyz.push_back(Vector3(0, 1, 0));
-	xyz.push_back(Vector3(0, 0, 1));
+	QVector<Vector3> xyz = XYZ();
 
 	Box vBox(Point(0, -2, 0), xyz, Vector3(0.5, 2, 2));
 	Node* vNode = new Node(vBox, "vBox");
@@ -315,11 +323,7 @@ void Graph::makeT()
 void Graph::makeX()
 {
 	this->clear();
-
-	QVector<Vector3> xyz;
-	xyz.push_back(Vector3(1, 0, 0));
-	xyz.push_back(Vector3(0, 1, 0));
-	xyz.push_back(Vector3(0, 0, 1));
+	QVector<Vector3> xyz = XYZ();
 
 	Box vBox(Point(0, 0, 0.5), xyz, Vector3(0.5, 4, 0.5));
 	Node* vNode = new Node(vBox, "vBox");
@@ -336,11 +340,7 @@ void Graph::makeX()
 void Graph::makeU()
 {
 	this->clear();
-
-	QVector<Vector3> xyz;
-	xyz.push_back(Vector3(1, 0, 0));
-	xyz.push_back(Vector3(0, 1, 0));
-	xyz.push_back(Vector3(0, 0, 1));
+	QVector<Vector3> xyz = XYZ();
 
 	Box ltBox(Point(0.5, 6, 0), xyz, Vector3(0.5, 2, 0.5));
 	Node* ltNode = new Node(ltBox, "left-top");
@@ -352,26 +352,24 @@ void Graph::makeU()
 	Node* hNode = new Node(hBox, "horizontal");
 
 	Box rBox(Point(7.5, 2, 0), xyz, Vector3(0.5, 2, 0.5));
-	Node* rNode = new Node(rBox, "left-bottom");
+	Node* rNode = new Node(rBox, "right");
 
-	this->addNode(ltNode);
+	this->addNode(rNode);
 	this->addNode(lbNode);
 	this->addNode(hNode);
-	this->addNode(rNode);
+	this->addNode(ltNode);
 
-	this->addLink(new Link(ltNode, lbNode, Vector3(1,4,0), Vector3(0,0,1)));
+	this->addLink(new Link(ltNode, lbNode, Vector3(0,4,0), Vector3(0,0,1)));
 	this->addLink(new Link(lbNode, hNode, Vector3(1,0,0), Vector3(0,0,1)));
-	this->addLink(new Link(hNode, rNode, Vector3(7,0,0), Vector3(0,0,1)));
+	Link* nailedLink = new Link(hNode, rNode, Vector3(7,0,0), Vector3(0,0,1));
+	//nailedLink->isNailed = true;
+	this->addLink(nailedLink);
 }
 
 void Graph::makeChair()
 {
 	this->clear();
-
-	QVector<Vector3> xyz;
-	xyz.push_back(Vector3(1, 0, 0));
-	xyz.push_back(Vector3(0, 1, 0));
-	xyz.push_back(Vector3(0, 0, 1));
+	QVector<Vector3> xyz = XYZ();
 
 	Box backBox(Point(0.25, 2, 0), xyz, Vector3(0.25, 2, 2));
 	Node* backNode = new Node(backBox, "back");
@@ -426,7 +424,11 @@ void Graph::computeAABB()
 
 void Graph::jump()
 {
-	//foreach(Node* n, nodes) n->changeScaleFactor();
+	nodes[0]->scaleFactor = 0.9;
+	nodes[0]->scaleFactor = 1.2;
+	nodes[0]->scaleFactor = 0.6;
+	nodes[0]->scaleFactor = 1.8;
+	foreach(Node* n, nodes) n->changeScaleFactor();
 	foreach(Link* l, links) l->changeAngle();
 }
 
