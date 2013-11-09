@@ -1,5 +1,6 @@
 #include "Graph.h"
 #include "xmlWriter.h"
+#include "Numeric.h"
 
 Graph::Graph()
 {
@@ -7,7 +8,7 @@ Graph::Graph()
 
 Graph::Graph(QString fname)
 {
-	if(!parseHCC(fname))
+	if(!loadHCC(fname))
 		qDebug()<<"Failed to load HCC file!\n";
 }
 
@@ -100,7 +101,7 @@ QVector<Link*> Graph::getLinks( QString nodeID )
 	return ls;
 }
 
-bool Graph::parseHCC(QString fname)
+bool Graph::loadHCC(QString fname)
 {
 	this->clear();
 
@@ -156,8 +157,6 @@ bool Graph::parseHCC(QString fname)
 			Node* curNode = new Node(box, id);
 		    nodes.push_back(curNode);
 
-			//Might add position 
-
 			node_2 = node_2.nextSibling();
 		}
 	}
@@ -181,17 +180,13 @@ bool Graph::parseHCC(QString fname)
 			node_2.toElement().attribute("ToY").toDouble(),
 			node_2.toElement().attribute("ToZ").toDouble());
 			
-			/*Node *n1 = getNode(box1ID);
-			Node *n2 = getNode(box2ID);
-			Link* link = new Link();
-			link->setNode(n1, n2);
-
-			this->addLink(box1ID, box2ID);*/
+			this->addLink(new Link(getNode(box1ID), getNode(box2ID), to, to-from));
 
 			node_2 = node_2.nextSibling();
 		}
 	}
 
+	this->computeAabb();
 	return true;
 }
 
@@ -349,26 +344,22 @@ void Graph::makeU()
 	Node* lbNode = new Node(lbBox, "left-bottom");
 
 	Box hBox(Point(4, -0.5, 0), xyz, Vector3(4, 0.5, 0.5));
-	Node* hNode = new Node(hBox, "horizontal");
+	Node* hNode = new Node(hBox, "horizontal_base");
 
 	Box rBox(Point(7.5, 2, 0), xyz, Vector3(0.5, 2, 0.5));
 	Node* rNode = new Node(rBox, "right");
 
-	this->addNode(rNode);
+	
 	this->addNode(lbNode);
-	this->addNode(hNode);
 	this->addNode(ltNode);
+	this->addNode(hNode);
+	this->addNode(rNode);
 
 	this->addLink(new Link(ltNode, lbNode, Vector3(0,4,0), Vector3(0,0,1)));
 	this->addLink(new Link(lbNode, hNode, Vector3(1,0,0), Vector3(0,0,1)));
 	Link* nailedLink = new Link(hNode, rNode, Vector3(7,0,0), Vector3(0,0,1));
-	//nailedLink->isNailed = true;
+	nailedLink->isNailed = true;
 	this->addLink(nailedLink);
-
-	nodes[0]->scaleFactor = 0.9;
-	nodes[0]->scaleFactor = 1.2;
-	nodes[0]->scaleFactor = 0.6;
-	nodes[0]->scaleFactor = 1.8;
 }
 
 void Graph::makeChair()
@@ -380,7 +371,7 @@ void Graph::makeChair()
 	Node* backNode = new Node(backBox, "back");
 
 	Box seatBox(Point(2, -0.5, 0), xyz, Vector3(2, 0.5, 2));
-	Node* seatNode = new Node(seatBox, "seat");
+	Node* seatNode = new Node(seatBox, "seat_base");
 
 	Box legBox0(Point(0.25, -3, 1.75), xyz, Vector3(0.25, 2, 0.25));
 	Node* legNode0 = new Node(legBox0, "leg0");
@@ -400,9 +391,15 @@ void Graph::makeChair()
 	this->addNode(legNode1);
 	this->addNode(legNode2);
 	this->addNode(legNode3);
+
+	this->addLink(new Link(backNode, seatNode, Vector3(0.5,0,0), Vector3(0,0,1)));
+	this->addLink(new Link(seatNode, legNode0, Vector3(0.5,-1,1.75), Vector3(0,0,1)));
+	this->addLink(new Link(seatNode, legNode1, Vector3(0.25,-1,-1.5), Vector3(1,0,0)));
+	this->addLink(new Link(seatNode, legNode2, Vector3(3.75,-1,1.5), Vector3(1,0,0)));
+	this->addLink(new Link(seatNode, legNode3, Vector3(3.5,-1,-1.75), Vector3(0,0,1)));
 }
 
-void Graph::computeAABB()
+void Graph::computeAabb()
 {
 	if (nodes.isEmpty())
 	{
@@ -427,10 +424,11 @@ void Graph::computeAABB()
 	}
 }
 
-void Graph::jump()
+double Graph::getAabbVolume()
 {
-	foreach(Node* n, nodes) n->changeScaleFactor();
-	foreach(Link* l, links) l->changeAngle();
+	this->computeAabb();
+	Vector3 diagonal = bbmax - bbmin;
+	return diagonal[0] * diagonal[1] * diagonal[2];
 }
 
 
@@ -441,17 +439,22 @@ void Graph::restoreConfiguration()
 
 	QQueue<Node*> activeNodes;
 
-	// starting from node[0]
-	nodes[0]->fix();
-	nodes[0]->isFixed = true;
-	activeNodes.enqueue(nodes[0]);
+	// starting from base node
+	Node* base_node = this->getBaseNode();
+	if (!base_node) base_node = nodes[0];
+
+	base_node->isFixed = true;
+	activeNodes.enqueue(base_node);
 
 	while (!activeNodes.isEmpty())
 	{
 		Node* anode = activeNodes.dequeue();
 		foreach(Link* l, getLinks(anode->mID))
 		{
-			if (l->fix()) activeNodes.enqueue(l->otherNode(anode->mID));
+			if (l->fix()) 
+			{
+				activeNodes.enqueue(l->otherNode(anode->mID));
+			}
 		}
 	}
 }
@@ -465,4 +468,60 @@ void Graph::resetTags()
 {
 	foreach(Node* n, nodes) n->isFixed = false;
 	foreach(Link* l, links) l->isFixed = false;
+}
+
+int Graph::nbNodes()
+{
+	return nodes.size();
+}
+
+int Graph::nbLinks()
+{
+	return links.size();
+}
+
+Node* Graph::getBaseNode()
+{
+	foreach(Node* n, nodes)
+		if(n->mID.contains("_base"))
+			return n;
+
+	return NULL;
+}
+
+double Graph::getMaterialVolume()
+{
+	double volume = 0;
+	foreach (Node* n, nodes) volume += n->getVolume();
+	return volume;
+}
+
+GraphState Graph::getState()
+{
+	GraphState state;
+
+	foreach(Node* n, nodes) state.node_scale_factor.push_back(n->scaleFactor);
+	foreach(Link* l, links)
+	{
+		state.link_angle.push_back(l->angle);
+		state.link_is_broken.push_back(l->isBroken);
+		state.link_is_nailed.push_back(l->isNailed);
+	}
+
+	return state;
+}
+
+void Graph::setState( GraphState &state )
+{
+	for (int i = 0; i < nodes.size(); i++)
+	{
+		nodes[i]->scaleFactor = state.node_scale_factor[i];
+	}
+
+	for (int i = 0; i < links.size(); i++)
+	{
+		links[i]->angle = state.link_angle[i];
+		links[i]->isBroken = state.link_is_broken[i];
+		links[i]->isNailed = state.link_is_nailed[i];
+	}
 }

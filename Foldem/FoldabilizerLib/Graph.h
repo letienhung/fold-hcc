@@ -5,6 +5,14 @@
 #include "Node.h"
 #include "Link.h"
 
+struct GraphState{
+	QVector<Vector3>	node_scale_factor;
+	QVector<double>		link_angle;
+	QVector<bool>		link_is_broken;
+	QVector<bool>		link_is_nailed;
+};
+
+
 class Graph
 {
 public:
@@ -20,17 +28,34 @@ public:
 	void removeLink(Link* link);
 
 	// Accessors
-	Node* getNode(QString id);
-	Link* getLink(QString nid1, QString nid2);
+	int		nbNodes();
+	int		nbLinks();
+	bool	isEmpty();
+	Node*	getNode(QString id);
+	Link*	getLink(QString nid1, QString nid2);
 	QVector<Link*> getLinks(QString nodeID);
+	Node*	getBaseNode();
 
-	// Parse from file
-	bool parseHCC(QString fname);
-	// Save HCC file
+	// state
+	GraphState getState();
+	void setState(GraphState &state);
+
+	// File I/O
+	bool loadHCC(QString fname);
 	bool saveHCC(QString fname);
+
+	// Geometry property
+	bool	isDrawAABB;
+	Point	bbmin, bbmax, center;
+	Scalar	radius;
+	void	computeAabb();
+	double	getAabbVolume();
+	double	getMaterialVolume();
 
 	// Visualize
 	void draw();
+
+	// Prepare data
 	void makeI();
 	void makeL();
 	void makeT();
@@ -38,17 +63,9 @@ public:
 	void makeU();
 	void makeChair();
 
-	// Geometry property
-	bool isDrawAABB;
-	Point bbmin, bbmax, center;
-	Scalar radius;
-	void computeAABB();
-
-	// Jump
-	void jump();
-	void restoreConfiguration();
-	bool isEmpty();
+	// Restore configuration
 	void resetTags();
+	void restoreConfiguration();
 
 public:
     QVector<Node*> nodes;

@@ -16,25 +16,24 @@ public:
 
 	bool		isFixed;		// tag used for propagation
 	Vector3		originalExtent;
-	double		scaleFactor;	// scale factor of box
+	Vector3		scaleFactor;	// scale factor of box
 
     Node(Box b, QString id);
     ~Node();
 
 public:
 	// Geometry
-	QVector<Point> getBoxConners();
-	QVector< QVector<Point> > getBoxFaces();
+	double	getVolume();
+	Frame	getFrame();
+	void	setFrame(Frame f);
+	QVector<Point>				getBoxConners();
+	QVector< QVector<Point> >	getBoxFaces();
 
-	// Frame, coordinates
-	Frame getFrame();
-	void setFrame(Frame f);
+	// Hinge property
 	Vec3d dihedralDirection(Vec3d hinge_pos, Vec3d hinge_axis); 
-
 
 	// Transformation
 	void translate(Vector3 t);
-	void changeScaleFactor();
 	void fix();
 
 	// Visualize

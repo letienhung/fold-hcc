@@ -5,6 +5,9 @@
 Link::Link(Node* n1, Node* n2, Point c, Vec3d a)
 	:node1(n1), node2(n2), center(c), axis(a)
 {
+	// series id
+	this->id = node1->mID + ":" + node2->mID;
+
 	// dihedral directions
 	this->v1 = node1->dihedralDirection(center, axis).normalized();
 	this->v2 = node2->dihedralDirection(center, axis).normalized();
@@ -131,6 +134,7 @@ bool Link::fix()
 	Frame free_dlf = (node1->isFixed)? frame2 : frame1;
 	free_node->setFrame( this->recoverNodeFrameFromRecord(free_nr, free_dlf) ); 
 	// step 2: the current box differs by a scale factor, which can be fixed by a translation
+	free_node->fix();
 	Vector3 link_center_on_free_node = free_node->mBox.getUniformPosition(free_lr.uc);
 	free_node->mBox.Center += center - link_center_on_free_node;
 

@@ -4,6 +4,7 @@
 #include "SurfaceMeshPlugins.h"
 
 #include "Graph.h"
+#include "MHOptimizer.h"
 
 class foldem_widget;
 
@@ -23,8 +24,9 @@ class Foldabilizer : public SurfaceMeshModePlugin
 public:
     Foldabilizer();
 
-	foldem_widget *widget;
-	Graph *hccGraph;
+	Graph			*hccGraph;
+	MHOptimizer		*mhOptimizer;
+	foldem_widget	*widget;
 
 public slots:
 	void createI();
@@ -35,7 +37,6 @@ public slots:
 	void createChair();
 	void loadGraph();
 	void jump();
-
 };
 
 

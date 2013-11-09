@@ -22,6 +22,8 @@ class Link
 {
 public:
 	Node  *node1, *node2;
+	QString id;
+
 	Point center;				// contact point
 	Vec3d axis;					// axis direction
 	Vec3d v1, v2;				// dihedral directions

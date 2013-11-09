@@ -12,6 +12,6 @@ struct Frame
 
 	void normalize();
 	Vec3d coordinates(const Vec3d& p);
-	Vec3d position(const Vec3d& coord);
+	Vec3d position(const Vec3d& coord); 
 };
 

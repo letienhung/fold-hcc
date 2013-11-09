@@ -11,6 +11,7 @@ Foldabilizer::Foldabilizer()
 {
 	widget = NULL;
 	hccGraph = new Graph();
+	mhOptimizer = new MHOptimizer(hccGraph);
 }
 
 void Foldabilizer::create()
@@ -49,42 +50,43 @@ void Foldabilizer::resetScene()
 void Foldabilizer::createL()
 {
 	hccGraph->makeL();
-	hccGraph->computeAABB();
+	hccGraph->computeAabb();
 	resetScene();
 }
 
 void Foldabilizer::createI()
 {
 	hccGraph->makeI();
-	hccGraph->computeAABB();
+	hccGraph->computeAabb();
 	resetScene();
 }
 
 void Foldabilizer::createChair()
 {
 	hccGraph->makeChair();
-	hccGraph->computeAABB();
+	hccGraph->computeAabb();
+	mhOptimizer->isReady = false;
 	resetScene();
 }
 
 void Foldabilizer::createT()
 {
 	hccGraph->makeT();
-	hccGraph->computeAABB();
+	hccGraph->computeAabb();
 	resetScene();
 }
 
 void Foldabilizer::createX()
 {
 	hccGraph->makeX();
-	hccGraph->computeAABB();
+	hccGraph->computeAabb();
 	resetScene();
 }
 
 void Foldabilizer::createU()
 {
 	hccGraph->makeU();
-	hccGraph->computeAABB();
+	hccGraph->computeAabb();
 	resetScene();
 }
 
@@ -92,7 +94,7 @@ void Foldabilizer::loadGraph()
 {
 	QString fileName = QFileDialog::getOpenFileName(0, "Import Mesh", "..\\..\\data", "Mesh Files (*.lcc)"); 
 
-	hccGraph->parseHCC(fileName);
+	hccGraph->loadHCC(fileName);
 	resetScene();
 
 	DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
@@ -100,12 +102,8 @@ void Foldabilizer::loadGraph()
 
 void Foldabilizer::jump()
 {
-	if (!hccGraph->isEmpty())
-	{
-		hccGraph->jump();
-		hccGraph->restoreConfiguration();
-		drawArea()->updateGL();
-	}
+	mhOptimizer->jump();
+	drawArea()->updateGL();
 }
 
 Q_EXPORT_PLUGIN(Foldabilizer)

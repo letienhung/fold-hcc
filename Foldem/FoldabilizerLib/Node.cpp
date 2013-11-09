@@ -12,7 +12,7 @@ Node::Node(Box b, QString id)
 	isFixed = false;
 
 	originalExtent = mBox.Extent;
-	scaleFactor = 1.0;
+	scaleFactor = Vector3(1,1,1);
 }
 
 Node::~Node()
@@ -116,16 +116,18 @@ void Node::setFrame( Frame f )
 	mBox.Axis[2] = f.t;
 }
 
-void Node::changeScaleFactor()
-{
-	scaleFactor -= 0.1;
-	if (scaleFactor < 0.5) scaleFactor = 2;
-
-	mBox.Extent = scaleFactor * originalExtent;
-}
-
 void Node::fix()
 {
-	mBox.Extent = scaleFactor * originalExtent;
+	for (int i = 0 ; i < 3; i++)
+	{
+		mBox.Extent[i] = scaleFactor[i] * originalExtent[i];
+	}
+	
+}
+
+double Node::getVolume()
+{
+	Vector3 e = 2 * mBox.Extent;
+	return e[0] * e[1] * e[2];
 }
 
