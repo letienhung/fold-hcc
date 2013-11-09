@@ -51,6 +51,7 @@ void Foldabilizer::createL()
 {
 	hccGraph->makeL();
 	hccGraph->computeAabb();
+	mhOptimizer->isReady = false;
 	resetScene();
 }
 
@@ -58,6 +59,7 @@ void Foldabilizer::createI()
 {
 	hccGraph->makeI();
 	hccGraph->computeAabb();
+	mhOptimizer->isReady = false;
 	resetScene();
 }
 
@@ -73,6 +75,7 @@ void Foldabilizer::createT()
 {
 	hccGraph->makeT();
 	hccGraph->computeAabb();
+	mhOptimizer->isReady = false;
 	resetScene();
 }
 
@@ -80,6 +83,7 @@ void Foldabilizer::createX()
 {
 	hccGraph->makeX();
 	hccGraph->computeAabb();
+	mhOptimizer->isReady = false;
 	resetScene();
 }
 
@@ -87,6 +91,7 @@ void Foldabilizer::createU()
 {
 	hccGraph->makeU();
 	hccGraph->computeAabb();
+	mhOptimizer->isReady = false;
 	resetScene();
 }
 

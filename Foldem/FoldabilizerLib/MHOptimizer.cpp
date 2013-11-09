@@ -17,32 +17,34 @@ void MHOptimizer::initialize()
 	originalAabbVolume = hccGraph->getAabbVolume();
 	originalMaterialVolume = hccGraph->getMaterialVolume();
 
-	typeProbability << 0.6 << 0.4;
+	typeProbability << 0.8 << 0.2;
 
 	currState = hccGraph->getState();
 	currCost = cost();
 
 	isReady = true;
+
+	qDebug() << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
 }
 
 void MHOptimizer::jump()
 { 
 	if (hccGraph->isEmpty()) return;
 	if (!isReady) initialize();
-
+	
 	proposeJump();
 	if (doesAcceptJump())
 	{
 		currState = hccGraph->getState();
 		currCost = cost();
 
-		qDebug() << "Accepted the proposed jump. currCost = " << currCost;
+		qDebug() << "\t\tACCEPTED. currCost = " << currCost;
 	}
 	else
 	{
 		hccGraph->setState(currState);
 		hccGraph->restoreConfiguration();
-		qDebug() << "Rejected the proposed jump. currCost = " << currCost;
+		qDebug() << "\t\tREJECTED. currCost = " << currCost;
 	}
 }
 
@@ -71,7 +73,7 @@ void MHOptimizer::proposeJump()
 			double new_angle = randUniform(0, plink->angle_suf);
 			plink->angle = new_angle;
 
-			qDebug() << "Angle of " << plink->id << ": " << radians2degrees(old_angle) << " => " << radians2degrees(new_angle);
+			qDebug() << "[Proposal move] Angle of " << plink->id.toStdString().c_str() << ": " << radians2degrees(old_angle) << " => " << radians2degrees(new_angle);
 		}
 		break;
 	case 1: // cuboid scale
@@ -84,7 +86,7 @@ void MHOptimizer::proposeJump()
 			double new_factor = randUniform(0.5, 1);
 			pnode->scaleFactor[axisID] = new_factor;
 
-			qDebug() << "Scale factor[" << axisID << "] of " << pnode->mID << ": " << old_factor << " => " << new_factor;
+			qDebug() << "[Proposal move] Scale factor[" << axisID << "] of " << pnode->mID.toStdString().c_str() << ": " << old_factor << " => " << new_factor;
 		}
 		break;
 	default:
@@ -98,6 +100,7 @@ void MHOptimizer::proposeJump()
 bool MHOptimizer::doesAcceptJump()
 {
 	return (cost() < currCost);
+	//return true;
 }
 
 
