@@ -13,6 +13,8 @@ Node::Node(Box b, QString id)
 
 	originalExtent = mBox.Extent;
 	scaleFactor = Vector3(1,1,1);
+
+	isHighlight = false;
 }
 
 Node::~Node()
@@ -29,7 +31,10 @@ void Node::draw()
 
 	// highlight wireframes
 	if (isFixed) 
-		ps.drawWireframes(2.0, Qt::white);	
+	{
+		QColor c = isHighlight ? Qt::red : Qt::white;
+		ps.drawWireframes(2.0, c);	
+	}
 }
 
 QVector<Point> Node::getBoxConners()
@@ -129,5 +134,13 @@ double Node::getVolume()
 {
 	Vector3 e = 2 * mBox.Extent;
 	return e[0] * e[1] * e[2];
+}
+
+Box Node::getRelaxedBox()
+{
+	// shrink the box a bit for collision detection
+	Box box = mBox;
+	box.Extent *= 0.99;
+	return box;
 }
 

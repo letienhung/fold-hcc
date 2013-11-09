@@ -5,11 +5,8 @@
 class IntersectBoxBox
 {
 public:
-    IntersectBoxBox(Box &box0, Box &box1);
+    IntersectBoxBox();
 	~IntersectBoxBox(){}
-	//bool test();
-
-private:
-	Box mBox0, mBox1; 
+	static bool test(Box &box0, Box &box1);
 };
 

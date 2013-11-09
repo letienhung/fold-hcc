@@ -362,6 +362,36 @@ void Graph::makeU()
 	this->addLink(nailedLink);
 }
 
+
+void Graph::makeO()
+{
+	this->clear();
+	QVector<Vector3> xyz = XYZ();
+
+	Box lBox(Point(0.5, 2, 0), xyz, Vector3(0.5, 2, 0.5));
+	Node* lNode = new Node(lBox, "left");
+
+	Box rBox(Point(7.5, 2, 0), xyz, Vector3(0.5, 2, 0.5));
+	Node* rNode = new Node(rBox, "right");	
+	
+	Box bBox(Point(4, -0.5, 0), xyz, Vector3(3, 0.5, 0.5));
+	Node* bNode = new Node(bBox, "bottom_base");
+
+	Box tBox(Point(4, 4.5, 0), xyz, Vector3(3, 0.5, 0.5));
+	Node* tNode = new Node(tBox, "top");
+
+	this->addNode(lNode);
+	this->addNode(rNode);
+	this->addNode(bNode);
+	this->addNode(tNode);
+
+	this->addLink(new Link(bNode, lNode, Vector3(1,0,0), Vector3(0,0,1)));
+	this->addLink(new Link(bNode, rNode, Vector3(7,0,0), Vector3(0,0,1)));
+	this->addLink(new Link(tNode, lNode, Vector3(1,4,0), Vector3(0,0,1)));
+	this->addLink(new Link(tNode, rNode, Vector3(7,4,0), Vector3(0,0,1)));
+}
+
+
 void Graph::makeChair()
 {
 	this->clear();

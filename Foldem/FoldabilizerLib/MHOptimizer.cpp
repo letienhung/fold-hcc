@@ -1,7 +1,7 @@
 #include "MHOptimizer.h"
 
 #include "Numeric.h"
-
+#include "IntersectBoxBox.h"
 
 MHOptimizer::MHOptimizer(Graph* graph)
 {
@@ -33,7 +33,7 @@ void MHOptimizer::jump()
 	if (!isReady) initialize();
 	
 	proposeJump();
-	if (doesAcceptJump())
+	if (acceptJump())
 	{
 		currState = hccGraph->getState();
 		currCost = cost();
@@ -97,10 +97,38 @@ void MHOptimizer::proposeJump()
 	hccGraph->restoreConfiguration();
 }
 
-bool MHOptimizer::doesAcceptJump()
+bool MHOptimizer::acceptJump()
 {
-	return (cost() < currCost);
-	//return true;
+	isCollisionFree();
+
+	//return (cost() < currCost);
+	return true;
+}
+
+bool MHOptimizer::isCollisionFree()
+{
+	// clear highlights
+	foreach(Node* n, hccGraph->nodes) 
+		n->isHighlight = false;
+
+	// detect collision between each pair of cuboids
+	bool isFree = true;
+	for (int i = 0; i < hccGraph->nbNodes()-1; i++){
+		for (int j = i+1; j < hccGraph->nbNodes(); j++)
+		{
+			Node* n1 = hccGraph->nodes[i];
+			Node* n2 = hccGraph->nodes[j];
+
+			if (IntersectBoxBox::test(n1->getRelaxedBox(), n2->getRelaxedBox()))
+			{
+				n1->isHighlight = true;
+				n2->isHighlight = true;
+				isFree = false;
+			}
+		}
+	}
+
+	return isFree;
 }
 
 

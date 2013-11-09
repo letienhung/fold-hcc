@@ -19,6 +19,7 @@ public:
 	void	jump();
 	double	cost();
 	void	proposeJump();
-	bool	doesAcceptJump();
+	bool	acceptJump();
+	bool	isCollisionFree();
 };
 

@@ -28,6 +28,7 @@ public:
 	void	setFrame(Frame f);
 	QVector<Point>				getBoxConners();
 	QVector< QVector<Point> >	getBoxFaces();
+	Box		getRelaxedBox();
 
 	// Hinge property
 	Vec3d dihedralDirection(Vec3d hinge_pos, Vec3d hinge_axis); 
@@ -37,6 +38,7 @@ public:
 	void fix();
 
 	// Visualize
+	bool isHighlight;
 	void draw();
 };
 

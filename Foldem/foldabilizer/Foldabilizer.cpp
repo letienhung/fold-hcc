@@ -95,6 +95,16 @@ void Foldabilizer::createU()
 	resetScene();
 }
 
+
+void Foldabilizer::createO()
+{
+	hccGraph->makeO();
+	hccGraph->computeAabb();
+	mhOptimizer->isReady = false;
+	resetScene();
+}
+
+
 void Foldabilizer::loadGraph()
 {
 	QString fileName = QFileDialog::getOpenFileName(0, "Import Mesh", "..\\..\\data", "Mesh Files (*.lcc)"); 

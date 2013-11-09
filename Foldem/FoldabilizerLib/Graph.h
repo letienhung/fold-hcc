@@ -61,6 +61,7 @@ public:
 	void makeT();
 	void makeX();
 	void makeU();
+	void makeO();
 	void makeChair();
 
 	// Restore configuration

@@ -34,6 +34,7 @@ public slots:
 	void createT();
 	void createX();
 	void createU();
+	void createO();
 	void createChair();
 	void loadGraph();
 	void jump();
