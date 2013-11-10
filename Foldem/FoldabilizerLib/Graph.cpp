@@ -180,7 +180,7 @@ bool Graph::loadHCC(QString fname)
 			node_2.toElement().attribute("ToY").toDouble(),
 			node_2.toElement().attribute("ToZ").toDouble());
 			
-			this->addLink(new Link(getNode(box1ID), getNode(box2ID), to, to-from));
+			this->addLink(new Link(getNode(box1ID), getNode(box2ID), (from+to)/2, to-from));
 
 			node_2 = node_2.nextSibling();
 		}
@@ -452,6 +452,9 @@ void Graph::computeAabb()
 		center = (bbmin + bbmax) * 0.5f;
 		radius = (bbmax - bbmin).norm() * 0.5f;
 	}
+
+	// set scale to each link
+	foreach(Link* l, links) l->setScale(radius);
 }
 
 double Graph::getAabbVolume()

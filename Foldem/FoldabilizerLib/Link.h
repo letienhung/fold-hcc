@@ -64,6 +64,8 @@ public:
 	void changeAngle();
 	bool fix();
 
+	double scale;
+	void setScale(double radius);
 	void draw();
 };
 

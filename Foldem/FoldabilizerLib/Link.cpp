@@ -3,10 +3,12 @@
 #include "../CustomDrawObjects.h"
 
 Link::Link(Node* n1, Node* n2, Point c, Vec3d a)
-	:node1(n1), node2(n2), center(c), axis(a)
 {
-	// series id
-	this->id = node1->mID + ":" + node2->mID;
+	this->node1 = n1;
+	this->node2 = n2;
+	this->center = c;
+	this->axis = a.normalized();
+	this->id = node1->mID + ":" + node2->mID;	// series id
 
 	// dihedral directions
 	this->v1 = node1->dihedralDirection(center, axis).normalized();
@@ -41,19 +43,22 @@ Link::Link(Node* n1, Node* n2, Point c, Vec3d a)
 	isFixed = false;
 	isBroken = false;
 	isNailed = false;
+
+	// scale of frames
+	scale = 1.0;
 }
 
 void Link::draw()
 {
 	if (isBroken || isNailed) return;
 	
-	FrameSoup fs(1.0);
+	FrameSoup fs(scale);
 	fs.addFrame(axis, v1, v2, center);
 	fs.draw();
 
 	if (isFixed)
 	{
-		PointSoup ps(15.0);
+		PointSoup ps(10.0);
 		ps.addPoint(center, Qt::red);
 		ps.draw();
 	}
@@ -192,4 +197,9 @@ void Link::updateDihedralVectors( bool isV1Fixed )
 		Vector3 proj = cross(v2, this->axis);
 		v1 = (cos(angle) * v2 + sin(angle) * proj).normalized();
 	}
+}
+
+void Link::setScale( double radius )
+{
+	scale = 0.2 * radius;
 }
