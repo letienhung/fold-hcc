@@ -2,4 +2,5 @@ TEMPLATE = subdirs
 
 SUBDIRS += \
     foldabilizer \
-    FoldabilizerLib
+    FoldabilizerLib \
+    FoldabilizerUi
