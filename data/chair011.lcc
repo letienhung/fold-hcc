@@ -1,0 +1,49 @@
+<!--LCC Version = "1.0"-->
+<Graph>
+<Amount BoxAmount = "10" LinkAmount = "21"/>
+<BoxPool>
+<Box ID = "armrest1" CenterX = "-0.411568" CenterY = "-0.0685945" CenterZ = "0.111466" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.0442976" ExtentY = "0.421568" ExtentZ = "0.0442972"/>
+
+<Box ID = "armrest2" CenterX = "0.411568" CenterY = "-0.0685945" CenterZ = "0.111466" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.0442976" ExtentY = "0.421568" ExtentZ = "0.0442972"/>
+
+<Box ID = "bar1" CenterX = "0.000914053" CenterY = "0.250201" CenterZ = "-0.442029" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.409221" ExtentY = "0.0320419" ExtentZ = "0.0354028"/>
+
+<Box ID = "bar2" CenterX = "0.000914756" CenterY = "-0.429" CenterZ = "-0.44203" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.409221" ExtentY = "0.0300244" ExtentZ = "0.0355545"/>
+
+<Box ID = "beck" CenterX = "-3.71539e-007" CenterY = "0.365838" CenterZ = "0.228649" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.387271" ExtentY = "0.215784" ExtentZ = "0.470156"/>
+
+<Box ID = "leg1" CenterX = "-0.411653" CenterY = "0.158974" CenterZ = "-0.288669" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.0214326" ExtentY = "0.318676" ExtentZ = "0.410135"/>
+
+<Box ID = "leg2" CenterX = "0.411483" CenterY = "0.158974" CenterZ = "-0.288669" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.0214327" ExtentY = "0.318676" ExtentZ = "0.410135"/>
+
+<Box ID = "leg3" CenterX = "0.411568" CenterY = "-0.365838" CenterZ = "-0.288669" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.0214323" ExtentY = "0.215784" ExtentZ = "0.410135"/>
+
+<Box ID = "leg4" CenterX = "-0.411568" CenterY = "-0.365838" CenterZ = "-0.288669" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.0214323" ExtentY = "0.215784" ExtentZ = "0.410135"/>
+
+<Box ID = "seat" CenterX = "-7.96155e-008" CenterY = "-0.160054" CenterZ = "-0.19721" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.410136" ExtentY = "0.421568" ExtentZ = "0.0442972"/>
+
+</BoxPool>
+<LinkPool>
+<Link Box1ID = "armrest1" Box2ID = "beck" CenterX = "-0.385" CenterY = "0.303333" CenterZ = "0.105" ToX = "-0.362851" ToY = "0.303333" ToZ = "0.105"/>
+<Link Box1ID = "armrest1" Box2ID = "beck" CenterX = "-0.373333" CenterY = "0.163333" CenterZ = "0.105" ToX = "-0.351185" ToY = "0.163333" ToZ = "0.105"/>
+<Link Box1ID = "bar2" Box2ID = "leg3" CenterX = "0.403529" CenterY = "-0.42" CenterZ = "-0.455" ToX = "0.60814" ToY = "-0.42" ToZ = "-0.455"/>
+<Link Box1ID = "bar2" Box2ID = "leg4" CenterX = "-0.403529" CenterY = "-0.42" CenterZ = "-0.455" ToX = "-0.198919" ToY = "-0.42" ToZ = "-0.455"/>
+<Link Box1ID = "beck" Box2ID = "leg1" CenterX = "-0.385" CenterY = "0.315" CenterZ = "-0.07" ToX = "-0.374284" ToY = "0.315" ToZ = "-0.07"/>
+<Link Box1ID = "beck" Box2ID = "leg2" CenterX = "0.385" CenterY = "0.315" CenterZ = "-0.07" ToX = "0.395716" ToY = "0.315" ToZ = "-0.07"/>
+<Link Box1ID = "beck" Box2ID = "seat" CenterX = "2.22045e-016" CenterY = "0.1925" CenterZ = "-0.1925" ToX = "0.385" ToY = "0.1925" ToZ = "-0.1925"/>
+<Link Box1ID = "leg1" Box2ID = "leg4" CenterX = "-0.4025" CenterY = "-0.1575" CenterZ = "-0.2975" ToX = "-0.4025" ToY = "-0.1575" ToZ = "-0.7"/>
+<Link Box1ID = "leg1" Box2ID = "seat" CenterX = "-0.4025" CenterY = "0.035" CenterZ = "-0.1925" ToX = "-0.4025" ToY = "0.245" ToZ = "-0.1925"/>
+<Link Box1ID = "leg2" Box2ID = "leg3" CenterX = "0.4025" CenterY = "-0.1575" CenterZ = "-0.2975" ToX = "0.4025" ToY = "-0.1575" ToZ = "-0.7"/>
+<Link Box1ID = "leg2" Box2ID = "seat" CenterX = "0.4025" CenterY = "0.035" CenterZ = "-0.1925" ToX = "0.4025" ToY = "0.245" ToZ = "-0.1925"/>
+<Link Box1ID = "leg3" Box2ID = "seat" CenterX = "0.4025" CenterY = "-0.3675" CenterZ = "-0.1925" ToX = "0.4025" ToY = "-0.14" ToZ = "-0.1925"/>
+<Link Box1ID = "armrest1" Box2ID = "leg1" CenterX = "-0.4025" CenterY = "0.0875" CenterZ = "0.0875" ToX = "-0.4025" ToY = "0.35" ToZ = "0.0875"/>
+<Link Box1ID = "leg4" Box2ID = "seat" CenterX = "-0.4025" CenterY = "-0.3675" CenterZ = "-0.1925" ToX = "-0.4025" ToY = "-0.14" ToZ = "-0.1925"/>
+<Link Box1ID = "armrest1" Box2ID = "leg4" CenterX = "-0.4025" CenterY = "-0.316733" CenterZ = "0.0526733" ToX = "-0.4025" ToY = "-0.491733" ToZ = "0.0526733"/>
+<Link Box1ID = "armrest2" Box2ID = "beck" CenterX = "0.385" CenterY = "0.303333" CenterZ = "0.105" ToX = "0.407149" ToY = "0.303333" ToZ = "0.105"/>
+<Link Box1ID = "armrest2" Box2ID = "beck" CenterX = "0.373333" CenterY = "0.163333" CenterZ = "0.105" ToX = "0.395482" ToY = "0.163333" ToZ = "0.105"/>
+<Link Box1ID = "armrest2" Box2ID = "leg2" CenterX = "0.4025" CenterY = "0.0875" CenterZ = "0.0875" ToX = "0.4025" ToY = "0.35" ToZ = "0.0875"/>
+<Link Box1ID = "armrest2" Box2ID = "leg3" CenterX = "0.4025" CenterY = "-0.316733" CenterZ = "0.0526733" ToX = "0.4025" ToY = "-0.491733" ToZ = "0.0526733"/>
+<Link Box1ID = "bar1" Box2ID = "leg1" CenterX = "-0.403529" CenterY = "0.245" CenterZ = "-0.455" ToX = "-0.198919" ToY = "0.245" ToZ = "-0.455"/>
+<Link Box1ID = "bar1" Box2ID = "leg2" CenterX = "0.403529" CenterY = "0.245" CenterZ = "-0.455" ToX = "0.60814" ToY = "0.245" ToZ = "-0.455"/>
+</LinkPool>
+</Graph>

@@ -1,0 +1,29 @@
+<!--LCC Version = "1.0"-->
+<Graph>
+<Amount BoxAmount = "6" LinkAmount = "9"/>
+<BoxPool>
+<Box ID = "object" CenterX = "-0.00336212" CenterY = "0.281286" CenterZ = "0.343505" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.380536" ExtentY = "0.0971577" ExtentZ = "0.475236"/>
+
+<Box ID = "object__4" CenterX = "-0.288177" CenterY = "-0.319535" CenterZ = "-0.456305" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.0388481" ExtentY = "0.0370528" ExtentZ = "0.348639"/>
+
+<Box ID = "object__5" CenterX = "-0.241177" CenterY = "0.292728" CenterZ = "-0.452785" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.044593" ExtentY = "0.141016" ExtentZ = "0.345081"/>
+
+<Box ID = "object__6" CenterX = "0.278681" CenterY = "-0.328763" CenterZ = "-0.470101" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.0388473" ExtentY = "0.0370532" ExtentZ = "0.348639"/>
+
+<Box ID = "object__7" CenterX = "0.235092" CenterY = "0.292727" CenterZ = "-0.452785" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.0445871" ExtentY = "0.141017" ExtentZ = "0.345081"/>
+
+<Box ID = "seat" CenterX = "0" CenterY = "-0.0347722" CenterZ = "-0.103195" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.417896" ExtentY = "0.394842" ExtentZ = "0.0410413"/>
+
+</BoxPool>
+<LinkPool>
+<Link Box1ID = "object" Box2ID = "object__5" CenterX = "-0.245" CenterY = "0.361667" CenterZ = "-0.128333" ToX = "-0.222704" ToY = "0.361667" ToZ = "-0.128333"/>
+<Link Box1ID = "object" Box2ID = "object__5" CenterX = "-0.245" CenterY = "0.213182" CenterZ = "-0.130455" ToX = "-0.222704" ToY = "0.213182" ToZ = "-0.130455"/>
+<Link Box1ID = "object" Box2ID = "object__7" CenterX = "0.2275" CenterY = "0.28" CenterZ = "-0.127273" ToX = "0.249794" ToY = "0.28" ToZ = "-0.127273"/>
+<Link Box1ID = "object" Box2ID = "seat" CenterX = "-2.77556e-016" CenterY = "0.2625" CenterZ = "-0.105" ToX = "0.385" ToY = "0.2625" ToZ = "-0.105"/>
+<Link Box1ID = "object__4" Box2ID = "seat" CenterX = "-0.28" CenterY = "-0.315" CenterZ = "-0.14" ToX = "-0.260576" ToY = "-0.315" ToZ = "-0.14"/>
+<Link Box1ID = "object__5" Box2ID = "seat" CenterX = "-0.245" CenterY = "0.17" CenterZ = "-0.14" ToX = "-0.222704" ToY = "0.17" ToZ = "-0.14"/>
+<Link Box1ID = "object__5" Box2ID = "seat" CenterX = "-0.245" CenterY = "0.311818" CenterZ = "-0.130455" ToX = "-0.222704" ToY = "0.311818" ToZ = "-0.130455"/>
+<Link Box1ID = "object__6" Box2ID = "seat" CenterX = "0.28" CenterY = "-0.315" CenterZ = "-0.14" ToX = "0.299424" ToY = "-0.315" ToZ = "-0.14"/>
+<Link Box1ID = "object__7" Box2ID = "seat" CenterX = "0.2275" CenterY = "0.2555" CenterZ = "-0.133" ToX = "0.249794" ToY = "0.2555" ToZ = "-0.133"/>
+</LinkPool>
+</Graph>
