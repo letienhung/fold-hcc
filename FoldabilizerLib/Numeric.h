@@ -9,6 +9,8 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+#include <random>
+
 inline Vector3 minimize(const Vector3 a, const Vector3 b){
 	Vector3 c = a;
 	for (int i = 0; i < 3; i++)	
@@ -34,20 +36,27 @@ inline QVector<Vector3> XYZ()
 	return a;
 }
 
-inline double randUniform(double a = 0.0, double b = 1.0)
+
+inline double uniformRealDistribution(double a = 0.0, double b = 1.0)
 {
 	double r = qrand() / (double) RAND_MAX;
 	return (1 - r) * a + r * b;
 }
 
-inline int randDiscrete(const QVector<double>& posibility)
+inline int uniformDiscreteDistribution(int a, int b)
+{
+	double r = uniformRealDistribution();
+	return a + int(r * (b - a));
+}
+
+inline int discreteDistribution(const QVector<double>& posibility)
 {
 	QVector<double> accPosibility;
 	accPosibility.push_back(0);
 	foreach (double p, posibility)	
 		accPosibility.push_back(accPosibility.last() + p);
 
-	double r = randUniform();
+	double r = uniformRealDistribution();
 	for (int i = 0; i < accPosibility.size()-1; i++)
 	{
 		if (r >= accPosibility[i] && r <= accPosibility[i+1])
@@ -57,10 +66,22 @@ inline int randDiscrete(const QVector<double>& posibility)
 	return 0;
 }
 
-inline int randDiscreteUniform(int N)
+inline double normalDistritution(double mean, double stddev)
 {
-	double r = randUniform();
-	return int(r * N);
+	std::default_random_engine generator;
+	std::normal_distribution<double> distribution(mean, stddev);
+
+	return distribution(generator);
+}
+
+inline double periodicalRanged(double a, double b, double v)
+{
+	double p = b -a;
+	double n = (v - a) / p;
+	if(n < 0)
+		return v - p * int(n) + p;
+	else
+		return v - p * int(n);
 }
 
 inline double radians2degrees(double r)

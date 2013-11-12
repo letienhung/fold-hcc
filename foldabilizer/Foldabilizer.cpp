@@ -2,8 +2,7 @@
 #include "foldem_widget.h"
 #include "StarlabDrawArea.h"
 #include <QFileDialog>
-
-#include <QProcess>
+#include <QDebug>
 
 QString DEFAULT_FILE_PATH = "..\\..\\data";
 
@@ -119,6 +118,12 @@ void Foldabilizer::jump()
 {
 	mhOptimizer->jump();
 	drawArea()->updateGL();
+}
+
+void Foldabilizer::test()
+{
+	double a = -1.2;
+	qDebug() << a << "=>" << (int)a;
 }
 
 Q_EXPORT_PLUGIN(Foldabilizer)

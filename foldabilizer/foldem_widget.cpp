@@ -19,6 +19,7 @@ foldem_widget::foldem_widget(Foldabilizer *f, QWidget *parent) :
 	fold->connect(ui->createO, SIGNAL(clicked()), SLOT(createO()));
 	fold->connect(ui->load_hcc, SIGNAL(clicked()), SLOT(loadGraph()));
 	fold->connect(ui->jumpButton, SIGNAL(clicked()), SLOT(jump()));
+	fold->connect(ui->test, SIGNAL(clicked()), SLOT(test()));
 }
 
 

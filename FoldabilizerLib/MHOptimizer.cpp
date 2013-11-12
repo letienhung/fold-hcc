@@ -50,40 +50,55 @@ void MHOptimizer::jump()
 
 double MHOptimizer::cost()
 {
+	// gain on foldability
 	double aabbVolume = hccGraph->getAabbVolume();
 	double gain = 1 - aabbVolume / originalAabbVolume;
 
+	// distortion on material lost
 	double materialVolume = hccGraph->getMaterialVolume();
 	double distortion = 1 - materialVolume / originalMaterialVolume;
 
-	return distortion - gain;
+	// cost should be non-negative
+	double alpha = 0.8;
+	double c = alpha * distortion - (1 - alpha) * gain;
+	double nc = c + 0.2;
+	return nc;
 }
 
 void MHOptimizer::proposeJump()
 {
-	int jump_type = randDiscrete(typeProbability);
+	int jump_type = discreteDistribution(typeProbability);
 	switch (jump_type)
 	{
-	case 0: // hinge angle
+	case 0: 
 		{
-			int linkID = randDiscreteUniform(hccGraph->nbLinks());
+			// hinge id
+			int linkID = uniformDiscreteDistribution(0, hccGraph->nbLinks());
 			Link* plink = hccGraph->links[linkID];
 			if (plink->isNailed || plink->isBroken) return;
+
+			// angle
+			double stddev = plink->angle_suf / 6; // 3-\delta coverage of 99.7%
 			double old_angle = plink->angle;
-			double new_angle = randUniform(0, plink->angle_suf);
+			double new_angle = periodicalRanged(0, plink->angle_suf, normalDistritution(old_angle, stddev));
 			plink->angle = new_angle;
 
 			qDebug() << "[Proposal move] Angle of " << plink->id.toStdString().c_str() << ": " << radians2degrees(old_angle) << " => " << radians2degrees(new_angle);
 		}
 		break;
-	case 1: // cuboid scale
+	case 1: 
 		{
-			int nodeID = randDiscreteUniform(hccGraph->nbNodes());
+			// cuboid id
+			int nodeID = uniformDiscreteDistribution(0, hccGraph->nbNodes());
 			Node* pnode = hccGraph->nodes[nodeID];
 
-			int axisID = randDiscreteUniform(3);
+			// axis id
+			int axisID = uniformDiscreteDistribution(0, 3);
+
+			// scale factor
+			double stddev = 1 / 12.0;
 			double old_factor = pnode->scaleFactor[axisID];
-			double new_factor = randUniform(0.5, 1);
+			double new_factor = periodicalRanged(0.5, 1.0, normalDistritution(old_factor, stddev));
 			pnode->scaleFactor[axisID] = new_factor;
 
 			qDebug() << "[Proposal move] Scale factor[" << axisID << "] of " << pnode->mID.toStdString().c_str() << ": " << old_factor << " => " << new_factor;
@@ -99,10 +114,21 @@ void MHOptimizer::proposeJump()
 
 bool MHOptimizer::acceptJump()
 {
-	isCollisionFree();
+	if (!isCollisionFree())
+		return false;
+
+	double c = cost();
+	if (c < currCost)
+		return true;
+	else
+	{
+		double a = currCost/c;
+		double r = uniformRealDistribution();
+		return r < a;
+	}
 
 	//return (cost() < currCost);
-	return true;
+	//return true;
 }
 
 bool MHOptimizer::isCollisionFree()

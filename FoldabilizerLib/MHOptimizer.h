@@ -1,6 +1,7 @@
 #pragma once
 #include "FoldabilizerLibGlobal.h"
 #include "Graph.h"
+#include <random>
 
 class MHOptimizer
 {
@@ -9,11 +10,12 @@ public:
     MHOptimizer(Graph *graph);
 
 	bool				isReady;
-	double				originalAabbVolume;			// original function volume
+	double				originalAabbVolume;			// Original function volume
 	double				originalMaterialVolume;
-	QVector<double>		typeProbability;			//Proposal distributions
 	GraphState			currState;
 	double				currCost;
+	QVector<double>		typeProbability;			// Probability of proposed jump types
+
 	void initialize();
 
 	void	jump();
