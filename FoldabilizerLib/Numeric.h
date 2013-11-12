@@ -66,14 +66,6 @@ inline int discreteDistribution(const QVector<double>& posibility)
 	return 0;
 }
 
-inline double normalDistritution(double mean, double stddev)
-{
-	std::default_random_engine generator;
-	std::normal_distribution<double> distribution(mean, stddev);
-
-	return distribution(generator);
-}
-
 inline double periodicalRanged(double a, double b, double v)
 {
 	double p = b -a;
@@ -88,3 +80,33 @@ inline double radians2degrees(double r)
 {
 	return 180 * r / M_PI;
 }
+
+
+// Marsaglia polar method
+// Wikipedia: http://en.wikipedia.org/wiki/Marsaglia_polar_method
+class NormalDistribution
+{
+public:
+	NormalDistribution(){isSpareReady = false;}
+	~NormalDistribution(){}
+	double generate(double mean, double stdDev ){
+		if (isSpareReady) {
+			isSpareReady = false;
+			return spare * stdDev + mean;
+		} else {
+			double u, v, s;
+			do {
+				u = uniformRealDistribution() * 2 - 1;
+				v = uniformRealDistribution() * 2 - 1;
+				s = u * u + v * v;
+			} while (s >= 1 || s == 0);
+			double mul = sqrt(-2.0 * log(s) / s);
+			spare = v * mul;
+			isSpareReady = true;
+			return mean + stdDev * u * mul;
+		}
+	}
+private:
+	double	spare;
+	bool	isSpareReady;
+};

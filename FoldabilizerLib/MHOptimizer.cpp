@@ -1,6 +1,4 @@
 #include "MHOptimizer.h"
-
-#include "Numeric.h"
 #include "IntersectBoxBox.h"
 
 MHOptimizer::MHOptimizer(Graph* graph)
@@ -17,7 +15,7 @@ void MHOptimizer::initialize()
 	originalAabbVolume = hccGraph->getAabbVolume();
 	originalMaterialVolume = hccGraph->getMaterialVolume();
 
-	typeProbability << 0.8 << 0.2;
+	typeProbability << 1.0 << 0.0;
 
 	currState = hccGraph->getState();
 	currCost = cost();
@@ -59,9 +57,9 @@ double MHOptimizer::cost()
 	double distortion = 1 - materialVolume / originalMaterialVolume;
 
 	// cost should be non-negative
-	double alpha = 0.8;
+	double alpha = 0.2;
 	double c = alpha * distortion - (1 - alpha) * gain;
-	double nc = c + 0.2;
+	double nc = c + 0.8;
 	return nc;
 }
 
@@ -80,7 +78,7 @@ void MHOptimizer::proposeJump()
 			// angle
 			double stddev = plink->angle_suf / 6; // 3-\delta coverage of 99.7%
 			double old_angle = plink->angle;
-			double new_angle = periodicalRanged(0, plink->angle_suf, normalDistritution(old_angle, stddev));
+			double new_angle = periodicalRanged(0, plink->angle_suf, normalDistribution.generate(old_angle, stddev));
 			plink->angle = new_angle;
 
 			qDebug() << "[Proposal move] Angle of " << plink->id.toStdString().c_str() << ": " << radians2degrees(old_angle) << " => " << radians2degrees(new_angle);
@@ -98,7 +96,7 @@ void MHOptimizer::proposeJump()
 			// scale factor
 			double stddev = 1 / 12.0;
 			double old_factor = pnode->scaleFactor[axisID];
-			double new_factor = periodicalRanged(0.5, 1.0, normalDistritution(old_factor, stddev));
+			double new_factor = periodicalRanged(0.5, 1.0, normalDistribution.generate(old_factor, stddev));
 			pnode->scaleFactor[axisID] = new_factor;
 
 			qDebug() << "[Proposal move] Scale factor[" << axisID << "] of " << pnode->mID.toStdString().c_str() << ": " << old_factor << " => " << new_factor;
@@ -122,7 +120,7 @@ bool MHOptimizer::acceptJump()
 		return true;
 	else
 	{
-		double a = currCost/c;
+		double a = pow(currCost/c, 6);
 		double r = uniformRealDistribution();
 		return r < a;
 	}
