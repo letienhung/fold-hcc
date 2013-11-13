@@ -11,6 +11,11 @@
 
 #include <random>
 
+// utility macros
+#define Max(a,b) (((a) > (b)) ? (a) : (b))
+#define Min(a,b) (((a) < (b)) ? (a) : (b))
+#define RANGED(min, v, max) ( Max(min, Min(v, max)) ) 
+
 inline Vector3 minimize(const Vector3 a, const Vector3 b){
 	Vector3 c = a;
 	for (int i = 0; i < 3; i++)	
@@ -40,13 +45,15 @@ inline QVector<Vector3> XYZ()
 inline double uniformRealDistribution(double a = 0.0, double b = 1.0)
 {
 	double r = qrand() / (double) RAND_MAX;
-	return (1 - r) * a + r * b;
+	r =  (1 - r) * a + r * b;
+	return RANGED(a, r, b);
 }
 
 inline int uniformDiscreteDistribution(int a, int b)
 {
 	double r = uniformRealDistribution();
-	return a + int(r * (b - a));
+	int n = a + int(r * (b - a));
+	return RANGED(a, n, b-1);
 }
 
 inline int discreteDistribution(const QVector<double>& posibility)
