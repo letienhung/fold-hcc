@@ -16,7 +16,17 @@ public:
 	double				currCost;
 	QVector<double>		typeProbability;			// Probability of proposed jump types
 	NormalDistribution	normalDistribution;
+
+	double	targetVolumePercentage;
+	double	costWeight;
+	int		temperature;
+	int		stepsPerJump;
+	int		jumpCount;
+
 	void initialize();
+	void setLinkProbability(double lp);
+
+
 
 	void	jump();
 	double	cost();

@@ -5,21 +5,27 @@ MHOptimizer::MHOptimizer(Graph* graph)
 {
 	this->hccGraph = graph;
 
+	this->targetVolumePercentage = 0.5;
+	this->costWeight = 0.5;
+	this->temperature = 100;
+	this->stepsPerJump = 10;
+	this->setLinkProbability(0.8);
+
 	isReady = false;
 }
 
 void MHOptimizer::initialize()
 {
+	// set seed to random generator
 	qsrand(QTime::currentTime().msec());
 
 	originalAabbVolume = hccGraph->getAabbVolume();
 	originalMaterialVolume = hccGraph->getMaterialVolume();
 
-	typeProbability << 1.0 << 0.0;
-
 	currState = hccGraph->getState();
 	currCost = cost();
 
+	this->jumpCount = 0;
 	isReady = true;
 
 	qDebug() << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
@@ -27,40 +33,42 @@ void MHOptimizer::initialize()
 
 void MHOptimizer::jump()
 { 
-	if (hccGraph->isEmpty()) return;
 	if (!isReady) initialize();
-	
-	proposeJump();
-	if (acceptJump())
-	{
-		currState = hccGraph->getState();
-		currCost = cost();
+	if (hccGraph->isEmpty()) return;
 
-		qDebug() << "\t\tACCEPTED. currCost = " << currCost;
-	}
-	else
+	for( int i = 0; i < stepsPerJump; i++)
 	{
-		hccGraph->setState(currState);
-		hccGraph->restoreConfiguration();
-		qDebug() << "\t\tREJECTED. currCost = " << currCost;
+		proposeJump();
+		if (acceptJump())
+		{
+			currState = hccGraph->getState();
+			currCost = cost();
+
+			qDebug() << "\t\tACCEPTED. currCost = " << currCost;
+		}
+		else
+		{
+			hccGraph->setState(currState);
+			hccGraph->restoreConfiguration();
+			qDebug() << "\t\tREJECTED. currCost = " << currCost;
+		}
+
+		jumpCount++;
 	}
 }
 
 double MHOptimizer::cost()
 {
-	// gain on foldability
+	// cost foldability
 	double aabbVolume = hccGraph->getAabbVolume();
-	double gain = 1 - aabbVolume / originalAabbVolume;
+	double cost1 = aabbVolume / originalAabbVolume - targetVolumePercentage;
+	if (cost1 < 0) cost1 = 0;
 
 	// distortion on material lost
 	double materialVolume = hccGraph->getMaterialVolume();
 	double distortion = 1 - materialVolume / originalMaterialVolume;
 
-	// cost should be non-negative
-	double alpha = 0.2;
-	double c = alpha * distortion - (1 - alpha) * gain;
-	double nc = c + 0.8;
-	return nc;
+	return cost1 + pow(distortion, costWeight);
 }
 
 void MHOptimizer::proposeJump()
@@ -81,7 +89,8 @@ void MHOptimizer::proposeJump()
 			double new_angle = periodicalRanged(0, plink->angle_suf, normalDistribution.generate(old_angle, stddev));
 			plink->angle = new_angle;
 
-			qDebug() << "[Proposal move] Angle of " << plink->id.toStdString().c_str() << ": " << radians2degrees(old_angle) << " => " << radians2degrees(new_angle);
+			qDebug() << "[Jump" << jumpCount << "] Angle of " << plink->id.toStdString().c_str() << ": " 
+				<< radians2degrees(old_angle) << " => " << radians2degrees(new_angle);
 		}
 		break;
 	case 1: 
@@ -99,7 +108,8 @@ void MHOptimizer::proposeJump()
 			double new_factor = periodicalRanged(0.5, 1.0, normalDistribution.generate(old_factor, stddev));
 			pnode->scaleFactor[axisID] = new_factor;
 
-			qDebug() << "[Proposal move] Scale factor[" << axisID << "] of " << pnode->mID.toStdString().c_str() << ": " << old_factor << " => " << new_factor;
+			qDebug() << "[Jump" << jumpCount << "] Scale factor[" << axisID << "] of " << pnode->mID.toStdString().c_str() << ": " 
+				<< old_factor << " => " << new_factor;
 		}
 		break;
 	default:
@@ -115,12 +125,12 @@ bool MHOptimizer::acceptJump()
 	if (!isCollisionFree())
 		return false;
 
-	double c = cost();
-	if (c < currCost)
+	double propCost = cost();
+	if (propCost < currCost)
 		return true;
 	else
 	{
-		double a = pow(currCost/c, 6);
+		double a = pow(currCost/propCost, temperature);
 		double r = uniformRealDistribution();
 		return r < a;
 	}
@@ -153,6 +163,12 @@ bool MHOptimizer::isCollisionFree()
 	}
 
 	return isFree;
+}
+
+void MHOptimizer::setLinkProbability( double lp )
+{
+	typeProbability.resize(0);
+	typeProbability << lp << 1 - lp;
 }
 
 

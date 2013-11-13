@@ -20,6 +20,14 @@ foldem_widget::foldem_widget(Foldabilizer *f, QWidget *parent) :
 	fold->connect(ui->load_hcc, SIGNAL(clicked()), SLOT(loadGraph()));
 	fold->connect(ui->jumpButton, SIGNAL(clicked()), SLOT(jump()));
 	fold->connect(ui->test, SIGNAL(clicked()), SLOT(test()));
+
+	fold->connect(ui->legLength, SIGNAL(valueChanged(double)), SLOT(createChair(double)));
+
+	fold->connect(ui->targetVolumePercentage, SIGNAL(valueChanged(int)), SLOT(setTargetVolumePercentage(int)));
+	fold->connect(ui->linkProbability, SIGNAL(valueChanged(double)), SLOT(setLinkProbability(double)));
+	fold->connect(ui->costWeight, SIGNAL(valueChanged(double)), SLOT(setCostWeight(double)));
+	fold->connect(ui->temprature, SIGNAL(valueChanged(int)), SLOT(setTemprature(int)));
+	fold->connect(ui->stepsPerJump, SIGNAL(valueChanged(int)), SLOT(setStepsPerJump(int)));
 }
 
 

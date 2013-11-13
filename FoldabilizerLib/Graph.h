@@ -54,6 +54,7 @@ public:
 
 	// Visualize
 	void draw();
+	void updateLinkScale();
 
 	// Prepare data
 	void makeI();
@@ -62,7 +63,7 @@ public:
 	void makeX();
 	void makeU();
 	void makeO();
-	void makeChair();
+	void makeChair(double legL);
 
 	// Restore configuration
 	void resetTags();

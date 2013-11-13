@@ -103,8 +103,7 @@ QVector<Link*> Graph::getLinks( QString nodeID )
 
 bool Graph::loadHCC(QString fname)
 {
-	this->clear();
-
+	// validate file
 	QFile file(fname);
 	file.open(QIODevice::ReadOnly);
 
@@ -117,14 +116,18 @@ bool Graph::loadHCC(QString fname)
 	if(root.tagName() != "Graph")
 		return false;
 
+	// clear current graph
+	this->clear();
+
+	// parse the file
 	QDomNode node;
 	QDomNode node_2;
 
 	node = root.firstChild();
-	//number of boxes
 	int nBox = node.toElement().attribute("BoxAmount").toInt();
 	int nLink = node.toElement().attribute("LinkAmount").toInt();
 
+	// domNode of boxes
 	node = node.nextSibling();
 	{
 		node_2 = node.toElement().firstChild();
@@ -161,14 +164,13 @@ bool Graph::loadHCC(QString fname)
 		}
 	}
 
+	// domNode of links
 	node = node.nextSibling();
 	{
 		node_2 = node.toElement().firstChild();
 
 		while(!node_2.isNull())
 		{
-			//int id = node_2.toElement().attribute("ID").toInt();
-
 			QString box1ID = node_2.toElement().attribute("Box1ID");
 			QString box2ID = node_2.toElement().attribute("Box2ID");
 
@@ -186,7 +188,9 @@ bool Graph::loadHCC(QString fname)
 		}
 	}
 
+	// update AABB
 	this->computeAabb();
+	this->updateLinkScale();
 	return true;
 }
 
@@ -275,6 +279,9 @@ void Graph::makeI()
 	this->addNode(tNode);
 	this->addNode(bNode);
 	this->addLink(new Link(tNode, bNode, Vector3(1,4,0), Vector3(0,0,1)));
+
+	this->computeAabb();
+	this->updateLinkScale();
 }
 
 void Graph::makeL()
@@ -292,6 +299,9 @@ void Graph::makeL()
 	this->addNode(hNode);
 
 	this->addLink(new Link(vNode, hNode, Vector3(0,0,0), Vector3(0,0,1)));
+
+	this->computeAabb();
+	this->updateLinkScale();
 }
 
 void Graph::makeT()
@@ -313,6 +323,9 @@ void Graph::makeT()
 	this->addNode(vNode);
 	this->addNode(hNode);
 	this->addLink(new Link(vNode, hNode, Vector3(0.5,0,0), Vector3(0,0,1)));
+
+	this->computeAabb();
+	this->updateLinkScale();
 }
 
 void Graph::makeX()
@@ -330,6 +343,9 @@ void Graph::makeX()
 	this->addNode(hNode);
 
 	this->addLink(new Link(vNode, hNode, Vector3(0,0,0), Vector3(0,0,1)));
+
+	this->computeAabb();
+	this->updateLinkScale();
 }
 
 void Graph::makeU()
@@ -360,6 +376,9 @@ void Graph::makeU()
 	Link* nailedLink = new Link(hNode, rNode, Vector3(7,0,0), Vector3(0,0,1));
 	nailedLink->isNailed = true;
 	this->addLink(nailedLink);
+
+	this->computeAabb();
+	this->updateLinkScale();
 }
 
 
@@ -389,10 +408,12 @@ void Graph::makeO()
 	this->addLink(new Link(bNode, rNode, Vector3(7,0,0), Vector3(0,0,1)));
 	this->addLink(new Link(tNode, lNode, Vector3(1,4,0), Vector3(0,0,1)));
 	this->addLink(new Link(tNode, rNode, Vector3(7,4,0), Vector3(0,0,1)));
+
+	this->computeAabb();
+	this->updateLinkScale();
 }
 
-
-void Graph::makeChair()
+void Graph::makeChair(double legL)
 {
 	this->clear();
 	QVector<Vector3> xyz = XYZ();
@@ -403,16 +424,16 @@ void Graph::makeChair()
 	Box seatBox(Point(2, -0.5, 0), xyz, Vector3(2, 0.5, 2));
 	Node* seatNode = new Node(seatBox, "seat_base");
 
-	Box legBox0(Point(0.25, -3, 1.75), xyz, Vector3(0.25, 2, 0.25));
+	Box legBox0(Point(0.25, -legL-1, 1.75), xyz, Vector3(0.25, legL, 0.25));
 	Node* legNode0 = new Node(legBox0, "leg0");
 
-	Box legBox1(Point(0.25, -3, -1.75), xyz, Vector3(0.25, 2, 0.25));
+	Box legBox1(Point(0.25, -legL-1, -1.75), xyz, Vector3(0.25, legL, 0.25));
 	Node* legNode1 = new Node(legBox1, "leg1");
 
-	Box legBox2(Point(3.75, -3, 1.75), xyz, Vector3(0.25, 2, 0.25));
+	Box legBox2(Point(3.75, -legL-1, 1.75), xyz, Vector3(0.25, legL, 0.25));
 	Node* legNode2 = new Node(legBox2, "leg2");
 
-	Box legBox3(Point(3.75, -3, -1.75), xyz, Vector3(0.25, 2, 0.25));
+	Box legBox3(Point(3.75, -legL-1, -1.75), xyz, Vector3(0.25, legL, 0.25));
 	Node* legNode3 = new Node(legBox3, "leg3");
 
 	this->addNode(backNode);
@@ -427,6 +448,9 @@ void Graph::makeChair()
 	this->addLink(new Link(seatNode, legNode1, Vector3(0.25,-1,-1.5), Vector3(1,0,0)));
 	this->addLink(new Link(seatNode, legNode2, Vector3(3.75,-1,1.5), Vector3(1,0,0)));
 	this->addLink(new Link(seatNode, legNode3, Vector3(3.5,-1,-1.75), Vector3(0,0,1)));
+
+	this->computeAabb();
+	this->updateLinkScale();
 }
 
 void Graph::computeAabb()
@@ -452,9 +476,6 @@ void Graph::computeAabb()
 		center = (bbmin + bbmax) * 0.5f;
 		radius = (bbmax - bbmin).norm() * 0.5f;
 	}
-
-	// set scale to each link
-	foreach(Link* l, links) l->setScale(radius);
 }
 
 double Graph::getAabbVolume()
@@ -557,4 +578,10 @@ void Graph::setState( GraphState &state )
 		links[i]->isBroken = state.link_is_broken[i];
 		links[i]->isNailed = state.link_is_nailed[i];
 	}
+}
+
+void Graph::updateLinkScale()
+{
+	// set scale to each link
+	foreach(Link* l, links) l->setScale(radius);
 }

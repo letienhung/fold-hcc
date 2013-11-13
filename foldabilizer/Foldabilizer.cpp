@@ -49,7 +49,6 @@ void Foldabilizer::resetScene()
 void Foldabilizer::createL()
 {
 	hccGraph->makeL();
-	hccGraph->computeAabb();
 	mhOptimizer->isReady = false;
 	resetScene();
 }
@@ -57,15 +56,13 @@ void Foldabilizer::createL()
 void Foldabilizer::createI()
 {
 	hccGraph->makeI();
-	hccGraph->computeAabb();
 	mhOptimizer->isReady = false;
 	resetScene();
 }
 
-void Foldabilizer::createChair()
+void Foldabilizer::createChair(double legL)
 {
-	hccGraph->makeChair();
-	hccGraph->computeAabb();
+	hccGraph->makeChair(legL);
 	mhOptimizer->isReady = false;
 	resetScene();
 }
@@ -73,7 +70,6 @@ void Foldabilizer::createChair()
 void Foldabilizer::createT()
 {
 	hccGraph->makeT();
-	hccGraph->computeAabb();
 	mhOptimizer->isReady = false;
 	resetScene();
 }
@@ -81,7 +77,6 @@ void Foldabilizer::createT()
 void Foldabilizer::createX()
 {
 	hccGraph->makeX();
-	hccGraph->computeAabb();
 	mhOptimizer->isReady = false;
 	resetScene();
 }
@@ -89,7 +84,6 @@ void Foldabilizer::createX()
 void Foldabilizer::createU()
 {
 	hccGraph->makeU();
-	hccGraph->computeAabb();
 	mhOptimizer->isReady = false;
 	resetScene();
 }
@@ -98,7 +92,6 @@ void Foldabilizer::createU()
 void Foldabilizer::createO()
 {
 	hccGraph->makeO();
-	hccGraph->computeAabb();
 	mhOptimizer->isReady = false;
 	resetScene();
 }
@@ -106,10 +99,11 @@ void Foldabilizer::createO()
 
 void Foldabilizer::loadGraph()
 {
-	QString fileName = QFileDialog::getOpenFileName(0, "Import Mesh", "..\\..\\data", "Mesh Files (*.lcc)"); 
+	QString fileName = QFileDialog::getOpenFileName(this->widget, "Import Mesh", DEFAULT_FILE_PATH, "Mesh Files (*.lcc)"); 
+	if (fileName.isNull()) return;
 
-	hccGraph->loadHCC(fileName);
-	resetScene();
+	if (hccGraph->loadHCC(fileName))
+		resetScene();
 
 	DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
 }
@@ -124,6 +118,31 @@ void Foldabilizer::test()
 {
 	double a = -1.2;
 	qDebug() << a << "=>" << (int)a;
+}
+
+void Foldabilizer::setLinkProbability( double lp )
+{
+	mhOptimizer->setLinkProbability(lp);
+}
+
+void Foldabilizer::setCostWeight( double weight )
+{
+	mhOptimizer->costWeight = weight;
+}
+
+void Foldabilizer::setTemprature( int T )
+{
+	mhOptimizer->temperature = T;
+}
+
+void Foldabilizer::setStepsPerJump( int steps )
+{
+	mhOptimizer->stepsPerJump = steps;
+}
+
+void Foldabilizer::setTargetVolumePercentage(int v)
+{
+	mhOptimizer->targetVolumePercentage = v / (double)100;
 }
 
 Q_EXPORT_PLUGIN(Foldabilizer)

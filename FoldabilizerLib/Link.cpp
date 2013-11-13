@@ -58,7 +58,7 @@ void Link::draw()
 
 	if (isFixed)
 	{
-		PointSoup ps(10.0);
+		PointSoup ps(16.0);
 		ps.addPoint(center, Qt::red);
 		ps.draw();
 	}
