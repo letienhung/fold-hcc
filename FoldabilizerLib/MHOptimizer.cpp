@@ -8,7 +8,6 @@ MHOptimizer::MHOptimizer(Graph* graph)
 	this->targetVolumePercentage = 0.5;
 	this->costWeight = 0.5;
 	this->temperature = 100;
-	this->stepsPerJump = 10;
 	this->setLinkProbability(0.8);
 
 	isReady = false;
@@ -36,25 +35,24 @@ void MHOptimizer::jump()
 	if (!isReady) initialize();
 	if (hccGraph->isEmpty()) return;
 
-	for( int i = 0; i < stepsPerJump; i++)
+
+	proposeJump();
+	if (acceptJump())
 	{
-		proposeJump();
-		if (acceptJump())
-		{
-			currState = hccGraph->getState();
-			currCost = cost();
+		currState = hccGraph->getState();
+		currCost = cost();
 
-			qDebug() << "\t\tACCEPTED. currCost = " << currCost;
-		}
-		else
-		{
-			hccGraph->setState(currState);
-			hccGraph->restoreConfiguration();
-			qDebug() << "\t\tREJECTED. currCost = " << currCost;
-		}
-
-		jumpCount++;
+		qDebug() << "\t\tACCEPTED. currCost = " << currCost;
 	}
+	else
+	{
+		hccGraph->setState(currState);
+		hccGraph->restoreConfiguration();
+		qDebug() << "\t\tREJECTED. currCost = " << currCost;
+	}
+
+	jumpCount++;
+	
 }
 
 double MHOptimizer::cost()

@@ -28,6 +28,8 @@ public:
 	MHOptimizer		*mhOptimizer;
 	foldem_widget	*widget;
 
+	int	stepsPerJump;
+
 public slots:
 	void createI();
 	void createL();

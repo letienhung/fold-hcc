@@ -11,6 +11,7 @@ Foldabilizer::Foldabilizer()
 	widget = NULL;
 	hccGraph = new Graph();
 	mhOptimizer = new MHOptimizer(hccGraph);
+	stepsPerJump = 10;
 }
 
 void Foldabilizer::create()
@@ -110,8 +111,11 @@ void Foldabilizer::loadGraph()
 
 void Foldabilizer::jump()
 {
-	mhOptimizer->jump();
-	drawArea()->updateGL();
+	for( int i = 0; i < stepsPerJump; i++)
+	{
+		mhOptimizer->jump();
+		drawArea()->updateGL();
+	}
 }
 
 void Foldabilizer::test()
@@ -137,7 +141,7 @@ void Foldabilizer::setTemprature( int T )
 
 void Foldabilizer::setStepsPerJump( int steps )
 {
-	mhOptimizer->stepsPerJump = steps;
+	this->stepsPerJump = steps;
 }
 
 void Foldabilizer::setTargetVolumePercentage(int v)

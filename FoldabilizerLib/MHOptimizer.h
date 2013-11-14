@@ -20,7 +20,6 @@ public:
 	double	targetVolumePercentage;
 	double	costWeight;
 	int		temperature;
-	int		stepsPerJump;
 	int		jumpCount;
 
 	void initialize();
