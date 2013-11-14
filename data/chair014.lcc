@@ -1,0 +1,35 @@
+<!--LCC Version = "1.0"-->
+<Graph>
+<Amount BoxAmount = "8" LinkAmount = "11"/>
+<BoxPool>
+<Box ID = "bar1" CenterX = "-0.373536" CenterY = "-0.0151258" CenterZ = "-0.389331" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.022413" ExtentY = "0.318391" ExtentZ = "0.0849976"/>
+
+<Box ID = "bar2" CenterX = "0.373464" CenterY = "-0.0193268" CenterZ = "-0.389624" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.022414" ExtentY = "0.318381" ExtentZ = "0.0849985"/>
+
+<Box ID = "beck" CenterX = "-0.000237362" CenterY = "0.295124" CenterZ = "0.382757" Axis0X = "-0.999885" Axis0Y = "0.00998433" Axis0Z = "0.0114165" Axis1X = "0.0138362" Axis1Y = "0.292207" Axis1Z = "0.956255" Axis2X = "0.00621158" Axis2Y = "0.956303" Axis2Z = "-0.292311" ExtentX = "0.404619" ExtentY = "0.439846" ExtentZ = "0.113672"/>
+
+<Box ID = "leg1" CenterX = "-0.373257" CenterY = "0.296099" CenterZ = "-0.406978" Axis0X = "-0.00036078" Axis0Y = "-0.984798" Axis0Z = "-0.173702" Axis1X = "1" Axis1Y = "-0.000375972" Axis1Z = "5.45457e-005" Axis2X = "-0.00011903" Axis2Y = "-0.173702" Axis2Z = "0.984798" ExtentX = "0.0846806" ExtentY = "0.0221425" ExtentZ = "0.391521"/>
+
+<Box ID = "leg2" CenterX = "-0.373869" CenterY = "-0.345211" CenterZ = "-0.350007" Axis0X = "0.000671959" Axis0Y = "0.984786" Axis0Z = "-0.173769" Axis1X = "1" Axis1Y = "-0.000704015" Axis1Z = "-0.000123002" Axis2X = "-0.00024347" Axis2Y = "-0.173769" Axis2Z = "-0.984786" ExtentX = "0.0905054" ExtentY = "0.0221415" ExtentZ = "0.428538"/>
+
+<Box ID = "leg3" CenterX = "0.373132" CenterY = "-0.349403" CenterZ = "-0.350302" Axis0X = "0.000683751" Axis0Y = "0.984787" Axis0Z = "-0.173768" Axis1X = "1" Axis1Y = "-0.000715766" Axis1Z = "-0.000121169" Axis2X = "-0.000243701" Axis2Y = "-0.173767" Axis2Z = "-0.984787" ExtentX = "0.0905058" ExtentY = "0.022142" ExtentZ = "0.428538"/>
+
+<Box ID = "leg4" CenterX = "0.374293" CenterY = "0.323871" CenterZ = "-0.397468" Axis0X = "-0.00278709" Axis0Y = "0.320279" Axis0Z = "-0.947319" Axis1X = "0.999995" Axis1Y = "0.00194775" Axis1Z = "-0.00228355" Axis2X = "0.00111376" Axis2Y = "-0.947321" Axis2Z = "-0.320283" ExtentX = "0.392818" ExtentY = "0.0235988" ExtentZ = "0.0822077"/>
+
+<Box ID = "seat" CenterX = "-0.000118419" CenterY = "-0.114826" CenterZ = "0.0124524" Axis0X = "1" Axis0Y = "0" Axis0Z = "0" Axis1X = "0" Axis1Y = "1" Axis1Z = "0" Axis2X = "0" Axis2Y = "0" Axis2Z = "1" ExtentX = "0.395957" ExtentY = "0.350574" ExtentZ = "0.0975744"/>
+
+</BoxPool>
+<LinkPool>
+<Link Box1ID = "bar1" Box2ID = "leg1" CenterX = "-0.3675" CenterY = "0.259" CenterZ = "-0.399" ToX = "-0.356293" ToY = "0.259" ToZ = "-0.399"/>
+<Link Box1ID = "bar1" Box2ID = "leg2" CenterX = "-0.3675" CenterY = "-0.305" CenterZ = "-0.395" ToX = "-0.356293" ToY = "-0.305" ToZ = "-0.395"/>
+<Link Box1ID = "leg4" Box2ID = "seat" CenterX = "0.372105" CenterY = "0.187895" CenterZ = "-0.0478947" ToX = "0.568514" ToY = "0.187895" ToZ = "-0.0478947"/>
+<Link Box1ID = "bar2" Box2ID = "leg3" CenterX = "0.3675" CenterY = "-0.305" CenterZ = "-0.395" ToX = "0.378707" ToY = "-0.305" ToZ = "-0.395"/>
+<Link Box1ID = "bar2" Box2ID = "leg4" CenterX = "0.3675" CenterY = "0.27" CenterZ = "-0.395" ToX = "0.378707" ToY = "0.27" ToZ = "-0.395"/>
+<Link Box1ID = "beck" Box2ID = "leg1" CenterX = "-0.3675" CenterY = "0.241111" CenterZ = "-0.035" ToX = "-0.32516" ToY = "0.241111" ToZ = "-0.035"/>
+<Link Box1ID = "beck" Box2ID = "leg4" CenterX = "0.37" CenterY = "0.216667" CenterZ = "-0.0383333" ToX = "0.566409" ToY = "0.216667" ToZ = "-0.0383333"/>
+<Link Box1ID = "beck" Box2ID = "seat" CenterX = "2.77556e-017" CenterY = "0.1575" CenterZ = "0.0175" ToX = "-0.385" ToY = "0.1575" ToZ = "0.0175"/>
+<Link Box1ID = "leg1" Box2ID = "seat" CenterX = "-0.371" CenterY = "0.203" CenterZ = "-0.049" ToX = "-0.32866" ToY = "0.203" ToZ = "-0.049"/>
+<Link Box1ID = "leg2" Box2ID = "seat" CenterX = "-0.378875" CenterY = "-0.28875" CenterZ = "-0.00437502" ToX = "-0.333622" ToY = "-0.28875" ToZ = "-0.00437502"/>
+<Link Box1ID = "leg3" Box2ID = "seat" CenterX = "0.379474" CenterY = "-0.291053" CenterZ = "-0.00828943" ToX = "0.424727" ToY = "-0.291053" ToZ = "-0.00828943"/>
+</LinkPool>
+</Graph>
