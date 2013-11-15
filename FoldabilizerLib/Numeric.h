@@ -16,6 +16,9 @@
 #define Min(a,b) (((a) < (b)) ? (a) : (b))
 #define RANGED(min, v, max) ( Max(min, Min(v, max)) ) 
 
+// Tolerance
+#define ZERO_TOLERANCE 1e-06
+
 inline Vector3 minimize(const Vector3 a, const Vector3 b){
 	Vector3 c = a;
 	for (int i = 0; i < 3; i++)	

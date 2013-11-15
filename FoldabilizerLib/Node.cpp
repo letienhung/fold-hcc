@@ -24,7 +24,7 @@ Node::~Node()
 void Node::draw()
 {
 	PolygonSoup ps;
-	foreach(QVector<Point> f, getBoxFaces()) ps.addPoly(f, mColor);
+	foreach(QVector<Point> f, mBox.getFacePoints()) ps.addPoly(f, mColor);
 
 	// draw faces
 	ps.drawQuads(true);
@@ -37,44 +37,8 @@ void Node::draw()
 	}
 }
 
-QVector<Point> Node::getBoxConners()
-{
-	QVector<Point> pnts(8);
 
-	// Create right-hand system
-	if ( dot(cross(mBox.Axis[0], mBox.Axis[1]), mBox.Axis[2]) < 0 ) 
-		mBox.Axis[2]  = -mBox.Axis[2];
 
-	std::vector<Vec3d> Axis;
-	for (int i=0;i<3;i++)
-		Axis.push_back( 2 * mBox.Extent[i] * mBox.Axis[i]);
-
-	pnts[0] = mBox.Center - 0.5*Axis[0] - 0.5*Axis[1] + 0.5*Axis[2];
-	pnts[1] = pnts[0] + Axis[0];
-	pnts[2] = pnts[1] - Axis[2];
-	pnts[3] = pnts[2] - Axis[0];
-
-	pnts[4] = pnts[0] + Axis[1];
-	pnts[5] = pnts[1] + Axis[1];
-	pnts[6] = pnts[2] + Axis[1];
-	pnts[7] = pnts[3] + Axis[1];
-
-	return pnts;
-}
-
-QVector< QVector<Point> > Node::getBoxFaces()
-{
-	QVector< QVector<Point> > faces(6);
-	QVector<Point> pnts = getBoxConners();
-
-	for (int i = 0; i < 6; i++)	{
-		for (int j = 0; j < 4; j++)	{
-			faces[i].push_back( pnts[ quadFace[i][j] ] );
-		}
-	}	
-
-	return faces;
-}
 
 // return a direction that is perpendicular to hing_axis on the dihedral plane
 SurfaceMesh::Vec3d Node::dihedralDirection( Vec3d hinge_pos, Vec3d hinge_axis )

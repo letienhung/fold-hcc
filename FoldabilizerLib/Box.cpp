@@ -1,10 +1,54 @@
 #include "Box.h"
+//		  7-----------6                     Y
+//		 /|          /|                   f2^   /f5
+//		4-+---------5 |                     |  / 
+//		| |         | |                     | /
+//		| |         | |             f1      |/     f0
+//		| 3---------+-2            ---------+-------> X 
+//		|/          |/                     /|
+//		0-----------1                     / |
+//								       f4/  |f3
+//	
+
+int Box::quadFace[6][4] = 
+{
+	1, 2, 6, 5,
+	0, 4, 7, 3,
+	4, 5, 6, 7,
+	0, 3, 2, 1,
+	0, 1, 5, 4,
+	2, 3, 7, 6
+};
+
+int Box::triFace[12][3] = 
+{
+	1, 2, 6,
+	6, 5, 1,
+	0, 4, 7,
+	7, 3, 0,
+	4, 5, 6,
+	6, 7, 4,
+	0, 3, 2,
+	2, 1, 0,
+	0, 1, 5,
+	5, 4, 0,
+	2, 3, 7,
+	7, 6, 2
+};
 
 Box::Box(const Point& c, const QVector<Vector3>& axis, const Vector3& ext)
 {
 	Center = c;
 	Axis = axis;
 	Extent = ext;
+
+	// normalize axis
+	for (int i = 0; i < 3; i++)
+		Axis[i].normalize();
+
+	// right handed system
+	if (dot(cross(Axis[0], Axis[1]) , Axis[2]) < 0)
+		Axis[2] *= -1;
 }
 
 Box &Box::operator =(const Box &b)
@@ -70,3 +114,50 @@ void Box::scale( Vector3 s )
 		this->Extent[i] *= s[i];
 }
 
+QVector<Plane> Box::getFacePlanes()
+{
+	QVector<Plane> faces;
+	for (int i = 0; i < 3; i++)
+	{
+		Vector3 offset = Extent[i] * Axis[i];
+		faces.push_back(Plane(Center+offset,  Axis[i]));
+		faces.push_back(Plane(Center-offset, -Axis[i]));
+	}
+	return faces;
+}
+
+
+QVector<Point> Box::getConners()
+{
+	QVector<Point> pnts(8);
+
+	QVector<Vector3> edges;
+	for (int i = 0; i < 3; i++)
+		edges.push_back( 2 * Extent[i] * Axis[i]);
+
+	pnts[0] = Center - 0.5*edges[0] - 0.5*edges[1] + 0.5*edges[2];
+	pnts[1] = pnts[0] + edges[0];
+	pnts[2] = pnts[1] - edges[2];
+	pnts[3] = pnts[2] - edges[0];
+
+	pnts[4] = pnts[0] + edges[1];
+	pnts[5] = pnts[1] + edges[1];
+	pnts[6] = pnts[2] + edges[1];
+	pnts[7] = pnts[3] + edges[1];
+
+	return pnts;
+}
+
+QVector< QVector<Point> > Box::getFacePoints()
+{
+	QVector< QVector<Point> > faces(6);
+	QVector<Point> pnts = getConners();
+
+	for (int i = 0; i < 6; i++)	{
+		for (int j = 0; j < 4; j++)	{
+			faces[i].push_back( pnts[ quadFace[i][j] ] );
+		}
+	}	
+
+	return faces;
+}

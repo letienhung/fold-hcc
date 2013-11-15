@@ -477,7 +477,7 @@ void Graph::computeAabb()
 		bbmax = Point(-FLT_MAX, -FLT_MAX, -FLT_MAX);	
 
 		foreach(Node* n, nodes)	{
-			QVector<Point> conners = n->getBoxConners();
+			QVector<Point> conners = n->mBox.getConners();
 			foreach(Point p, conners) {
 				bbmin = minimize(bbmin, p);
 				bbmax = maximize(bbmax, p);
@@ -604,10 +604,27 @@ QVector<Node*> Graph::nodesOnBoundary()
 	this->computeAabb();
 	Box aabbBox = getAabbBox();
 	aabbBox.uniformScale(0.99);
+	QVector<Plane> aabbFaces = aabbBox.getFacePlanes();
 
 	foreach(Node* n, nodes)	{
-		n->isHighlight = false; // visualize
-		if (IntersectBoxBox::test(aabbBox, n->mBox)){
+		// disable highlight
+		n->isHighlight = false;
+
+		// test
+		bool onBoundary = false;
+		QVector<Vector3> nodePnts = n->mBox.getConners();
+		foreach(Plane face, aabbFaces)
+		{
+			if (!face.onSameSide(nodePnts))
+			{
+				onBoundary = true;
+				break;
+			}
+		}
+
+		// highlight 
+		if (onBoundary)
+		{
 			bnodes.push_back(n);
 			n->isHighlight = true;
 		}
@@ -631,7 +648,7 @@ void Graph::saveAsObj()
 
 	foreach(Node* n, nodes)
 	{
-		foreach(Vector3 v, n->getBoxConners())
+		foreach(Vector3 v, n->mBox.getConners())
 			outF << "v " << v.x() <<" " << v.y() <<" " << v.z() << std::endl;
 	}
 
@@ -642,7 +659,7 @@ void Graph::saveAsObj()
 		{
 			outF << "f";
 			for (int j = 0; j < 3; j++)
-				outF<<" " << triFace[i][j] + v_offset;
+				outF<<" " << Box::triFace[i][j] + v_offset;
 
 			outF << std::endl;
 		}

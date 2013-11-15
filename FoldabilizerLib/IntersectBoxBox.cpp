@@ -1,6 +1,5 @@
 #include "Intersectboxbox.h"
-
-#define ZERO_TOLERANCE 1e-06;
+#include "Numeric.h"
 
 IntersectBoxBox::IntersectBoxBox()
 {

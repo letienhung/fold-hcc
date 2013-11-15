@@ -122,7 +122,7 @@ void Foldabilizer::jump()
 void Foldabilizer::test()
 {
 	if (hccGraph->isEmpty()) return;
-	hccGraph->saveAsObj();
+	hccGraph->nodesOnBoundary();
 	drawArea()->updateGL();
 }
 
