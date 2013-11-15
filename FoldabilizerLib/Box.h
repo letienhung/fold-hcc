@@ -19,6 +19,10 @@ struct Box
 
 	Vector3 getUniformCoordinates(Vector3 p);
 	Vector3 getUniformPosition(Vector3 coord);
+
+	void translate(Vector3 t);
+	void uniformScale(double s);
+	void scale(Vector3 s);
 };
 
 

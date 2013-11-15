@@ -4,6 +4,7 @@
 #include <QFileDialog>
 #include <QDebug>
 
+
 QString DEFAULT_FILE_PATH = "..\\..\\data";
 
 Foldabilizer::Foldabilizer()
@@ -120,8 +121,9 @@ void Foldabilizer::jump()
 
 void Foldabilizer::test()
 {
-	double a = -1.2;
-	qDebug() << a << "=>" << (int)a;
+	if (hccGraph->isEmpty()) return;
+	hccGraph->saveAsObj();
+	drawArea()->updateGL();
 }
 
 void Foldabilizer::setLinkProbability( double lp )

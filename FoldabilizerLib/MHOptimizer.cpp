@@ -143,18 +143,23 @@ bool MHOptimizer::isCollisionFree()
 	foreach(Node* n, hccGraph->nodes) 
 		n->isHighlight = false;
 
+	// get boxes (shrunk)
+	QVector<Box> nodeBoxes;
+	foreach(Node* n, hccGraph->nodes)	{
+		nodeBoxes.push_back(n->mBox);
+		nodeBoxes.last().uniformScale(0.99);
+	}
+
 	// detect collision between each pair of cuboids
 	bool isFree = true;
-	for (int i = 0; i < hccGraph->nbNodes()-1; i++){
-		for (int j = i+1; j < hccGraph->nbNodes(); j++)
+	int nbNodes = hccGraph->nbNodes();
+	for (int i = 0; i < nbNodes-1; i++){
+		for (int j = i+1; j < nbNodes; j++)
 		{
-			Node* n1 = hccGraph->nodes[i];
-			Node* n2 = hccGraph->nodes[j];
-
-			if (IntersectBoxBox::test(n1->getRelaxedBox(), n2->getRelaxedBox()))
+			if (IntersectBoxBox::test(nodeBoxes[i], nodeBoxes[j]))
 			{
-				n1->isHighlight = true;
-				n2->isHighlight = true;
+				hccGraph->getNode(i)->isHighlight = true;
+				hccGraph->getNode(j)->isHighlight = true;
 				isFree = false;
 			}
 		}

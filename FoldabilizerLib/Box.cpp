@@ -54,3 +54,19 @@ SurfaceMesh::Vector3 Box::getUniformPosition( Vector3 coord )
 	return pos;
 }
 
+void Box::translate( Vector3 t )
+{
+	this->Center += t;
+}
+
+void Box::uniformScale( double s )
+{
+	this->Extent *= s;
+}
+
+void Box::scale( Vector3 s )
+{
+	for (int i = 0; i < 3; i++)	
+		this->Extent[i] *= s[i];
+}
+

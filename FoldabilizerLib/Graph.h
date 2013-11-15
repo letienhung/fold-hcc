@@ -31,6 +31,7 @@ public:
 	int		nbNodes();
 	int		nbLinks();
 	bool	isEmpty();
+	Node*	getNode(int idx);
 	Node*	getNode(QString id);
 	Link*	getLink(QString nid1, QString nid2);
 	QVector<Link*> getLinks(QString nodeID);
@@ -49,6 +50,7 @@ public:
 	Point	bbmin, bbmax, center;
 	Scalar	radius;
 	void	computeAabb();
+	Box		getAabbBox();
 	double	getAabbVolume();
 	double	getMaterialVolume();
 
@@ -69,11 +71,16 @@ public:
 	void resetTags();
 	void restoreConfiguration();
 
+	// Shape analysis
+	QVector<Node*> nodesOnBoundary();
+
+	// Save as obj mesh
+	void saveAsObj();
+
 public:
     QVector<Node*> nodes;
     QVector<Link*> links;
 
 private:
 	void clear();
-
 };

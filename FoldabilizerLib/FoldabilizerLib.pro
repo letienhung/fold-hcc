@@ -26,7 +26,8 @@ HEADERS += \
     Frame.h \
     xmlWriter.h \
     Numeric.h \
-    MHOptimizer.h
+    MHOptimizer.h \
+    Plane.h
 
 SOURCES += \
     Graph.cpp \
@@ -36,4 +37,5 @@ SOURCES += \
     IntersectBoxBox.cpp \
     Frame.cpp \
     xmlWriter.cpp \
-    MHOptimizer.cpp
+    MHOptimizer.cpp \
+    Plane.cpp

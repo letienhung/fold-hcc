@@ -1,6 +1,9 @@
 #include "Graph.h"
 #include "xmlWriter.h"
 #include "Numeric.h"
+#include "IntersectBoxBox.h"
+
+#include <fstream>
 
 Graph::Graph()
 {
@@ -79,6 +82,14 @@ Node* Graph::getNode(QString id)
 		if(n->mID == id) return n;
 
 	return NULL;
+}
+
+Node* Graph::getNode( int idx )
+{
+	if (idx >= 0 && idx < nbNodes())
+		return this->nodes[idx];
+	else
+		return NULL;
 }
 
 Link* Graph::getLink( QString nid1, QString nid2 )
@@ -584,4 +595,59 @@ void Graph::updateLinkScale()
 {
 	// set scale to each link
 	foreach(Link* l, links) l->setScale(radius);
+}
+
+QVector<Node*> Graph::nodesOnBoundary()
+{
+	QVector<Node*> bnodes;
+
+	this->computeAabb();
+	Box aabbBox = getAabbBox();
+	aabbBox.uniformScale(0.99);
+
+	foreach(Node* n, nodes)	{
+		n->isHighlight = false; // visualize
+		if (IntersectBoxBox::test(aabbBox, n->mBox)){
+			bnodes.push_back(n);
+			n->isHighlight = true;
+		}
+	}
+
+	return bnodes;
+}
+
+Box Graph::getAabbBox()
+{
+	return Box(center, XYZ(), (bbmax-bbmin)/2);
+}
+
+
+void Graph::saveAsObj()
+{
+	std::ofstream outF("chair.obj", std::ios::out);
+
+	if (!outF) return;
+
+
+	foreach(Node* n, nodes)
+	{
+		foreach(Vector3 v, n->getBoxConners())
+			outF << "v " << v.x() <<" " << v.y() <<" " << v.z() << std::endl;
+	}
+
+	int v_offset = 1;
+	foreach(Node* n, nodes)
+	{
+		for (int i = 0; i < 12; i++)
+		{
+			outF << "f";
+			for (int j = 0; j < 3; j++)
+				outF<<" " << triFace[i][j] + v_offset;
+
+			outF << std::endl;
+		}
+		v_offset += 8;
+	}
+
+	outF.close();
 }

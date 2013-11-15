@@ -30,9 +30,9 @@ void Node::draw()
 	ps.drawQuads(true);
 
 	// highlight wireframes
-	if (isFixed) 
+	if (isHighlight) 
 	{
-		QColor c = isHighlight ? Qt::red : Qt::white;
+		QColor c = isFixed ? Qt::white : Qt::red;
 		ps.drawWireframes(2.0, c);	
 	}
 }
@@ -69,7 +69,7 @@ QVector< QVector<Point> > Node::getBoxFaces()
 
 	for (int i = 0; i < 6; i++)	{
 		for (int j = 0; j < 4; j++)	{
-			faces[i].push_back( pnts[ cubeIds[i][j] ] );
+			faces[i].push_back( pnts[ quadFace[i][j] ] );
 		}
 	}	
 
@@ -134,13 +134,5 @@ double Node::getVolume()
 {
 	Vector3 e = 2 * mBox.Extent;
 	return e[0] * e[1] * e[2];
-}
-
-Box Node::getRelaxedBox()
-{
-	// shrink the box a bit for collision detection
-	Box box = mBox;
-	box.Extent *= 0.99;
-	return box;
 }
 
