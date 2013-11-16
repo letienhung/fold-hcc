@@ -4,9 +4,7 @@
 #include "Plane.h"
 #include "Line.h"
 
-enum BoxBoxRelation{
-	LINE_LINE, LINE_FACE, WHOLE_WHOLE, WHOLE_PART, PART_PART
-};
+
 
 struct Box 
 {
@@ -44,8 +42,7 @@ struct Box
 	QVector< QVector<Point> >	getFacePoints();
 	QVector<Plane>				getFacePlanes();
 
-	// relation with other box
-	BoxBoxRelation getRelationWith(Box &other);
+	// relation with other objects
 	bool onBox(Line line);
 };
 

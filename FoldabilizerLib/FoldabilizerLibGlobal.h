@@ -9,3 +9,5 @@
 #include "SurfaceMeshModel.h"
 using namespace SurfaceMesh;
 
+typedef Eigen::Vector2d Vector2;
+

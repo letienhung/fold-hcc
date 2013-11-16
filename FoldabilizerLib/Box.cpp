@@ -191,13 +191,6 @@ QVector< QVector<Point> > Box::getFacePoints()
 	return faces;
 }
 
-BoxBoxRelation Box::getRelationWith( Box &other )
-{
-	
-
-	return LINE_LINE;
-}
-
 bool Box::onBox( Line line )
 {
 	Vector3 p1 = line.getPoint(0);

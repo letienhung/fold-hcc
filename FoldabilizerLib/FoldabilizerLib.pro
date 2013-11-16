@@ -28,7 +28,10 @@ HEADERS += \
     Numeric.h \
     MHOptimizer.h \
     Plane.h \
-    Line.h
+    Line.h \
+    ContactBoxBox.h \
+    Rectangle.h \
+    Segment.h
 
 SOURCES += \
     Graph.cpp \
@@ -40,4 +43,7 @@ SOURCES += \
     xmlWriter.cpp \
     MHOptimizer.cpp \
     Plane.cpp \
-    Line.cpp
+    Line.cpp \
+    ContactBoxBox.cpp \
+    Rectangle.cpp \
+    Segment.cpp
