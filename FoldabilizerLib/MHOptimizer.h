@@ -30,6 +30,8 @@ public:
 	void	jump();
 	double	cost();
 	void	proposeJump();
+	void	proposeChangeHingeAngle();
+	void	proposeDeformCuboid();
 	bool	acceptJump();
 	bool	isCollisionFree();
 };

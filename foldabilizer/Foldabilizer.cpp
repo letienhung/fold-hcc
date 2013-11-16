@@ -83,6 +83,13 @@ void Foldabilizer::createX()
 	resetScene();
 }
 
+void Foldabilizer::createSharp()
+{
+	hccGraph->makeSharp();
+	mhOptimizer->isReady = false;
+	resetScene();
+}
+
 void Foldabilizer::createU()
 {
 	hccGraph->makeU();
@@ -122,7 +129,7 @@ void Foldabilizer::jump()
 void Foldabilizer::test()
 {
 	if (hccGraph->isEmpty()) return;
-	hccGraph->nodesOnBoundary();
+	hccGraph->getNodesOnBoundary();
 	drawArea()->updateGL();
 }
 

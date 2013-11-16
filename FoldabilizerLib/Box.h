@@ -2,6 +2,11 @@
 
 #include "FoldabilizerLibGlobal.h"
 #include "Plane.h"
+#include "Line.h"
+
+enum BoxBoxRelation{
+	LINE_LINE, LINE_FACE, WHOLE_WHOLE, WHOLE_PART, PART_PART
+};
 
 struct Box 
 {
@@ -31,11 +36,17 @@ struct Box
 	void scale(Vector3 s);
 
 	// geometry
-	static int quadFace[6][4];
-	static int triFace[12][3];
-	QVector<Point>				getConners();
+	static int EDGE[12][2];
+	static int QUAD_FACE[6][4];
+	static int TRI_FACE[12][3];
+	QVector<Point>				getConnerPoints();
+	QVector<Line>				getConnerLines();
 	QVector< QVector<Point> >	getFacePoints();
 	QVector<Plane>				getFacePlanes();
+
+	// relation with other box
+	BoxBoxRelation getRelationWith(Box &other);
+	bool onBox(Line line);
 };
 
 

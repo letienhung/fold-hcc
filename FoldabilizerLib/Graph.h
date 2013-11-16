@@ -63,6 +63,7 @@ public:
 	void makeL();
 	void makeT();
 	void makeX();
+	void makeSharp();
 	void makeU();
 	void makeO();
 	void makeChair(double legL);
@@ -72,7 +73,9 @@ public:
 	void restoreConfiguration();
 
 	// Shape analysis
-	QVector<Node*> nodesOnBoundary();
+	QSet<Node*> getNodesOnBoundary();
+	QSet<Link*> getHotLinks();
+	bool		isHingable(Link* link);
 
 	// Save as obj mesh
 	void saveAsObj();

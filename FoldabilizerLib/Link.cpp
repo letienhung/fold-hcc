@@ -53,7 +53,7 @@ void Link::draw()
 	if (isBroken || isNailed) return;
 	
 	FrameSoup fs(scale);
-	fs.addFrame(axis, v1, v2, center);
+	fs.addFrame( v1, v2, axis, center);
 	fs.draw();
 
 	if (isFixed)

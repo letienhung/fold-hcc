@@ -359,6 +359,27 @@ void Graph::makeX()
 	this->updateLinkScale();
 }
 
+void Graph::makeSharp()
+{
+	this->clear();
+	QVector<Vector3> xyz = XYZ();
+
+	Node* vlNode = new Node(Box(Point(-2,  0,  0.5), xyz, Vector3(0.5, 4, 0.5)), "v-left_base"); 
+	Node* vrNode = new Node(Box(Point( 2,  0,  0.5), xyz, Vector3(0.5, 4, 0.5)), "v-right");
+	Node* htNode = new Node(Box(Point( 0,  2, -0.5), xyz, Vector3(4, 0.5, 0.5)), "h-top");
+	Node* hbNode = new Node(Box(Point( 0, -2, -0.5), xyz, Vector3(4, 0.5, 0.5)), "h-bottom");
+
+	addNode(vlNode); addNode(vrNode); addNode(htNode); addNode(hbNode);
+
+	addLink(new Link(vlNode, hbNode, Vector3(-2,-2,0), Vector3(0,0,1)));
+	addLink(new Link(vrNode, hbNode, Vector3( 2,-2,0), Vector3(0,0,1)));
+	addLink(new Link(vlNode, htNode, Vector3(-2, 2,0), Vector3(0,0,1)));
+	addLink(new Link(vrNode, htNode, Vector3( 2, 2,0), Vector3(0,0,1)));
+
+	this->computeAabb();
+	this->updateLinkScale();
+}
+
 void Graph::makeU()
 {
 	this->clear();
@@ -477,7 +498,7 @@ void Graph::computeAabb()
 		bbmax = Point(-FLT_MAX, -FLT_MAX, -FLT_MAX);	
 
 		foreach(Node* n, nodes)	{
-			QVector<Point> conners = n->mBox.getConners();
+			QVector<Point> conners = n->mBox.getConnerPoints();
 			foreach(Point p, conners) {
 				bbmin = minimize(bbmin, p);
 				bbmax = maximize(bbmax, p);
@@ -597,9 +618,9 @@ void Graph::updateLinkScale()
 	foreach(Link* l, links) l->setScale(radius);
 }
 
-QVector<Node*> Graph::nodesOnBoundary()
+QSet<Node*> Graph::getNodesOnBoundary()
 {
-	QVector<Node*> bnodes;
+	QSet<Node*> bnodes;
 
 	this->computeAabb();
 	Box aabbBox = getAabbBox();
@@ -612,7 +633,7 @@ QVector<Node*> Graph::nodesOnBoundary()
 
 		// test
 		bool onBoundary = false;
-		QVector<Vector3> nodePnts = n->mBox.getConners();
+		QVector<Vector3> nodePnts = n->mBox.getConnerPoints();
 		foreach(Plane face, aabbFaces)
 		{
 			if (!face.onSameSide(nodePnts))
@@ -625,7 +646,7 @@ QVector<Node*> Graph::nodesOnBoundary()
 		// highlight 
 		if (onBoundary)
 		{
-			bnodes.push_back(n);
+			bnodes.insert(n);
 			n->isHighlight = true;
 		}
 	}
@@ -648,7 +669,7 @@ void Graph::saveAsObj()
 
 	foreach(Node* n, nodes)
 	{
-		foreach(Vector3 v, n->mBox.getConners())
+		foreach(Vector3 v, n->mBox.getConnerPoints())
 			outF << "v " << v.x() <<" " << v.y() <<" " << v.z() << std::endl;
 	}
 
@@ -659,7 +680,7 @@ void Graph::saveAsObj()
 		{
 			outF << "f";
 			for (int j = 0; j < 3; j++)
-				outF<<" " << Box::triFace[i][j] + v_offset;
+				outF<<" " << Box::TRI_FACE[i][j] + v_offset;
 
 			outF << std::endl;
 		}
@@ -667,4 +688,29 @@ void Graph::saveAsObj()
 	}
 
 	outF.close();
+}
+
+QSet<Link*> Graph::getHotLinks()
+{
+	QSet<Link*> hotLinks;
+	foreach(Node* n, this->getNodesOnBoundary()){
+		foreach(Link *l, this->getLinks(n->mID)){
+
+			// a link is hot only if it can still move
+			if (1) hotLinks.insert(l);
+		}
+	}
+
+	return hotLinks;
+}
+
+bool Graph::isHingable( Link* link )
+{
+	GraphState backupState = this->getState();
+
+	
+
+	this->setState(backupState);
+
+	return true;
 }

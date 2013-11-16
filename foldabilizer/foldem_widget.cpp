@@ -15,6 +15,7 @@ foldem_widget::foldem_widget(Foldabilizer *f, QWidget *parent) :
 	fold->connect(ui->createChair, SIGNAL(clicked()), SLOT(createChair()));
 	fold->connect(ui->createT, SIGNAL(clicked()), SLOT(createT()));
 	fold->connect(ui->createX, SIGNAL(clicked()), SLOT(createX()));
+	fold->connect(ui->createSharp, SIGNAL(clicked()), SLOT(createSharp()));
 	fold->connect(ui->createU, SIGNAL(clicked()), SLOT(createU()));
 	fold->connect(ui->createO, SIGNAL(clicked()), SLOT(createO()));
 	fold->connect(ui->load_hcc, SIGNAL(clicked()), SLOT(loadGraph()));

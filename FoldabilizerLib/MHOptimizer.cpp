@@ -69,50 +69,51 @@ double MHOptimizer::cost()
 	return cost1 + pow(distortion, costWeight);
 }
 
+void MHOptimizer::proposeChangeHingeAngle()
+{
+	// 
+
+	// hinge id
+	int linkID = uniformDiscreteDistribution(0, hccGraph->nbLinks());
+	Link* plink = hccGraph->links[linkID];
+	if (plink->isNailed || plink->isBroken) return;
+
+	// angle
+	double stddev = plink->angle_suf / 6; // 3-\delta coverage of 99.7%
+	double old_angle = plink->angle;
+	double new_angle = periodicalRanged(0, plink->angle_suf, normalDistribution.generate(old_angle, stddev));
+	plink->angle = new_angle;
+
+	qDebug() << "[Jump" << jumpCount << "] Angle of " << plink->id.toStdString().c_str() << ": " 
+		<< radians2degrees(old_angle) << " => " << radians2degrees(new_angle);
+}
+
+void MHOptimizer::proposeDeformCuboid()
+{
+	// cuboid id
+	int nodeID = uniformDiscreteDistribution(0, hccGraph->nbNodes());
+	Node* pnode = hccGraph->nodes[nodeID];
+
+	// axis id
+	int axisID = uniformDiscreteDistribution(0, 3);
+
+	// scale factor
+	double stddev = 1 / 12.0;
+	double old_factor = pnode->scaleFactor[axisID];
+	double new_factor = periodicalRanged(0.5, 1.0, normalDistribution.generate(old_factor, stddev));
+	pnode->scaleFactor[axisID] = new_factor;
+
+	qDebug() << "[Jump" << jumpCount << "] Scale factor[" << axisID << "] of " << pnode->mID.toStdString().c_str() << ": " 
+		<< old_factor << " => " << new_factor;
+}
+
 void MHOptimizer::proposeJump()
 {
 	int jump_type = discreteDistribution(typeProbability);
-	switch (jump_type)
-	{
-	case 0: 
-		{
-			// hinge id
-			int linkID = uniformDiscreteDistribution(0, hccGraph->nbLinks());
-			Link* plink = hccGraph->links[linkID];
-			if (plink->isNailed || plink->isBroken) return;
-
-			// angle
-			double stddev = plink->angle_suf / 6; // 3-\delta coverage of 99.7%
-			double old_angle = plink->angle;
-			double new_angle = periodicalRanged(0, plink->angle_suf, normalDistribution.generate(old_angle, stddev));
-			plink->angle = new_angle;
-
-			qDebug() << "[Jump" << jumpCount << "] Angle of " << plink->id.toStdString().c_str() << ": " 
-				<< radians2degrees(old_angle) << " => " << radians2degrees(new_angle);
-		}
-		break;
-	case 1: 
-		{
-			// cuboid id
-			int nodeID = uniformDiscreteDistribution(0, hccGraph->nbNodes());
-			Node* pnode = hccGraph->nodes[nodeID];
-
-			// axis id
-			int axisID = uniformDiscreteDistribution(0, 3);
-
-			// scale factor
-			double stddev = 1 / 12.0;
-			double old_factor = pnode->scaleFactor[axisID];
-			double new_factor = periodicalRanged(0.5, 1.0, normalDistribution.generate(old_factor, stddev));
-			pnode->scaleFactor[axisID] = new_factor;
-
-			qDebug() << "[Jump" << jumpCount << "] Scale factor[" << axisID << "] of " << pnode->mID.toStdString().c_str() << ": " 
-				<< old_factor << " => " << new_factor;
-		}
-		break;
-	default:
-		break;
-	}
+	if (jump_type == 0) 
+		proposeChangeHingeAngle();
+	else if(jump_type == 1)
+		proposeDeformCuboid();
 
 	// restore configuration according to new parameters
 	hccGraph->restoreConfiguration();
@@ -173,5 +174,7 @@ void MHOptimizer::setLinkProbability( double lp )
 	typeProbability.resize(0);
 	typeProbability << lp << 1 - lp;
 }
+
+
 
 

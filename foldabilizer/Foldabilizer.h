@@ -35,6 +35,7 @@ public slots:
 	void createL();
 	void createT();
 	void createX();
+	void createSharp();
 	void createU();
 	void createO();
 	void createChair(double legL = 1.5);

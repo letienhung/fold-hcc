@@ -10,7 +10,22 @@
 //								       f4/  |f3
 //	
 
-int Box::quadFace[6][4] = 
+int Box::EDGE[12][2] = {
+	0, 1,
+	2, 3,
+	6, 7,
+	4, 5,
+	0, 4,
+	1, 5,
+	2, 6,
+	3, 7,
+	0, 3, 
+	1, 2,
+	5, 6,
+	4, 7
+};
+
+int Box::QUAD_FACE[6][4] = 
 {
 	1, 2, 6, 5,
 	0, 4, 7, 3,
@@ -20,7 +35,7 @@ int Box::quadFace[6][4] =
 	2, 3, 7, 6
 };
 
-int Box::triFace[12][3] = 
+int Box::TRI_FACE[12][3] = 
 {
 	1, 2, 6,
 	6, 5, 1,
@@ -127,7 +142,7 @@ QVector<Plane> Box::getFacePlanes()
 }
 
 
-QVector<Point> Box::getConners()
+QVector<Point> Box::getConnerPoints()
 {
 	QVector<Point> pnts(8);
 
@@ -148,16 +163,53 @@ QVector<Point> Box::getConners()
 	return pnts;
 }
 
+
+QVector<Line> Box::getConnerLines()
+{
+	QVector<Point> pnts = this->getConnerPoints();
+
+	QVector<Line> lines;
+	for (int i = 0; i < 12; i++)
+	{
+		lines.push_back(Line(pnts[ EDGE[i][0] ], pnts[ EDGE[i][1] ]));
+	}
+	return lines;
+}
+
+
 QVector< QVector<Point> > Box::getFacePoints()
 {
 	QVector< QVector<Point> > faces(6);
-	QVector<Point> pnts = getConners();
+	QVector<Point> pnts = getConnerPoints();
 
 	for (int i = 0; i < 6; i++)	{
 		for (int j = 0; j < 4; j++)	{
-			faces[i].push_back( pnts[ quadFace[i][j] ] );
+			faces[i].push_back( pnts[ QUAD_FACE[i][j] ] );
 		}
 	}	
 
 	return faces;
+}
+
+BoxBoxRelation Box::getRelationWith( Box &other )
+{
+	
+
+	return LINE_LINE;
+}
+
+bool Box::onBox( Line line )
+{
+	Vector3 p1 = line.getPoint(0);
+	Vector3 p2 = line.getPoint(1);
+
+	foreach(Plane plane, this->getFacePlanes())
+	{
+		if (plane.whichSide(p1) == 0 && plane.whichSide(p2) == 0)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
