@@ -69,7 +69,12 @@ SurfaceMesh::Vec3d Node::dihedralDirection( Vec3d hinge_pos, Vec3d hinge_axis )
 
 Frame Node::getFrame()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
 {
-	return Frame(mBox.Center, mBox.Axis[0], mBox.Axis[1], mBox.Axis[2]);
+	return mBox.getFrame();
+}
+
+void Node::setFrame( Frame f )
+{
+	mBox.setFrame(f);
 }
 
 void Node::translate( Vector3 t )
@@ -77,13 +82,7 @@ void Node::translate( Vector3 t )
 	mBox.Center += t;
 }
 
-void Node::setFrame( Frame f )
-{
-	mBox.Center = f.c;
-	mBox.Axis[0] = f.r;
-	mBox.Axis[1] = f.s;
-	mBox.Axis[2] = f.t;
-}
+
 
 void Node::fix()
 {

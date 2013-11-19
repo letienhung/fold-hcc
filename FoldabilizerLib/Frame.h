@@ -4,14 +4,16 @@
 
 struct Frame
 {
-	Vec3d c;
-	Vec3d r, s, t;
+	Vector3 c;
+	Vector3 r, s, t;
 
 	Frame();
-	Frame(const Vec3d& C, const Vec3d& R, const Vec3d& S, const Vec3d& T);
+	Frame(const Vector3& C, const Vector3& R, const Vector3& S, const Vector3& T);
 
-	void normalize();
-	Vec3d coordinates(const Vec3d& p);
-	Vec3d position(const Vec3d& coord); 
+	void	normalize();
+	Vector3	coordinates(const Vector3& p);
+	Vector3 position(const Vector3& coord); 
+
+	bool	isAligned(const Frame& other);
 };
 

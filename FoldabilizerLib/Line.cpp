@@ -1,4 +1,5 @@
 #include "Line.h"
+#include "Numeric.h"
 
 Line::Line()
 {
@@ -15,5 +16,10 @@ Line::Line( Vector3 o, Vector3 d )
 SurfaceMesh::Vector3 Line::getPoint( double t )
 {
 	return Origin + t * Direction;
+}
+
+bool Line::contains( Vector3 p )
+{
+	return isCollinear(this->Direction, p - Origin);
 }
 

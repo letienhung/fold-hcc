@@ -1,7 +1,7 @@
 #pragma once
 #include "FoldabilizerLibGlobal.h"
 #include "Graph.h"
-#include "Numeric.h"
+#include "ProbabilityDistributions.h"
 
 class MHOptimizer
 {

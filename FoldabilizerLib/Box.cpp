@@ -75,6 +75,19 @@ Box &Box::operator =(const Box &b)
     return *this;
 }
 
+Frame Box::getFrame()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+{
+	return Frame(this->Center, this->Axis[0], this->Axis[1], this->Axis[2]);
+}
+
+void Box::setFrame( Frame f )
+{
+	this->Center = f.c;
+	this->Axis[0] = f.r;
+	this->Axis[1] = f.s;
+	this->Axis[2] = f.t;
+}
+
 Vector3 Box::getCoordinates( Vector3 p )
 {
 	Vector3 coord;
@@ -129,18 +142,21 @@ void Box::scale( Vector3 s )
 		this->Extent[i] *= s[i];
 }
 
-QVector<Plane> Box::getFacePlanes()
+bool Box::onBox( Line line )
 {
-	QVector<Plane> faces;
-	for (int i = 0; i < 3; i++)
-	{
-		Vector3 offset = Extent[i] * Axis[i];
-		faces.push_back(Plane(Center+offset,  Axis[i]));
-		faces.push_back(Plane(Center-offset, -Axis[i]));
-	}
-	return faces;
-}
+	Vector3 p1 = line.getPoint(0);
+	Vector3 p2 = line.getPoint(1);
 
+	foreach(Plane plane, this->getFacePlanes())
+	{
+		if (plane.whichSide(p1) == 0 && plane.whichSide(p2) == 0)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
 
 QVector<Point> Box::getConnerPoints()
 {
@@ -163,25 +179,37 @@ QVector<Point> Box::getConnerPoints()
 	return pnts;
 }
 
-
-QVector<Line> Box::getConnerLines()
+QVector<Line> Box::getEdgeLines()
 {
-	QVector<Point> pnts = this->getConnerPoints();
-
 	QVector<Line> lines;
+
+	QVector<Point> pnts = this->getConnerPoints();
 	for (int i = 0; i < 12; i++)
 	{
 		lines.push_back(Line(pnts[ EDGE[i][0] ], pnts[ EDGE[i][1] ]));
 	}
+
 	return lines;
 }
 
+QVector<Segment> Box::getEdgeSegments()
+{
+	QVector<Segment> edges;
+
+	QVector<Point> pnts = this->getConnerPoints();
+	for (int i = 0; i < 12; i++)
+	{
+		edges.push_back(Segment(pnts[ EDGE[i][0] ], pnts[ EDGE[i][1] ]));
+	}
+
+	return edges;
+}
 
 QVector< QVector<Point> > Box::getFacePoints()
 {
 	QVector< QVector<Point> > faces(6);
-	QVector<Point> pnts = getConnerPoints();
 
+	QVector<Point> pnts = getConnerPoints();
 	for (int i = 0; i < 6; i++)	{
 		for (int j = 0; j < 4; j++)	{
 			faces[i].push_back( pnts[ QUAD_FACE[i][j] ] );
@@ -191,18 +219,26 @@ QVector< QVector<Point> > Box::getFacePoints()
 	return faces;
 }
 
-bool Box::onBox( Line line )
+QVector<Plane> Box::getFacePlanes()
 {
-	Vector3 p1 = line.getPoint(0);
-	Vector3 p2 = line.getPoint(1);
-
-	foreach(Plane plane, this->getFacePlanes())
+	QVector<Plane> faces;
+	for (int i = 0; i < 3; i++)
 	{
-		if (plane.whichSide(p1) == 0 && plane.whichSide(p2) == 0)
-		{
-			return true;
-		}
+		Vector3 offset = Extent[i] * Axis[i];
+		faces.push_back(Plane(Center+offset,  Axis[i]));
+		faces.push_back(Plane(Center-offset, -Axis[i]));
 	}
-
-	return false;
+	return faces;
 }
+
+QVector<Rectangle> Box::getFaceRectangles()
+{
+	QVector<Rectangle> rects;
+
+	foreach( QVector<Point> conners, this->getFacePoints() )
+		rects.push_back(Rectangle(conners));
+
+	return rects;
+}
+
+

@@ -31,7 +31,10 @@ HEADERS += \
     Line.h \
     ContactBoxBox.h \
     Rectangle.h \
-    Segment.h
+    Segment.h \
+    HingeDetector.h \
+    Hinge.h \
+    ProbabilityDistributions.h
 
 SOURCES += \
     Graph.cpp \
@@ -46,4 +49,6 @@ SOURCES += \
     Line.cpp \
     ContactBoxBox.cpp \
     Rectangle.cpp \
-    Segment.cpp
+    Segment.cpp \
+    HingeDetector.cpp \
+    Hinge.cpp

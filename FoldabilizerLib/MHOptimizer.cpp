@@ -78,11 +78,14 @@ void MHOptimizer::proposeChangeHingeAngle()
 	Link* plink = hccGraph->links[linkID];
 	if (plink->isNailed || plink->isBroken) return;
 
+	// TODO: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+	// use new hinges
 	// angle
-	double stddev = plink->angle_suf / 6; // 3-\delta coverage of 99.7%
-	double old_angle = plink->angle;
-	double new_angle = periodicalRanged(0, plink->angle_suf, normalDistribution.generate(old_angle, stddev));
-	plink->angle = new_angle;
+	Hinge phinge = plink->activeHinge();
+	double stddev = phinge.maxAngle / 6; // 3-\delta coverage of 99.7%
+	double old_angle = phinge.angle;
+	double new_angle = periodicalRanged(0, phinge.maxAngle, normalDistribution.generate(old_angle, stddev));
+	phinge.angle = new_angle;
 
 	qDebug() << "[Jump" << jumpCount << "] Angle of " << plink->id.toStdString().c_str() << ": " 
 		<< radians2degrees(old_angle) << " => " << radians2degrees(new_angle);

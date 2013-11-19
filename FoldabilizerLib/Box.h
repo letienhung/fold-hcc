@@ -1,10 +1,11 @@
 #pragma once
 
 #include "FoldabilizerLibGlobal.h"
+#include "Frame.h"
 #include "Plane.h"
 #include "Line.h"
-
-
+#include "Segment.h"
+#include "Rectangle.h"
 
 struct Box 
 {
@@ -15,11 +16,15 @@ struct Box
 
 	// con(de)structor
 	Box(){}
-	Box(const Point& c, const QVector<Vector3>& axis, const Vector3& ext);
 	~Box(){}
+	Box(const Point& c, const QVector<Vector3>& axis, const Vector3& ext);
 
 	// assignment
 	Box &operator =(const Box &);
+
+	// frame
+	Frame	getFrame();
+	void	setFrame(Frame f);
 
 	// coordinates
 	Vector3 getCoordinates(Vector3 p);
@@ -38,9 +43,11 @@ struct Box
 	static int QUAD_FACE[6][4];
 	static int TRI_FACE[12][3];
 	QVector<Point>				getConnerPoints();
-	QVector<Line>				getConnerLines();
+	QVector<Line>				getEdgeLines();
+	QVector<Segment>			getEdgeSegments();
 	QVector< QVector<Point> >	getFacePoints();
 	QVector<Plane>				getFacePlanes();
+	QVector<Rectangle>			getFaceRectangles();
 
 	// relation with other objects
 	bool onBox(Line line);

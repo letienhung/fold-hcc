@@ -254,12 +254,12 @@ bool Graph::saveHCC(QString fname)
 		AttrMap link_attrs;
 		link_attrs.insert("Box1ID", links[i]->node1->mID);
 		link_attrs.insert("Box1ID", links[i]->node2->mID);
-		link_attrs.insert("CenterX", QString::number(links[i]->center.x()));
-		link_attrs.insert("CenterY ", QString::number(links[i]->center.y()));
-		link_attrs.insert("CenterZ", QString::number(links[i]->center.z()));
-		link_attrs.insert("ToX ", QString::number(links[i]->center.x()+links[i]->axis.x()));
-		link_attrs.insert("ToY ", QString::number(links[i]->center.y()+links[i]->axis.y()));
-		link_attrs.insert("ToZ", QString::number(links[i]->center.z()+links[i]->axis.z()));
+		//link_attrs.insert("CenterX", QString::number(links[i]->center.x()));
+		//link_attrs.insert("CenterY ", QString::number(links[i]->center.y()));
+		//link_attrs.insert("CenterZ", QString::number(links[i]->center.z()));
+		//link_attrs.insert("ToX ", QString::number(links[i]->center.x()+links[i]->axis.x()));
+		//link_attrs.insert("ToY ", QString::number(links[i]->center.y()+links[i]->axis.y()));
+		//link_attrs.insert("ToZ", QString::number(links[i]->center.z()+links[i]->axis.z()));
 		xw.writeAtomTag("Link", link_attrs);
 	}
 	xw.writeCloseTag("LinkPool");

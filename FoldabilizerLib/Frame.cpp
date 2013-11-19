@@ -1,4 +1,5 @@
 #include "Frame.h"
+#include "Numeric.h"
 
 Frame::Frame()
 { 
@@ -34,4 +35,10 @@ Vec3d Frame::position( const Vec3d& coord )
 {
 	Vec3d v = coord.x()*r + coord.y()*s + coord.z()*t;
 	return c + v;
+}
+
+bool Frame::isAligned( const Frame& other )
+{
+	return (isCollinear(r, other.r) || isCollinear(r, other.s) || isCollinear(r, other.t))
+		&& (isCollinear(s, other.r) || isCollinear(s, other.s) || isCollinear(s, other.t));
 }
