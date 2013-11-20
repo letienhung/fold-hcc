@@ -201,7 +201,6 @@ bool Graph::loadHCC(QString fname)
 
 	// update AABB
 	this->computeAabb();
-	this->updateLinkScale();
 	return true;
 }
 
@@ -272,7 +271,8 @@ bool Graph::saveHCC(QString fname)
 
 void Graph::draw()
 {
-	foreach(Link *l, links) l->draw();
+	double linkScale = this->radius / 10;
+	foreach(Link *l, links) l->draw(linkScale);
 	foreach(Node *n, nodes) n->draw();
 }
 
@@ -289,10 +289,9 @@ void Graph::makeI()
 
 	this->addNode(tNode);
 	this->addNode(bNode);
-	this->addLink(new Link(tNode, bNode, Vector3(1,4,0), Vector3(0,0,1)));
+	this->addLink(new Link(tNode, bNode));
 
 	this->computeAabb();
-	this->updateLinkScale();
 }
 
 void Graph::makeL()
@@ -309,10 +308,9 @@ void Graph::makeL()
 	this->addNode(vNode);
 	this->addNode(hNode);
 
-	this->addLink(new Link(vNode, hNode, Vector3(0,0,0), Vector3(0,0,1)));
+	this->addLink(new Link(vNode, hNode));
 
 	this->computeAabb();
-	this->updateLinkScale();
 }
 
 void Graph::makeT()
@@ -333,10 +331,9 @@ void Graph::makeT()
 
 	this->addNode(vNode);
 	this->addNode(hNode);
-	this->addLink(new Link(vNode, hNode, Vector3(0.5,0,0), Vector3(0,0,1)));
+	this->addLink(new Link(vNode, hNode));
 
 	this->computeAabb();
-	this->updateLinkScale();
 }
 
 void Graph::makeX()
@@ -353,10 +350,9 @@ void Graph::makeX()
 	this->addNode(vNode);
 	this->addNode(hNode);
 
-	this->addLink(new Link(vNode, hNode, Vector3(0,0,0), Vector3(0,0,1)));
+	this->addLink(new Link(vNode, hNode));
 
 	this->computeAabb();
-	this->updateLinkScale();
 }
 
 void Graph::makeSharp()
@@ -371,13 +367,12 @@ void Graph::makeSharp()
 
 	addNode(vlNode); addNode(vrNode); addNode(htNode); addNode(hbNode);
 
-	addLink(new Link(vlNode, hbNode, Vector3(-2,-2,0), Vector3(0,0,1)));
-	addLink(new Link(vrNode, hbNode, Vector3( 2,-2,0), Vector3(0,0,1)));
-	addLink(new Link(vlNode, htNode, Vector3(-2, 2,0), Vector3(0,0,1)));
-	addLink(new Link(vrNode, htNode, Vector3( 2, 2,0), Vector3(0,0,1)));
+	addLink(new Link(vlNode, hbNode));
+	addLink(new Link(vrNode, hbNode));
+	addLink(new Link(vlNode, htNode));
+	addLink(new Link(vrNode, htNode));
 
 	this->computeAabb();
-	this->updateLinkScale();
 }
 
 void Graph::makeU()
@@ -403,14 +398,13 @@ void Graph::makeU()
 	this->addNode(hNode);
 	this->addNode(rNode);
 
-	this->addLink(new Link(ltNode, lbNode, Vector3(0,4,0), Vector3(0,0,1)));
-	this->addLink(new Link(lbNode, hNode, Vector3(1,0,0), Vector3(0,0,1)));
-	Link* nailedLink = new Link(hNode, rNode, Vector3(7,0,0), Vector3(0,0,1));
-	nailedLink->isNailed = true;
+	this->addLink(new Link(ltNode, lbNode));
+	this->addLink(new Link(lbNode, hNode));
+	Link* nailedLink = new Link(hNode, rNode);
+	//nailedLink->isNailed = true;
 	this->addLink(nailedLink);
 
 	this->computeAabb();
-	this->updateLinkScale();
 }
 
 
@@ -436,13 +430,12 @@ void Graph::makeO()
 	this->addNode(bNode);
 	this->addNode(tNode);
 
-	this->addLink(new Link(bNode, lNode, Vector3(1,0,0), Vector3(0,0,1)));
-	this->addLink(new Link(bNode, rNode, Vector3(7,0,0), Vector3(0,0,1)));
-	this->addLink(new Link(tNode, lNode, Vector3(1,4,0), Vector3(0,0,1)));
-	this->addLink(new Link(tNode, rNode, Vector3(7,4,0), Vector3(0,0,1)));
+	this->addLink(new Link(bNode, lNode));
+	this->addLink(new Link(bNode, rNode));
+	this->addLink(new Link(tNode, lNode));
+	this->addLink(new Link(tNode, rNode));
 
 	this->computeAabb();
-	this->updateLinkScale();
 }
 
 void Graph::makeChair(double legL)
@@ -482,7 +475,6 @@ void Graph::makeChair(double legL)
 	this->addLink(new Link(seatNode, legNode3, Vector3(3.5,-1,-1.75), Vector3(0,0,1)));
 
 	this->computeAabb();
-	this->updateLinkScale();
 }
 
 void Graph::computeAabb()
@@ -589,9 +581,9 @@ GraphState Graph::getState()
 	foreach(Node* n, nodes) state.node_scale_factor.push_back(n->scaleFactor);
 	foreach(Link* l, links)
 	{
-		state.link_angle.push_back(l->angle);
-		state.link_is_broken.push_back(l->isBroken);
-		state.link_is_nailed.push_back(l->isNailed);
+		//state.link_angle.push_back(l->angle);
+		//state.link_is_broken.push_back(l->isBroken);
+		//state.link_is_nailed.push_back(l->isNailed);
 	}
 
 	return state;
@@ -606,16 +598,10 @@ void Graph::setState( GraphState &state )
 
 	for (int i = 0; i < links.size(); i++)
 	{
-		links[i]->angle = state.link_angle[i];
-		links[i]->isBroken = state.link_is_broken[i];
-		links[i]->isNailed = state.link_is_nailed[i];
+		//links[i]->angle = state.link_angle[i];
+		//links[i]->isBroken = state.link_is_broken[i];
+		//links[i]->isNailed = state.link_is_nailed[i];
 	}
-}
-
-void Graph::updateLinkScale()
-{
-	// set scale to each link
-	foreach(Link* l, links) l->setScale(radius);
 }
 
 QSet<Node*> Graph::getNodesOnBoundary()

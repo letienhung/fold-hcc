@@ -27,9 +27,6 @@ public:
 	Frame	getFrame();
 	void	setFrame(Frame f);
 
-	// Hinge property
-	Vec3d dihedralDirection(Vec3d hinge_pos, Vec3d hinge_axis); 
-
 	// Transformation
 	void translate(Vector3 t);
 	void fix();

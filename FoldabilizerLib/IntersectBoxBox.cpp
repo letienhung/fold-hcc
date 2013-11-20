@@ -11,7 +11,7 @@ bool IntersectBoxBox::test(Box &box0, Box &box1)
 	// the cases when at least one pair of axes are parallel.  If this
 	// happens, there is no need to test for separation along the
 	// Cross(A[i],B[j]) directions.
-	const double cutoff = 1 - ZERO_TOLERANCE;
+	const double cutoff = 1 - ZERO_TOLERANCE_LOW;
 	bool existsParallelPair = false;
 	int i;
 

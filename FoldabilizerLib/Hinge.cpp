@@ -1,6 +1,7 @@
 #include "Hinge.h"
 
 #include "..\CustomDrawObjects.h"
+#include "Node.h"
 
 Hinge::Hinge(){}
 
@@ -8,6 +9,8 @@ Hinge::~Hinge(){}
 
 Hinge::Hinge( Node* n1, Node* n2, Point c, Vec3d x, Vector3 y, Vector3 z, double angle_suf )
 {
+	this->node1 = n1;
+	this->node2 = n2;
 	this->center = c;
 	this->hX = x.normalized();
 	this->hY = y.normalized();

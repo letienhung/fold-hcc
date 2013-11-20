@@ -22,9 +22,9 @@ double Plane::signedDistanceTo( Vector3 p )
 int Plane::whichSide(Vector3 p)
 {
 	double sd = signedDistanceTo(p);
-	if (sd > ZERO_TOLERANCE)
+	if (sd > ZERO_TOLERANCE_LOW)
 		return 1;
-	else if(sd < -ZERO_TOLERANCE)
+	else if(sd < -ZERO_TOLERANCE_LOW)
 		return -1;
 	else 
 		return 0;

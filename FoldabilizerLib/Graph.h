@@ -56,7 +56,6 @@ public:
 
 	// Visualize
 	void draw();
-	void updateLinkScale();
 
 	// Prepare data
 	void makeI();

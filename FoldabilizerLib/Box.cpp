@@ -1,4 +1,6 @@
 #include "Box.h"
+#include "Numeric.h"
+
 //		  7-----------6                     Y
 //		 /|          /|                   f2^   /f5
 //		4-+---------5 |                     |  / 
@@ -231,14 +233,14 @@ QVector<Plane> Box::getFacePlanes()
 	return faces;
 }
 
-QVector<Rectangle> Box::getFaceRectangles()
-{
-	QVector<Rectangle> rects;
-
-	foreach( QVector<Point> conners, this->getFacePoints() )
-		rects.push_back(Rectangle(conners));
-
-	return rects;
-}
+//QVector<Rectangle> Box::getFaceRectangles()
+//{
+//	QVector<Rectangle> rects;
+//
+//	foreach( QVector<Point> conners, this->getFacePoints() )
+//		rects.push_back(Rectangle(conners));
+//
+//	return rects;
+//}
 
 

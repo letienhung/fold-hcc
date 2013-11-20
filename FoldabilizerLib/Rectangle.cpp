@@ -50,8 +50,8 @@ Vector2 Rectangle::getUniformCoordinates( Vector3 p )
 bool Rectangle::contains( Vector3 p )
 {
 	Vector2 coord = this->getUniformCoordinates(p);
-	return (fabs(coord[0]) <= 1 + ZERO_TOLERANCE) 
-		&& (fabs(coord[1]) <= 1 + ZERO_TOLERANCE);
+	return (fabs(coord[0]) <= 1 + ZERO_TOLERANCE_LOW) 
+		&& (fabs(coord[1]) <= 1 + ZERO_TOLERANCE_LOW);
 }
 
 SurfaceMesh::Vector3 Rectangle::getIntersection( Segment s )

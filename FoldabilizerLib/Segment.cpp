@@ -24,8 +24,14 @@ bool Segment::isCollinearWith( const Segment& other )
 
 bool Segment::overlaps( const Segment& other )
 {
+
 	if (!this->isCollinearWith(other))
 		return false;
+
+	//qDebug() << "Overlap test: ";
+	//qDebug() << "\tThis seg: P0 = " << qstr(this->P0) << ", P1 = " << qstr(this->P1) << ", Direction = " << qstr(this->Direction);
+	//qDebug() << "\tOther seg: P0 = " << qstr(other.P0) << ", P1 = " << qstr(other.P1) << ", Direction = " << qstr(other.Direction);
+	//qDebug() << "\t***They are collinear.";
 
 	int s0 = this->whichSide(other.P0);
 	int s1 = this->whichSide(other.P1);

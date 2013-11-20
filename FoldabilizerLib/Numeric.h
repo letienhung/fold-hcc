@@ -16,7 +16,8 @@
 #define RANGED(min, v, max) ( Max(min, Min(v, max)) ) 
 
 // Tolerance
-#define ZERO_TOLERANCE 1e-06
+#define ZERO_TOLERANCE_LOW 1e-06
+#define ZERO_TOLERANCE_HIGH 1e-01
 
 inline Vector3 minimize(const Vector3 a, const Vector3 b){
 	Vector3 c = a;
@@ -58,7 +59,23 @@ inline double radians2degrees(double r)
 	return 180 * r / M_PI;
 }
 
+inline QString qstr(Vector3 v)
+{
+	return QString("(%1, %2, %3)").arg(v.x()).arg(v.y()).arg(v.z());
+}
+
 inline bool isCollinear(const Vector3& v0, const Vector3& v1)
 {
-	return cross(v0, v1).norm() < ZERO_TOLERANCE;
+	double cp = cross(v0, v1).norm();
+	bool isCol = cp < ZERO_TOLERANCE_LOW;
+	
+	//qDebug() << "Collinearity checking:" << qstr(v0) << "and" << qstr(v1) << ": cross_normal = " << cp << ", isCol = "<< isCol;
+
+	return isCol;
 }
+
+inline bool isPerp(const Vector3& v0, const Vector3& v1)
+{
+	return fabs(dot(v0, v1)) < ZERO_TOLERANCE_LOW;
+}
+

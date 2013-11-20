@@ -47,7 +47,7 @@ struct Box
 	QVector<Segment>			getEdgeSegments();
 	QVector< QVector<Point> >	getFacePoints();
 	QVector<Plane>				getFacePlanes();
-	QVector<Rectangle>			getFaceRectangles();
+	//QVector<Rectangle>			getFaceRectangles();
 
 	// relation with other objects
 	bool onBox(Line line);
