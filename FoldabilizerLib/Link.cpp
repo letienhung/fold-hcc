@@ -3,10 +3,6 @@
 #include "../CustomDrawObjects.h"
 #include "HingeDetector.h"
 
-Link::Link(Node* n1, Node* n2, Point c, Vec3d a)
-{
-	// depreciated 
-}
 
 Link::Link( Node* n1, Node* n2 )
 {
@@ -15,6 +11,7 @@ Link::Link( Node* n1, Node* n2 )
 	this->id = node1->mID + ":" + node2->mID;
 
 	hinges = HingeDetector::getHinges(node1, node2);
+	activeHingeID = 0;
 
 	// tag
 	isFixed = false;
@@ -22,10 +19,12 @@ Link::Link( Node* n1, Node* n2 )
 	isNailed = false;
 }
 
-void Link::draw(double scale)
+void Link::draw()
 {
 	if (isBroken || isNailed) return;
-	foreach(Hinge h, hinges) h.draw(scale, false);
+	foreach(Hinge* h, hinges) h->draw(false);
+
+	this->activeHinge()->draw(true);
 }
 
 bool Link::hasNode( QString nodeID )
@@ -45,10 +44,38 @@ Node* Link::getNode( QString nodeID )
 
 bool Link::fix()
 {
-	return true;
+	return this->activeHinge()->fix();
 }
 
-Hinge Link::activeHinge()
+int Link::nbHinges()
 {
-	return hinges[0];
+	return hinges.size();
+}
+
+Link::~Link()
+{
+	foreach(Hinge* h, hinges) 
+		delete h;
+}
+
+void Link::setActiveHingeId( int hid )
+{
+	if (hid >= 0 && hid < this->nbHinges())
+		this->activeHingeID = hid;
+}
+
+Hinge* Link::activeHinge()
+{
+	return this->hinges[activeHingeID];
+}
+
+int Link::getActiveHingeId()
+{
+	return activeHingeID;
+}
+
+void Link::setHingeScale( double scale )
+{
+	foreach(Hinge* h, hinges)
+		h->scale = scale;
 }

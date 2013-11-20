@@ -14,7 +14,9 @@ public:
 	double				originalMaterialVolume;
 	GraphState			currState;
 	double				currCost;
-	QVector<double>		typeProbability;			// Probability of proposed jump types
+
+	QVector<double>		jumpTypeProbability;		// Probability of proposed jump types
+	double				changeActiveHingeProbability;
 	NormalDistribution	normalDistribution;
 
 	double	targetVolumePercentage;

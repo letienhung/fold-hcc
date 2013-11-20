@@ -12,7 +12,7 @@ Foldabilizer::Foldabilizer()
 	widget = NULL;
 	hccGraph = new Graph();
 	mhOptimizer = new MHOptimizer(hccGraph);
-	stepsPerJump = 10;
+	stepsPerJump = 1;
 }
 
 void Foldabilizer::create()

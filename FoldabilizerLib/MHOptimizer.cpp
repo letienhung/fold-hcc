@@ -9,6 +9,7 @@ MHOptimizer::MHOptimizer(Graph* graph)
 	this->costWeight = 0.5;
 	this->temperature = 100;
 	this->setLinkProbability(0.8);
+	this->changeActiveHingeProbability = 0.2;
 
 	isReady = false;
 }
@@ -71,21 +72,24 @@ double MHOptimizer::cost()
 
 void MHOptimizer::proposeChangeHingeAngle()
 {
-	// 
-
-	// hinge id
+	// link id
 	int linkID = uniformDiscreteDistribution(0, hccGraph->nbLinks());
 	Link* plink = hccGraph->links[linkID];
 	if (plink->isNailed || plink->isBroken) return;
 
-	// TODO: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-	// use new hinges
-	// angle
-	Hinge phinge = plink->activeHinge();
-	double stddev = phinge.maxAngle / 6; // 3-\delta coverage of 99.7%
-	double old_angle = phinge.angle;
-	double new_angle = periodicalRanged(0, phinge.maxAngle, normalDistribution.generate(old_angle, stddev));
-	phinge.angle = new_angle;
+	// hinge id
+	if (uniformRealDistribution() < changeActiveHingeProbability)
+	{
+		int hingeID = uniformDiscreteDistribution(0, plink->nbHinges());
+		plink->setActiveHingeId(hingeID);
+	}
+	Hinge* phinge = plink->activeHinge();
+
+	// jump
+	double stddev = phinge->maxAngle / 6; // 3-\delta coverage of 99.7%
+	double old_angle = phinge->angle;
+	double new_angle = RANGED(0, normalDistribution.generate(old_angle, stddev), phinge->maxAngle);
+	phinge->angle = new_angle;
 
 	qDebug() << "[Jump" << jumpCount << "] Angle of " << plink->id.toStdString().c_str() << ": " 
 		<< radians2degrees(old_angle) << " => " << radians2degrees(new_angle);
@@ -112,7 +116,7 @@ void MHOptimizer::proposeDeformCuboid()
 
 void MHOptimizer::proposeJump()
 {
-	int jump_type = discreteDistribution(typeProbability);
+	int jump_type = discreteDistribution(jumpTypeProbability);
 	if (jump_type == 0) 
 		proposeChangeHingeAngle();
 	else if(jump_type == 1)
@@ -174,8 +178,8 @@ bool MHOptimizer::isCollisionFree()
 
 void MHOptimizer::setLinkProbability( double lp )
 {
-	typeProbability.resize(0);
-	typeProbability << lp << 1 - lp;
+	jumpTypeProbability.resize(0);
+	jumpTypeProbability << lp << 1 - lp;
 }
 
 

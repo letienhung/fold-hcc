@@ -33,6 +33,8 @@ Hinge::Hinge( Node* n1, Node* n2, Point c, Vec3d x, Vector3 y, Vector3 z, double
 	node1_record = createNodeRecord(node1_frame, zxFrame);
 	node2_record = createNodeRecord(node2_frame, zyFrame);
 
+	// hinge scale
+	this->scale = 0.1;
 }
 
 
@@ -144,9 +146,9 @@ void Hinge::updateDihedralVectors( bool isV1Fixed )
 }
 
 
-void Hinge::draw( double scale, bool highlight )
+void Hinge::draw( bool highlight )
 {
-	FrameSoup fs(scale);
+	FrameSoup fs(this->scale);
 	fs.addFrame( this->hX, this->hY, this->hZ, this->center);
 	fs.draw();
 

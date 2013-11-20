@@ -193,7 +193,7 @@ bool Graph::loadHCC(QString fname)
 			node_2.toElement().attribute("ToY").toDouble(),
 			node_2.toElement().attribute("ToZ").toDouble());
 			
-			this->addLink(new Link(getNode(box1ID), getNode(box2ID), (from+to)/2, to-from));
+			//this->addLink(new Link(getNode(box1ID), getNode(box2ID), (from+to)/2, to-from));
 
 			node_2 = node_2.nextSibling();
 		}
@@ -271,8 +271,7 @@ bool Graph::saveHCC(QString fname)
 
 void Graph::draw()
 {
-	double linkScale = this->radius / 10;
-	foreach(Link *l, links) l->draw(linkScale);
+	foreach(Link *l, links) l->draw();
 	foreach(Node *n, nodes) n->draw();
 }
 
@@ -292,6 +291,7 @@ void Graph::makeI()
 	this->addLink(new Link(tNode, bNode));
 
 	this->computeAabb();
+	this->updateHingeScale();
 }
 
 void Graph::makeL()
@@ -311,6 +311,7 @@ void Graph::makeL()
 	this->addLink(new Link(vNode, hNode));
 
 	this->computeAabb();
+	this->updateHingeScale();
 }
 
 void Graph::makeT()
@@ -334,6 +335,7 @@ void Graph::makeT()
 	this->addLink(new Link(vNode, hNode));
 
 	this->computeAabb();
+	this->updateHingeScale();
 }
 
 void Graph::makeX()
@@ -353,6 +355,7 @@ void Graph::makeX()
 	this->addLink(new Link(vNode, hNode));
 
 	this->computeAabb();
+	this->updateHingeScale();
 }
 
 void Graph::makeSharp()
@@ -373,6 +376,7 @@ void Graph::makeSharp()
 	addLink(new Link(vrNode, htNode));
 
 	this->computeAabb();
+	this->updateHingeScale();
 }
 
 void Graph::makeU()
@@ -405,6 +409,7 @@ void Graph::makeU()
 	this->addLink(nailedLink);
 
 	this->computeAabb();
+	this->updateHingeScale();
 }
 
 
@@ -436,6 +441,7 @@ void Graph::makeO()
 	this->addLink(new Link(tNode, rNode));
 
 	this->computeAabb();
+	this->updateHingeScale();
 }
 
 void Graph::makeChair(double legL)
@@ -468,13 +474,14 @@ void Graph::makeChair(double legL)
 	this->addNode(legNode2);
 	this->addNode(legNode3);
 
-	this->addLink(new Link(backNode, seatNode, Vector3(0.5,0,0), Vector3(0,0,1)));
-	this->addLink(new Link(seatNode, legNode0, Vector3(0.5,-1,1.75), Vector3(0,0,1)));
-	this->addLink(new Link(seatNode, legNode1, Vector3(0.25,-1,-1.5), Vector3(1,0,0)));
-	this->addLink(new Link(seatNode, legNode2, Vector3(3.75,-1,1.5), Vector3(1,0,0)));
-	this->addLink(new Link(seatNode, legNode3, Vector3(3.5,-1,-1.75), Vector3(0,0,1)));
+	this->addLink(new Link(backNode, seatNode));
+	this->addLink(new Link(seatNode, legNode0));
+	this->addLink(new Link(seatNode, legNode1));
+	this->addLink(new Link(seatNode, legNode2));
+	this->addLink(new Link(seatNode, legNode3));
 
 	this->computeAabb();
+	this->updateHingeScale();
 }
 
 void Graph::computeAabb()
@@ -581,9 +588,10 @@ GraphState Graph::getState()
 	foreach(Node* n, nodes) state.node_scale_factor.push_back(n->scaleFactor);
 	foreach(Link* l, links)
 	{
-		//state.link_angle.push_back(l->angle);
-		//state.link_is_broken.push_back(l->isBroken);
-		//state.link_is_nailed.push_back(l->isNailed);
+		state.active_hinge_id.push_back(l->getActiveHingeId());
+		state.hinge_angle.push_back(l->activeHinge()->angle);
+		state.link_is_broken.push_back(l->isBroken);
+		state.link_is_nailed.push_back(l->isNailed);
 	}
 
 	return state;
@@ -598,9 +606,10 @@ void Graph::setState( GraphState &state )
 
 	for (int i = 0; i < links.size(); i++)
 	{
-		//links[i]->angle = state.link_angle[i];
-		//links[i]->isBroken = state.link_is_broken[i];
-		//links[i]->isNailed = state.link_is_nailed[i];
+		links[i]->setActiveHingeId(state.active_hinge_id[i]);
+		links[i]->activeHinge()->angle = state.hinge_angle[i];
+		links[i]->isBroken = state.link_is_broken[i];
+		links[i]->isNailed = state.link_is_nailed[i];
 	}
 }
 
@@ -699,4 +708,10 @@ bool Graph::isHingable( Link* link )
 	this->setState(backupState);
 
 	return true;
+}
+
+void Graph::updateHingeScale()
+{
+	foreach(Link* l, links)
+		l->setHingeScale(this->radius / 10);
 }

@@ -27,7 +27,7 @@ public:
 	Vector3	hX, hY, hZ;			// axis and dihedral directions
 
 	double	angle;				// angle <v1, v2> in radians: [0, maxAngle]
-	double	maxAngle;			// 90 or 180
+	double	maxAngle;			// pi/2 or pi
 	Frame	zxFrame, zyFrame;	// dihedral frames
 
 	struct HingeRecord{			// hinge records in node frames
@@ -40,7 +40,8 @@ public:
 
 	bool fix();
 
-	void draw(double scale, bool highlight);
+	double scale;
+	void draw(bool highlight);
 
 private:
 	void updateDihedralVectors(bool fix_v1);

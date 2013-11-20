@@ -8,9 +8,9 @@ HingeDetector::HingeDetector()
 }
 
 
-QVector<Hinge> HingeDetector::getHinges( Node *n0, Node *n1 )
+QVector<Hinge*> HingeDetector::getHinges( Node *n0, Node *n1 )
 {
-	QVector<Hinge> hinges;
+	QVector<Hinge*> hinges;
 
 	Box&				box0 = n0->mBox;
 	Box&				box1 = n1->mBox;
@@ -60,7 +60,7 @@ QVector<Hinge> HingeDetector::getHinges( Node *n0, Node *n1 )
 				// HxCrossHxPerp and hz have opposite directions
 				if (dot(HxCrossHxPerp, hz) > 0) hz *= -1;
 
-				hinges.push_back(Hinge(n0, n1, hcenter, hx, hy, hz, 180));
+				hinges.push_back(new Hinge(n0, n1, hcenter, hx, hy, hz, M_PI));
 			}
 		}
 	}

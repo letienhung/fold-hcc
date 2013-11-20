@@ -12,14 +12,11 @@ class Link
 public:
 	QString	id;
 	Node	*node1, *node2;
+	QVector<Hinge*>	hinges;
+	int activeHingeID;
 
-	bool isFixed;				// tags used for restore configuration
-	bool isBroken;
-	bool isNailed;
-
-    Link(Node* n1, Node* n2, Point c, Vec3d a);
 	Link(Node* n1, Node* n2);
-    ~Link(){};
+	~Link();
 
 	// accessors
 	bool  hasNode(QString nodeID);
@@ -27,13 +24,19 @@ public:
 	Node* otherNode(QString nodeID);
 
 	// hinges
-	QVector<Hinge>	hinges;
-	Hinge activeHinge();
+	int		nbHinges();
+	int		getActiveHingeId();
+	void	setActiveHingeId(int hid);
+	Hinge*	activeHinge();
 
-	// fix
+	// restore configuration
+	bool isFixed;				
+	bool isBroken;
+	bool isNailed;
 	bool fix();
 
 	// visualization
-	void draw(double scale);
+	void setHingeScale(double scale);
+	void draw();
 };
 

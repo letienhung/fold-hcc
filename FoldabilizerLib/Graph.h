@@ -7,7 +7,8 @@
 
 struct GraphState{
 	QVector<Vector3>	node_scale_factor;
-	QVector<double>		link_angle;
+	QVector<int>		active_hinge_id;
+	QVector<double>		hinge_angle;
 	QVector<bool>		link_is_broken;
 	QVector<bool>		link_is_nailed;
 };
@@ -55,6 +56,7 @@ public:
 	double	getMaterialVolume();
 
 	// Visualize
+	void updateHingeScale();
 	void draw();
 
 	// Prepare data
