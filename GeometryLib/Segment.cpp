@@ -1,5 +1,5 @@
 #include "Segment.h"
-#include "..\Numeric.h"
+#include "Numeric.h"
 
 Segment::Segment()
 {

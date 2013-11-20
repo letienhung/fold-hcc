@@ -4,4 +4,5 @@ SUBDIRS += \
     foldabilizer \
     FoldabilizerLib \
     FoldabilizerUi \
-    GeometryLib
+    GeometryLib \
+    UtilityLib

@@ -1,5 +1,5 @@
 #include "Node.h"
-#include "../CustomDrawObjects.h"
+#include "CustomDrawObjects.h"
 
 #include <QDebug>
 

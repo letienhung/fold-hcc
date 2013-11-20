@@ -1,5 +1,5 @@
 #include "Frame.h"
-#include "..\Numeric.h"
+#include "Numeric.h"
 
 Frame::Frame()
 { 

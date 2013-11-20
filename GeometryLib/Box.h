@@ -1,6 +1,5 @@
 #pragma once
 
-#include "GeometryLibGlobal.h"
 #include "Frame.h"
 #include "Plane.h"
 #include "Line.h"

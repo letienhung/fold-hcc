@@ -12,6 +12,10 @@ CONFIG(debug, debug|release) {
     CFG = release
 }
 
+# Utility library
+LIBS += -L$$PWD/../UtilityLib/$$CFG/lib -lUtilityLib
+INCLUDEPATH += ../UtilityLib
+
 # Library name and destination
 TARGET = GeometryLib
 DESTDIR = $$PWD/$$CFG/lib
@@ -23,8 +27,7 @@ HEADERS += \
     Line.h \
     IntersectBoxBox.h \
     Frame.h \
-    Box.h \
-    GeometryLibGlobal.h
+    Box.h
 
 SOURCES += \
     Segment.cpp \

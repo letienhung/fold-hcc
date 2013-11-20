@@ -1,6 +1,6 @@
 #include "Link.h"
 #include "Node.h"
-#include "../CustomDrawObjects.h"
+#include "CustomDrawObjects.h"
 #include "HingeDetector.h"
 
 

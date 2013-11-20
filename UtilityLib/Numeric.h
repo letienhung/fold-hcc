@@ -1,12 +1,6 @@
 #pragma once
 
-#include "SurfaceMeshModel.h"
-using namespace SurfaceMesh;
-
-#include <QVector>
-#include <QString>
-#include <QTime>
-#include <QDebug>
+#include "UtilityGlobal.h"
 
 #include <cstdlib>
 #define _USE_MATH_DEFINES
@@ -79,8 +73,6 @@ inline bool isCollinear(const Vector3& v0, const Vector3& v1)
 	return isCol;
 }
 
-inline bool isPerp(const Vector3& v0, const Vector3& v1)
-{
-	return fabs(dot(v0, v1)) < ZERO_TOLERANCE_LOW;
-}
+bool isPerp(const Vector3& v0, const Vector3& v1);
+
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "FoldabilizerLibGlobal.h"
+#include "UtilityGlobal.h"
 #include "Frame.h"
 #include "Box.h"
 

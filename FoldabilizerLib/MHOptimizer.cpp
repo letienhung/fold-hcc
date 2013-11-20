@@ -1,5 +1,6 @@
 #include "MHOptimizer.h"
 #include "IntersectBoxBox.h"
+#include <QTime>
 
 MHOptimizer::MHOptimizer(Graph* graph)
 {

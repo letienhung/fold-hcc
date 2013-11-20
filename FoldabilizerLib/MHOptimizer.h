@@ -1,5 +1,5 @@
 #pragma once
-#include "FoldabilizerLibGlobal.h"
+
 #include "Graph.h"
 #include "ProbabilityDistributions.h"
 

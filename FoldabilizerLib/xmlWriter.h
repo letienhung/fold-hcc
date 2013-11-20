@@ -1,5 +1,4 @@
-#ifndef __xmlWriter_h_
-#define __xmlWriter_h_
+#pragma once
 
 #include <QTextStream>
 #include <QMap>
@@ -47,6 +46,3 @@ private:
 	bool autoNewLine;
 	bool atBeginningOfLine;
 };
-
-
-#endif

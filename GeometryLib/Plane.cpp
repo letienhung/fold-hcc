@@ -1,5 +1,5 @@
 #include "Plane.h"
-#include "..\Numeric.h"
+#include "Numeric.h"
 
 Plane::Plane()
 {

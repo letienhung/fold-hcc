@@ -1,5 +1,5 @@
 #pragma once
-#include "FoldabilizerLibGlobal.h"
+
 #include "Node.h"
 #include "Hinge.h"
 

@@ -11,6 +11,10 @@ CONFIG(debug, debug|release) {
     CFG = release
 }
 
+# Utility library
+LIBS += -L$$PWD/../UtilityLib/$$CFG/lib -lUtilityLib
+INCLUDEPATH += ../UtilityLib
+
 # Geometry library
 LIBS += -L$$PWD/../GeometryLib/$$CFG/lib -lGeometryLib
 INCLUDEPATH += ../GeometryLib

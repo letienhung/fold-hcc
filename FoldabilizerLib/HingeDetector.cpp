@@ -1,7 +1,7 @@
 #include "HingeDetector.h"
 #include "Segment.h"
 #include "Rectangle.h"
-#include "..\Numeric.h"
+#include "Numeric.h"
 
 HingeDetector::HingeDetector()
 {

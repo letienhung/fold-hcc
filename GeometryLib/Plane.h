@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GeometryLibGlobal.h"
+#include "UtilityGlobal.h"
 
 class Plane
 {
