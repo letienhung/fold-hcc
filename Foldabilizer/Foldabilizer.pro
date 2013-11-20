@@ -32,7 +32,7 @@ SOURCES += \
     foldem_widget.cpp
 
 RESOURCES += \
-    foldabilizer.qrc
+    Foldabilizer.qrc
 
 FORMS += \
     foldem_widget.ui
