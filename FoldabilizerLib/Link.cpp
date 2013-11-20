@@ -25,7 +25,8 @@ void Link::draw()
 	if (isBroken || isNailed) return;
 	foreach(Hinge* h, hinges) h->draw(false);
 
-	this->activeHinge()->draw(true);
+	if (this->activeHinge())
+		this->activeHinge()->draw(true);
 }
 
 bool Link::hasNode( QString nodeID )
@@ -67,7 +68,10 @@ void Link::setActiveHingeId( int hid )
 
 Hinge* Link::activeHinge()
 {
-	return this->hinges[activeHingeID];
+	if (this->hinges.isEmpty())
+		return NULL;
+	else
+		return this->hinges[activeHingeID];
 }
 
 int Link::getActiveHingeId()
