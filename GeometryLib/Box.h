@@ -1,14 +1,15 @@
 #pragma once
 
-#include "FoldabilizerLibGlobal.h"
+#include "GeometryLibGlobal.h"
 #include "Frame.h"
 #include "Plane.h"
 #include "Line.h"
 #include "Segment.h"
 #include "Rectangle.h"
 
-struct Box 
+class Box 
 {
+public:
 	// core data
 	Point Center;
 	QVector<Vector3> Axis;

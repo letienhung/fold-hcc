@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Numeric.h"
+#include "..\Numeric.h"
 
 inline double uniformRealDistribution(double a = 0.0, double b = 1.0)
 {

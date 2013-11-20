@@ -1,7 +1,5 @@
 #pragma once
 
-#include "FoldabilizerLibGlobal.h"
-
 #include "Segment.h"
 
 class Rectangle

@@ -1,5 +1,5 @@
 #include "Line.h"
-#include "Numeric.h"
+#include "..\Numeric.h"
 
 Line::Line()
 {

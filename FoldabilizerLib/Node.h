@@ -1,11 +1,9 @@
 #pragma once
 
-#include "Box.h"
 #include "FoldabilizerLibGlobal.h"
 
+#include "Box.h"
 #include "Link.h"
-
-//class Link;
 
 class Node
 {

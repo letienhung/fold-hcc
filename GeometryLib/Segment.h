@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FoldabilizerLibGlobal.h"
+#include "GeometryLibGlobal.h"
 
 enum {SEG_NEGATIVE, SEG_ON, SEG_POSITIVE};
 

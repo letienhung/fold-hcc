@@ -11,6 +11,10 @@ CONFIG(debug, debug|release) {
     CFG = release
 }
 
+# Geometry library
+LIBS += -L$$PWD/../GeometryLib/$$CFG/lib -lGeometryLib
+INCLUDEPATH += ../GeometryLib
+
 # Foldabilizer library
 LIBS += -L$$PWD/../FoldabilizerLib/$$CFG/lib -lFoldabilizerLib
 INCLUDEPATH += ../FoldabilizerLib

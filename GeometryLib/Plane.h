@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FoldabilizerLibGlobal.h"
+#include "GeometryLibGlobal.h"
 
 class Plane
 {

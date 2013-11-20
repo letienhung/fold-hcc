@@ -1,5 +1,5 @@
 #include "Intersectboxbox.h"
-#include "Numeric.h"
+#include "..\Numeric.h"
 
 IntersectBoxBox::IntersectBoxBox()
 {

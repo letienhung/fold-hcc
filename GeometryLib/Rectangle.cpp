@@ -1,6 +1,6 @@
 #include "Rectangle.h"
 #include "Plane.h"
-#include "Numeric.h"
+#include "..\Numeric.h"
 
 Rectangle::Rectangle()
 {

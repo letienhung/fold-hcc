@@ -1,11 +1,14 @@
 #pragma once
 
-#include "FoldabilizerLibGlobal.h"
+#include "SurfaceMeshModel.h"
+using namespace SurfaceMesh;
 
-#include <cstdlib>
+#include <QVector>
+#include <QString>
 #include <QTime>
 #include <QDebug>
 
+#include <cstdlib>
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <algorithm>

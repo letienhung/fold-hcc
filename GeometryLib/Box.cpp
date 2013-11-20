@@ -1,5 +1,5 @@
 #include "Box.h"
-#include "Numeric.h"
+#include "..\Numeric.h"
 
 //		  7-----------6                     Y
 //		 /|          /|                   f2^   /f5
