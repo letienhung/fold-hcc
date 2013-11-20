@@ -22,7 +22,7 @@ DESTDIR = $$PWD/$$CFG/lib
 
 HEADERS += \
     Segment.h \
-    Rectangle.h \
+    Box2.h \
     Plane.h \
     Line.h \
     IntersectBoxBox.h \
@@ -31,7 +31,7 @@ HEADERS += \
 
 SOURCES += \
     Segment.cpp \
-    Rectangle.cpp \
+    Box2.cpp \
     Plane.cpp \
     Line.cpp \
     IntersectBoxBox.cpp \

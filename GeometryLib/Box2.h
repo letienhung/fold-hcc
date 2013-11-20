@@ -2,19 +2,17 @@
 
 #include "Segment.h"
 
-class Rectangle
+class Box2
 {
 public:
-    Rectangle();
-	Rectangle(QVector<Vector3>& conners);
+    Box2();
+    Box2(QVector<Vector3>& conners);
 	
 	// relations
 	bool isCoplanar(Vector3 p);
 	bool isCoplanar(Segment s);
 	bool contains(Vector3 p);
-	
-	// intersection
-	Vector3 getIntersection(Segment s);
+	bool contains(Segment s);
 
 	// coordinates
 	Vector2 getUniformCoordinates(Vector3 p);

@@ -1,6 +1,6 @@
 #include "HingeDetector.h"
 #include "Segment.h"
-#include "Rectangle.h"
+#include "Box2.h"
 #include "Numeric.h"
 
 HingeDetector::HingeDetector()
@@ -12,24 +12,46 @@ QVector<Hinge*> HingeDetector::getHinges( Node *n0, Node *n1 )
 {
 	QVector<Hinge*> hinges;
 
+	return hinges;
+}
+
+void HingeDetector::getPerpAxisAndExtent( Box& box, Vector3 hinge_center, Vector3 hinge_axis, QVector<Vector3>& perpAxis, QVector<double> &perpExtent )
+{
+	perpAxis.clear();
+	perpExtent.clear();
+
+	Vec3d h2n = (box.Center - hinge_center).normalized();
+
+	for(int i = 0; i < 3; i++){
+		if (isPerp(box.Axis[i], hinge_axis))
+		{
+			Vector3 dd = box.Axis[i];
+			if (dot(dd, h2n) < 0) dd *= -1;
+
+			perpAxis.push_back(dd);
+			perpExtent.push_back(box.Extent[i]);
+		}
+	}
+}
+
+QVector<Hinge*> HingeDetector::getEdgeEdgeHinges( Node *n0, Node *n1 )
+{
+	QVector<Hinge*> hinges;
+
 	Box&				box0 = n0->mBox;
 	Box&				box1 = n1->mBox;
-	Frame				frame0 = box0.getFrame();
-	Frame				frame1 = box1.getFrame();
 	QVector<Segment>	edges0 = box0.getEdgeSegments();
 	QVector<Segment>	edges1 = box1.getEdgeSegments();
-	//QVector<Rectangle>	faces0 = box0.getFaceRectangles();
-	//QVector<Rectangle>	faces1 = box1.getFaceRectangles();
 
-	// Edge-Edge test
 	for (int i = 0; i < 12; i++)
 	{
 		for (int j = 0; j < 12; j++)
 		{
 			Segment& e0_i = edges0[i];
 			Segment& e1_j = edges1[j];
-			
-			// overlap: create a hinge
+
+			// create a hinge if two edges overlap
+			// to-do: only when one edge contains the other
 			if (e0_i.overlaps(e1_j))
 			{
 				// center and hz
@@ -65,29 +87,34 @@ QVector<Hinge*> HingeDetector::getHinges( Node *n0, Node *n1 )
 		}
 	}
 
-	// Edge-Face test
-
-	// Face-Face test
-
-
 	return hinges;
 }
 
-void HingeDetector::getPerpAxisAndExtent( Box& box, Vector3 hinge_center, Vector3 hinge_axis, QVector<Vector3>& perpAxis, QVector<double> &perpExtent )
+QVector<Hinge*> HingeDetector::getEdgeFaceHinges( Node *n0, Node *n1 )
 {
-	perpAxis.clear();
-	perpExtent.clear();
+	QVector<Hinge*> hinges;
 
-	Vec3d h2n = (box.Center - hinge_center).normalized();
+	Box&				box0 = n0->mBox;
+	Box&				box1 = n1->mBox;
+	QVector<Segment>	edges0 = box0.getEdgeSegments();
+	QVector<Segment>	edges1 = box1.getEdgeSegments();
+	QVector<Box2>	faces0 = box0.getFaceRectangles();
+	QVector<Box2>	faces1 = box1.getFaceRectangles();
 
-	for(int i = 0; i < 3; i++){
-		if (isPerp(box.Axis[i], hinge_axis))
+	// Edge0-Face1 test
+	for (int i = 0; i < 12; i ++)
+	{
+		for (int j = 0; j < 6; j++)
 		{
-			Vector3 dd = box.Axis[i];
-			if (dot(dd, h2n) < 0) dd *= -1;
+			Segment& e_i = edges0[i];
+			Box2& f_j = faces1[j];
 
-			perpAxis.push_back(dd);
-			perpExtent.push_back(box.Extent[i]);
+			// create a hinge if f_j contains e_i
+			if (f_j.contains(e_i))
+			{
+			}
 		}
 	}
+
+	return hinges;
 }

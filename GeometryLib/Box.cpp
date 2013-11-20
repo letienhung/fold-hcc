@@ -233,14 +233,14 @@ QVector<Plane> Box::getFacePlanes()
 	return faces;
 }
 
-//QVector<Rectangle> Box::getFaceRectangles()
-//{
-//	QVector<Rectangle> rects;
-//
-//	foreach( QVector<Point> conners, this->getFacePoints() )
-//		rects.push_back(Rectangle(conners));
-//
-//	return rects;
-//}
+QVector<Box2> Box::getFaceRectangles()
+{
+	QVector<Box2> rects;
+
+	foreach( QVector<Point> conners, this->getFacePoints() )
+		rects.push_back(Box2(conners));
+
+	return rects;
+}
 
 

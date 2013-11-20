@@ -4,7 +4,7 @@
 #include "Plane.h"
 #include "Line.h"
 #include "Segment.h"
-#include "Rectangle.h"
+#include "Box2.h"
 
 class Box 
 {
@@ -47,7 +47,7 @@ public:
 	QVector<Segment>			getEdgeSegments();
 	QVector< QVector<Point> >	getFacePoints();
 	QVector<Plane>				getFacePlanes();
-	//QVector<Rectangle>			getFaceRectangles();
+	QVector<Box2>				getFaceRectangles();
 
 	// relation with other objects
 	bool onBox(Line line);
