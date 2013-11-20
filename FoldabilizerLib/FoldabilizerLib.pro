@@ -29,7 +29,6 @@ HEADERS += \
     MHOptimizer.h \
     Plane.h \
     Line.h \
-    ContactBoxBox.h \
     Rectangle.h \
     Segment.h \
     HingeDetector.h \
@@ -47,7 +46,6 @@ SOURCES += \
     MHOptimizer.cpp \
     Plane.cpp \
     Line.cpp \
-    ContactBoxBox.cpp \
     Rectangle.cpp \
     Segment.cpp \
     HingeDetector.cpp \
