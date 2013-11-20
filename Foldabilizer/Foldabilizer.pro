@@ -25,14 +25,14 @@ INCLUDEPATH += ../FoldabilizerLib
 
 HEADERS += \
     Foldabilizer.h \
-    foldem_widget.h
+    FoldabilizerWidget.h
 
 SOURCES += \
     Foldabilizer.cpp \
-    foldem_widget.cpp
+    FoldabilizerWidget.cpp
 
 RESOURCES += \
     Foldabilizer.qrc
 
 FORMS += \
-    foldem_widget.ui
+    FoldabilizerWidget.ui

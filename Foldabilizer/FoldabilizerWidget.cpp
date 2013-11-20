@@ -1,9 +1,9 @@
-#include "foldem_widget.h"
-#include "ui_foldem_widget.h"
+#include "FoldabilizerWidget.h"
+#include "ui_FoldabilizerWidget.h"
 
-foldem_widget::foldem_widget(Foldabilizer *f, QWidget *parent) :
+FoldabilizerWidget::FoldabilizerWidget(Foldabilizer *f, QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::foldem_widget)
+    ui(new Ui::FoldabilizerWidget)
 {
     ui->setupUi(this);
 
@@ -32,7 +32,7 @@ foldem_widget::foldem_widget(Foldabilizer *f, QWidget *parent) :
 }
 
 
-foldem_widget::~foldem_widget()
+FoldabilizerWidget::~FoldabilizerWidget()
 {
     delete ui;
 }

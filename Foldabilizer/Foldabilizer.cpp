@@ -1,5 +1,5 @@
 #include "Foldabilizer.h"
-#include "foldem_widget.h"
+#include "FoldabilizerWidget.h"
 #include "StarlabDrawArea.h"
 #include <QFileDialog>
 #include <QDebug>
@@ -19,7 +19,7 @@ void Foldabilizer::create()
 {
 	if (!widget)
 	{
-		widget = new foldem_widget(this);
+        widget = new FoldabilizerWidget(this);
 
 		ModePluginDockWidget *dockwidget = new ModePluginDockWidget("Foldabilizer", mainWindow());
 		dockwidget->setWidget(widget);

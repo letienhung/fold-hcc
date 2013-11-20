@@ -6,7 +6,7 @@
 #include "Graph.h"
 #include "MHOptimizer.h"
 
-class foldem_widget;
+class FoldabilizerWidget;
 
 class Foldabilizer : public SurfaceMeshModePlugin
 {
@@ -26,7 +26,7 @@ public:
 
 	Graph			*hccGraph;
 	MHOptimizer		*mhOptimizer;
-	foldem_widget	*widget;
+    FoldabilizerWidget	*widget;
 
 	int	stepsPerJump;
 
