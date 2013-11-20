@@ -13,7 +13,8 @@ public:
 	QString		mID;
 	Box			mBox;
 	QColor		mColor;
-
+	
+	bool		isHot;
 	bool		isFixed;		// tag used for propagation
 	Vector3		originalExtent;
 	Vector3		scaleFactor;	// scale factor of box

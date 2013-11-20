@@ -15,6 +15,7 @@ Node::Node(Box b, QString id)
 	scaleFactor = Vector3(1,1,1);
 
 	isHighlight = false;
+	isHot = false;
 }
 
 Node::~Node()
@@ -30,11 +31,12 @@ void Node::draw()
 	ps.drawQuads(true);
 
 	// highlight wireframes
-	if (isHighlight) 
-	{
-		QColor c = isFixed ? Qt::white : Qt::red;
-		ps.drawWireframes(2.0, c);	
-	}
+	if (isFixed) 
+		ps.drawWireframes(2.0, Qt::white);
+	else if(isHot) 
+		ps.drawWireframes(2.0, Qt::red);
+	else if(isHighlight) 
+		ps.drawWireframes(2.0, Qt::yellow);
 }
 
 Frame Node::getFrame()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              

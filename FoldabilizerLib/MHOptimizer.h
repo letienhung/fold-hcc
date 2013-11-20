@@ -16,7 +16,8 @@ public:
 	double				currCost;
 
 	QVector<double>		jumpTypeProbability;		// Probability of proposed jump types
-	double				changeActiveHingeProbability;
+	double				useActiveHingeProbability;
+	double				useHotProbability;
 	NormalDistribution	normalDistribution;
 
 	double	targetVolumePercentage;

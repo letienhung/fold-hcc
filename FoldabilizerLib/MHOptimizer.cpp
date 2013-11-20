@@ -9,7 +9,8 @@ MHOptimizer::MHOptimizer(Graph* graph)
 	this->costWeight = 0.5;
 	this->temperature = 100;
 	this->setLinkProbability(0.8);
-	this->changeActiveHingeProbability = 0.2;
+	this->useActiveHingeProbability = 0.8;
+	this->useHotProbability = 1.0;
 
 	isReady = false;
 }
@@ -72,13 +73,30 @@ double MHOptimizer::cost()
 
 void MHOptimizer::proposeChangeHingeAngle()
 {
-	// link id
-	int linkID = uniformDiscreteDistribution(0, hccGraph->nbLinks());
-	Link* plink = hccGraph->links[linkID];
+	Link* plink = NULL;
+
+	// get hot and code nodes
+	hccGraph->hotAnalyze();
+	QVector<Link*> hotLinks = hccGraph->getHotLinks(true);
+	QVector<Link*> coldLinks = hccGraph->getHotLinks(false);
+
+	// use hot nodes
+	if (uniformRealDistribution() < useHotProbability)
+	{
+		int hotID = uniformDiscreteDistribution(0, hotLinks.size());
+		plink = hotLinks[hotID];
+	}
+	// use cold nodes
+	else
+	{
+		if (coldLinks.isEmpty()) return;
+		int coldID = uniformDiscreteDistribution(0, coldLinks.size());
+		plink = coldLinks[coldID];
+	}
 	if (plink->isNailed || plink->isBroken) return;
 
 	// hinge id
-	if (uniformRealDistribution() < changeActiveHingeProbability)
+	if (uniformRealDistribution() > useActiveHingeProbability)
 	{
 		int hingeID = uniformDiscreteDistribution(0, plink->nbHinges());
 		plink->setActiveHingeId(hingeID);
@@ -88,18 +106,36 @@ void MHOptimizer::proposeChangeHingeAngle()
 	// jump
 	double stddev = phinge->maxAngle / 6; // 3-\delta coverage of 99.7%
 	double old_angle = phinge->angle;
-	double new_angle = RANGED(0, normalDistribution.generate(old_angle, stddev), phinge->maxAngle);
+	double prop_angle = normalDistribution.generate(old_angle, stddev);
+	double new_angle = RANGED(0, prop_angle, phinge->maxAngle);
 	phinge->angle = new_angle;
 
-	qDebug() << "[Jump" << jumpCount << "] Angle of " << plink->id.toStdString().c_str() << ": " 
+	qDebug() << "[Jump" << jumpCount << "] Angle of " << plink->id << ": " 
 		<< radians2degrees(old_angle) << " => " << radians2degrees(new_angle);
 }
 
 void MHOptimizer::proposeDeformCuboid()
 {
-	// cuboid id
-	int nodeID = uniformDiscreteDistribution(0, hccGraph->nbNodes());
-	Node* pnode = hccGraph->nodes[nodeID];
+	Node* pnode = NULL;
+
+	// get hot and code nodes
+	hccGraph->hotAnalyze();
+	QVector<Node*> hotNodes = hccGraph->getHotNodes(true);
+	QVector<Node*> coldNodes = hccGraph->getHotNodes(false);
+
+	// use hot nodes
+	if (uniformRealDistribution() < useHotProbability)
+	{
+		int hotID = uniformDiscreteDistribution(0, hotNodes.size());
+		pnode = hotNodes[hotID];
+	}
+	// use cold nodes
+	else
+	{
+		if (coldNodes.isEmpty()) return;
+		int coldID = uniformDiscreteDistribution(0, coldNodes.size());
+		pnode = coldNodes[coldID];
+	}
 
 	// axis id
 	int axisID = uniformDiscreteDistribution(0, 3);

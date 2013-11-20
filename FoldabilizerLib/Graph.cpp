@@ -412,7 +412,6 @@ void Graph::makeU()
 	this->updateHingeScale();
 }
 
-
 void Graph::makeO()
 {
 	this->clear();
@@ -613,47 +612,28 @@ void Graph::setState( GraphState &state )
 	}
 }
 
-QSet<Node*> Graph::getNodesOnBoundary()
+QVector<Node*> Graph::getHotNodes(bool hot)
 {
-	QSet<Node*> bnodes;
+	QVector<Node*> hotNodes;
+	foreach (Node* n, nodes)
+		if (n->isHot == hot) hotNodes.push_back(n);
 
-	this->computeAabb();
-	Box aabbBox = getAabbBox();
-	aabbBox.uniformScale(0.99);
-	QVector<Plane> aabbFaces = aabbBox.getFacePlanes();
+	return hotNodes;
+}
 
-	foreach(Node* n, nodes)	{
-		// disable highlight
-		n->isHighlight = false;
+QVector<Link*> Graph::getHotLinks(bool hot)
+{
+	QVector<Link*> hotLinks;
+	foreach(Link* l, links)
+		if (l->isHot == hot) hotLinks.push_back(l);
 
-		// test
-		bool onBoundary = false;
-		QVector<Vector3> nodePnts = n->mBox.getConnerPoints();
-		foreach(Plane face, aabbFaces)
-		{
-			if (!face.onSameSide(nodePnts))
-			{
-				onBoundary = true;
-				break;
-			}
-		}
-
-		// highlight 
-		if (onBoundary)
-		{
-			bnodes.insert(n);
-			n->isHighlight = true;
-		}
-	}
-
-	return bnodes;
+	return hotLinks;
 }
 
 Box Graph::getAabbBox()
 {
 	return Box(center, XYZ(), (bbmax-bbmin)/2);
 }
-
 
 void Graph::saveAsObj()
 {
@@ -669,7 +649,7 @@ void Graph::saveAsObj()
 	}
 
 	int v_offset = 1;
-	foreach(Node* n, nodes)
+	for (int n = 0; n < this->nbNodes(); n++)
 	{
 		for (int i = 0; i < 12; i++)
 		{
@@ -685,19 +665,7 @@ void Graph::saveAsObj()
 	outF.close();
 }
 
-QSet<Link*> Graph::getHotLinks()
-{
-	QSet<Link*> hotLinks;
-	foreach(Node* n, this->getNodesOnBoundary()){
-		foreach(Link *l, this->getLinks(n->mID)){
 
-			// a link is hot only if it can still move
-			if (1) hotLinks.insert(l);
-		}
-	}
-
-	return hotLinks;
-}
 
 bool Graph::isHingable( Link* link )
 {
@@ -714,4 +682,41 @@ void Graph::updateHingeScale()
 {
 	foreach(Link* l, links)
 		l->setHingeScale(this->radius / 10);
+}
+
+void Graph::hotAnalyze()
+{
+	// reset hot tags
+	foreach(Node* n, nodes) n->isHot = false;
+	foreach(Link* l, links) l->isHot = false;
+
+	// get planes of the shrunk AABB
+	this->computeAabb();
+	Box aabbBox = getAabbBox();
+	aabbBox.uniformScale(0.99);
+	QVector<Plane> aabbFaces = aabbBox.getFacePlanes();
+
+	// test if a node falls in both sides of planes
+	foreach(Node* n, nodes)	
+	{
+		QVector<Vector3> nodePnts = n->mBox.getConnerPoints();
+		for (int i = 0; i < aabbFaces.size(); i++)
+		{
+			if (!aabbFaces[i].onSameSide(nodePnts))
+			{
+				// hot node
+				n->isHot = true;
+
+				// hot links
+				foreach(Link *l, this->getLinks(n->mID))
+				{
+					if (1)// TO Do: a link is hot only if it can still move
+						l->isHot = true;
+				}
+
+				break;
+			}
+		}
+	}
+
 }

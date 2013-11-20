@@ -35,6 +35,9 @@ public:
 	bool isNailed;
 	bool fix();
 
+	// hot link: incident to hot nodes
+	bool isHot;
+
 	// visualization
 	void setHingeScale(double scale);
 	void draw();

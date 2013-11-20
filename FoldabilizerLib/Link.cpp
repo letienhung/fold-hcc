@@ -17,6 +17,7 @@ Link::Link( Node* n1, Node* n2 )
 	isFixed = false;
 	isBroken = false;
 	isNailed = false;
+	isHot = false;
 }
 
 void Link::draw()

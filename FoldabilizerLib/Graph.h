@@ -74,9 +74,10 @@ public:
 	void restoreConfiguration();
 
 	// Shape analysis
-	QSet<Node*> getNodesOnBoundary();
-	QSet<Link*> getHotLinks();
-	bool		isHingable(Link* link);
+	void			hotAnalyze();
+	QVector<Node*>	getHotNodes(bool hot = true);
+	QVector<Link*>	getHotLinks(bool hot = true);
+	bool			isHingable(Link* link);
 
 	// Save as obj mesh
 	void saveAsObj();
