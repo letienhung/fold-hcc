@@ -12,6 +12,10 @@
 //								       f4/  |f3
 //	
 
+int Box::NB_FACES = 6;
+int Box::NB_EDGES = 12;
+int Box::NB_VERTICES = 8;
+
 int Box::EDGE[12][2] = {
 	0, 1,
 	2, 3,

@@ -2,6 +2,8 @@
 
 #include "Segment.h"
 
+class Plane;
+
 class Box2
 {
 public:
@@ -9,15 +11,16 @@ public:
     Box2(QVector<Vector3>& conners);
 	
 	// relations
-	bool isCoplanar(Vector3 p);
-	bool isCoplanar(Segment s);
-	bool contains(Vector3 p);
-	bool contains(Segment s);
+	bool isCoplanarWith(Vector3 p);
+	bool isCoplanarWith(Segment s);
+	bool contains(Vector3 p, bool isOpen = false);
+	bool contains(Segment s, bool isOpen = false);
+	Plane getPlane();
 
 	// coordinates
 	Vector2 getUniformCoordinates(Vector3 p);
 
-private:
+
 	Vector3				Center;
 	QVector<Vector3>	Axis;
 	Vector2				Extent;

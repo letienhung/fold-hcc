@@ -39,6 +39,9 @@ public:
 	void scale(Vector3 s);
 
 	// geometry
+	static int NB_FACES;
+	static int NB_EDGES;
+	static int NB_VERTICES;
 	static int EDGE[12][2];
 	static int QUAD_FACE[6][4];
 	static int TRI_FACE[12][3];
@@ -48,6 +51,9 @@ public:
 	QVector< QVector<Point> >	getFacePoints();
 	QVector<Plane>				getFacePlanes();
 	QVector<Box2>				getFaceRectangles();
+
+	// tags
+	QVector<bool> edgeTags;
 
 	// relation with other objects
 	bool onBox(Line line);

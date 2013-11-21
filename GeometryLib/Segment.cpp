@@ -17,9 +17,18 @@ Segment::Segment( Vector3 p0, Vector3 p1 )
 
 bool Segment::isCollinearWith( const Segment& other )
 {
-	Vector3 v0 = other.P0 - this->Center;
-	Vector3 v1 = other.P1 - this->Center;
-	return isCollinear(this->Direction, v0) && isCollinear(this->Direction, v1);
+	return this->isCollinearWith(other.P0)
+		&& this->isCollinearWith(other.P1);
+}
+
+bool Segment::isCollinearWith( Vector3 p )
+{
+	Vector3 d = p - this->Center;
+
+	if (d.norm() < ZERO_TOLERANCE_LOW) 
+		return true;
+	else
+		return isCollinear(this->Direction, d);
 }
 
 bool Segment::overlaps( const Segment& other )
@@ -71,6 +80,9 @@ Vector3 Segment::getPosition( double coord )
 
 int Segment::whichSide( Vector3 p )
 {
+	if (!this->isCollinearWith(p))
+		return SEG_OFF;
+
 	double c = this->getProjectedCoordinate(p);
 	if (c <= -1) 
 		return SEG_NEGATIVE;
@@ -78,4 +90,19 @@ int Segment::whichSide( Vector3 p )
 		return SEG_POSITIVE;
 	else 
 		return SEG_ON;
+}
+
+bool Segment::contains( const Vector3 p )
+{
+	if (!this->isCollinearWith(p))
+		return false;
+
+	double c = this->getProjectedCoordinate(p);
+	return c >= -1 && c <= 1;
+}
+
+bool Segment::contains( const Segment& other )
+{
+	return this->contains(other.P0) 
+		&& this->contains(other.P1);
 }

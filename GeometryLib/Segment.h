@@ -2,7 +2,7 @@
 
 #include "UtilityGlobal.h"
 
-enum {SEG_NEGATIVE, SEG_ON, SEG_POSITIVE};
+enum {SEG_NEGATIVE, SEG_ON, SEG_POSITIVE, SEG_OFF};
 
 class Segment
 {
@@ -27,8 +27,11 @@ public:
 	int		whichSide(Vector3 p);
 
 	// relation with other
+	bool isCollinearWith(Vector3 p);
 	bool isCollinearWith(const Segment& other);
 	bool overlaps(const Segment& other);
+	bool contains(Vector3 p);
+	bool contains(const Segment& other);
 
 	// intersection info that can be queried
 	// point intersection: IT0

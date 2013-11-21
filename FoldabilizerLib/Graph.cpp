@@ -404,7 +404,7 @@ void Graph::makeU()
 
 	this->addLink(new Link(ltNode, lbNode));
 	this->addLink(new Link(lbNode, hNode));
-	Link* nailedLink = new Link(hNode, rNode);
+	Link* nailedLink = new Link(rNode, hNode);
 	//nailedLink->isNailed = true;
 	this->addLink(nailedLink);
 

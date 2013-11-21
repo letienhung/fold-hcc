@@ -128,9 +128,12 @@ void Foldabilizer::jump()
 
 void Foldabilizer::test()
 {
-	if (hccGraph->isEmpty()) return;
-	hccGraph->hotAnalyze();
-	drawArea()->updateGL();
+	//if (hccGraph->isEmpty()) return;
+	//hccGraph->hotAnalyze();
+	//drawArea()->updateGL();
+
+	Segment s(Vector3(0, 0, 0), Vector3(0, 0 , 1));
+	bool on = s.contains(Vector3(0, 0, 0));
 }
 
 void Foldabilizer::setLinkProbability( double lp )

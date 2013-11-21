@@ -10,7 +10,8 @@ Link::Link( Node* n1, Node* n2 )
 	this->node2 = n2;
 	this->id = node1->mID + ":" + node2->mID;
 
-	hinges = HingeDetector::getHinges(node1, node2);
+	HingeDetector hinge_detector(node1, node2);
+	hinges = hinge_detector.getHinges();
 	activeHingeID = 0;
 
 	// tag
