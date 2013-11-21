@@ -2,6 +2,8 @@
 
 #include "UtilityGlobal.h"
 
+namespace Goem{
+
 struct Frame
 {
 	Vector3 c;
@@ -17,3 +19,4 @@ struct Frame
 	bool	isAligned(const Frame& other);
 };
 
+}

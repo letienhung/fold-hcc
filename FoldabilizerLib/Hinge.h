@@ -3,6 +3,8 @@
 #include "Frame.h"
 #include "Box.h"
 
+using namespace Goem;
+
 class Node;
 
 // hX   hZ

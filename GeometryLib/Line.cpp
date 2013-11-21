@@ -1,6 +1,8 @@
 #include "Line.h"
 #include "Numeric.h"
 
+using namespace Goem;
+
 Line::Line()
 {
 	Origin = Vector3(0, 0, 0);

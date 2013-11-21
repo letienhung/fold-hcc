@@ -4,7 +4,9 @@
 #include "Plane.h"
 #include "Line.h"
 #include "Segment.h"
-#include "Box2.h"
+#include "Rectangle.h"
+
+namespace Goem{
 
 class Box 
 {
@@ -50,7 +52,7 @@ public:
 	QVector<Segment>			getEdgeSegments();
 	QVector< QVector<Point> >	getFacePoints();
 	QVector<Plane>				getFacePlanes();
-	QVector<Box2>				getFaceRectangles();
+	QVector<Rectangle>				getFaceRectangles();
 
 	// tags
 	QVector<bool> edgeTags;
@@ -59,4 +61,4 @@ public:
 	bool onBox(Line line);
 };
 
-
+}

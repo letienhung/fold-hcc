@@ -12,6 +12,8 @@
 //								       f4/  |f3
 //	
 
+using namespace Goem;
+
 int Box::NB_FACES = 6;
 int Box::NB_EDGES = 12;
 int Box::NB_VERTICES = 8;
@@ -237,12 +239,12 @@ QVector<Plane> Box::getFacePlanes()
 	return faces;
 }
 
-QVector<Box2> Box::getFaceRectangles()
+QVector<Rectangle> Box::getFaceRectangles()
 {
-	QVector<Box2> rects;
+	QVector<Rectangle> rects;
 
 	foreach( QVector<Point> conners, this->getFacePoints() )
-		rects.push_back(Box2(conners));
+		rects.push_back(Rectangle(conners));
 
 	return rects;
 }

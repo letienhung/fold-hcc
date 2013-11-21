@@ -5,6 +5,8 @@
 #include "Box.h"
 #include "Hinge.h"
 
+using namespace Goem;
+
 class Node;
 
 class Link

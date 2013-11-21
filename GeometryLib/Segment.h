@@ -2,6 +2,8 @@
 
 #include "UtilityGlobal.h"
 
+namespace Goem{
+
 enum {SEG_NEGATIVE, SEG_ON, SEG_POSITIVE, SEG_OFF};
 
 class Segment
@@ -39,3 +41,4 @@ public:
 	Vector3 IT0, IT1;
 };
 
+}

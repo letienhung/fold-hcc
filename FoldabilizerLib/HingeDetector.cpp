@@ -1,6 +1,6 @@
 #include "HingeDetector.h"
 #include "Segment.h"
-#include "Box2.h"
+#include "Rectangle.h"
 #include "Numeric.h"
 
 HingeDetector::HingeDetector(Node *n0, Node *n1)
@@ -95,7 +95,7 @@ QVector<Hinge*> HingeDetector::getEdgeFaceHinges(Node* n0, Node* n1)
 	Box&				box0 = n0->mBox;
 	Box&				box1 = n1->mBox;
 	QVector<Segment>	edges0 = box0.getEdgeSegments();
-	QVector<Box2>		faces1 = box1.getFaceRectangles();
+	QVector<Rectangle>		faces1 = box1.getFaceRectangles();
 
 	// Edge0-Face1 test
 	for (int i = 0; i < 12; i ++){
@@ -105,7 +105,7 @@ QVector<Hinge*> HingeDetector::getEdgeFaceHinges(Node* n0, Node* n1)
 		for (int j = 0; j < 6; j++)
 		{
 			Segment& e_i = edges0[i];
-			Box2& f_j = faces1[j];
+			Rectangle& f_j = faces1[j];
 
 			// create a hinge if f1_j contains e0_i
 			if (f_j.contains(e_i))
@@ -125,8 +125,23 @@ QVector<Hinge*> HingeDetector::getEdgeFaceHinges(Node* n0, Node* n1)
 	return hinges;
 }
 
+
+
+QVector<Hinge*> HingeDetector::getFaceFaceHinges()
+{
+	QVector<Hinge*> hinges;
+
+	Box&				box0 = node0->mBox;
+	Box&				box1 = node1->mBox;
+	QVector<Rectangle>		faces0 = box0.getFaceRectangles();
+	QVector<Rectangle>		faces1 = box1.getFaceRectangles();
+
+	return hinges;
+}
+
+
 // e0 \in f1 : create hinge for e0
-Hinge* HingeDetector::generateEdgeFaceHinge( Node* n0, Node* n1, Segment& e0, Box2& f1 )
+Hinge* HingeDetector::generateEdgeFaceHinge( Node* n0, Node* n1, Segment& e0, Rectangle& f1 )
 {
 	// center and hz
 	Vector3 hcenter = e0.Center;

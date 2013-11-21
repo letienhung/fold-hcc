@@ -1,6 +1,8 @@
 #include "Frame.h"
 #include "Numeric.h"
 
+using namespace Goem;
+
 Frame::Frame()
 { 
 	c = Vec3d(0,0,0);

@@ -1,6 +1,8 @@
 #include "Segment.h"
 #include "Numeric.h"
 
+using namespace Goem;
+
 Segment::Segment()
 {
 }

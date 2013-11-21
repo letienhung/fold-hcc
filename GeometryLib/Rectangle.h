@@ -2,19 +2,23 @@
 
 #include "Segment.h"
 
+namespace Goem{
+
 class Plane;
 
-class Box2
+class Rectangle
 {
 public:
-    Box2();
-    Box2(QVector<Vector3>& conners);
+    Rectangle();
+    Rectangle(QVector<Vector3>& conners);
 	
 	// relations
 	bool isCoplanarWith(Vector3 p);
 	bool isCoplanarWith(Segment s);
-	bool contains(Vector3 p, bool isOpen = false);
-	bool contains(Segment s, bool isOpen = false);
+	bool contains(Vector3 p);
+	bool contains(Segment s);
+	bool contains(const Rectangle& other);
+
 	Plane getPlane();
 
 	// coordinates
@@ -27,3 +31,5 @@ public:
 	Vector3				Normal;
 	QVector<Vector3>	Conners;
 };
+
+}

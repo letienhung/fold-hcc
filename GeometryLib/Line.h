@@ -2,6 +2,8 @@
 
 #include "UtilityGlobal.h"
 
+namespace Goem{
+
 class Line
 {
 public:
@@ -14,3 +16,5 @@ public:
 private:
 	Vector3 Origin, Direction;
 };
+
+}

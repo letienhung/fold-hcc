@@ -1,6 +1,8 @@
 #include "Intersectboxbox.h"
 #include "Numeric.h"
 
+using namespace Goem;
+
 IntersectBoxBox::IntersectBoxBox()
 {
 }

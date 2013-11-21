@@ -1,12 +1,14 @@
-#include "Box2.h"
+#include "Rectangle.h"
 #include "Plane.h"
 #include "Numeric.h"
 
-Box2::Box2()
+using namespace Goem;
+
+Rectangle::Rectangle()
 {
 }
 
-Box2::Box2( QVector<Vector3>& conners )
+Rectangle::Rectangle( QVector<Vector3>& conners )
 {
 	Center = Vector3(0, 0, 0);
 	foreach (Vector3 p, conners) Center += p;
@@ -25,20 +27,20 @@ Box2::Box2( QVector<Vector3>& conners )
 	Conners = conners;
 }
 
-bool Box2::isCoplanarWith( Vector3 p )
+bool Rectangle::isCoplanarWith( Vector3 p )
 {
 	Plane plane(Center, Normal);
 	return plane.whichSide(p) == 0;
 }
 
-bool Box2::isCoplanarWith( Segment s )
+bool Rectangle::isCoplanarWith( Segment s )
 {
 	Plane plane(Center, Normal);
 	return (plane.whichSide(s.P0) == 0) 
 		&& (plane.whichSide(s.P1) == 0);
 }
 
-Vector2 Box2::getUniformCoordinates( Vector3 p )
+Vector2 Rectangle::getUniformCoordinates( Vector3 p )
 {
 	Vector3 v = p - Center;
 	double x = dot(v, Axis[0])/Extent[0];
@@ -47,24 +49,31 @@ Vector2 Box2::getUniformCoordinates( Vector3 p )
 	return Vector2(x, y);
 }
 
-bool Box2::contains( Vector3 p, bool isOpen )
+bool Rectangle::contains( Vector3 p)
 {
 	if (!this->isCoplanarWith(p)) return false;
 
 	Vector2 coord = this->getUniformCoordinates(p);
-	double threshold = isOpen ? 
-		(1 - ZERO_TOLERANCE_LOW) : (1 + ZERO_TOLERANCE_LOW);
+	double threshold = 1 + ZERO_TOLERANCE_LOW;
 
 	return (fabs(coord[0]) < threshold) 
 		&& (fabs(coord[1]) < threshold);
 }
 
-bool Box2::contains( Segment s, bool isOpen )
+bool Rectangle::contains( Segment s)
 {
-	return this->contains(s.P0, isOpen) && this->contains(s.P1, isOpen);
+	return this->contains(s.P0) && this->contains(s.P1);
 }
 
-Plane Box2::getPlane()
+bool Rectangle::contains( const Rectangle& other )
+{
+	foreach (Vector3 p, other.Conners)
+		if (!this->contains(p)) return false;
+
+	return true;
+}
+
+Plane Rectangle::getPlane()
 {
 	return Plane(this->Center, this->Normal);
 }

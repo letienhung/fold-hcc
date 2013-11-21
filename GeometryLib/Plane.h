@@ -2,6 +2,8 @@
 
 #include "UtilityGlobal.h"
 
+namespace Goem{
+
 class Plane
 {
 public:
@@ -15,3 +17,4 @@ private:
 	Vector3 Constant, Normal;
 };
 
+}

@@ -1,6 +1,8 @@
 #include "Plane.h"
 #include "Numeric.h"
 
+using namespace Goem;
+
 Plane::Plane()
 {
 	Constant = Vector3(0,0,0);
