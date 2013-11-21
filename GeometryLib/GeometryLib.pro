@@ -24,16 +24,20 @@ HEADERS += \
     Segment.h \
     Plane.h \
     Line.h \
-    IntersectBoxBox.h \
     Frame.h \
     Box.h \
-    Rectangle.h
+    Rectangle.h \
+    Segment2.h \
+    IntrBoxBox.h \
+    IntrSeg2Seg2.h
 
 SOURCES += \
     Segment.cpp \
     Plane.cpp \
     Line.cpp \
-    IntersectBoxBox.cpp \
     Frame.cpp \
     Box.cpp \
-    Rectangle.cpp
+    Rectangle.cpp \
+    Segment2.cpp \
+    IntrBoxBox.cpp \
+    IntrSeg2Seg2.cpp

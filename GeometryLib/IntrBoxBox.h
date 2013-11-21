@@ -4,11 +4,11 @@
 
 namespace Goem{
 
-class IntersectBoxBox
+class IntrBoxBox
 {
 public:
-    IntersectBoxBox();
-	~IntersectBoxBox(){}
+    IntrBoxBox();
+    ~IntrBoxBox(){}
 	static bool test(Box &box0, Box &box1);
 };
 

@@ -1,5 +1,5 @@
 #include "MHOptimizer.h"
-#include "IntersectBoxBox.h"
+#include "IntrBoxBox.h"
 #include <QTime>
 
 MHOptimizer::MHOptimizer(Graph* graph)
@@ -201,7 +201,7 @@ bool MHOptimizer::isCollisionFree()
 	for (int i = 0; i < nbNodes-1; i++){
 		for (int j = i+1; j < nbNodes; j++)
 		{
-			if (IntersectBoxBox::test(nodeBoxes[i], nodeBoxes[j]))
+			if (IntrBoxBox::test(nodeBoxes[i], nodeBoxes[j]))
 			{
 				hccGraph->getNode(i)->isHighlight = true;
 				hccGraph->getNode(j)->isHighlight = true;

@@ -1,13 +1,13 @@
-#include "Intersectboxbox.h"
+#include "IntrBoxBox.h"
 #include "Numeric.h"
 
 using namespace Goem;
 
-IntersectBoxBox::IntersectBoxBox()
+IntrBoxBox::IntrBoxBox()
 {
 }
 
-bool IntersectBoxBox::test(Box &box0, Box &box1)
+bool IntrBoxBox::test(Box &box0, Box &box1)
 {
 	// Cutoff for cosine of angles between box axes.  This is used to catch
 	// the cases when at least one pair of axes are parallel.  If this

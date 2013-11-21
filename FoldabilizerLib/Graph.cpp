@@ -1,7 +1,6 @@
 #include "Graph.h"
 #include "xmlWriter.h"
 #include "Numeric.h"
-#include "IntersectBoxBox.h"
 
 #include <fstream>
 
