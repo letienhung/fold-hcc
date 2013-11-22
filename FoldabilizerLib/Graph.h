@@ -3,6 +3,8 @@
 #include "Node.h"
 #include "Link.h"
 
+using namespace Geom;
+
 struct GraphState{
 	QVector<Vector3>	node_scale_factor;
 	QVector<int>		active_hinge_id;
@@ -49,7 +51,7 @@ public:
 	Point	bbmin, bbmax, center;
 	Scalar	radius;
 	void	computeAabb();
-	Box		getAabbBox();
+	Geom::Box getAabbBox();
 	double	getAabbVolume();
 	double	getMaterialVolume();
 

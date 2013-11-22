@@ -4,8 +4,10 @@
 #include <QFileDialog>
 #include <QDebug>
 
-
 QString DEFAULT_FILE_PATH = "..\\..\\data";
+
+// test
+#include "IntrRectRect.h"
 
 Foldabilizer::Foldabilizer()
 {
@@ -132,8 +134,18 @@ void Foldabilizer::test()
 	//hccGraph->hotAnalyze();
 	//drawArea()->updateGL();
 
-	Segment s(Vector3(0, 0, 0), Vector3(0, 0 , 1));
-	bool on = s.contains(Vector3(0, 0, 0));
+	QVector<Vector3> xy;
+	xy.push_back(Vector3(1, 0, 0));
+	xy.push_back(Vector3(0, 1, 0));
+
+	Vector3 origin(0, 0, 0);
+	Vector2 ext0(1, 4), ext1(4, 1);
+
+	Geom::Rectangle r0(origin, xy, ext0); 
+	Geom::Rectangle r1(origin, xy, ext1); 
+
+	Geom::IntrRectRect intersector;
+	QVector<Vector3> pnts = intersector.test(r0, r1);
 }
 
 void Foldabilizer::setLinkProbability( double lp )

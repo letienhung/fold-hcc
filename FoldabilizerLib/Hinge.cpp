@@ -2,6 +2,7 @@
 #include "Node.h"
 #include "CustomDrawObjects.h"
 
+using namespace Geom;
 
 Hinge::Hinge(){}
 

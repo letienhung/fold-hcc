@@ -3,8 +3,6 @@
 #include "Frame.h"
 #include "Box.h"
 
-using namespace Goem;
-
 class Node;
 
 // hX   hZ
@@ -30,7 +28,7 @@ public:
 
 	double	angle;				// angle <v1, v2> in radians: [0, maxAngle]
 	double	maxAngle;			// pi/2 or pi
-	Frame	zxFrame, zyFrame;	// dihedral frames
+	Geom::Frame	zxFrame, zyFrame;	// dihedral frames
 
 	struct HingeRecord{			// hinge records in node frames
 		Vec3d uc, c, cpa, cpv1, cpv2;
@@ -48,8 +46,8 @@ public:
 private:
 	void updateDihedralVectors(bool fix_v1);
 	void updateDihedralFrames();
-	HingeRecord createLinkRecord(Box& node_box);
-	NodeRecord createNodeRecord(Frame node_frame, Frame dl_frame);
-	void recoverLink(HingeRecord lr, Box& node_box);
-	Frame recoverNodeFrame(NodeRecord nr, Frame dl_frame);
+	HingeRecord createLinkRecord(Geom::Box& node_box);
+	NodeRecord createNodeRecord(Geom::Frame node_frame, Geom::Frame dl_frame);
+	void recoverLink(HingeRecord lr, Geom::Box& node_box);
+	Geom::Frame recoverNodeFrame(NodeRecord nr, Geom::Frame dl_frame);
 };

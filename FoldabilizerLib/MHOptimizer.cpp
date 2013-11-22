@@ -2,6 +2,8 @@
 #include "IntrBoxBox.h"
 #include <QTime>
 
+using namespace Geom;
+
 MHOptimizer::MHOptimizer(Graph* graph)
 {
 	this->hccGraph = graph;

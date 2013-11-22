@@ -3,6 +3,8 @@
 
 #include <QDebug>
 
+using namespace Geom;
+
 Node::Node(Box b, QString id)
 {
 	mBox = b; 
@@ -37,6 +39,11 @@ void Node::draw()
 		ps.drawWireframes(2.0, Qt::red);
 	else if(isHighlight) 
 		ps.drawWireframes(2.0, Qt::yellow);
+
+	// debug points
+	PointSoup dps;
+	foreach(Vector3 v, this->debug_points) dps.addPoint(v);
+	dps.draw();
 }
 
 Frame Node::getFrame()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              

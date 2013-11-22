@@ -6,7 +6,7 @@
 #include "Segment.h"
 #include "Rectangle.h"
 
-namespace Goem{
+namespace Geom{
 
 class Box 
 {
@@ -52,7 +52,7 @@ public:
 	QVector<Segment>			getEdgeSegments();
 	QVector< QVector<Point> >	getFacePoints();
 	QVector<Plane>				getFacePlanes();
-	QVector<Rectangle>				getFaceRectangles();
+	QVector<Rectangle>			getFaceRectangles();
 
 	// tags
 	QVector<bool> edgeTags;

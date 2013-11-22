@@ -1,7 +1,7 @@
 #include "Plane.h"
 #include "Numeric.h"
 
-using namespace Goem;
+using namespace Geom;
 
 Plane::Plane()
 {

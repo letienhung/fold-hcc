@@ -2,7 +2,7 @@
 
 #include "UtilityGlobal.h"
 
-namespace Goem{
+namespace Geom{
 
 enum {SEG_NEGATIVE, SEG_ON, SEG_POSITIVE, SEG_OFF};
 

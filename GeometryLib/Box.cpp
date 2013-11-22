@@ -12,7 +12,7 @@
 //								       f4/  |f3
 //	
 
-using namespace Goem;
+using namespace Geom;
 
 int Box::NB_FACES = 6;
 int Box::NB_EDGES = 12;

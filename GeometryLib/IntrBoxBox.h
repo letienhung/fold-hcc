@@ -2,7 +2,7 @@
 
 #include "Box.h"
 
-namespace Goem{
+namespace Geom{
 
 class IntrBoxBox
 {

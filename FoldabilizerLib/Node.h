@@ -7,7 +7,7 @@ class Node
 {
 public:
 	QString		mID;
-	Box			mBox;
+	Geom::Box	mBox;
 	QColor		mColor;
 	
 	bool		isHot;
@@ -15,14 +15,14 @@ public:
 	Vector3		originalExtent;
 	Vector3		scaleFactor;	// scale factor of box
 
-    Node(Box b, QString id);
+    Node(Geom::Box b, QString id);
     ~Node();
 
 public:
 	// Geometry
-	double	getVolume();
-	Frame	getFrame();
-	void	setFrame(Frame f);
+	double		getVolume();
+	Geom::Frame	getFrame();
+	void		setFrame(Geom::Frame f);
 
 	// Transformation
 	void translate(Vector3 t);
@@ -31,4 +31,7 @@ public:
 	// Visualize
 	bool isHighlight;
 	void draw();
+
+	// debug
+	QVector<Vector3> debug_points;
 };                                 

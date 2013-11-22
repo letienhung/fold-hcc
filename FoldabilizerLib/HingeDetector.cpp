@@ -1,7 +1,10 @@
 #include "HingeDetector.h"
 #include "Segment.h"
 #include "Rectangle.h"
+#include "IntrRectRect.h"
 #include "Numeric.h"
+
+using namespace Geom;
 
 HingeDetector::HingeDetector(Node *n0, Node *n1)
 {
@@ -13,7 +16,6 @@ HingeDetector::HingeDetector(Node *n0, Node *n1)
 	this->node1->mBox.edgeTags = QVector<bool>(Box::NB_EDGES, false);
 }
 
-
 QVector<Hinge*> HingeDetector::getHinges()
 {
 	QVector<Hinge*> hinges;
@@ -22,6 +24,7 @@ QVector<Hinge*> HingeDetector::getHinges()
 	hinges += getEdgeEdgeHinges(node1, node0);
 	hinges += getEdgeFaceHinges(node0, node1);
 	hinges += getEdgeFaceHinges(node1, node0);
+	hinges += getFaceFaceHinges();
 
 	return hinges;
 }
@@ -125,8 +128,6 @@ QVector<Hinge*> HingeDetector::getEdgeFaceHinges(Node* n0, Node* n1)
 	return hinges;
 }
 
-
-
 QVector<Hinge*> HingeDetector::getFaceFaceHinges()
 {
 	QVector<Hinge*> hinges;
@@ -135,6 +136,53 @@ QVector<Hinge*> HingeDetector::getFaceFaceHinges()
 	Box&				box1 = node1->mBox;
 	QVector<Rectangle>		faces0 = box0.getFaceRectangles();
 	QVector<Rectangle>		faces1 = box1.getFaceRectangles();
+
+	for (int i = 0; i < Box::NB_FACES; i++)
+	{
+		for (int j = 0; j < Box::NB_FACES; j++)
+		{
+			Rectangle &f0 = faces0[i], &f1 = faces1[j];
+
+			// skip if two faces are not coplanar
+			if (!f0.isCoplanarWith(f1)) continue;
+
+			// skip if one contains the other
+			if (f0.contains(f1) || f1.contains(f0)) continue;
+
+			// compute intersection
+			IntrRectRect intersector;
+			QVector<Vector3> intrPnts = intersector.test(f0, f1);
+
+			// create hinge is f0 and f1 intersect
+			if (intrPnts.size() >= 3)
+			{
+				// hcenter
+				Vector3 hcenter(0,0,0);
+				foreach(Vector3 p, intrPnts) hcenter += p;
+				hcenter /= intrPnts.size();
+
+				// hz
+				Vector3 hz = f0.Normal;
+
+				// data used to determine hx and hy
+				QVector<Vector3>	perpAxis0, perpAxis1;
+				QVector<double>		perpExtent0, perpExtent1;
+				getPerpAxisAndExtent(node0->mBox, hcenter, hz, perpAxis0, perpExtent0);
+				getPerpAxisAndExtent(node1->mBox, hcenter, hz, perpAxis1, perpExtent1);
+				if (perpAxis0.size() != 2 || perpAxis1.size() != 2)	continue;
+
+				// hx is the axis with larger extent in n0
+				// so is hy
+				Vector3 hx = (perpExtent0[0] >= perpExtent0[1]) ? perpAxis0[0] : perpAxis0[1];
+				Vector3 hy = (perpExtent1[0] >= perpExtent1[1]) ? perpAxis1[0] : perpAxis1[1];
+
+				hinges.push_back(new Hinge(node0, node1, hcenter, hx, hy, hz, 2 * M_PI));
+
+				// debug
+				foreach(Vector3 v, intrPnts) node0->debug_points.push_back(v);
+			}
+		}
+	}
 
 	return hinges;
 }
@@ -166,7 +214,7 @@ Hinge* HingeDetector::generateEdgeFaceHinge( Node* n0, Node* n1, Segment& e0, Re
 	// HxCrossHxPerp and hz have opposite directions
 	if (dot(HxCrossHxPerp, hz) > 0) hz *= -1;
 
-	return new Hinge(node0, node1, hcenter, hx, hy, hz, M_PI/2);
+	return new Hinge(node0, node1, hcenter, hx, hy, hz, M_PI_2);
 }
 
 // e0 \in e1 : create hinge for e0

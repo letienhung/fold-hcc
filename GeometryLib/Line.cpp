@@ -1,7 +1,7 @@
 #include "Line.h"
 #include "Numeric.h"
 
-using namespace Goem;
+using namespace Geom;
 
 Line::Line()
 {

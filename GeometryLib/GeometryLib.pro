@@ -29,7 +29,8 @@ HEADERS += \
     Rectangle.h \
     Segment2.h \
     IntrBoxBox.h \
-    IntrSeg2Seg2.h
+    IntrSeg2Seg2.h \
+    IntrRectRect.h
 
 SOURCES += \
     Segment.cpp \
@@ -40,4 +41,5 @@ SOURCES += \
     Rectangle.cpp \
     Segment2.cpp \
     IntrBoxBox.cpp \
-    IntrSeg2Seg2.cpp
+    IntrSeg2Seg2.cpp \
+    IntrRectRect.cpp

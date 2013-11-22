@@ -1,7 +1,7 @@
 #include "Frame.h"
 #include "Numeric.h"
 
-using namespace Goem;
+using namespace Geom;
 
 Frame::Frame()
 { 

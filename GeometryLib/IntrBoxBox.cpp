@@ -1,7 +1,7 @@
 #include "IntrBoxBox.h"
 #include "Numeric.h"
 
-using namespace Goem;
+using namespace Geom;
 
 IntrBoxBox::IntrBoxBox()
 {

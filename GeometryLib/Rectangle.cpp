@@ -1,8 +1,9 @@
 #include "Rectangle.h"
 #include "Plane.h"
 #include "Numeric.h"
+#include "Segment2.h"
 
-using namespace Goem;
+using namespace Geom;
 
 Rectangle::Rectangle()
 {
@@ -27,6 +28,24 @@ Rectangle::Rectangle( QVector<Vector3>& conners )
 	Conners = conners;
 }
 
+Geom::Rectangle::Rectangle( Vector3& c, QVector<Vector3>& a, Vector2& e )
+{
+	Center = c;
+	Axis = a;
+	Extent = e;
+
+	Axis[0].normalize(); Axis[1].normalize();
+	Normal = cross(Axis[0], Axis[1]).normalized();
+
+	Conners.clear();
+	Vector3 dx = Extent[0] * Axis[0];
+	Vector3 dy = Extent[1] * Axis[1];
+	Conners.push_back(Center + dx + dy);
+	Conners.push_back(Center - dx + dy);
+	Conners.push_back(Center - dx - dy);
+	Conners.push_back(Center + dx - dy);
+}
+
 bool Rectangle::isCoplanarWith( Vector3 p )
 {
 	Plane plane(Center, Normal);
@@ -38,6 +57,15 @@ bool Rectangle::isCoplanarWith( Segment s )
 	Plane plane(Center, Normal);
 	return (plane.whichSide(s.P0) == 0) 
 		&& (plane.whichSide(s.P1) == 0);
+}
+
+
+bool Rectangle::isCoplanarWith( const Rectangle& other )
+{
+	foreach (Vector3 p, other.Conners)
+		if (!this->isCoplanarWith(p)) return false;
+
+	return true;
 }
 
 Vector2 Rectangle::getUniformCoordinates( Vector3 p )
@@ -77,4 +105,66 @@ Plane Rectangle::getPlane()
 {
 	return Plane(this->Center, this->Normal);
 }
+
+
+
+QVector<Segment> Geom::Rectangle::getEdges()
+{
+	QVector<Segment> edges;
+	for (int i = 0; i < 4; i++)
+		edges.push_back(Segment(Conners[i], Conners[(i+1)%4]));
+
+	return edges;
+}
+
+QVector<Segment2> Geom::Rectangle::get2DEdges()
+{
+	QVector<Segment2> edges;
+
+	QVector<Vector2> pnts = this->get2DConners();
+	for (int i = 0; i < 4; i++)
+		edges.push_back(Segment2(pnts[i], pnts[(i+1)%4]));
+
+	return edges;
+}
+
+QVector<Vector2> Geom::Rectangle::get2DConners()
+{
+	QVector<Vector2> pnts;
+
+	pnts.push_back(Vector2( 1,  1));
+	pnts.push_back(Vector2(-1,  1));
+	pnts.push_back(Vector2(-1, -1));
+	pnts.push_back(Vector2( 1, -1));
+
+	return pnts;
+}
+
+SurfaceMesh::Vector2 Geom::Rectangle::getProjCoordinates( Vector3 p )
+{
+	Vector2 coord;
+	p = p - Center;
+	for (int i = 0; i < 2; i++)
+		coord[i] = dot(p, Axis[i]) / Extent[i];
+
+	return coord;
+}
+
+SurfaceMesh::Vector3 Geom::Rectangle::getPosition( const Vector2& c )
+{
+	Vector3 pos = Center;
+	for (int i = 0; i < 2; i++)
+		pos += c[i]* Extent[i] * Axis[i];
+
+	return pos;
+}
+
+Geom::Segment2 Geom::Rectangle::getProjection2D( Segment s )
+{
+	Vector2 p0 = this->getProjCoordinates(s.P0);
+	Vector2 p1 = this->getProjCoordinates(s.P1);
+
+	return Segment2(p0, p1);
+}
+
 

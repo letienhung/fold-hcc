@@ -3,8 +3,6 @@
 #include "Node.h"
 #include "Hinge.h"
 
-using namespace Goem;
-
 class HingeDetector
 {
 private:
@@ -18,7 +16,7 @@ public:
 	QVector<Hinge*> getEdgeFaceHinges(Node* n0, Node* n1);
 	QVector<Hinge*> getFaceFaceHinges();
 
-	void	getPerpAxisAndExtent( Box& box, Vector3 hinge_center, Vector3 hinge_axis, QVector<Vector3>& perpAxis, QVector<double> &perpExtent );
-	Hinge*	generateEdgeEdgeHinge( Node* n0, Node* n1, Segment& e0, Segment& e1 );
-	Hinge*	generateEdgeFaceHinge( Node* n0, Node* n1, Segment& e0, Goem::Rectangle& f1 );
+	void	getPerpAxisAndExtent( Geom::Box& box, Vector3 hinge_center, Vector3 hinge_axis, QVector<Vector3>& perpAxis, QVector<double> &perpExtent );
+	Hinge*	generateEdgeEdgeHinge( Node* n0, Node* n1, Geom::Segment& e0, Geom::Segment& e1 );
+	Hinge*	generateEdgeFaceHinge( Node* n0, Node* n1, Geom::Segment& e0, Geom::Rectangle& f1 );
 };

@@ -1,7 +1,7 @@
 #include "Segment.h"
 #include "Numeric.h"
 
-using namespace Goem;
+using namespace Geom;
 
 Segment::Segment()
 {

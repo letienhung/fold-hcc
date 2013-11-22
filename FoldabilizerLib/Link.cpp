@@ -3,6 +3,7 @@
 #include "CustomDrawObjects.h"
 #include "HingeDetector.h"
 
+using namespace Geom;
 
 Link::Link( Node* n1, Node* n2 )
 {
