@@ -66,7 +66,7 @@ public:
 	void makeT();
 	void makeX();
 	void makeSharp();
-	void makeU();
+	void makeU(double uleft, double umid, double uright);
 	void makeO();
 	void makeChair(double legL);
 

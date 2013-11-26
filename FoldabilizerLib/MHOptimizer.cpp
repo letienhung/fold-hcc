@@ -8,12 +8,18 @@ MHOptimizer::MHOptimizer(Graph* graph)
 {
 	this->hccGraph = graph;
 
-	this->targetVolumePercentage = 0.5;
-	this->costWeight = 0.5;
+	// propose
+	this->nbSigma = 6;
+	this->setTypeProb(0.8, 0.2);
+	this->switchHingeProb = 0.8;
+	this->useHotProb = 1.0;
+
+	// accept
+	this->distWeight = 0.5;
 	this->temperature = 100;
-	this->setLinkProbability(0.8);
-	this->useActiveHingeProbability = 0.8;
-	this->useHotProbability = 1.0;
+
+	// target
+	this->targetV = 0.5;
 
 	isReady = false;
 }
@@ -64,14 +70,14 @@ double MHOptimizer::cost()
 {
 	// cost foldability
 	double aabbVolume = hccGraph->getAabbVolume();
-	double cost1 = aabbVolume / originalAabbVolume - targetVolumePercentage;
+	double cost1 = aabbVolume / originalAabbVolume - targetV;
 	if (cost1 < 0) cost1 = 0;
 
 	// distortion on material lost
 	double materialVolume = hccGraph->getMaterialVolume();
 	double distortion = 1 - materialVolume / originalMaterialVolume;
 
-	return cost1 + pow(distortion, costWeight);
+	return cost1 + pow(distortion, distWeight);
 }
 
 void MHOptimizer::proposeChangeHingeAngle()
@@ -84,7 +90,7 @@ void MHOptimizer::proposeChangeHingeAngle()
 	QVector<Link*> coldLinks = hccGraph->getHotLinks(false);
 
 	// use hot nodes
-	if (uniformRealDistribution() < useHotProbability)
+	if (winByChance(useHotProb))
 	{
 		int hotID = uniformDiscreteDistribution(0, hotLinks.size());
 		plink = hotLinks[hotID];
@@ -99,7 +105,7 @@ void MHOptimizer::proposeChangeHingeAngle()
 	if (plink->isNailed || plink->isBroken) return;
 
 	// hinge id
-	if (uniformRealDistribution() > useActiveHingeProbability)
+	if (winByChance(switchHingeProb))
 	{
 		int hingeID = uniformDiscreteDistribution(0, plink->nbHinges());
 		plink->setActiveHingeId(hingeID);
@@ -109,7 +115,7 @@ void MHOptimizer::proposeChangeHingeAngle()
 	// jump
 	double stddev = phinge->maxAngle / 6; // 3-\delta coverage of 99.7%
 	double old_angle = phinge->angle;
-	double prop_angle = normalDistribution.generate(old_angle, stddev);
+	double prop_angle = normalDistr.generate(old_angle, stddev);
 	double new_angle = RANGED(0, prop_angle, phinge->maxAngle);
 	phinge->angle = new_angle;
 
@@ -127,7 +133,7 @@ void MHOptimizer::proposeDeformCuboid()
 	QVector<Node*> coldNodes = hccGraph->getHotNodes(false);
 
 	// use hot nodes
-	if (uniformRealDistribution() < useHotProbability)
+	if (winByChance(useHotProb))
 	{
 		int hotID = uniformDiscreteDistribution(0, hotNodes.size());
 		pnode = hotNodes[hotID];
@@ -146,7 +152,7 @@ void MHOptimizer::proposeDeformCuboid()
 	// scale factor
 	double stddev = 1 / 12.0;
 	double old_factor = pnode->scaleFactor[axisID];
-	double new_factor = periodicalRanged(0.5, 1.0, normalDistribution.generate(old_factor, stddev));
+	double new_factor = periodicalRanged(0.5, 1.0, normalDistr.generate(old_factor, stddev));
 	pnode->scaleFactor[axisID] = new_factor;
 
 	qDebug() << "[Jump" << jumpCount << "] Scale factor[" << axisID << "] of " << pnode->mID.toStdString().c_str() << ": " 
@@ -155,7 +161,7 @@ void MHOptimizer::proposeDeformCuboid()
 
 void MHOptimizer::proposeJump()
 {
-	int jump_type = discreteDistribution(jumpTypeProbability);
+	int jump_type = discreteDistribution(typeProb);
 	if (jump_type == 0) 
 		proposeChangeHingeAngle();
 	else if(jump_type == 1)
@@ -215,10 +221,21 @@ bool MHOptimizer::isCollisionFree()
 	return isFree;
 }
 
-void MHOptimizer::setLinkProbability( double lp )
+void MHOptimizer::setTypeProb( QVector<double> &tp )
 {
-	jumpTypeProbability.resize(0);
-	jumpTypeProbability << lp << 1 - lp;
+	typeProb = tp;
+	double sum = 0;
+	foreach(double p, typeProb) sum += p;
+	for (int i = 0; i < typeProb.size(); i++)
+		typeProb[i] /= sum;
+}
+
+void MHOptimizer::setTypeProb( double t0, double t1 )
+{
+	QVector<double> tp;
+	tp << t0 << t1;
+
+	this->setTypeProb(tp);
 }
 
 

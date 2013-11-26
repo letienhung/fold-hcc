@@ -22,5 +22,6 @@ private:
 public slots:
 	void createU();
 	void createChair();
+	void updateMHOptimizerPara();
 };
 

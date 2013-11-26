@@ -9,26 +9,29 @@ public:
 	Graph* hccGraph;
     MHOptimizer(Graph *graph);
 
+
 	bool				isReady;
-	double				originalAabbVolume;			// Original function volume
+	double				originalAabbVolume;	
 	double				originalMaterialVolume;
 	GraphState			currState;
 	double				currCost;
 
-	QVector<double>		jumpTypeProbability;		// Probability of proposed jump types
-	double				useActiveHingeProbability;
-	double				useHotProbability;
-	NormalDistribution	normalDistribution;
+	// proposal
+	NormalDistribution	normalDistr;
+	int					nbSigma;		// default is 6, 6-sigma covers 99.7%
+	QVector<double>		typeProb;
+	double				switchHingeProb;
+	double				useHotProb;
 
-	double	targetVolumePercentage;
-	double	costWeight;
+	// acceptance
+	double	distWeight;
 	int		temperature;
+
+	// target
+	double	targetV;
 	int		jumpCount;
 
 	void initialize();
-	void setLinkProbability(double lp);
-
-
 
 	void	jump();
 	double	cost();
@@ -37,5 +40,7 @@ public:
 	void	proposeDeformCuboid();
 	bool	acceptJump();
 	bool	isCollisionFree();
+	void	setTypeProb(QVector<double> &tp);
+	void	setTypeProb(double t0, double t1);
 };
 

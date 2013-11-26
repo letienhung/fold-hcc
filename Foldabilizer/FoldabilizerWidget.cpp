@@ -10,6 +10,7 @@ FoldabilizerWidget::FoldabilizerWidget(Foldabilizer *f, QWidget *parent) :
 	fold = f;
 
 	// signal and slots
+	// creating shapes
 	fold->connect(ui->createL, SIGNAL(clicked()), SLOT(createL()));
 	fold->connect(ui->createI, SIGNAL(clicked()), SLOT(createI()));
 	fold->connect(ui->createT, SIGNAL(clicked()), SLOT(createT()));
@@ -21,16 +22,21 @@ FoldabilizerWidget::FoldabilizerWidget(Foldabilizer *f, QWidget *parent) :
 	this->connect(ui->createU, SIGNAL(clicked()), SLOT(createU()));
 	this->connect(ui->createChair, SIGNAL(clicked()), SLOT(createChair()));
 
+	// optimization: jump
+	this->connect(ui->nbSigma, SIGNAL(valueChanged(int)), SLOT(updateMHOptimizerPara()));
+	this->connect(ui->typeOne, SIGNAL(valueChanged(double)), SLOT(updateMHOptimizerPara()));
+	this->connect(ui->typeTwo, SIGNAL(valueChanged(double)), SLOT(updateMHOptimizerPara()));
+	this->connect(ui->switchHinge, SIGNAL(valueChanged(double)), SLOT(updateMHOptimizerPara()));
+	this->connect(ui->useHot, SIGNAL(valueChanged(double)), SLOT(updateMHOptimizerPara()));
+
+	this->connect(ui->distWeight, SIGNAL(valueChanged(double)), SLOT(updateMHOptimizerPara()));
+	this->connect(ui->temprature, SIGNAL(valueChanged(int)), SLOT(updateMHOptimizerPara()));
+
+	this->connect(ui->targetV, SIGNAL(valueChanged(int)), SLOT(updateMHOptimizerPara()));
+	this->connect(ui->stepsPerJump, SIGNAL(valueChanged(int)), SLOT(updateMHOptimizerPara()));
 
 	fold->connect(ui->jumpButton, SIGNAL(clicked()), SLOT(jump()));
 	fold->connect(ui->test, SIGNAL(clicked()), SLOT(test()));
-
-
-	fold->connect(ui->targetVolumePercentage, SIGNAL(valueChanged(int)), SLOT(setTargetVolumePercentage(int)));
-	fold->connect(ui->typeOne, SIGNAL(valueChanged(double)), SLOT(setLinkProbability(double)));
-	fold->connect(ui->costWeight, SIGNAL(valueChanged(double)), SLOT(setCostWeight(double)));
-	fold->connect(ui->temprature, SIGNAL(valueChanged(int)), SLOT(setTemprature(int)));
-	fold->connect(ui->stepsPerJump, SIGNAL(valueChanged(int)), SLOT(setStepsPerJump(int)));
 }
 
 
@@ -41,11 +47,31 @@ FoldabilizerWidget::~FoldabilizerWidget()
 
 void FoldabilizerWidget::createU()
 {
-	ui->legLength;
-	//fold->createU();
+	fold->createU(ui->ULeft->value(), ui->UMid->value(), ui->URight->value());
 }
 
 void FoldabilizerWidget::createChair()
 {
-	//fold->createChair();
+	fold->createChair(ui->legLength->value());
 }
+
+void FoldabilizerWidget::updateMHOptimizerPara()
+{
+	MHOptimizer *opt = fold->mhOptimizer;
+	if (!opt) return;
+
+	// propose
+	opt->nbSigma = ui->nbSigma->value();
+	opt->setTypeProb(ui->typeOne->value(), ui->typeTwo->value());
+	opt->switchHingeProb = ui->switchHinge->value();
+	opt->useHotProb = ui->useHot->value();
+
+	// accept
+	opt->distWeight = ui->distWeight->value();
+	opt->temperature = ui->temprature->value();
+
+	// target
+	opt->targetV = ui->targetV->value() / 100.0;
+	fold->stepsPerJump = ui->stepsPerJump->value();
+}
+

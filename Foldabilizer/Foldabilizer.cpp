@@ -92,13 +92,12 @@ void Foldabilizer::createSharp()
 	resetScene();
 }
 
-void Foldabilizer::createU()
+void Foldabilizer::createU( double uleft, double umid, double uright )
 {
-	hccGraph->makeU();
+	hccGraph->makeU(uleft, umid, uright);
 	mhOptimizer->isReady = false;
 	resetScene();
 }
-
 
 void Foldabilizer::createO()
 {
@@ -106,7 +105,6 @@ void Foldabilizer::createO()
 	mhOptimizer->isReady = false;
 	resetScene();
 }
-
 
 void Foldabilizer::loadGraph()
 {
@@ -146,31 +144,6 @@ void Foldabilizer::test()
 
 	Geom::IntrRectRect intersector;
 	QVector<Vector3> pnts = intersector.test(r0, r1);
-}
-
-void Foldabilizer::setLinkProbability( double lp )
-{
-	mhOptimizer->setLinkProbability(lp);
-}
-
-void Foldabilizer::setCostWeight( double weight )
-{
-	mhOptimizer->costWeight = weight;
-}
-
-void Foldabilizer::setTemprature( int T )
-{
-	mhOptimizer->temperature = T;
-}
-
-void Foldabilizer::setStepsPerJump( int steps )
-{
-	this->stepsPerJump = steps;
-}
-
-void Foldabilizer::setTargetVolumePercentage(int v)
-{
-	mhOptimizer->targetVolumePercentage = v / (double)100;
 }
 
 Q_EXPORT_PLUGIN(Foldabilizer)

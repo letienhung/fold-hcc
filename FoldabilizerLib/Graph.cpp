@@ -381,21 +381,22 @@ void Graph::makeSharp()
 	this->updateHingeScale();
 }
 
-void Graph::makeU()
+
+void Graph::makeU( double uleft, double umid, double uright )
 {
 	this->clear();
 	QVector<Vector3> xyz = XYZ();
 
-	Box ltBox(Point(0.5, 6, 0), xyz, Vector3(0.5, 2, 0.5));
+	Box ltBox(Point(0.5, 3 * uleft, 0), xyz, Vector3(0.5, uleft, 0.5));
 	Node* ltNode = new Node(ltBox, "left-top");
 
-	Box lbBox(Point(0.5, 2, 0), xyz, Vector3(0.5, 2, 0.5));
+	Box lbBox(Point(0.5, uleft, 0), xyz, Vector3(0.5, uleft, 0.5));
 	Node* lbNode = new Node(lbBox, "left-bottom");
 
-	Box hBox(Point(4, -0.5, 0), xyz, Vector3(4, 0.5, 0.5));
+	Box hBox(Point(umid, -0.5, 0), xyz, Vector3(umid, 0.5, 0.5));
 	Node* hNode = new Node(hBox, "horizontal_base");
 
-	Box rBox(Point(7.5, 2, 0), xyz, Vector3(0.5, 2, 0.5));
+	Box rBox(Point(2 * umid - 0.5, uright, 0), xyz, Vector3(0.5, uright, 0.5));
 	Node* rNode = new Node(rBox, "right");
 
 	

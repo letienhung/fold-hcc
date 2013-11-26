@@ -36,18 +36,12 @@ public slots:
 	void createT();
 	void createX();
 	void createSharp();
-	void createU();
+	void createU(double uleft, double umid, double uright);
 	void createO();
-	void createChair(double legL = 1.5);
+	void createChair(double legL);
 	void loadGraph();
 	void jump();
 	void test();
-
-	void setTargetVolumePercentage(int v);
-	void setLinkProbability(double lp);
-	void setCostWeight(double weight);
-	void setTemprature(int T);
-	void setStepsPerJump(int steps);
 };
 
 

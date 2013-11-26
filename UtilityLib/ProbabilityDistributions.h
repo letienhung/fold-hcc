@@ -33,6 +33,11 @@ inline int discreteDistribution(const QVector<double>& posibility)
 	return 0;
 }
 
+inline bool winByChance(double probability)
+{
+	return uniformRealDistribution() < probability;
+}
+
 // Marsaglia polar method
 // Wikipedia: http://en.wikipedia.org/wiki/Marsaglia_polar_method
 class NormalDistribution
