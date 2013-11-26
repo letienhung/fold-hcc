@@ -54,6 +54,9 @@ public:
 	QVector<Plane>				getFacePlanes();
 	QVector<Rectangle>			getFaceRectangles();
 
+	QVector<Segment>            getEdgeIncidentOnPoint(Point &p);
+	QVector<Rectangle>          getFaceIncidentOnPoint(Point &p);
+
 	// tags
 	QVector<bool> edgeTags;
 

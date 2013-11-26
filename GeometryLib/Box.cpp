@@ -249,4 +249,28 @@ QVector<Rectangle> Box::getFaceRectangles()
 	return rects;
 }
 
+QVector<Segment> Box::getEdgeIncidentOnPoint(Point &p)
+{
+	QVector<Segment> edges;
+	
+	foreach(Segment s, this->getEdgeSegments()){
+		if(s.P0 == p || s.P1 == p)
+			edges.push_back(s);
+	}
+
+	return edges;
+}
+QVector<Rectangle> Box::getFaceIncidentOnPoint(Point &p)
+{
+	QVector<Rectangle> rects;
+
+	foreach(Rectangle r, this->getFaceRectangles()){
+		foreach(Point cp, r.Conners){
+			if(p == cp)
+				rects.push_back(r);
+		}
+	}
+
+	return rects;
+}
 
