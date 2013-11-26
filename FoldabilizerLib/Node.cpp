@@ -39,6 +39,8 @@ void Node::draw()
 		ps.drawWireframes(2.0, Qt::red);
 	else if(isHighlight) 
 		ps.drawWireframes(2.0, Qt::yellow);
+	else if(isFocused)
+		ps.drawWireframes(2.0, Qt::magenta);	
 
 	// debug points
 	PointSoup dps;
@@ -61,7 +63,18 @@ void Node::translate( Vector3 t )
 	mBox.Center += t;
 }
 
+void Node::rotate( qglviewer::Quaternion &q )
+{
+	qglviewer::Vec axis0, axis1, axis2;
 
+	axis0 = q.rotate(qglviewer::Vec(mBox.Axis[0].x(), mBox.Axis[0].y(), mBox.Axis[0].z()));
+	axis1 = q.rotate(qglviewer::Vec(mBox.Axis[1].x(), mBox.Axis[1].y(), mBox.Axis[1].z()));
+	axis2 = q.rotate(qglviewer::Vec(mBox.Axis[2].x(), mBox.Axis[2].y(), mBox.Axis[2].z()));
+
+	mBox.Axis[0] = Vector3(axis0[0], axis0[1], axis0[2]);
+	mBox.Axis[1] = Vector3(axis1[0], axis1[1], axis1[2]);
+	mBox.Axis[2] = Vector3(axis2[0], axis2[1], axis2[2]);
+}
 
 void Node::fix()
 {
