@@ -18,6 +18,7 @@ Node::Node(Box b, QString id)
 
 	isHighlight = false;
 	isHot = false;
+	isFocused = false;
 }
 
 Node::~Node()

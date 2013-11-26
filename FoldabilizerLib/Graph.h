@@ -56,6 +56,7 @@ public:
 	double	getMaterialVolume();
 
 	// Visualize
+	bool isDraw;
 	void updateHingeScale();
 	void draw();
 

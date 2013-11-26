@@ -98,7 +98,7 @@ QVector<Hinge*> HingeDetector::getEdgeFaceHinges(Node* n0, Node* n1)
 	Box&				box0 = n0->mBox;
 	Box&				box1 = n1->mBox;
 	QVector<Segment>	edges0 = box0.getEdgeSegments();
-	QVector<Rectangle>		faces1 = box1.getFaceRectangles();
+	QVector<Geom::Rectangle> faces1 = box1.getFaceRectangles();
 
 	// Edge0-Face1 test
 	for (int i = 0; i < 12; i ++){
@@ -108,7 +108,7 @@ QVector<Hinge*> HingeDetector::getEdgeFaceHinges(Node* n0, Node* n1)
 		for (int j = 0; j < 6; j++)
 		{
 			Segment& e_i = edges0[i];
-			Rectangle& f_j = faces1[j];
+			Geom::Rectangle& f_j = faces1[j];
 
 			// create a hinge if f1_j contains e0_i
 			if (f_j.contains(e_i))
@@ -134,14 +134,14 @@ QVector<Hinge*> HingeDetector::getFaceFaceHinges()
 
 	Box&				box0 = node0->mBox;
 	Box&				box1 = node1->mBox;
-	QVector<Rectangle>		faces0 = box0.getFaceRectangles();
-	QVector<Rectangle>		faces1 = box1.getFaceRectangles();
+	QVector<Geom::Rectangle>		faces0 = box0.getFaceRectangles();
+	QVector<Geom::Rectangle>		faces1 = box1.getFaceRectangles();
 
 	for (int i = 0; i < Box::NB_FACES; i++)
 	{
 		for (int j = 0; j < Box::NB_FACES; j++)
 		{
-			Rectangle &f0 = faces0[i], &f1 = faces1[j];
+			Geom::Rectangle &f0 = faces0[i], &f1 = faces1[j];
 
 			// skip if two faces are not coplanar
 			if (!f0.isCoplanarWith(f1)) continue;
@@ -189,7 +189,7 @@ QVector<Hinge*> HingeDetector::getFaceFaceHinges()
 
 
 // e0 \in f1 : create hinge for e0
-Hinge* HingeDetector::generateEdgeFaceHinge( Node* n0, Node* n1, Segment& e0, Rectangle& f1 )
+Hinge* HingeDetector::generateEdgeFaceHinge( Node* n0, Node* n1, Segment& e0, Geom::Rectangle& f1 )
 {
 	// center and hz
 	Vector3 hcenter = e0.Center;

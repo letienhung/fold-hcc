@@ -6,12 +6,15 @@
 
 Graph::Graph()
 {
+	isDraw = false;
 }
 
 Graph::Graph(QString fname)
 {
 	if(!loadHCC(fname))
 		qDebug()<<"Failed to load HCC file!\n";
+
+	isDraw = false;
 }
 
 Graph::~Graph()
