@@ -31,6 +31,10 @@ public:
 	double	maxAngle;			// pi/2 or pi
 	Geom::Frame	zxFrame, zyFrame;	// dihedral frames
 
+	enum{
+		FOLDED, UNFOLDED, HALF_FOLDED
+	} state;					// folding state
+
 	struct HingeRecord{			// hinge records in node frames
 		Vec3d uc, c, cpa, cpv1, cpv2;
 	}hinge_record1, hinge_record2;
@@ -39,8 +43,13 @@ public:
 		Vec3d c, cpr, cps, cpt;
 	}node1_record, node2_record;
 
+public:
 	bool fix();
 
+	// state
+	void setState(int s);
+
+	// visualization
 	double scale;
 	void draw(bool highlight);
 

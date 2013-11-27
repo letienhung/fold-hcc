@@ -11,8 +11,7 @@ Link::Link( Node* n1, Node* n2 )
 	this->node2 = n2;
 	this->id = node1->mID + ":" + node2->mID;
 
-	HingeDetector hinge_detector(node1, node2);
-	hinges = hinge_detector.getHinges();
+	this->detectHinges();
 	activeHingeID = 0;
 
 	// tag
@@ -85,4 +84,13 @@ void Link::setHingeScale( double scale )
 {
 	foreach(Hinge* h, hinges)
 		h->scale = scale;
+}
+
+void Link::detectHinges( bool ee, bool ef, bool ff )
+{
+	foreach (Hinge* h, this->hinges) delete h;
+	this->hinges.clear();
+
+	HingeDetector hinge_detector(node1, node2);
+	hinges = hinge_detector.getHinges(ee, ef, ff);
 }

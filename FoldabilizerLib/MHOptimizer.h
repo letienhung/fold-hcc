@@ -1,47 +1,48 @@
 #pragma once
+#include <QObject>
 
 #include "Graph.h"
 #include "ProbabilityDistributions.h"
 
-class MHOptimizer
+class MHOptimizer : public QObject
 {
+	Q_OBJECT
+
 public:
 	Graph* hccGraph;
     MHOptimizer(Graph *graph);
 
-
-	bool				isReady;
-	double				originalAabbVolume;	
-	double				originalMaterialVolume;
-	GraphState			currState;
-	double				currCost;
-
-	// proposal
-	NormalDistribution	normalDistr;
-	int					nbSigma;		// default is 6, 6-sigma covers 99.7%
-	QVector<double>		typeProb;
-	double				switchHingeProb;
-	double				useHotProb;
+	// initialize 
+	double		origV;	
+	double		origMtlV;
+	GraphState	currState;
+	double		currCost;
+	bool		isReady;
+	void		initialize();
 
 	// acceptance
 	bool	alwaysAccept;
+	double	targetVPerc;
 	double	distWeight;
 	int		temperature;
 
-	// target
-	double	targetV;
+	// statistics
 	int		jumpCount;
 
-	void initialize();
-
-	void	jump();
-	double	cost();
+public:
+	// optimize
+	void	run();
 	void	proposeJump();
-	void	proposeChangeHingeAngle();
-	void	proposeDeformCuboid();
 	bool	acceptJump();
+
+	// helper
+	double	cost();
 	bool	isCollisionFree();
-	void	setTypeProb(QVector<double> &tp);
-	void	setTypeProb(double t0, double t1);
+
+	// one single jump
+	void	jump();
+
+signals:
+	void hccChanged();
 };
 

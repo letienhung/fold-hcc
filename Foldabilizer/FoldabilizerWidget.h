@@ -23,5 +23,7 @@ public slots:
 	void createU();
 	void createChair();
 	void updateMHOptimizerPara();
+	void updateHinges();
+	void checkAllHinges();
 };
 

@@ -19,6 +19,7 @@ Hinge::Hinge( Node* n1, Node* n2, Point c, Vec3d x, Vector3 y, Vector3 z, double
 	this->maxAngle = angle_suf;
 
 	// update dihedral frames and angle
+	this->state = UNFOLDED;
 	this->angle = acos(dot(hX, hY)); 
 	this->updateDihedralFrames();
 
@@ -86,10 +87,10 @@ bool Hinge::fix()
 	this->recoverLink(fixed_lr, fixed_node->mBox);
 
 	// fix hinge angle
-	updateDihedralVectors(node1->isFixed);
+	this->updateDihedralVectors(node1->isFixed);
 
 	// fix dihedral frames
-	updateDihedralFrames();
+	this->updateDihedralFrames();
 
 	// fix node on the other end
 	// step 1: fix the original box
@@ -158,6 +159,26 @@ void Hinge::draw( bool highlight )
 		PointSoup ps(16.0);
 		ps.addPoint(center, Qt::red);
 		ps.draw();
+	}
+}
+
+void Hinge::setState( int s )
+{
+	switch(s)
+	{
+	case FOLDED:
+		this->angle = 0;
+		this->state = FOLDED;
+		break;
+	case UNFOLDED:
+		this->angle = maxAngle;
+		this->state = UNFOLDED;
+		break;
+	case HALF_FOLDED:
+		this->state = HALF_FOLDED;
+		break;
+	default:
+		break;
 	}
 }
 

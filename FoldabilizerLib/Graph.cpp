@@ -330,7 +330,7 @@ void Graph::makeT()
 	rot_xyz.push_back(Vector3(-1, 0, 1));
 
 	Box hBox(Point(0, 0.5, 0), rot_xyz, Vector3(2, 0.5, 2));
-	Node* hNode = new Node(hBox, "hBox");
+	Node* hNode = new Node(hBox, "hBox_base");
 
 	this->addNode(vNode);
 	this->addNode(hNode);
@@ -576,7 +576,7 @@ Node* Graph::getBaseNode()
 	return NULL;
 }
 
-double Graph::getMaterialVolume()
+double Graph::getMtlVolume()
 {
 	double volume = 0;
 	foreach (Node* n, nodes) volume += n->getVolume();
@@ -721,5 +721,13 @@ void Graph::hotAnalyze()
 			}
 		}
 	}
+}
 
+
+void Graph::detectHinges( bool ee /*= true*/, bool ef /*= true*/, bool ff /*= true*/ )
+{
+	foreach (Link* l, links)
+		l->detectHinges(ee, ef, ff);
+
+	this->updateHingeScale();
 }

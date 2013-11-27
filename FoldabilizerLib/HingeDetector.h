@@ -11,7 +11,7 @@ private:
 public:
     HingeDetector( Node *n0, Node *n1 );
 
-	QVector<Hinge*> getHinges();
+	QVector<Hinge*> getHinges(bool ee = true, bool ef = true, bool ff = true);
 	QVector<Hinge*> getEdgeEdgeHinges(Node* n0, Node* n1);
 	QVector<Hinge*> getEdgeFaceHinges(Node* n0, Node* n1);
 	QVector<Hinge*> getFaceFaceHinges();

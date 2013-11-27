@@ -38,6 +38,9 @@ public:
 	QVector<Link*> getLinks(QString nodeID);
 	Node*	getBaseNode();
 
+	// detect hinges
+	void detectHinges(bool ee = true, bool ef = true, bool ff = true);
+
 	// state
 	GraphState getState();
 	void setState(GraphState &state);
@@ -53,7 +56,7 @@ public:
 	void	computeAabb();
 	Geom::Box getAabbBox();
 	double	getAabbVolume();
-	double	getMaterialVolume();
+	double	getMtlVolume();
 
 	// Visualize
 	bool isDraw;

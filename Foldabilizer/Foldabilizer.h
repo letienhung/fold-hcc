@@ -19,7 +19,6 @@ class Foldabilizer : public SurfaceMeshModePlugin
 	void destroy();
 	void decorate();
 
-	void resetScene();
 
 public:
     Foldabilizer();
@@ -31,6 +30,7 @@ public:
 	int	stepsPerJump;
 
 public slots:
+	void resetScene();
 	void createI();
 	void createL();
 	void createT();
@@ -42,6 +42,9 @@ public slots:
 	void loadGraph();
 	void jump();
 	void test();
+
+signals:
+	void hccGraphChanged();
 };
 
 

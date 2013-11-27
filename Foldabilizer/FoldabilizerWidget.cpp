@@ -9,7 +9,9 @@ FoldabilizerWidget::FoldabilizerWidget(Foldabilizer *f, QWidget *parent) :
 
 	fold = f;
 
-	// signal and slots
+	// connect to plugin
+	this->connect(fold, SIGNAL(hccGraphChanged()), SLOT(checkAllHinges()));
+	
 	// creating shapes
 	fold->connect(ui->createL, SIGNAL(clicked()), SLOT(createL()));
 	fold->connect(ui->createI, SIGNAL(clicked()), SLOT(createI()));
@@ -22,13 +24,12 @@ FoldabilizerWidget::FoldabilizerWidget(Foldabilizer *f, QWidget *parent) :
 	this->connect(ui->createU, SIGNAL(clicked()), SLOT(createU()));
 	this->connect(ui->createChair, SIGNAL(clicked()), SLOT(createChair()));
 
-	// optimization: jump
-	this->connect(ui->nbSigma, SIGNAL(valueChanged(int)), SLOT(updateMHOptimizerPara()));
-	this->connect(ui->typeOne, SIGNAL(valueChanged(double)), SLOT(updateMHOptimizerPara()));
-	this->connect(ui->typeTwo, SIGNAL(valueChanged(double)), SLOT(updateMHOptimizerPara()));
-	this->connect(ui->switchHinge, SIGNAL(valueChanged(double)), SLOT(updateMHOptimizerPara()));
-	this->connect(ui->useHot, SIGNAL(valueChanged(double)), SLOT(updateMHOptimizerPara()));
+	// hinge detector
+	this->connect(ui->eeHinge, SIGNAL(stateChanged(int)), SLOT(updateHinges()));
+	this->connect(ui->efHinge, SIGNAL(stateChanged(int)), SLOT(updateHinges()));
+	this->connect(ui->ffHinge, SIGNAL(stateChanged(int)), SLOT(updateHinges()));
 
+	// optimization: jump
 	this->connect(ui->alwaysAccept, SIGNAL(stateChanged (int)), SLOT(updateMHOptimizerPara()));
 	this->connect(ui->distWeight, SIGNAL(valueChanged(double)), SLOT(updateMHOptimizerPara()));
 	this->connect(ui->temprature, SIGNAL(valueChanged(int)), SLOT(updateMHOptimizerPara()));
@@ -61,19 +62,32 @@ void FoldabilizerWidget::updateMHOptimizerPara()
 	MHOptimizer *opt = fold->mhOptimizer;
 	if (!opt) return;
 
-	// propose
-	opt->nbSigma = ui->nbSigma->value();
-	opt->setTypeProb(ui->typeOne->value(), ui->typeTwo->value());
-	opt->switchHingeProb = ui->switchHinge->value();
-	opt->useHotProb = ui->useHot->value();
-
 	// accept
 	opt->distWeight = ui->distWeight->value();
 	opt->temperature = ui->temprature->value();
 	opt->alwaysAccept = ui->alwaysAccept->isChecked();
 
 	// target
-	opt->targetV = ui->targetV->value() / 100.0;
+	opt->targetVPerc = ui->targetV->value() / 100.0;
 	fold->stepsPerJump = ui->stepsPerJump->value();
 }
 
+void FoldabilizerWidget::updateHinges()
+{
+	if (!fold->hccGraph) return;
+
+	bool ee = ui->eeHinge->isChecked();
+	bool ef = ui->efHinge->isChecked();
+	bool ff = ui->ffHinge->isChecked();
+
+	// update hinges
+	fold->hccGraph->detectHinges(ee, ef, ff);
+	fold->drawArea()->update();
+}
+
+void FoldabilizerWidget::checkAllHinges()
+{
+	ui->eeHinge->setCheckState(Qt::Checked);
+	ui->efHinge->setCheckState(Qt::Checked);
+	ui->ffHinge->setCheckState(Qt::Checked);
+}
