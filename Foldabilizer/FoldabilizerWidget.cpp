@@ -29,6 +29,7 @@ FoldabilizerWidget::FoldabilizerWidget(Foldabilizer *f, QWidget *parent) :
 	this->connect(ui->switchHinge, SIGNAL(valueChanged(double)), SLOT(updateMHOptimizerPara()));
 	this->connect(ui->useHot, SIGNAL(valueChanged(double)), SLOT(updateMHOptimizerPara()));
 
+	this->connect(ui->alwaysAccept, SIGNAL(stateChanged (int)), SLOT(updateMHOptimizerPara()));
 	this->connect(ui->distWeight, SIGNAL(valueChanged(double)), SLOT(updateMHOptimizerPara()));
 	this->connect(ui->temprature, SIGNAL(valueChanged(int)), SLOT(updateMHOptimizerPara()));
 
@@ -69,6 +70,7 @@ void FoldabilizerWidget::updateMHOptimizerPara()
 	// accept
 	opt->distWeight = ui->distWeight->value();
 	opt->temperature = ui->temprature->value();
+	opt->alwaysAccept = ui->alwaysAccept->isChecked();
 
 	// target
 	opt->targetV = ui->targetV->value() / 100.0;

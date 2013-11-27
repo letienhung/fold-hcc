@@ -25,6 +25,7 @@ public:
 	Node	*node1, *node2;
 	Point	center;				// contact point
 	Vector3	hX, hY, hZ;			// axis and dihedral directions
+	Vector3 P0, P1;				// two end points of an edge hinge 
 
 	double	angle;				// angle <v1, v2> in radians: [0, maxAngle]
 	double	maxAngle;			// pi/2 or pi

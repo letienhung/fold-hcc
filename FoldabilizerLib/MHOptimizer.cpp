@@ -17,6 +17,7 @@ MHOptimizer::MHOptimizer(Graph* graph)
 	// accept
 	this->distWeight = 0.5;
 	this->temperature = 100;
+	this->alwaysAccept = false;
 
 	// target
 	this->targetV = 0.5;
@@ -173,6 +174,8 @@ void MHOptimizer::proposeJump()
 
 bool MHOptimizer::acceptJump()
 {
+	if (alwaysAccept) return true;
+
 	if (!isCollisionFree())
 		return false;
 
@@ -185,9 +188,6 @@ bool MHOptimizer::acceptJump()
 		double r = uniformRealDistribution();
 		return r < a;
 	}
-
-	//return (cost() < currCost);
-	//return true;
 }
 
 bool MHOptimizer::isCollisionFree()
@@ -237,7 +237,3 @@ void MHOptimizer::setTypeProb( double t0, double t1 )
 
 	this->setTypeProb(tp);
 }
-
-
-
-

@@ -28,7 +28,6 @@ HEADERS += \
     Graph.h \
     Node.h \
     Link.h \
-    xmlWriter.h \
     MHOptimizer.h \
     HingeDetector.h \
     Hinge.h
@@ -37,7 +36,6 @@ SOURCES += \
     Graph.cpp \
     Node.cpp \
     Link.cpp \
-    xmlWriter.cpp \
     MHOptimizer.cpp \
     HingeDetector.cpp \
     Hinge.cpp

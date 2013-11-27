@@ -20,7 +20,9 @@ HEADERS += \
     UtilityGlobal.h \
     ProbabilityDistributions.h \
     Numeric.h \
-    CustomDrawObjects.h
+    CustomDrawObjects.h \
+    xmlWriter.h
 
 SOURCES += \
-    Numeric.cpp
+    Numeric.cpp \
+    xmlWriter.cpp

@@ -24,6 +24,7 @@ public:
 	double				useHotProb;
 
 	// acceptance
+	bool	alwaysAccept;
 	double	distWeight;
 	int		temperature;
 
