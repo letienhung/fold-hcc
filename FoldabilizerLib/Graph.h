@@ -9,8 +9,6 @@ struct GraphState{
 	QVector<Vector3>	node_scale_factor;
 	QVector<int>		active_hinge_id;
 	QVector<double>		hinge_angle;
-	QVector<bool>		link_is_broken;
-	QVector<bool>		link_is_nailed;
 };
 
 
@@ -25,6 +23,7 @@ public:
 	// Modifier
     void addNode(Node* node);
 	void addLink(Link* link);
+	void addLink(Node* n0, Node* n1);
 	void removeNode(QString nodeID);
 	void removeLink(Link* link);
 
@@ -65,7 +64,7 @@ public:
 
 	// Prepare data
 	void makeI();
-	void makeL();
+	void makeL(bool withFront);
 	void makeT();
 	void makeX();
 	void makeSharp();

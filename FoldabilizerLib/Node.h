@@ -33,8 +33,7 @@ public:
 	bool		isHot;
 	bool		isFixed;		// tag used for propagation
 	bool        isFocused;      // tag used for editing
-	Vector3		originalExtent;
-	Vector3		scaleFactor;	// scale factor of box
+
 
 	QVector<Node*> collisionList;
 
@@ -44,8 +43,14 @@ public:
 public:
 	// Transformation
 	void translate(Vector3 t);
-	void fix();
 	void rotate(qglviewer::Quaternion &q);
+
+	// Scale box wrt the original box
+	Vector3	originalExtent;
+	Vector3 scaleFactor;
+	void	scale(Vector3 s);
+	void	scale(double s);
+	void	scale(int axisId, double s);
 
 	// Visualize
 	bool isHighlight;

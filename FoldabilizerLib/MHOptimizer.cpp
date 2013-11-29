@@ -12,6 +12,7 @@ MHOptimizer::MHOptimizer(Graph* graph)
 	this->distWeight = 0.5;
 	this->temperature = 100;
 	this->targetVPerc = 0.5;
+	this->resCollProb = 1.0;
 
 	isReady = false;
 }
@@ -31,7 +32,8 @@ void MHOptimizer::initialize()
 	isReady = true;
 
 	// new page
-	qDebug() << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+	qDebug() << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+		<< "Initialized: currCost = " << currCost;
 }
 
 void MHOptimizer::jump()
@@ -118,7 +120,7 @@ bool MHOptimizer::acceptJump()
 {
 	if (alwaysAccept) return true;
 
-	if (!hccGraph->detectCollision())
+	if (hccGraph->detectCollision())
 		return false;
 
 	double propCost = cost();
@@ -149,6 +151,8 @@ void MHOptimizer::resolveCollision()
 		if (!propHinge->node2->collisionList.isEmpty())
 			this->resolveCollision(propHinge->node2);
 	}
+
+	hccGraph->restoreConfiguration();
 }
 
 void MHOptimizer::resolveCollision( Node* pn )
@@ -175,6 +179,25 @@ void MHOptimizer::resolveCollision( Node* pn )
 
 	qDebug() <<"\tFrontier width: " << fe_fw << ", " << s_fw0 << ", "  << s_fw1;
 
-	// deform or split
+	// deform
+	// side colliding
+	double s_fw = Max(s_fw0, s_fw1);
+	if (s_fw < 0.25)
+	{
+		int s_aid = s_fid0 / 3;
+		pn->scale(s_aid, 1 - s_fw);
+	}
+	
+	// frontier colliding
+	if (fe_fw < 0.25)
+	{
+		int fe_aid = fe_fid / 3;
+		pn->scale(fe_aid, 1 - fe_fw/2);
+	}
+}
 
+void MHOptimizer::debug()
+{
+	int nid = uniformDiscreteDistribution(0, hccGraph->nbNodes());
+	hccGraph->getNode(nid)->scale(uniformRealDistribution());
 }

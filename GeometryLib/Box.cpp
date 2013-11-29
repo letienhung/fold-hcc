@@ -131,6 +131,12 @@ void Box::scale( Vector3 s )
 		this->Extent[i] *= s[i];
 }
 
+void Geom::Box::scale( int axisID, double s )
+{
+	if (axisID >= 0 && axisID < 3)
+		this->Extent[axisID] *= s;
+}
+
 bool Box::hasFaceCoplanarWith( Line line )
 {
 	Vector3 p1 = line.getPoint(0);
@@ -336,4 +342,3 @@ double Geom::Box::calcFrontierWidth( int fid, const QVector<Vector3>& pnts, bool
 
 	return maxWidth;
 }
-

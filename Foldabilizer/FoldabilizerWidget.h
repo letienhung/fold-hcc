@@ -20,6 +20,7 @@ private:
 	Foldabilizer *fold;
 
 public slots:
+	void createL();
 	void createU();
 	void createChair();
 	void updateMHOptimizerPara();

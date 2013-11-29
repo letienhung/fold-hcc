@@ -47,6 +47,9 @@ public:
 	// one single jump
 	void	jump();
 
+	// debug
+	void	debug();
+
 signals:
 	void	hccChanged();
 };

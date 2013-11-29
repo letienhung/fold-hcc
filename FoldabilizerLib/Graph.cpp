@@ -42,6 +42,11 @@ void Graph::addLink( Link* link)
 	links.push_back(link);
 }
 
+void Graph::addLink( Node* n0, Node* n1 )
+{
+	links.push_back(new Link(n0, n1));
+}
+
 void Graph::removeNode( QString nodeID )
 {
 	// remove incident links
@@ -288,11 +293,9 @@ void Graph::makeI()
 	this->clear();
 	QVector<Vector3> xyz = XYZ();
 
-	Box tBox(Point(0.5, 6, 0), xyz, Vector3(0.5, 2, 0.5));
-	Node* tNode = new Node(tBox, "top");
-
-	Box bBox(Point(0.5, 2, 0), xyz, Vector3(0.5, 2, 0.5));
-	Node* bNode = new Node(bBox, "bottom");
+	double thk = 0.5;
+	Node* tNode = new Node(Box(Point(thk, 6, 0), xyz, Vector3(thk, 2, thk)), "top");
+	Node* bNode = new Node(Box(Point(thk, 2, 0), xyz, Vector3(thk, 2, thk)), "bottom");
 
 	this->addNode(tNode);
 	this->addNode(bNode);
@@ -302,21 +305,31 @@ void Graph::makeI()
 	this->updateHingeScale();
 }
 
-void Graph::makeL()
+void Graph::makeL(bool withFront)
 {
 	this->clear();
 	QVector<Vector3> xyz = XYZ();
 
-	Box vBox(Point(-0.5, 2, 0), xyz, Vector3(0.5, 2, 2));
-	Node* vNode = new Node(vBox, "vBox");
+	double thk = 0.2;
+	Node* back = new Node(Box(Point(-thk, 2, 0), xyz, Vector3(thk, 2, 2)), "back");
+	Node* bottom = new Node(Box(Point(2, -thk, 0), xyz, Vector3(2, thk, 2)), "bottom_base");
+	Node* left = new Node(Box(Point(2, 1, -2+thk), xyz, Vector3(1, 1, thk)), "left");
+	Node* right = new Node(Box(Point(2, 1, 2-thk), xyz, Vector3(1, 1, thk)), "right");
+	Node* front = new Node(Box(Point(4-thk, 1, 0), xyz, Vector3(thk, 1, 1)), "front");
 
-	Box hBox(Point(2, -0.5, 0), xyz, Vector3(2, 0.5, 2));
-	Node* hNode = new Node(hBox, "hBox");
+	addNode(bottom); addNode(back); 
+	addLink(bottom, back); 
 
-	this->addNode(vNode);
-	this->addNode(hNode);
-
-	this->addLink(new Link(vNode, hNode));
+	if (withFront)
+	{
+		addNode(front);
+		addLink(bottom, front);
+	}
+	else
+	{
+		addNode(left); addNode(right); 
+		addLink(bottom, left); addLink(bottom, right); 
+	}
 
 	this->computeAabb();
 	this->updateHingeScale();
@@ -327,20 +340,14 @@ void Graph::makeT()
 	this->clear();
 	QVector<Vector3> xyz = XYZ();
 
-	Box vBox(Point(0, -2, 0), xyz, Vector3(0.5, 2, 2));
-	Node* vNode = new Node(vBox, "vBox");
+	Node* vNode = new Node(Box(Point(0, -2, 0), xyz, Vector3(0.5, 2, 2)), "vBox");
 
 	QVector<Vector3> rot_xyz;
-	rot_xyz.push_back(Vector3(1, 0, 1));
-	rot_xyz.push_back(Vector3(0, 1, 0));
-	rot_xyz.push_back(Vector3(-1, 0, 1));
+	rot_xyz << Vector3(1, 0, 1) << Vector3(0, 1, 0) << Vector3(-1, 0, 1);
+	Node* hNode = new Node(Box(Point(0, 0.5, 0), rot_xyz, Vector3(2, 0.5, 2)), "hBox_base");
 
-	Box hBox(Point(0, 0.5, 0), rot_xyz, Vector3(2, 0.5, 2));
-	Node* hNode = new Node(hBox, "hBox_base");
-
-	this->addNode(vNode);
-	this->addNode(hNode);
-	this->addLink(new Link(vNode, hNode));
+	addNode(vNode);	addNode(hNode);
+	addLink(new Link(vNode, hNode));
 
 	this->computeAabb();
 	this->updateHingeScale();
@@ -351,16 +358,11 @@ void Graph::makeX()
 	this->clear();
 	QVector<Vector3> xyz = XYZ();
 
-	Box vBox(Point(0, 0, 0.5), xyz, Vector3(0.5, 4, 0.5));
-	Node* vNode = new Node(vBox, "vBox");
+	Node* vNode = new Node(Box(Point(0, 0, 0.5), xyz, Vector3(0.5, 4, 0.5)), "vBox");
+	Node* hNode = new Node(Box(Point(0, 0, -0.5), xyz, Vector3(4, 0.5, 0.5)), "hBox");
 
-	Box hBox(Point(0, 0, -0.5), xyz, Vector3(4, 0.5, 0.5));
-	Node* hNode = new Node(hBox, "hBox");
-
-	this->addNode(vNode);
-	this->addNode(hNode);
-
-	this->addLink(new Link(vNode, hNode));
+	addNode(vNode);	addNode(hNode);
+	addLink(new Link(vNode, hNode));
 
 	this->computeAabb();
 	this->updateHingeScale();
@@ -393,26 +395,15 @@ void Graph::makeU( double uleft, double umid, double uright )
 	this->clear();
 	QVector<Vector3> xyz = XYZ();
 
-	Box ltBox(Point(0.5, 3 * uleft, 0), xyz, Vector3(0.5, uleft, 0.5));
-	Node* ltNode = new Node(ltBox, "left-top");
+	Node* ltNode = new Node(Box(Point(0.5, 3 * uleft, 0), xyz, Vector3(0.5, uleft, 0.5)), "left-top");
+	Node* lbNode = new Node(Box(Point(0.5, uleft, 0), xyz, Vector3(0.5, uleft, 0.5)), "left-bottom");
+	Node* hNode = new Node(Box(Point(umid, -0.5, 0), xyz, Vector3(umid, 0.5, 0.5)), "horizontal_base");
+	Node* rNode = new Node(Box(Point(2 * umid - 0.5, uright, 0), xyz, Vector3(0.5, uright, 0.5)), "right");
 
-	Box lbBox(Point(0.5, uleft, 0), xyz, Vector3(0.5, uleft, 0.5));
-	Node* lbNode = new Node(lbBox, "left-bottom");
+	addNode(lbNode);addNode(ltNode);addNode(hNode);addNode(rNode);
+	addLink(new Link(ltNode, lbNode));	
+	addLink(new Link(lbNode, hNode));
 
-	Box hBox(Point(umid, -0.5, 0), xyz, Vector3(umid, 0.5, 0.5));
-	Node* hNode = new Node(hBox, "horizontal_base");
-
-	Box rBox(Point(2 * umid - 0.5, uright, 0), xyz, Vector3(0.5, uright, 0.5));
-	Node* rNode = new Node(rBox, "right");
-
-	
-	this->addNode(lbNode);
-	this->addNode(ltNode);
-	this->addNode(hNode);
-	this->addNode(rNode);
-
-	this->addLink(new Link(ltNode, lbNode));
-	this->addLink(new Link(lbNode, hNode));
 	Link* nailedLink = new Link(rNode, hNode);
 	//nailedLink->isNailed = true;
 	this->addLink(nailedLink);
@@ -426,27 +417,16 @@ void Graph::makeO()
 	this->clear();
 	QVector<Vector3> xyz = XYZ();
 
-	Box lBox(Point(0.5, 2, 0), xyz, Vector3(0.5, 2, 0.5));
-	Node* lNode = new Node(lBox, "left");
+	Node* lNode = new Node(Box(Point(0.5, 2, 0), xyz, Vector3(0.5, 2, 0.5)), "left");
+	Node* rNode = new Node(Box(Point(7.5, 2, 0), xyz, Vector3(0.5, 2, 0.5)), "right");	
+	Node* bNode = new Node(Box(Point(4, -0.5, 0), xyz, Vector3(3, 0.5, 0.5)), "bottom_base");
+	Node* tNode = new Node(Box(Point(4, 4.5, 0), xyz, Vector3(3, 0.5, 0.5)), "top");
 
-	Box rBox(Point(7.5, 2, 0), xyz, Vector3(0.5, 2, 0.5));
-	Node* rNode = new Node(rBox, "right");	
-	
-	Box bBox(Point(4, -0.5, 0), xyz, Vector3(3, 0.5, 0.5));
-	Node* bNode = new Node(bBox, "bottom_base");
-
-	Box tBox(Point(4, 4.5, 0), xyz, Vector3(3, 0.5, 0.5));
-	Node* tNode = new Node(tBox, "top");
-
-	this->addNode(lNode);
-	this->addNode(rNode);
-	this->addNode(bNode);
-	this->addNode(tNode);
-
-	this->addLink(new Link(bNode, lNode));
-	this->addLink(new Link(bNode, rNode));
-	this->addLink(new Link(tNode, lNode));
-	this->addLink(new Link(tNode, rNode));
+	addNode(lNode);addNode(rNode);addNode(bNode);addNode(tNode);
+	addLink(new Link(bNode, lNode));
+	addLink(new Link(bNode, rNode));
+	addLink(new Link(tNode, lNode));
+	addLink(new Link(tNode, rNode));
 
 	this->computeAabb();
 	this->updateHingeScale();
@@ -457,36 +437,19 @@ void Graph::makeChair(double legL)
 	this->clear();
 	QVector<Vector3> xyz = XYZ();
 
-	Box backBox(Point(0.25, 2, 0), xyz, Vector3(0.25, 2, 2));
-	Node* backNode = new Node(backBox, "back");
+	Node* backNode = new Node(Box(Point(0.25, 2, 0), xyz, Vector3(0.25, 2, 2)), "back");
+	Node* seatNode = new Node(Box(Point(2, -0.5, 0), xyz, Vector3(2, 0.5, 2)), "seat_base");
+	Node* legNode0 = new Node(Box(Point(0.25, -legL-1, 1.75), xyz, Vector3(0.25, legL, 0.25)), "leg0");
+	Node* legNode1 = new Node(Box(Point(0.25, -legL-1, -1.75), xyz, Vector3(0.25, legL, 0.25)), "leg1");
+	Node* legNode2 = new Node(Box(Point(3.75, -legL-1, 1.75), xyz, Vector3(0.25, legL, 0.25)), "leg2");
+	Node* legNode3 = new Node(Box(Point(3.75, -legL-1, -1.75), xyz, Vector3(0.25, legL, 0.25)), "leg3");
 
-	Box seatBox(Point(2, -0.5, 0), xyz, Vector3(2, 0.5, 2));
-	Node* seatNode = new Node(seatBox, "seat_base");
-
-	Box legBox0(Point(0.25, -legL-1, 1.75), xyz, Vector3(0.25, legL, 0.25));
-	Node* legNode0 = new Node(legBox0, "leg0");
-
-	Box legBox1(Point(0.25, -legL-1, -1.75), xyz, Vector3(0.25, legL, 0.25));
-	Node* legNode1 = new Node(legBox1, "leg1");
-
-	Box legBox2(Point(3.75, -legL-1, 1.75), xyz, Vector3(0.25, legL, 0.25));
-	Node* legNode2 = new Node(legBox2, "leg2");
-
-	Box legBox3(Point(3.75, -legL-1, -1.75), xyz, Vector3(0.25, legL, 0.25));
-	Node* legNode3 = new Node(legBox3, "leg3");
-
-	this->addNode(backNode);
-	this->addNode(seatNode);
-	this->addNode(legNode0);
-	this->addNode(legNode1);
-	this->addNode(legNode2);
-	this->addNode(legNode3);
-
-	this->addLink(new Link(backNode, seatNode));
-	this->addLink(new Link(seatNode, legNode0));
-	this->addLink(new Link(seatNode, legNode1));
-	this->addLink(new Link(seatNode, legNode2));
-	this->addLink(new Link(seatNode, legNode3));
+	addNode(backNode);addNode(seatNode);addNode(legNode0);addNode(legNode1);addNode(legNode2);addNode(legNode3);
+	addLink(new Link(backNode, seatNode));
+	addLink(new Link(seatNode, legNode0));
+	addLink(new Link(seatNode, legNode1));
+	addLink(new Link(seatNode, legNode2));
+	addLink(new Link(seatNode, legNode3));
 
 	this->computeAabb();
 	this->updateHingeScale();
@@ -527,15 +490,15 @@ double Graph::getAabbVolume()
 
 void Graph::restoreConfiguration()
 {
+	// initial
 	if(isEmpty()) return;
 	this->resetTags();
 
-	QQueue<Node*> activeNodes;
-
+	// fix hinges
 	// starting from base node
-	Node* base_node = this->getBaseNode();
+	QQueue<Node*> activeNodes;
+	Node* base_node = this->getBaseNode(); 
 	if (!base_node) base_node = nodes[0];
-
 	base_node->isFixed = true;
 	activeNodes.enqueue(base_node);
 
@@ -593,13 +556,13 @@ GraphState Graph::getState()
 {
 	GraphState state;
 
-	foreach(Node* n, nodes) state.node_scale_factor.push_back(n->scaleFactor);
+	foreach(Node* n, nodes) 
+		state.node_scale_factor.push_back(n->scaleFactor);
+
 	foreach(Link* l, links)
 	{
 		state.active_hinge_id.push_back(l->getActiveHingeId());
 		state.hinge_angle.push_back(l->activeHinge()->angle);
-		state.link_is_broken.push_back(l->isBroken);
-		state.link_is_nailed.push_back(l->isNailed);
 	}
 
 	return state;
@@ -609,15 +572,13 @@ void Graph::setState( GraphState &state )
 {
 	for (int i = 0; i < nodes.size(); i++)
 	{
-		nodes[i]->scaleFactor = state.node_scale_factor[i];
+		nodes[i]->scale(state.node_scale_factor[i]);
 	}
 
 	for (int i = 0; i < links.size(); i++)
 	{
 		links[i]->setActiveHingeId(state.active_hinge_id[i]);
 		links[i]->activeHinge()->angle = state.hinge_angle[i];
-		links[i]->isBroken = state.link_is_broken[i];
-		links[i]->isNailed = state.link_is_nailed[i];
 	}
 }
 

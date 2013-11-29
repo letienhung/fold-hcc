@@ -72,12 +72,26 @@ void Node::rotate( qglviewer::Quaternion &q )
 	mBox.Axis[2] = Vector3(axis2[0], axis2[1], axis2[2]);
 }
 
-void Node::fix()
+void Node::scale( int axisId, double s )
 {
-	for (int i = 0 ; i < 3; i++)
-	{
-		mBox.Extent[i] = scaleFactor[i] * originalExtent[i];
-	}
-	
+	if (axisId >=0 && axisId < 3)
+		this->mBox.Extent[axisId] = originalExtent[axisId] * s;
+
+	scaleFactor[axisId] = s;
 }
 
+void Node::scale( Vector3 s )
+{
+	for (int i = 0; i < 3; i++)
+		this->mBox.Extent[i] = originalExtent[i] * s[i];
+
+	scaleFactor = s;
+}
+
+void Node::scale( double s )
+{
+	for (int i = 0; i < 3; i++)
+		this->mBox.Extent[i] = originalExtent[i] * s;
+
+	scaleFactor = Vector3(s,s,s);
+}

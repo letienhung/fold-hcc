@@ -36,6 +36,7 @@ public:
 	void translate(Vector3 t);
 	void scale(double s);
 	void scale(Vector3 s);
+	void scale(int axisID, double s);
 	Box  scaled(double s);
 
 	// geometry

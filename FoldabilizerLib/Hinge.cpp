@@ -67,25 +67,25 @@ Hinge::NodeRecord Hinge::createNodeRecord( Frame node_frame, Frame dl_frame )
 
 bool Hinge::fix()
 {
-	// cases where no fix is needed
+	// skip if both nodes have been fixed
 	if (node1->isFixed && node2->isFixed) return false; 
 
 	// distinguish between fixed and free
 	Node *fixed_node, *free_node;
-	HingeRecord fixed_lr, free_lr;
+	HingeRecord fixed_hr, free_hr;
 	NodeRecord free_nr;
 	if (node1->isFixed)	{
 		fixed_node = node1; free_node = node2;
-		fixed_lr = hinge_record1; free_lr = hinge_record2;
+		fixed_hr = hinge_record1; free_hr = hinge_record2;
 		free_nr = node2_record;
 	}else{
 		fixed_node = node2; free_node = node1;
-		fixed_lr = hinge_record2; free_lr = hinge_record1;
+		fixed_hr = hinge_record2; free_hr = hinge_record1;
 		free_nr = node1_record;
 	}
 
 	// fix hinge position and orientation from fixed node
-	this->recoverLink(fixed_lr, fixed_node->mBox);
+	this->recoverLink(fixed_hr, fixed_node->mBox);
 
 	// fix hinge angle
 	this->updateDihedralVectors(node1->isFixed);
@@ -93,17 +93,16 @@ bool Hinge::fix()
 	// fix dihedral frames
 	this->updateDihedralFrames();
 
-	// fix node on the other end
-	// step 1: fix the original box
-	Frame free_dlf = (node1->isFixed)? zyFrame : zxFrame;
-	free_node->mBox.setFrame( this->recoverNodeFrame(free_nr, free_dlf) ); 
-	// step 2: the current box differs by a scale factor, which can be fixed by a translation
-	free_node->fix();
-	Vector3 link_center_on_free_node = free_node->mBox.getPosition(free_lr.c_box);
-	free_node->mBox.Center += this->center - link_center_on_free_node;
-
-	// mark the tag
+	// fix the free node
+	// step 1: fix the frame
+	Frame free_dhf = (node1->isFixed)? zyFrame : zxFrame;
+	Frame free_nf = this->recoverNodeFrame(free_nr, free_dhf);
+	free_node->mBox.setFrame( free_nf ); 
+	// step 2: snap two nodes
+	Vector3 hc_free = free_node->mBox.getPosition(free_hr.c_box);
+	free_node->translate(this->center - hc_free);
 	free_node->isFixed = true;
+
 	return true;
 }
 
@@ -186,8 +185,11 @@ void Hinge::setState( int s )
 
 SurfaceMesh::Vector3 Hinge::getDihedralDirec( Node* n )
 {
-	if (node1 == n) return hX;
-	if (node2 == n) return hY;
+	if (node1 == n) 
+		return this->hX;
+
+	if (node2 == n) 
+		return this->hY;
 
 	return Vector3(0);
 }

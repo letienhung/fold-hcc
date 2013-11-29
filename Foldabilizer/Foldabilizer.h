@@ -32,7 +32,7 @@ public:
 public slots:
 	void resetScene();
 	void createI();
-	void createL();
+	void createL(bool withFront);
 	void createT();
 	void createX();
 	void createSharp();
