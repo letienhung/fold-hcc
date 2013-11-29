@@ -38,6 +38,7 @@ public:
 	void	run();
 	void	proposeJump();
 	void	resolveCollision();
+	void	resolveCollision(Node* pn);
 	bool	acceptJump();
 
 	// helper

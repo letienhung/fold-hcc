@@ -45,6 +45,9 @@ public:
 	static int EDGE[12][2];
 	static int QUAD_FACE[6][4];
 	static int TRI_FACE[12][3];
+
+	int	getFaceID(Vector3 n);
+
 	QVector<Point>				getConnerPoints();
 	QVector<Line>				getEdgeLines();
 	QVector<Segment>			getEdgeSegments();
@@ -65,6 +68,9 @@ public:
 	// relation with  other objects
 	bool hasFaceCoplanarWith(Line line);
 	bool contains(Vector3 p);
+
+	// frontier
+	double calcFrontierWidth(int fid, const QVector<Vector3>& pnts, bool two_side = false);
 };
 
 }

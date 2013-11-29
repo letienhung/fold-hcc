@@ -6,6 +6,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <algorithm>
+#include <limits>
 
 // utility macros
 // alert: keep in mind a macro do NOT check type 
@@ -63,15 +64,11 @@ inline QString qstr(Vector3 v)
 	return QString("(%1, %2, %3)").arg(v.x()).arg(v.y()).arg(v.z());
 }
 
-inline bool isCollinear(const Vector3& v0, const Vector3& v1)
+inline bool areCollinear(const Vector3& v0, const Vector3& v1)
 {
-	double cp = cross(v0, v1).norm();
-	bool isCol = cp < ZERO_TOLERANCE_LOW;
-	
-	//qDebug() << "Collinearity checking:" << qstr(v0) << "and" << qstr(v1) << ": cross_normal = " << cp << ", isCol = "<< isCol;
-
-	return isCol;
+	return cross(v0, v1).norm() < ZERO_TOLERANCE_LOW;
 }
+
 
 bool isPerp(const Vector3& v0, const Vector3& v1);
 

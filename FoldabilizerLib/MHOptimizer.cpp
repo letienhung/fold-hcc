@@ -141,16 +141,40 @@ void MHOptimizer::resolveCollision()
 	// no collision
 	if (!hccGraph->detectCollision()) return;
 
+	if (winByChance(this->resCollProb))
+	{
+		if (!propHinge->node1->collisionList.isEmpty())
+			this->resolveCollision(propHinge->node1);
 
+		if (!propHinge->node2->collisionList.isEmpty())
+			this->resolveCollision(propHinge->node2);
+	}
+}
 
-	// resolve collision of nodes incident to propHinge
-	Node* pn1 = propHinge->node1;
+void MHOptimizer::resolveCollision( Node* pn )
+{
+	// get intr points between pn and others
 	QVector<Vector3> intrPnts;
-	foreach(Node* cn, pn1->collisionList)
-		intrPnts += IntrBoxBox::sampleIntr(cn->mBox, pn1->mBox);
-	pn1->debug_points = intrPnts;
+	foreach(Node* cn, pn->collisionList)
+		intrPnts += IntrBoxBox::sampleIntr(cn->mBox, pn->mBox);
+	pn->debug_points = intrPnts;
 
-	// analyze the position of intrPnts and 
+	// analyze the width of frontier
+	// far-end
+	Vector3 hdd = propHinge->getDihedralDirec(pn);
+	int fe_fid = pn->mBox.getFaceID(hdd);
+	double fe_fw = pn->mBox.calcFrontierWidth(fe_fid, intrPnts, false);
 
-	Node* pn2 = propHinge->node2;
+	// two sides
+	Vector3 hZ = propHinge->hZ;
+	int s_fid0 = pn->mBox.getFaceID(hZ);
+	double s_fw0 = pn->mBox.calcFrontierWidth(s_fid0, intrPnts, true);
+
+	int s_fid1 = pn->mBox.getFaceID(-hZ);
+	double s_fw1 = pn->mBox.calcFrontierWidth(s_fid1, intrPnts, true);
+
+	qDebug() <<"\tFrontier width: " << fe_fw << ", " << s_fw0 << ", "  << s_fw1;
+
+	// deform or split
+
 }

@@ -22,6 +22,6 @@ SurfaceMesh::Vector3 Line::getPoint( double t )
 
 bool Line::contains( Vector3 p )
 {
-	return isCollinear(this->Direction, p - Origin);
+	return areCollinear(this->Direction, p - Origin);
 }
 

@@ -9,7 +9,7 @@
 //		| 3---------+-2            ---------+-------> X 
 //		|/          |/                     /|
 //		0-----------1                     / |
-//								       f4/  |f3
+//								      f4|/  |f3
 //	
 
 using namespace Geom;
@@ -297,5 +297,43 @@ Geom::Box Geom::Box::scaled( double s )
 	Box b = *this;
 	b.scale(s);
 	return b;
+}
+
+int Geom::Box::getFaceID( Vector3 n )
+{
+	for (int i = 0; i < 3; i++)	
+	{
+		if (areCollinear(n, Axis[i])) 
+		{
+			return (dot(n, Axis[i]) > 0) ? 
+				(3*i) : (3*i + 1);
+		}
+	}
+
+	return -1;
+}
+
+double Geom::Box::calcFrontierWidth( int fid, const QVector<Vector3>& pnts, bool two_side /*= false*/ )
+{
+	int axisID = fid / 3;
+	bool isNeg = fid % 3;
+
+	double maxWidth = std::numeric_limits<double>::min();
+	foreach(Vector3 p, pnts)
+	{
+		// off from face
+		Vector3 coord = this->getCoordinates(p);
+		double width = isNeg ? 
+			1 + coord[axisID] : 1 - coord[axisID];
+
+		// if two-side is enabled
+		// skip points closer to the opposite face
+		if (two_side && width > 1) continue;
+
+		// update the maxWidth
+		if (width > maxWidth) maxWidth = width;
+	}
+
+	return maxWidth;
 }
 

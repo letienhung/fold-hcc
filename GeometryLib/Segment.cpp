@@ -30,7 +30,7 @@ bool Segment::isCollinearWith( Vector3 p )
 	if (d.norm() < ZERO_TOLERANCE_LOW) 
 		return true;
 	else
-		return isCollinear(this->Direction, d);
+		return areCollinear(this->Direction, d);
 }
 
 bool Segment::overlaps( const Segment& other )

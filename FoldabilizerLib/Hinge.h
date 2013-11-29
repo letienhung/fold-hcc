@@ -45,7 +45,11 @@ public:
 	}node1_record, node2_record;
 
 public:
+	// restore the configuration of self and two incident nodes
 	bool fix();
+
+	// getters
+	Vector3 getDihedralDirec(Node* n);
 
 	// state
 	void setState(int s);

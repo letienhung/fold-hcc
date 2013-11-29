@@ -184,3 +184,11 @@ void Hinge::setState( int s )
 	}
 }
 
+SurfaceMesh::Vector3 Hinge::getDihedralDirec( Node* n )
+{
+	if (node1 == n) return hX;
+	if (node2 == n) return hY;
+
+	return Vector3(0);
+}
+

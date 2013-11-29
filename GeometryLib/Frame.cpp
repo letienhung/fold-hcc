@@ -41,6 +41,6 @@ Vector3 Frame::getPosition( Vector3 coord )
 
 bool Frame::isAlignedWith( const Frame& other )
 {
-	return (isCollinear(r, other.r) || isCollinear(r, other.s) || isCollinear(r, other.t))
-		&& (isCollinear(s, other.r) || isCollinear(s, other.s) || isCollinear(s, other.t));
+	return (areCollinear(r, other.r) || areCollinear(r, other.s) || areCollinear(r, other.t))
+		&& (areCollinear(s, other.r) || areCollinear(s, other.s) || areCollinear(s, other.t));
 }
