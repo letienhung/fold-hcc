@@ -36,15 +36,12 @@ public:
 	Vector3		originalExtent;
 	Vector3		scaleFactor;	// scale factor of box
 
+	QVector<Node*> collisionList;
+
     Node(Geom::Box b, QString id);
     ~Node();
 
 public:
-	// Geometry
-	double		getVolume();
-	Geom::Frame	getFrame();
-	void		setFrame(Geom::Frame f);
-
 	// Transformation
 	void translate(Vector3 t);
 	void fix();
@@ -53,6 +50,7 @@ public:
 	// Visualize
 	bool isHighlight;
 	void draw();
+	void drawDebug();
 
 	// debug
 	QVector<Vector3> debug_points;

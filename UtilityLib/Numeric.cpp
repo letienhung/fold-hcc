@@ -9,3 +9,9 @@ double dotPerp( const Vector2& v0, const Vector2& v1 )
 {
 	return v0[0] * v1[1] - v0[1] * v1[0];
 }
+
+bool inRange( double low, double high, double t )
+{
+	return t > low  - ZERO_TOLERANCE_LOW 
+		&& t < high + ZERO_TOLERANCE_LOW;
+}

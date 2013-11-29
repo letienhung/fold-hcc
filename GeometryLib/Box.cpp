@@ -101,31 +101,12 @@ Vector3 Box::getCoordinates( Vector3 p )
 	Vector3 coord;
 	p = p - Center;
 	for (int i = 0; i < 3; i++)
-		coord[i] = dot(p, Axis[i]);
-
-	return coord;
-}
-
-SurfaceMesh::Vector3 Box::getPosition( Vector3 coord )
-{
-	Vector3 pos = Center;
-	for (int i = 0; i < 3; i++)
-		pos += coord[i] * Axis[i];
-
-	return pos;
-}
-
-SurfaceMesh::Vector3 Box::getUniformCoordinates( Vector3 p )
-{
-	Vector3 coord;
-	p = p - Center;
-	for (int i = 0; i < 3; i++)
 		coord[i] = dot(p, Axis[i]) / Extent[i];
 
 	return coord;
 }
 
-SurfaceMesh::Vector3 Box::getUniformPosition( Vector3 coord )
+Vector3 Box::getPosition( Vector3 coord )
 {
 	Vector3 pos = Center;
 	for (int i = 0; i < 3; i++)
@@ -139,7 +120,7 @@ void Box::translate( Vector3 t )
 	this->Center += t;
 }
 
-void Box::uniformScale( double s )
+void Box::scale( double s )
 {
 	this->Extent *= s;
 }
@@ -150,17 +131,14 @@ void Box::scale( Vector3 s )
 		this->Extent[i] *= s[i];
 }
 
-bool Box::onBox( Line line )
+bool Box::hasFaceCoplanarWith( Line line )
 {
 	Vector3 p1 = line.getPoint(0);
 	Vector3 p2 = line.getPoint(1);
 
 	foreach(Plane plane, this->getFacePlanes())
 	{
-		if (plane.whichSide(p1) == 0 && plane.whichSide(p2) == 0)
-		{
-			return true;
-		}
+		if (plane.contains(line)) return true;
 	}
 
 	return false;
@@ -272,5 +250,52 @@ QVector<Rectangle> Box::getFaceIncidentOnPoint(Point &p)
 	}
 
 	return rects;
+}
+
+QVector<Vector3> Geom::Box::getGridSamples( int N )
+{
+	QVector<Vector3> samples;
+
+	// the size of regular grid
+	double gridV = this->getVolume() / N;
+	double gridSize = pow(gridV, 1.0/3);
+	int nbX = (int)ceil(2 * Extent[0] / gridSize);
+	int nbY = (int)ceil(2 * Extent[1] / gridSize);
+	int nbZ = (int)ceil(2 * Extent[2] / gridSize);
+	double stepX = 2.0 / nbX;
+	double stepY = 2.0 / nbY;
+	double stepZ = 2.0 / nbZ;
+
+	for (int i = 0; i <= nbX; i++)
+	for (int j = 0; j <= nbY; j++)
+	for (int k = 0; k <= nbZ; k++)
+	{
+		double ci = -1 + i * stepX;
+		double cj = -1 + j * stepY;
+		double ck = -1 + k * stepZ;
+		samples.push_back(this->getPosition(Vector3(ci, cj, ck)));
+	}
+
+	return samples;
+}
+
+bool Geom::Box::contains( Vector3 p )
+{
+	Vector3 c = this->getCoordinates(p);
+	return inRange(-1, 1, c.x())
+		&& inRange(-1, 1, c.y())
+		&& inRange(-1, 1, c.z());
+}
+
+double Geom::Box::getVolume()
+{
+	return 8 * Extent[0] * Extent[1] * Extent[2];
+}
+
+Geom::Box Geom::Box::scaled( double s )
+{
+	Box b = *this;
+	b.scale(s);
+	return b;
 }
 

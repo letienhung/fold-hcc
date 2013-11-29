@@ -1,5 +1,6 @@
 #include "Plane.h"
 #include "Numeric.h"
+#include "Line.h"
 
 using namespace Geom;
 
@@ -48,4 +49,10 @@ bool Plane::onSameSide( QVector<Vector3>& pnts )
 	}
 
 	return areSame;
+}
+
+bool Geom::Plane::contains( Line line )
+{
+	return this->whichSide(line.getPoint(0)) == 0 
+		&& this->whichSide(line.getPoint(1)) == 0;
 }

@@ -33,8 +33,9 @@ FoldabilizerWidget::FoldabilizerWidget(Foldabilizer *f, QWidget *parent) :
 	this->connect(ui->alwaysAccept, SIGNAL(stateChanged (int)), SLOT(updateMHOptimizerPara()));
 	this->connect(ui->distWeight, SIGNAL(valueChanged(double)), SLOT(updateMHOptimizerPara()));
 	this->connect(ui->temprature, SIGNAL(valueChanged(int)), SLOT(updateMHOptimizerPara()));
+	this->connect(ui->resCollProb, SIGNAL(valueChanged(double)), SLOT(updateMHOptimizerPara()));
 
-	this->connect(ui->targetV, SIGNAL(valueChanged(int)), SLOT(updateMHOptimizerPara()));
+	this->connect(ui->targetV, SIGNAL(valueChanged(double)), SLOT(updateMHOptimizerPara()));
 	this->connect(ui->stepsPerJump, SIGNAL(valueChanged(int)), SLOT(updateMHOptimizerPara()));
 
 	fold->connect(ui->jumpButton, SIGNAL(clicked()), SLOT(jump()));
@@ -62,13 +63,16 @@ void FoldabilizerWidget::updateMHOptimizerPara()
 	MHOptimizer *opt = fold->mhOptimizer;
 	if (!opt) return;
 
+	// propose
+	opt->resCollProb = ui->resCollProb->value();
+
 	// accept
 	opt->distWeight = ui->distWeight->value();
 	opt->temperature = ui->temprature->value();
 	opt->alwaysAccept = ui->alwaysAccept->isChecked();
 
 	// target
-	opt->targetVPerc = ui->targetV->value() / 100.0;
+	opt->targetVPerc = ui->targetV->value();
 	fold->stepsPerJump = ui->stepsPerJump->value();
 }
 

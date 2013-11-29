@@ -1,6 +1,7 @@
 #include "Graph.h"
 #include "xmlWriter.h"
 #include "Numeric.h"
+#include "IntrBoxBox.h"
 
 #include <fstream>
 
@@ -274,6 +275,11 @@ bool Graph::saveHCC(QString fname)
 void Graph::draw()
 {
 	foreach(Link *l, links) l->draw();
+
+	foreach(Node* n, nodes) n->drawDebug();
+
+	// nodes are draw in transparency
+	// draw nodes at the very end to show other contents
 	foreach(Node *n, nodes) n->draw();
 }
 
@@ -579,7 +585,7 @@ Node* Graph::getBaseNode()
 double Graph::getMtlVolume()
 {
 	double volume = 0;
-	foreach (Node* n, nodes) volume += n->getVolume();
+	foreach (Node* n, nodes) volume += n->mBox.getVolume();
 	return volume;
 }
 
@@ -696,7 +702,7 @@ void Graph::hotAnalyze()
 	// get planes of the shrunk AABB
 	this->computeAabb();
 	Box aabbBox = getAabbBox();
-	aabbBox.uniformScale(0.99);
+	aabbBox.scale(0.99);
 	QVector<Plane> aabbFaces = aabbBox.getFacePlanes();
 
 	// test if a node falls in both sides of planes
@@ -730,4 +736,30 @@ void Graph::detectHinges( bool ee /*= true*/, bool ef /*= true*/, bool ff /*= tr
 		l->detectHinges(ee, ef, ff);
 
 	this->updateHingeScale();
+}
+
+bool Graph::detectCollision()
+{
+	// clear collision record
+	foreach(Node* n, nodes) n->collisionList.clear();
+
+	// rough detection
+	double s = 0.99;
+
+	// detect collision between each pair of cuboids
+	bool collide = false;
+	for (int i = 0; i < nbNodes(); i++)
+	for (int j = i + 1; j < nbNodes(); j++)
+	{
+		if (Geom::IntrBoxBox::test(nodes[i]->mBox, nodes[j]->mBox, s))
+		{
+			collide = true;
+
+			// keep record
+			nodes[i]->collisionList.push_back(nodes[j]);
+			nodes[j]->collisionList.push_back(nodes[i]);
+		}
+	}
+
+	return collide;
 }

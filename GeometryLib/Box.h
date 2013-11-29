@@ -32,13 +32,11 @@ public:
 	Vector3 getCoordinates(Vector3 p);
 	Vector3 getPosition(Vector3 coord);
 
-	Vector3 getUniformCoordinates(Vector3 p);
-	Vector3 getUniformPosition(Vector3 coord);
-
 	// transform
 	void translate(Vector3 t);
-	void uniformScale(double s);
+	void scale(double s);
 	void scale(Vector3 s);
+	Box  scaled(double s);
 
 	// geometry
 	static int NB_FACES;
@@ -57,11 +55,16 @@ public:
 	QVector<Segment>            getEdgeIncidentOnPoint(Point &p);
 	QVector<Rectangle>          getFaceIncidentOnPoint(Point &p);
 
+	// sampling
+	double	getVolume();
+	QVector<Vector3>	getGridSamples(int N);
+
 	// tags
 	QVector<bool> edgeTags;
 
-	// relation with other objects
-	bool onBox(Line line);
+	// relation with  other objects
+	bool hasFaceCoplanarWith(Line line);
+	bool contains(Vector3 p);
 };
 
 }

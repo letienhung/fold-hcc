@@ -82,6 +82,7 @@ public:
 	QVector<Node*>	getHotNodes(bool hot = true);
 	QVector<Link*>	getHotLinks(bool hot = true);
 	bool			isHingable(Link* link);
+	bool			detectCollision();
 
 	// Save as obj mesh
 	void saveAsObj();

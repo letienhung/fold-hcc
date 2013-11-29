@@ -7,8 +7,12 @@ IntrBoxBox::IntrBoxBox()
 {
 }
 
-bool IntrBoxBox::test(Box &box0, Box &box1)
+
+bool Geom::IntrBoxBox::test( Box &b0, Box &b1, double s /*= 1.0*/ )
 {
+	Box box0 = b0.scaled(s);
+	Box box1 = b1.scaled(s);
+
 	// Cutoff for cosine of angles between box axes.  This is used to catch
 	// the cases when at least one pair of axes are parallel.  If this
 	// happens, there is no need to test for separation along the
@@ -215,4 +219,22 @@ bool IntrBoxBox::test(Box &box0, Box &box1)
 	}
 
 	return true;
+}
+
+QVector<Vector3> Geom::IntrBoxBox::sampleIntr( Box &box0, Box &box1 )
+{
+	QVector<Vector3> pnts;
+
+	if (IntrBoxBox::test(box0, box1))
+	{
+	}
+
+	int N = 10;
+	foreach(Vector3 p, box0.getGridSamples(N))
+		if (box1.contains(p)) pnts.push_back(p);
+
+	foreach(Vector3 p, box1.getGridSamples(N))
+		if (box0.contains(p)) pnts.push_back(p);
+
+	return pnts;
 }

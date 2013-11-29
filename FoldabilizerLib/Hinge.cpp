@@ -24,8 +24,8 @@ Hinge::Hinge( Node* n1, Node* n2, Point c, Vec3d x, Vector3 y, Vector3 z, double
 	this->updateDihedralFrames();
 
 	// node frames
-	Frame node1_frame = node1->getFrame();
-	Frame node2_frame = node2->getFrame();
+	Frame node1_frame = node1->mBox.getFrame();
+	Frame node2_frame = node2->mBox.getFrame();
 
 	// create link record in node frames
 	hinge_record1 = createLinkRecord(node1->mBox);
@@ -43,12 +43,13 @@ Hinge::Hinge( Node* n1, Node* n2, Point c, Vec3d x, Vector3 y, Vector3 z, double
 Hinge::HingeRecord Hinge::createLinkRecord( Box& node_box )
 {
 	HingeRecord lr;
-	lr.uc = node_box.getUniformCoordinates(center);
+	lr.c_box = node_box.getCoordinates(center);
 
-	lr.c = node_box.getCoordinates(center);
-	lr.cpa = node_box.getCoordinates(center + hZ);
-	lr.cpv1 = node_box.getCoordinates(center + hX);
-	lr.cpv2 = node_box.getCoordinates(center + hY);
+	Frame f = node_box.getFrame();
+	lr.c = f.getCoordinates(center);
+	lr.cpa = f.getCoordinates(center + hZ);
+	lr.cpv1 = f.getCoordinates(center + hX);
+	lr.cpv2 = f.getCoordinates(center + hY);
 
 	return lr;
 }
@@ -56,10 +57,10 @@ Hinge::HingeRecord Hinge::createLinkRecord( Box& node_box )
 Hinge::NodeRecord Hinge::createNodeRecord( Frame node_frame, Frame dl_frame )
 {
 	NodeRecord nr;
-	nr.c = dl_frame.coordinates(node_frame.c);
-	nr.cpr = dl_frame.coordinates(node_frame.r + node_frame.c);
-	nr.cps = dl_frame.coordinates(node_frame.s + node_frame.c);
-	nr.cpt = dl_frame.coordinates(node_frame.t + node_frame.c);
+	nr.c = dl_frame.getCoordinates(node_frame.c);
+	nr.cpr = dl_frame.getCoordinates(node_frame.r + node_frame.c);
+	nr.cps = dl_frame.getCoordinates(node_frame.s + node_frame.c);
+	nr.cpt = dl_frame.getCoordinates(node_frame.t + node_frame.c);
 
 	return nr;
 }
@@ -95,11 +96,11 @@ bool Hinge::fix()
 	// fix node on the other end
 	// step 1: fix the original box
 	Frame free_dlf = (node1->isFixed)? zyFrame : zxFrame;
-	free_node->setFrame( this->recoverNodeFrame(free_nr, free_dlf) ); 
+	free_node->mBox.setFrame( this->recoverNodeFrame(free_nr, free_dlf) ); 
 	// step 2: the current box differs by a scale factor, which can be fixed by a translation
 	free_node->fix();
-	Vector3 link_center_on_free_node = free_node->mBox.getUniformPosition(free_lr.uc);
-	free_node->mBox.Center += center - link_center_on_free_node;
+	Vector3 link_center_on_free_node = free_node->mBox.getPosition(free_lr.c_box);
+	free_node->mBox.Center += this->center - link_center_on_free_node;
 
 	// mark the tag
 	free_node->isFixed = true;
@@ -108,21 +109,22 @@ bool Hinge::fix()
 
 void Hinge::recoverLink( HingeRecord lr, Box& node_box )
 {
-	this->center = node_box.getUniformPosition(lr.uc);
+	this->center = node_box.getPosition(lr.c_box);
 
-	Vector3 c	= node_box.getPosition(lr.c);
-	this->hZ	= node_box.getPosition(lr.cpa)  - c;
-	this->hX	= node_box.getPosition(lr.cpv1) - c;
-	this->hY	= node_box.getPosition(lr.cpv2) - c;
+	Frame f = node_box.getFrame();
+	Vector3 c	= f.getPosition(lr.c);
+	this->hZ	= f.getPosition(lr.cpa)  - c;
+	this->hX	= f.getPosition(lr.cpv1) - c;
+	this->hY	= f.getPosition(lr.cpv2) - c;
 }
 
 Frame Hinge::recoverNodeFrame( NodeRecord nr, Frame dl_frame )
 {
 	Frame node_frame;
-	node_frame.c = dl_frame.position(nr.c);
-	node_frame.r = dl_frame.position(nr.cpr) - node_frame.c;
-	node_frame.s = dl_frame.position(nr.cps) - node_frame.c;
-	node_frame.t = dl_frame.position(nr.cpt) - node_frame.c;
+	node_frame.c = dl_frame.getPosition(nr.c);
+	node_frame.r = dl_frame.getPosition(nr.cpr) - node_frame.c;
+	node_frame.s = dl_frame.getPosition(nr.cps) - node_frame.c;
+	node_frame.t = dl_frame.getPosition(nr.cpt) - node_frame.c;
 
 	return node_frame;
 }

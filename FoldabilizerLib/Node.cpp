@@ -42,22 +42,17 @@ void Node::draw()
 		ps.drawWireframes(2.0, Qt::yellow);
 	else if(isFocused)
 		ps.drawWireframes(2.0, Qt::magenta);	
+}
 
+
+void Node::drawDebug()
+{
 	// debug points
 	PointSoup dps;
 	foreach(Vector3 v, this->debug_points) dps.addPoint(v);
 	dps.draw();
 }
 
-Frame Node::getFrame()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
-{
-	return mBox.getFrame();
-}
-
-void Node::setFrame( Frame f )
-{
-	mBox.setFrame(f);
-}
 
 void Node::translate( Vector3 t )
 {
@@ -84,11 +79,5 @@ void Node::fix()
 		mBox.Extent[i] = scaleFactor[i] * originalExtent[i];
 	}
 	
-}
-
-double Node::getVolume()
-{
-	Vector3 e = 2 * mBox.Extent;
-	return e[0] * e[1] * e[2];
 }
 

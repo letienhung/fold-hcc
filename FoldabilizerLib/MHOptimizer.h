@@ -20,6 +20,10 @@ public:
 	bool		isReady;
 	void		initialize();
 
+	// the proposed hinge
+	Hinge*	propHinge;
+	double	resCollProb;
+
 	// acceptance
 	bool	alwaysAccept;
 	double	targetVPerc;
@@ -33,16 +37,16 @@ public:
 	// optimize
 	void	run();
 	void	proposeJump();
+	void	resolveCollision();
 	bool	acceptJump();
 
 	// helper
 	double	cost();
-	bool	isCollisionFree();
 
 	// one single jump
 	void	jump();
 
 signals:
-	void hccChanged();
+	void	hccChanged();
 };
 

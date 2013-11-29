@@ -27,19 +27,19 @@ void Frame::normalize()
 	t.normalize();
 }
 
-Vec3d Frame::coordinates( const Vec3d& p )
+Vector3 Frame::getCoordinates( Vector3 p )
 {
-	Vec3d v = p - c;
-	return Vec3d(dot(v, r), dot(v, s), dot(v, t));
+	Vector3 v = p - c;
+	return Vector3(dot(v, r), dot(v, s), dot(v, t));
 }
 
-Vec3d Frame::position( const Vec3d& coord )
+Vector3 Frame::getPosition( Vector3 coord )
 {
-	Vec3d v = coord.x()*r + coord.y()*s + coord.z()*t;
+	Vector3 v = coord.x()*r + coord.y()*s + coord.z()*t;
 	return c + v;
 }
 
-bool Frame::isAligned( const Frame& other )
+bool Frame::isAlignedWith( const Frame& other )
 {
 	return (isCollinear(r, other.r) || isCollinear(r, other.s) || isCollinear(r, other.t))
 		&& (isCollinear(s, other.r) || isCollinear(s, other.s) || isCollinear(s, other.t));

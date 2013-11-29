@@ -126,11 +126,7 @@ void Foldabilizer::jump()
 
 void Foldabilizer::test()
 {
-	Link* link = hccGraph->getLink("seat_base", "leg0");
-	//link->hinges[0]->setState(Hinge::FOLDED);
-	link->activeHinge()->angle = M_PI / 3;
-	link->node2->isFixed = true;
-	link->fix();
+	
 }
 
 Q_EXPORT_PLUGIN(Foldabilizer)

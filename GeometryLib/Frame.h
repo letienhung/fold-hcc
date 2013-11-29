@@ -13,10 +13,9 @@ struct Frame
 	Frame(const Vector3& C, const Vector3& R, const Vector3& S, const Vector3& T);
 
 	void	normalize();
-	Vector3	coordinates(const Vector3& p);
-	Vector3 position(const Vector3& coord); 
+	Vector3	getCoordinates(Vector3 p);
+	Vector3 getPosition(Vector3 coord); 
 
-	bool	isAligned(const Frame& other);
+	bool	isAlignedWith(const Frame& other);
 };
-
 }

@@ -36,20 +36,22 @@ void MHOptimizer::initialize()
 
 void MHOptimizer::jump()
 { 
+	// clear debug points
+	foreach(Node* n, hccGraph->nodes) n->debug_points.clear();
+
+	// initialize
 	if (!isReady) initialize();
-	if (hccGraph->isEmpty()) return;
 
-
+	// propose jump and resolve collision
 	proposeJump();
-	if (acceptJump())
-	{
+	resolveCollision();
+
+	// accept new state by probability
+	if (acceptJump()){
 		currState = hccGraph->getState();
 		currCost = cost();
-
 		qDebug() << "\t\tACCEPTED. currCost = " << currCost;
-	}
-	else
-	{
+	}else{
 		hccGraph->setState(currState);
 		hccGraph->restoreConfiguration();
 		qDebug() << "\t\tREJECTED. currCost = " << currCost;
@@ -85,27 +87,27 @@ void MHOptimizer::proposeJump()
 	// hinge id
 	int hingeID = uniformDiscreteDistribution(0, plink->nbHinges());
 	plink->setActiveHingeId(hingeID);
-	Hinge* phinge = plink->activeHinge();
+	this->propHinge = plink->activeHinge();
 
 	// switch hinge between two states: open or folded
-	double old_angle = phinge->angle;
-	switch(phinge->state)
+	double old_angle = propHinge->angle;
+	switch(propHinge->state)
 	{
 	case Hinge::FOLDED:
-		phinge->setState(Hinge::UNFOLDED);
+		propHinge->setState(Hinge::UNFOLDED);
 		break;
 	case Hinge::UNFOLDED:
-		phinge->setState(Hinge::FOLDED);
+		propHinge->setState(Hinge::FOLDED);
 		break;
 	case Hinge::HALF_FOLDED:
 		int new_state = winByChance(0.5) ? 
 			Hinge::FOLDED : Hinge::UNFOLDED;
-		phinge->setState(new_state);
+		propHinge->setState(new_state);
 		break;
 	}
 
 	qDebug() << "Jump" << jumpCount << "(" << plink->id << "): " 
-		<< radians2degrees(old_angle) << " => " << radians2degrees(phinge->angle);
+		<< radians2degrees(old_angle) << " => " << radians2degrees(propHinge->angle);
 
 	// restore configuration according to new parameters
 	hccGraph->restoreConfiguration();
@@ -116,7 +118,7 @@ bool MHOptimizer::acceptJump()
 {
 	if (alwaysAccept) return true;
 
-	if (!isCollisionFree())
+	if (!hccGraph->detectCollision())
 		return false;
 
 	double propCost = cost();
@@ -129,38 +131,26 @@ bool MHOptimizer::acceptJump()
 	}
 }
 
-bool MHOptimizer::isCollisionFree()
-{
-	// clear highlights
-	foreach(Node* n, hccGraph->nodes) 
-		n->isHighlight = false;
-
-	// get boxes (shrunk)
-	QVector<Box> nodeBoxes;
-	foreach(Node* n, hccGraph->nodes)	{
-		nodeBoxes.push_back(n->mBox);
-		nodeBoxes.last().uniformScale(0.99);
-	}
-
-	// detect collision between each pair of cuboids
-	bool isFree = true;
-	int nbNodes = hccGraph->nbNodes();
-	for (int i = 0; i < nbNodes-1; i++){
-		for (int j = i+1; j < nbNodes; j++)
-		{
-			if (IntrBoxBox::test(nodeBoxes[i], nodeBoxes[j]))
-			{
-				hccGraph->getNode(i)->isHighlight = true;
-				hccGraph->getNode(j)->isHighlight = true;
-				isFree = false;
-			}
-		}
-	}
-
-	return isFree;
-}
-
 void MHOptimizer::run()
 {
 
+}
+
+void MHOptimizer::resolveCollision()
+{
+	// no collision
+	if (!hccGraph->detectCollision()) return;
+
+
+
+	// resolve collision of nodes incident to propHinge
+	Node* pn1 = propHinge->node1;
+	QVector<Vector3> intrPnts;
+	foreach(Node* cn, pn1->collisionList)
+		intrPnts += IntrBoxBox::sampleIntr(cn->mBox, pn1->mBox);
+	pn1->debug_points = intrPnts;
+
+	// analyze the position of intrPnts and 
+
+	Node* pn2 = propHinge->node2;
 }
