@@ -288,9 +288,9 @@ QVector<Vector3> Geom::Box::getGridSamples( int N )
 bool Geom::Box::contains( Vector3 p )
 {
 	Vector3 c = this->getCoordinates(p);
-	return inRange(-1, 1, c.x())
-		&& inRange(-1, 1, c.y())
-		&& inRange(-1, 1, c.z());
+	return inRange(c.x(), -1, 1)
+		&& inRange(c.y(), -1, 1)
+		&& inRange(c.z(), -1, 1);
 }
 
 double Geom::Box::getVolume()
@@ -319,6 +319,16 @@ int Geom::Box::getFaceID( Vector3 n )
 	return -1;
 }
 
+
+int Geom::Box::getAxisID( Vector3 a )
+{
+	for (int i = 0; i < 3; i++)	
+		if (areCollinear(a, Axis[i])) return i;
+
+	return -1;
+}
+
+
 double Geom::Box::calcFrontierWidth( int fid, const QVector<Vector3>& pnts, bool two_side /*= false*/ )
 {
 	int axisID = fid / 3;
@@ -341,4 +351,59 @@ double Geom::Box::calcFrontierWidth( int fid, const QVector<Vector3>& pnts, bool
 	}
 
 	return maxWidth;
+}
+
+SurfaceMesh::Vector4 Geom::Box::calcFrontierWidth( Vector3 hX, Vector3 hZ, const QVector<Vector3>& pnts )
+{
+	int hxId = getAxisID(hX), hzId = getAxisID(hZ);
+	double xE = Extent[hxId], zE = Extent[hzId];
+
+	double xlow = -1, xhigh = 1, zlow = -1, zhigh = 1;
+	foreach(Vector3 p, pnts)
+	{
+		Vector3 coord = this->getCoordinates(p);
+		double x = coord[hxId], z = coord[hzId];
+		double xCost = 0, zCost = 0;
+
+		// hx direction
+		double new_xlow = xlow, new_xhigh = xhigh;
+		if (inRange(x, xlow, xhigh))
+		{
+			double x_xlow = x - xlow, xhigh_x = xhigh - x;
+			if (x_xlow <= xhigh_x) { 
+				xCost = x_xlow * zE; new_xlow = x;
+			}else{
+				xCost = xhigh_x * zE; new_xhigh = x;
+			}
+		}
+
+		// hz direction
+		double new_zlow = zlow, new_zhigh = zhigh;
+		if (inRange(z, zlow, zhigh))
+		{
+			double z_zlow = z - zlow, zhigh_z = zhigh - z;
+			if (z_zlow <= zhigh_z) { 
+				zCost = z_zlow * xE; new_zlow = z;
+			}else{ 
+				zCost = zhigh_z * xE; new_zhigh = z;
+			}
+		}
+
+		// reduce range with lower cost
+		if (xCost <= zCost){
+			xlow = new_xlow; xhigh = new_xhigh;
+		}else{
+			zlow = new_zlow; zhigh = new_zhigh;
+		}
+	}
+
+	// reverse direction if need
+	if (dot(hX, Axis[hxId])){
+		std::swap(xlow, xhigh); xlow *= -1; xhigh *= -1;
+	}
+	if (dot(hZ, Axis[hzId])){
+		std::swap(zlow, zhigh); zlow *= -1; zhigh *= -1;
+	}
+
+	return Vector4(1 + xlow, 1 - xhigh, 1 + zlow, 1 - zhigh);
 }

@@ -15,13 +15,13 @@ FoldabilizerWidget::FoldabilizerWidget(Foldabilizer *f, QWidget *parent) :
 	// creating shapes
 	fold->connect(ui->createI, SIGNAL(clicked()), SLOT(createI()));
 	fold->connect(ui->createT, SIGNAL(clicked()), SLOT(createT()));
+	fold->connect(ui->createL, SIGNAL(clicked()), SLOT(createL()));
 	fold->connect(ui->createX, SIGNAL(clicked()), SLOT(createX()));
 	fold->connect(ui->createSharp, SIGNAL(clicked()), SLOT(createSharp()));
 	fold->connect(ui->createO, SIGNAL(clicked()), SLOT(createO()));
 	fold->connect(ui->load_hcc, SIGNAL(clicked()), SLOT(loadGraph()));
 
 
-	this->connect(ui->createL, SIGNAL(clicked()), SLOT(createL()));
 	this->connect(ui->createU, SIGNAL(clicked()), SLOT(createU()));
 	this->connect(ui->createChair, SIGNAL(clicked()), SLOT(createChair()));
 
@@ -95,9 +95,4 @@ void FoldabilizerWidget::checkAllHinges()
 	ui->eeHinge->setCheckState(Qt::Checked);
 	ui->efHinge->setCheckState(Qt::Checked);
 	ui->ffHinge->setCheckState(Qt::Checked);
-}
-
-void FoldabilizerWidget::createL()
-{
-	fold->createL(ui->LFront->isChecked());
 }

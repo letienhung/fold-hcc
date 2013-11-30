@@ -27,6 +27,8 @@ public:
 	// frame
 	Frame	getFrame();
 	void	setFrame(Frame f);
+	int		getFaceID(Vector3 n);
+	int		getAxisID(Vector3 a);
 
 	// coordinates
 	Vector3 getCoordinates(Vector3 p);
@@ -47,7 +49,6 @@ public:
 	static int QUAD_FACE[6][4];
 	static int TRI_FACE[12][3];
 
-	int	getFaceID(Vector3 n);
 
 	QVector<Point>				getConnerPoints();
 	QVector<Line>				getEdgeLines();
@@ -72,6 +73,7 @@ public:
 
 	// frontier
 	double calcFrontierWidth(int fid, const QVector<Vector3>& pnts, bool two_side = false);
+	Vector4 calcFrontierWidth(Vector3 hX, Vector3 hZ, const QVector<Vector3>& pnts);
 };
 
 }

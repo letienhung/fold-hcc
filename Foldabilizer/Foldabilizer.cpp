@@ -56,9 +56,9 @@ void Foldabilizer::resetScene()
 }
 
 
-void Foldabilizer::createL( bool withFront )
+void Foldabilizer::createL()
 {
-	hccGraph->makeL(withFront);
+	hccGraph->makeL();
 	emit(hccGraphChanged());
 }
 

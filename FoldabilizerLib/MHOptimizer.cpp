@@ -164,35 +164,34 @@ void MHOptimizer::resolveCollision( Node* pn )
 	pn->debug_points = intrPnts;
 
 	// analyze the width of frontier
+	Vector4 fw = pn->mBox.calcFrontierWidth(propHinge->hX, propHinge->hZ, intrPnts);
+	qDebug() <<"\tFrontier width: " << qstr(fw);
+
+	// near-end
+	double nfw = fw[1];
+	if (nfw > ZERO_TOLERANCE_LOW)
+	{
+		return;
+		qDebug() << "Potential split.";
+	}
+
 	// far-end
-	Vector3 hdd = propHinge->getDihedralDirec(pn);
-	int fe_fid = pn->mBox.getFaceID(hdd);
-	double fe_fw = pn->mBox.calcFrontierWidth(fe_fid, intrPnts, false);
+	double ffw = fw[0];
+	if (ffw > 0 && ffw < 0.25)
+	{
+		int fe_aid = pn->mBox.getAxisID(propHinge->hX);
+		pn->scale(fe_aid, 1 - ffw/2);
+		qDebug() << "Shrunk far end.";
+	}
 
 	// two sides
-	Vector3 hZ = propHinge->hZ;
-	int s_fid0 = pn->mBox.getFaceID(hZ);
-	double s_fw0 = pn->mBox.calcFrontierWidth(s_fid0, intrPnts, true);
-
-	int s_fid1 = pn->mBox.getFaceID(-hZ);
-	double s_fw1 = pn->mBox.calcFrontierWidth(s_fid1, intrPnts, true);
-
-	qDebug() <<"\tFrontier width: " << fe_fw << ", " << s_fw0 << ", "  << s_fw1;
-
-	// deform
-	// side colliding
-	double s_fw = Max(s_fw0, s_fw1);
-	if (s_fw < 0.25)
+	double lfw = fw[2], rfw = fw[3];
+	double sfw = Max(lfw, rfw);
+	if (sfw > 0 && sfw < 0.25)
 	{
-		int s_aid = s_fid0 / 3;
-		pn->scale(s_aid, 1 - s_fw);
-	}
-	
-	// frontier colliding
-	if (fe_fw < 0.25)
-	{
-		int fe_aid = fe_fid / 3;
-		pn->scale(fe_aid, 1 - fe_fw/2);
+		int s_aid = pn->mBox.getAxisID(propHinge->hZ);
+		pn->scale(s_aid, 1 - sfw);
+		qDebug() << "Shrunk two sides.";
 	}
 }
 

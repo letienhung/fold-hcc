@@ -64,7 +64,7 @@ public:
 
 	// Prepare data
 	void makeI();
-	void makeL(bool withFront);
+	void makeL();
 	void makeT();
 	void makeX();
 	void makeSharp();

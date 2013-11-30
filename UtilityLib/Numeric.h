@@ -64,6 +64,11 @@ inline QString qstr(Vector3 v)
 	return QString("(%1, %2, %3)").arg(v.x()).arg(v.y()).arg(v.z());
 }
 
+inline QString qstr(Vector4 &v)
+{
+	return QString("(%1, %2, %3, %4)").arg(v[0]).arg(v[1]).arg(v[2]).arg(v[3]);
+}
+
 inline bool areCollinear(const Vector3& v0, const Vector3& v1)
 {
 	return cross(v0, v1).norm() < ZERO_TOLERANCE_LOW;
@@ -74,4 +79,4 @@ bool isPerp(const Vector3& v0, const Vector3& v1);
 
 double dotPerp(const Vector2& v0, const Vector2& v1);
 
-bool inRange(double low, double high, double t);
+bool inRange(double t, double low, double high);

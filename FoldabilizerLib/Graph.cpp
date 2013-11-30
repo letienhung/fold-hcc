@@ -305,7 +305,7 @@ void Graph::makeI()
 	this->updateHingeScale();
 }
 
-void Graph::makeL(bool withFront)
+void Graph::makeL()
 {
 	this->clear();
 	QVector<Vector3> xyz = XYZ();
@@ -319,17 +319,12 @@ void Graph::makeL(bool withFront)
 
 	addNode(bottom); addNode(back); 
 	addLink(bottom, back); 
+	addNode(front);
+	addLink(bottom, front);
 
-	if (withFront)
-	{
-		addNode(front);
-		addLink(bottom, front);
-	}
-	else
-	{
-		addNode(left); addNode(right); 
-		addLink(bottom, left); addLink(bottom, right); 
-	}
+	addNode(left); addNode(right); 
+	addLink(bottom, left); addLink(bottom, right); 
+
 
 	this->computeAabb();
 	this->updateHingeScale();

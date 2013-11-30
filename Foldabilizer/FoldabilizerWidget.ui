@@ -320,24 +320,10 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="3">
-    <widget class="QPushButton" name="createL">
-     <property name="text">
-      <string>create L</string>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="1">
     <widget class="QPushButton" name="createT">
      <property name="text">
       <string>create T</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="2">
-    <widget class="QPushButton" name="createO">
-     <property name="text">
-      <string>create O</string>
      </property>
     </widget>
    </item>
@@ -348,10 +334,17 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="2">
-    <widget class="QCheckBox" name="LFront">
+   <item row="0" column="2">
+    <widget class="QPushButton" name="createL">
      <property name="text">
-      <string>front</string>
+      <string>create L</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QPushButton" name="createO">
+     <property name="text">
+      <string>create O</string>
      </property>
     </widget>
    </item>
