@@ -6,6 +6,8 @@
 
 QString DEFAULT_FILE_PATH = "..\\..\\data";
 
+#include "Numeric.h"
+
 // test
 #include "IntrRectRect.h"
 
@@ -146,15 +148,19 @@ void Foldabilizer::jump()
 
 void Foldabilizer::test()
 {
-	// fold
-	double a = degrees2radians(19.5);
-	hccGraph->links[0]->activeHinge()->angle = -a;
-	hccGraph->links[1]->activeHinge()->angle = M_PI - a;
-	hccGraph->links[2]->activeHinge()->angle = M_PI - a;
-	hccGraph->links[3]->activeHinge()->angle = a;
-	hccGraph->restoreConfiguration();
+	int k = 3;
+	int n = 2*k - 1;
+	double m1 = 1;
+	double eps = m1 / k;
+	double m2 = m1 - eps;
 
-	updateScene();
+	// H
+	double L0 = 2*m1 - eps;
+
+	// N
+	double N0 = 2*m1 - (m1-m2)/pow(2.0, double(k-2));
+	double N1;
+	double L1 = Max(N0, N1);
 }
 
 Q_EXPORT_PLUGIN(Foldabilizer)

@@ -24,10 +24,10 @@ Link::Link( Node* n1, Node* n2 )
 void Link::draw()
 {
 	if (isBroken || isNailed) return;
-	foreach(Hinge* h, hinges) h->draw(false);
+	foreach(Hinge* h, hinges) h->draw();
 
 	if (this->activeHinge())
-		this->activeHinge()->draw(true);
+		this->activeHinge()->draw();
 }
 
 bool Link::hasNode( QString nodeID )

@@ -55,8 +55,9 @@ public:
 	void setState(int s);
 
 	// visualization
+	bool highlighted;
 	double scale;
-	void draw(bool highlight);
+	void draw();
 
 private:
 	void updateDihedralVectors(bool fix_v1);

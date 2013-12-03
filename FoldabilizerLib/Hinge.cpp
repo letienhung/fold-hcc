@@ -37,6 +37,7 @@ Hinge::Hinge( Node* n1, Node* n2, Point c, Vec3d x, Vector3 y, Vector3 z, double
 
 	// hinge scale
 	this->scale = 0.1;
+	this->highlighted = false;
 }
 
 
@@ -94,7 +95,7 @@ bool Hinge::fix()
 	// fix the free node if it is truly free
 	if (free_node->isFixed)
 	{
-		this->
+		this->highlighted = false;
 		return false; 
 	}
 	else
@@ -108,6 +109,7 @@ bool Hinge::fix()
 		free_node->translate(this->center - hc_free);
 		free_node->isFixed = true;
 
+		this->highlighted = true;
 		return true;
 	}
 }
@@ -155,13 +157,13 @@ void Hinge::updateDihedralVectors( bool isV1Fixed )
 }
 
 
-void Hinge::draw( bool highlight )
+void Hinge::draw()
 {
 	FrameSoup fs(this->scale);
 	fs.addFrame( this->hX, this->hY, this->hZ, this->center);
 	fs.draw();
 
-	if (highlight)
+	if (highlighted)
 	{
 		PointSoup ps(16.0);
 		ps.addPoint(center, Qt::red);
