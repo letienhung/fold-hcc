@@ -310,21 +310,11 @@ void Graph::makeL()
 	this->clear();
 	QVector<Vector3> xyz = XYZ();
 
-	double thk = 0.2;
-	Node* back = new Node(Box(Point(-thk, 2, 0), xyz, Vector3(thk, 2, 2)), "back");
-	Node* bottom = new Node(Box(Point(2, -thk, 0), xyz, Vector3(2, thk, 2)), "bottom_base");
-	Node* left = new Node(Box(Point(2, 1, -2+thk), xyz, Vector3(1, 1, thk)), "left");
-	Node* right = new Node(Box(Point(2, 1, 2-thk), xyz, Vector3(1, 1, thk)), "right");
-	Node* front = new Node(Box(Point(4-thk, 1, 0), xyz, Vector3(thk, 1, 1)), "front");
+	Node* vNode = new Node(Box(Point(-0.5, 2, 0), xyz, Vector3(0.5, 2, 2)), "vBox");
+	Node* hNode = new Node(Box(Point(2, -0.5, 0), xyz, Vector3(2, 0.5, 2)), "hBox");
 
-	addNode(bottom); addNode(back); 
-	addLink(bottom, back); 
-	addNode(front);
-	addLink(bottom, front);
-
-	addNode(left); addNode(right); 
-	addLink(bottom, left); addLink(bottom, right); 
-
+	addNode(vNode); addNode(hNode);
+	addLink(new Link(vNode, hNode));
 
 	this->computeAabb();
 	this->updateHingeScale();
@@ -413,7 +403,7 @@ void Graph::makeO()
 	QVector<Vector3> xyz = XYZ();
 
 	Node* lNode = new Node(Box(Point(0.5, 2, 0), xyz, Vector3(0.5, 2, 0.5)), "left");
-	Node* rNode = new Node(Box(Point(7.5, 2, 0), xyz, Vector3(0.5, 2, 0.5)), "right");	
+	Node* rNode = new Node(Box(Point(7.5, 2, 0), xyz, Vector3(0.5, 2, 0.5)), "right");      
 	Node* bNode = new Node(Box(Point(4, -0.5, 0), xyz, Vector3(3, 0.5, 0.5)), "bottom_base");
 	Node* tNode = new Node(Box(Point(4, 4.5, 0), xyz, Vector3(3, 0.5, 0.5)), "top");
 
@@ -422,6 +412,51 @@ void Graph::makeO()
 	addLink(new Link(bNode, rNode));
 	addLink(new Link(tNode, lNode));
 	addLink(new Link(tNode, rNode));
+
+	this->computeAabb();
+	this->updateHingeScale();
+}
+
+void Graph::makeO_2()
+{
+	this->clear();
+	QVector<Vector3> xyz = XYZ();
+
+	Node* lNode = new Node(Box(Point(0.5, 2, 0), xyz, Vector3(0.5, 2, 0.5)), "left");
+	Node* rNode = new Node(Box(Point(9.5, 2, 0), xyz, Vector3(0.5, 2, 0.5)), "right");	
+	Node* bNode = new Node(Box(Point(5, 0.5, 1), xyz, Vector3(5, 0.5, 0.5)), "bottom_base");
+	Node* tNode = new Node(Box(Point(5, 3.5, 1), xyz, Vector3(5, 0.5, 0.5)), "top");
+
+	addNode(lNode);addNode(rNode);addNode(bNode);addNode(tNode);
+	addLink(new Link(bNode, lNode));
+	addLink(new Link(bNode, rNode));
+	addLink(new Link(tNode, lNode));
+	addLink(new Link(tNode, rNode));
+
+	this->computeAabb();
+	this->updateHingeScale();
+}
+
+void Graph::makeBox()
+{
+	this->clear();
+	QVector<Vector3> xyz = XYZ();
+
+	double thk = 0.2;
+	Node* back = new Node(Box(Point(-thk, 2, 0), xyz, Vector3(thk, 2, 2)), "back");
+	Node* bottom = new Node(Box(Point(2, -thk, 0), xyz, Vector3(2, thk, 2)), "bottom_base");
+	Node* left = new Node(Box(Point(2, 1, -2+thk), xyz, Vector3(1, 1, thk)), "left");
+	Node* right = new Node(Box(Point(2, 1, 2-thk), xyz, Vector3(1, 1, thk)), "right");
+	Node* front = new Node(Box(Point(4-thk, 1, 0), xyz, Vector3(thk, 1, 1)), "front");
+
+	addNode(bottom); addNode(back); 
+	addLink(bottom, back); 
+	addNode(front);
+	addLink(bottom, front);
+
+	addNode(left); addNode(right); 
+	addLink(bottom, left); addLink(bottom, right); 
+
 
 	this->computeAabb();
 	this->updateHingeScale();
@@ -719,3 +754,5 @@ bool Graph::detectCollision()
 
 	return collide;
 }
+
+

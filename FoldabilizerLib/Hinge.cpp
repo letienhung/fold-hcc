@@ -67,9 +67,7 @@ Hinge::NodeRecord Hinge::createNodeRecord( Frame node_frame, Frame dl_frame )
 
 bool Hinge::fix()
 {
-	// skip if both nodes have been fixed
-	if (node1->isFixed && node2->isFixed) return false; 
-
+	// if both nodes are fixed, treat node2 as free
 	// distinguish between fixed and free
 	Node *fixed_node, *free_node;
 	HingeRecord fixed_hr, free_hr;
@@ -93,17 +91,25 @@ bool Hinge::fix()
 	// fix dihedral frames
 	this->updateDihedralFrames();
 
-	// fix the free node
-	// step 1: fix the frame
-	Frame free_dhf = (node1->isFixed)? zyFrame : zxFrame;
-	Frame free_nf = this->recoverNodeFrame(free_nr, free_dhf);
-	free_node->mBox.setFrame( free_nf ); 
-	// step 2: snap two nodes
-	Vector3 hc_free = free_node->mBox.getPosition(free_hr.c_box);
-	free_node->translate(this->center - hc_free);
-	free_node->isFixed = true;
+	// fix the free node if it is truly free
+	if (free_node->isFixed)
+	{
+		this->
+		return false; 
+	}
+	else
+	{
+		// step 1: fix the frame
+		Frame free_dhf = (node1->isFixed)? zyFrame : zxFrame;
+		Frame free_nf = this->recoverNodeFrame(free_nr, free_dhf);
+		free_node->mBox.setFrame( free_nf ); 
+		// step 2: snap two nodes
+		Vector3 hc_free = free_node->mBox.getPosition(free_hr.c_box);
+		free_node->translate(this->center - hc_free);
+		free_node->isFixed = true;
 
-	return true;
+		return true;
+	}
 }
 
 void Hinge::recoverLink( HingeRecord lr, Box& node_box )

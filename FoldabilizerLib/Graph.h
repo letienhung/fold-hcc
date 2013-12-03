@@ -70,6 +70,8 @@ public:
 	void makeSharp();
 	void makeU(double uleft, double umid, double uright);
 	void makeO();
+	void makeO_2();
+	void makeBox();
 	void makeChair(double legL);
 
 	// Restore configuration

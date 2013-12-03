@@ -30,6 +30,7 @@ public:
 	int	stepsPerJump;
 
 public slots:
+	void updateScene();
 	void resetScene();
 	void createI();
 	void createL();
@@ -38,6 +39,8 @@ public slots:
 	void createSharp();
 	void createU(double uleft, double umid, double uright);
 	void createO();
+	void createO_2();
+	void createBox();
 	void createChair(double legL);
 	void loadGraph();
 	void jump();

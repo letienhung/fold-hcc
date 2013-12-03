@@ -59,6 +59,11 @@ inline double radians2degrees(double r)
 	return 180.0 * r / M_PI;
 }
 
+inline double degrees2radians(double a)
+{
+	return M_PI * a / 180;
+}
+
 inline QString qstr(Vector3 v)
 {
 	return QString("(%1, %2, %3)").arg(v.x()).arg(v.y()).arg(v.z());

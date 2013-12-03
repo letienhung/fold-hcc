@@ -43,6 +43,13 @@ void Foldabilizer::decorate()
 		hccGraph->draw();
 }
 
+
+void Foldabilizer::updateScene()
+{
+	drawArea()->updateGL();
+}
+
+
 void Foldabilizer::resetScene()
 {
 	if (hccGraph)
@@ -105,6 +112,18 @@ void Foldabilizer::createO()
 	emit(hccGraphChanged());
 }
 
+void Foldabilizer::createO_2()
+{
+	hccGraph->makeO_2();
+	emit(hccGraphChanged());
+}
+
+void Foldabilizer::createBox()
+{
+	hccGraph->makeBox();
+	emit(hccGraphChanged());
+}
+
 void Foldabilizer::loadGraph()
 {
 	QString fileName = QFileDialog::getOpenFileName(this->widget, "Import Mesh", DEFAULT_FILE_PATH, "Mesh Files (*.lcc)"); 
@@ -121,13 +140,21 @@ void Foldabilizer::jump()
 	for( int i = 0; i < stepsPerJump; i++)
 	{
 		mhOptimizer->jump();
-		drawArea()->updateGL();
+		updateScene();
 	}
 }
 
 void Foldabilizer::test()
 {
-	
+	// fold
+	double a = degrees2radians(19.5);
+	hccGraph->links[0]->activeHinge()->angle = -a;
+	hccGraph->links[1]->activeHinge()->angle = M_PI - a;
+	hccGraph->links[2]->activeHinge()->angle = M_PI - a;
+	hccGraph->links[3]->activeHinge()->angle = a;
+	hccGraph->restoreConfiguration();
+
+	updateScene();
 }
 
 Q_EXPORT_PLUGIN(Foldabilizer)

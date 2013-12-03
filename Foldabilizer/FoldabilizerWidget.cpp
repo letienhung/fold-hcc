@@ -6,41 +6,39 @@ FoldabilizerWidget::FoldabilizerWidget(Foldabilizer *f, QWidget *parent) :
     ui(new Ui::FoldabilizerWidget)
 {
     ui->setupUi(this);
-
 	fold = f;
 
 	// connect to plugin
 	this->connect(fold, SIGNAL(hccGraphChanged()), SLOT(checkAllHinges()));
 	
 	// creating shapes
-	fold->connect(ui->createI, SIGNAL(clicked()), SLOT(createI()));
-	fold->connect(ui->createT, SIGNAL(clicked()), SLOT(createT()));
-	fold->connect(ui->createL, SIGNAL(clicked()), SLOT(createL()));
-	fold->connect(ui->createX, SIGNAL(clicked()), SLOT(createX()));
-	fold->connect(ui->createSharp, SIGNAL(clicked()), SLOT(createSharp()));
-	fold->connect(ui->createO, SIGNAL(clicked()), SLOT(createO()));
-	fold->connect(ui->load_hcc, SIGNAL(clicked()), SLOT(loadGraph()));
-
-
-	this->connect(ui->createU, SIGNAL(clicked()), SLOT(createU()));
-	this->connect(ui->createChair, SIGNAL(clicked()), SLOT(createChair()));
+	fold->connect(ui->createI,		SIGNAL(clicked()), SLOT(createI()));
+	fold->connect(ui->createT,		SIGNAL(clicked()), SLOT(createT()));
+	fold->connect(ui->createL,		SIGNAL(clicked()), SLOT(createL()));
+	fold->connect(ui->createX,		SIGNAL(clicked()), SLOT(createX()));
+	fold->connect(ui->createSharp,	SIGNAL(clicked()), SLOT(createSharp()));
+	fold->connect(ui->createO,		SIGNAL(clicked()), SLOT(createO()));
+	fold->connect(ui->createO_2,	SIGNAL(clicked()), SLOT(createO_2()));
+	fold->connect(ui->createBox,	SIGNAL(clicked()), SLOT(createBox()));
+	fold->connect(ui->load_hcc,		SIGNAL(clicked()), SLOT(loadGraph()));
+	this->connect(ui->createU,		SIGNAL(clicked()), SLOT(createU()));
+	this->connect(ui->createChair,	SIGNAL(clicked()), SLOT(createChair()));
 
 	// hinge detector
-	this->connect(ui->eeHinge, SIGNAL(stateChanged(int)), SLOT(updateHinges()));
-	this->connect(ui->efHinge, SIGNAL(stateChanged(int)), SLOT(updateHinges()));
-	this->connect(ui->ffHinge, SIGNAL(stateChanged(int)), SLOT(updateHinges()));
+	this->connect(ui->eeHinge,		SIGNAL(stateChanged(int)), SLOT(updateHinges()));
+	this->connect(ui->efHinge,		SIGNAL(stateChanged(int)), SLOT(updateHinges()));
+	this->connect(ui->ffHinge,		SIGNAL(stateChanged(int)), SLOT(updateHinges()));
 
 	// optimization: jump
-	this->connect(ui->alwaysAccept, SIGNAL(stateChanged (int)), SLOT(updateMHOptimizerPara()));
-	this->connect(ui->distWeight, SIGNAL(valueChanged(double)), SLOT(updateMHOptimizerPara()));
-	this->connect(ui->temprature, SIGNAL(valueChanged(int)), SLOT(updateMHOptimizerPara()));
-	this->connect(ui->resCollProb, SIGNAL(valueChanged(double)), SLOT(updateMHOptimizerPara()));
+	this->connect(ui->alwaysAccept, SIGNAL(stateChanged(int)),		SLOT(updateMHOptimizerPara()));
+	this->connect(ui->distWeight,	SIGNAL(valueChanged(double)),	SLOT(updateMHOptimizerPara()));
+	this->connect(ui->temprature,	SIGNAL(valueChanged(int)),		SLOT(updateMHOptimizerPara()));
+	this->connect(ui->resCollProb,	SIGNAL(valueChanged(double)),	SLOT(updateMHOptimizerPara()));
+	this->connect(ui->targetV,		SIGNAL(valueChanged(double)),	SLOT(updateMHOptimizerPara()));
+	this->connect(ui->stepsPerJump, SIGNAL(valueChanged(int)),		SLOT(updateMHOptimizerPara()));
 
-	this->connect(ui->targetV, SIGNAL(valueChanged(double)), SLOT(updateMHOptimizerPara()));
-	this->connect(ui->stepsPerJump, SIGNAL(valueChanged(int)), SLOT(updateMHOptimizerPara()));
-
-	fold->connect(ui->jumpButton, SIGNAL(clicked()), SLOT(jump()));
-	fold->connect(ui->test, SIGNAL(clicked()), SLOT(test()));
+	fold->connect(ui->jumpButton,	SIGNAL(clicked()), SLOT(jump()));
+	fold->connect(ui->test,			SIGNAL(clicked()), SLOT(test()));
 }
 
 
