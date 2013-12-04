@@ -4,9 +4,9 @@
 
 using namespace Geom;
 
-MHOptimizer::MHOptimizer(Graph* graph)
+MHOptimizer::MHOptimizer(HccManager* hccM)
 {
-	this->hccGraph = graph;
+	this->hccManager = hccM;
 
 	this->alwaysAccept = false;
 	this->distWeight = 0.5;
@@ -19,13 +19,15 @@ MHOptimizer::MHOptimizer(Graph* graph)
 
 void MHOptimizer::initialize()
 {
+	if (activeHcc() == NULL) return;
+
 	// set seed to random generator
 	qsrand(QTime::currentTime().msec());
 
-	origV = hccGraph->getAabbVolume();
-	origMtlV = hccGraph->getMtlVolume();
+	origV = activeHcc()->getAabbVolume();
+	origMtlV = activeHcc()->getMtlVolume();
 
-	currState = hccGraph->getState();
+	currState = activeHcc()->getState();
 	currCost = cost();
 
 	this->jumpCount = 0;
@@ -39,7 +41,7 @@ void MHOptimizer::initialize()
 void MHOptimizer::jump()
 { 
 	// clear debug points
-	foreach(Node* n, hccGraph->nodes) n->debug_points.clear();
+	foreach(Node* n, activeHcc()->nodes) n->debug_points.clear();
 
 	// initialize
 	if (!isReady) initialize();
@@ -50,12 +52,12 @@ void MHOptimizer::jump()
 
 	// accept new state by probability
 	if (acceptJump()){
-		currState = hccGraph->getState();
+		currState = activeHcc()->getState();
 		currCost = cost();
 		qDebug() << "\t\tACCEPTED. currCost = " << currCost;
 	}else{
-		hccGraph->setState(currState);
-		hccGraph->restoreConfiguration();
+		activeHcc()->setState(currState);
+		activeHcc()->restoreConfiguration();
 		qDebug() << "\t\tREJECTED. currCost = " << currCost;
 	}
 
@@ -63,15 +65,23 @@ void MHOptimizer::jump()
 	emit(hccChanged());
 }
 
+void MHOptimizer::jump( int steps )
+{
+	for( int i = 0; i < steps; i++)
+	{
+		this->jump();
+	}
+}
+
 double MHOptimizer::cost()
 {
 	// gas between current state and target
-	double aabbVolume = hccGraph->getAabbVolume();
+	double aabbVolume = activeHcc()->getAabbVolume();
 	double gap = aabbVolume / origV - targetVPerc;
 	double cost0 = RANGED(0, gap, 1);
 
 	// distortion on material lost
-	double mtlV = hccGraph->getMtlVolume();
+	double mtlV = activeHcc()->getMtlVolume();
 	double distortion = 1 - mtlV / origMtlV;
 	double cost1 = pow(distortion, distWeight);
 
@@ -81,8 +91,8 @@ double MHOptimizer::cost()
 void MHOptimizer::proposeJump()
 {
 	// hot analysis
-	hccGraph->hotAnalyze();
-	QVector<Link*> hotLinks = hccGraph->getHotLinks(true);
+	activeHcc()->hotAnalyze();
+	QVector<Link*> hotLinks = activeHcc()->getHotLinks(true);
 	int hotID = uniformDiscreteDistribution(0, hotLinks.size());
 	Link* plink = hotLinks[hotID];
 
@@ -112,7 +122,7 @@ void MHOptimizer::proposeJump()
 		<< radians2degrees(old_angle) << " => " << radians2degrees(propHinge->angle);
 
 	// restore configuration according to new parameters
-	hccGraph->restoreConfiguration();
+	activeHcc()->restoreConfiguration();
 	emit(hccChanged());
 }
 
@@ -120,7 +130,7 @@ bool MHOptimizer::acceptJump()
 {
 	if (alwaysAccept) return true;
 
-	if (hccGraph->detectCollision())
+	if (activeHcc()->detectCollision())
 		return false;
 
 	double propCost = cost();
@@ -141,7 +151,7 @@ void MHOptimizer::run()
 void MHOptimizer::resolveCollision()
 {
 	// no collision
-	if (!hccGraph->detectCollision()) return;
+	if (!activeHcc()->detectCollision()) return;
 
 	if (winByChance(this->resCollProb))
 	{
@@ -152,7 +162,7 @@ void MHOptimizer::resolveCollision()
 			this->resolveCollision(propHinge->node2);
 	}
 
-	hccGraph->restoreConfiguration();
+	activeHcc()->restoreConfiguration();
 }
 
 void MHOptimizer::resolveCollision( Node* pn )
@@ -197,6 +207,11 @@ void MHOptimizer::resolveCollision( Node* pn )
 
 void MHOptimizer::debug()
 {
-	int nid = uniformDiscreteDistribution(0, hccGraph->nbNodes());
-	hccGraph->getNode(nid)->scale(uniformRealDistribution());
+	int nid = uniformDiscreteDistribution(0, activeHcc()->nbNodes());
+	activeHcc()->getNode(nid)->scale(uniformRealDistribution());
+}
+
+HccGraph* MHOptimizer::activeHcc()
+{
+	return hccManager->activeHcc();
 }

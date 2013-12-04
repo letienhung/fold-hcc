@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QObject>
 #include "Node.h"
 #include "Link.h"
 
@@ -12,13 +13,19 @@ struct GraphState{
 };
 
 
-class Graph
+class HccGraph : public QObject
 {
+	Q_OBJECT
+
 public:
-    Graph();
-    Graph(QString fname);
-    ~Graph();
-	
+	QVector<Node*> nodes;
+	QVector<Link*> links;
+
+    HccGraph();
+    HccGraph(QString fname);
+    ~HccGraph();
+	void clear();
+
 public:
 	// Modifier
     void addNode(Node* node);
@@ -44,10 +51,6 @@ public:
 	GraphState getState();
 	void setState(GraphState &state);
 
-	// File I/O
-	bool loadHCC(QString fname);
-	bool saveHCC(QString fname);
-
 	// Geometry property
 	bool	isDrawAABB;
 	Point	bbmin, bbmax, center;
@@ -62,17 +65,9 @@ public:
 	void updateHingeScale();
 	void draw();
 
-	// Prepare data
-	void makeI();
-	void makeL();
-	void makeT();
-	void makeX();
-	void makeSharp();
-	void makeU(double uleft, double umid, double uright);
-	void makeO();
-	void makeO_2();
-	void makeBox();
-	void makeChair(double legL);
+	// File I/O
+	bool loadHCC(QString fname);
+	bool saveHCC(QString fname);
 
 	// Restore configuration
 	void resetTags();
@@ -88,10 +83,4 @@ public:
 	// Save as obj mesh
 	void saveAsObj();
 
-public:
-    QVector<Node*> nodes;
-    QVector<Link*> links;
-
-private:
-	void clear();
 };

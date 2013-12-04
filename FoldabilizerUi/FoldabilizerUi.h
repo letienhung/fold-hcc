@@ -6,7 +6,7 @@
 #include "SurfaceMeshHelper.h"
 #include "StarlabDrawArea.h"
 
-#include "Graph.h"
+#include "HccGraph.h"
 #include "DeformHandle.h"
 #include "Deformer.h"
 //#include "FuiWidget.h"
@@ -25,7 +25,7 @@ class FoldabilizerUi : public SurfaceMeshModePlugin
 	Q_INTERFACES(ModePlugin)
 
 	// Plugin interfaces
-	QIcon icon(){ return QIcon("image/icon.png"); }
+    QIcon icon(){ return QIcon(":/image/icon.png"); }
 	void create();
 	void destroy();
 	void decorate();
@@ -39,7 +39,7 @@ public:
     FoldabilizerUi();
 	~FoldabilizerUi();
 
-	Graph *mHCCGraph;
+	HccGraph *mHCCGraph;
 	SurfaceMeshModel *mMesh;
 
 	TranslationPanel *transPanel;

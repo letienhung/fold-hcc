@@ -25,5 +25,6 @@ public slots:
 	void updateMHOptimizerPara();
 	void updateHinges();
 	void checkAllHinges();
+	void jump();
 };
 

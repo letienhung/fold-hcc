@@ -1,7 +1,7 @@
 #pragma once
 #include <QObject>
 
-#include "Graph.h"
+#include "HccManager.h"
 #include "ProbabilityDistributions.h"
 
 class MHOptimizer : public QObject
@@ -9,8 +9,9 @@ class MHOptimizer : public QObject
 	Q_OBJECT
 
 public:
-	Graph* hccGraph;
-    MHOptimizer(Graph *graph);
+	HccManager* hccManager;
+    MHOptimizer(HccManager *hccM);
+	HccGraph* activeHcc();
 
 	// initialize 
 	double		origV;	
@@ -44,10 +45,9 @@ public:
 	// helper
 	double	cost();
 
-	// one single jump
+public slots:
+	void	jump(int steps);
 	void	jump();
-
-	// debug
 	void	debug();
 
 signals:

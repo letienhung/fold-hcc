@@ -25,17 +25,19 @@ TARGET = FoldabilizerLib
 DESTDIR = $$PWD/$$CFG/lib
 
 HEADERS += \
-    Graph.h \
     Node.h \
     Link.h \
     MHOptimizer.h \
     HingeDetector.h \
-    Hinge.h
+    Hinge.h \
+    HccGraph.h \
+    HccManager.h
 
 SOURCES += \
-    Graph.cpp \
     Node.cpp \
     Link.cpp \
     MHOptimizer.cpp \
     HingeDetector.cpp \
-    Hinge.cpp
+    Hinge.cpp \
+    HccGraph.cpp \
+    HccManager.cpp

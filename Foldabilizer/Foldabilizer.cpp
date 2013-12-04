@@ -14,12 +14,11 @@ QString DEFAULT_FILE_PATH = "..\\..\\data";
 Foldabilizer::Foldabilizer()
 {
 	widget = NULL;
-	hccGraph = new Graph();
-	mhOptimizer = new MHOptimizer(hccGraph);
-	connect(mhOptimizer, SIGNAL(hccChanged()), drawArea(), SLOT(update()));
-	stepsPerJump = 1;
+	hccManager = new HccManager();
+	this->connect(hccManager, SIGNAL(activeHccChanged()), SLOT(resetScene()));
 
-	this->connect(this, SIGNAL(hccGraphChanged()), SLOT(resetScene()));
+	mhOptimizer = new MHOptimizer(hccManager);
+	this->connect(mhOptimizer, SIGNAL(hccChanged()), SLOT(updateScene()));
 }
 
 void Foldabilizer::create()
@@ -41,21 +40,19 @@ void Foldabilizer::destroy()
 
 void Foldabilizer::decorate()
 {
-	if (hccGraph)
-		hccGraph->draw();
+	if (hccManager)
+		hccManager->draw();
 }
-
 
 void Foldabilizer::updateScene()
 {
 	drawArea()->updateGL();
 }
 
-
 void Foldabilizer::resetScene()
 {
-	if (hccGraph)
-		drawArea()->setSceneBoundingBox(qglviewer::Vec(hccGraph->bbmin), qglviewer::Vec(hccGraph->bbmax));
+	if (hccManager)
+		drawArea()->setSceneBoundingBox(qglviewer::Vec(hccManager->activeHcc()->bbmin), qglviewer::Vec(hccManager->activeHcc()->bbmax));
 	
 	if (mhOptimizer)
 		mhOptimizer->isReady = false;
@@ -64,103 +61,46 @@ void Foldabilizer::resetScene()
 	drawArea()->updateGL();
 }
 
-
-void Foldabilizer::createL()
-{
-	hccGraph->makeL();
-	emit(hccGraphChanged());
-}
-
-void Foldabilizer::createI()
-{
-	hccGraph->makeI();
-	emit(hccGraphChanged());
-}
-
-void Foldabilizer::createChair(double legL)
-{
-	hccGraph->makeChair(legL);
-	emit(hccGraphChanged());
-
-}
-
-void Foldabilizer::createT()
-{
-	hccGraph->makeT();
-	emit(hccGraphChanged());
-}
-
-void Foldabilizer::createX()
-{
-	hccGraph->makeX();
-	emit(hccGraphChanged());
-}
-
-void Foldabilizer::createSharp()
-{
-	hccGraph->makeSharp();
-	emit(hccGraphChanged());
-}
-
-void Foldabilizer::createU( double uleft, double umid, double uright )
-{
-	hccGraph->makeU(uleft, umid, uright);	
-	emit(hccGraphChanged());
-}
-
-void Foldabilizer::createO()
-{
-	hccGraph->makeO();
-	emit(hccGraphChanged());
-}
-
-void Foldabilizer::createO_2()
-{
-	hccGraph->makeO_2();
-	emit(hccGraphChanged());
-}
-
-void Foldabilizer::createBox()
-{
-	hccGraph->makeBox();
-	emit(hccGraphChanged());
-}
-
 void Foldabilizer::loadGraph()
 {
 	QString fileName = QFileDialog::getOpenFileName(this->widget, "Import Mesh", DEFAULT_FILE_PATH, "Mesh Files (*.lcc)"); 
 	if (fileName.isNull()) return;
 
-	if (hccGraph->loadHCC(fileName))
-		emit(hccGraphChanged());
+	hccManager->loadHCC(fileName);
 
 	DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
 }
 
-void Foldabilizer::jump()
-{
-	for( int i = 0; i < stepsPerJump; i++)
-	{
-		mhOptimizer->jump();
-		updateScene();
-	}
-}
-
 void Foldabilizer::test()
 {
-	int k = 3;
-	int n = 2*k - 1;
-	double m1 = 1;
-	double eps = m1 / k;
-	double m2 = m1 - eps;
+	qDebug() << "k\t\tn\t\tL0\t\tL1";
 
-	// H
-	double L0 = 2*m1 - eps;
+	for (int k = 3; k < 100; k++)
+	{
+		int n = 2*k - 1;
+		double m1 = 1;
+		double eps = m1 / k;
+		double m2 = m1 - eps;
 
-	// N
-	double N0 = 2*m1 - (m1-m2)/pow(2.0, double(k-2));
-	double N1;
-	double L1 = Max(N0, N1);
+		// H
+		double L0 = 2*m1 - eps;
+
+		// N
+		double N0 = 2*m1 - (m1-m2)/pow(2.0, double(k-2));
+		double N1 = 0;
+		for (int i = 0; i < k-1; i++) N1 += 1/pow(2.0, double(i));
+		N1 *= m1;
+		double L1 = Max(N0, N1);
+
+		qDebug() << k << "\t\t" << n << "\t\t" << L0 <<"\t\t" << L1;
+	}
+
+
+}
+
+HccGraph* Foldabilizer::activeHcc()
+{
+	return hccManager->activeHcc();
 }
 
 Q_EXPORT_PLUGIN(Foldabilizer)

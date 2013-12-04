@@ -3,6 +3,7 @@
 #include <QVector>
 #include <QString>
 #include <QQueue>
+#include <QMap>
 #include <QtXml/QDomDocument>
 #include <QFile>
 

@@ -13,7 +13,7 @@ QString DEFAULT_FILE_PATH = "..\\..\\data";
 FoldabilizerUi::FoldabilizerUi()
 {
 	widget = NULL;
-	mHCCGraph = new Graph();
+	mHCCGraph = new HccGraph();
 	mMesh = NULL;//mesh();
 	mCurMode = SELECT;
 	

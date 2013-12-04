@@ -9,20 +9,21 @@ FoldabilizerWidget::FoldabilizerWidget(Foldabilizer *f, QWidget *parent) :
 	fold = f;
 
 	// connect to plugin
-	this->connect(fold, SIGNAL(hccGraphChanged()), SLOT(checkAllHinges()));
+	this->connect(fold->hccManager, SIGNAL(activeHccChanged()), SLOT(checkAllHinges()));
 	
 	// creating shapes
-	fold->connect(ui->createI,		SIGNAL(clicked()), SLOT(createI()));
-	fold->connect(ui->createT,		SIGNAL(clicked()), SLOT(createT()));
-	fold->connect(ui->createL,		SIGNAL(clicked()), SLOT(createL()));
-	fold->connect(ui->createX,		SIGNAL(clicked()), SLOT(createX()));
-	fold->connect(ui->createSharp,	SIGNAL(clicked()), SLOT(createSharp()));
-	fold->connect(ui->createO,		SIGNAL(clicked()), SLOT(createO()));
-	fold->connect(ui->createO_2,	SIGNAL(clicked()), SLOT(createO_2()));
-	fold->connect(ui->createBox,	SIGNAL(clicked()), SLOT(createBox()));
-	fold->connect(ui->load_hcc,		SIGNAL(clicked()), SLOT(loadGraph()));
+	fold->hccManager->connect(ui->createI,		SIGNAL(clicked()), SLOT(makeI()));
+	fold->hccManager->connect(ui->createT,		SIGNAL(clicked()), SLOT(makeT()));
+	fold->hccManager->connect(ui->createL,		SIGNAL(clicked()), SLOT(makeL()));
+	fold->hccManager->connect(ui->createX,		SIGNAL(clicked()), SLOT(makeX()));
+	fold->hccManager->connect(ui->createSharp,	SIGNAL(clicked()), SLOT(makeSharp()));
+	fold->hccManager->connect(ui->createO,		SIGNAL(clicked()), SLOT(makeO()));
+	fold->hccManager->connect(ui->createO_2,	SIGNAL(clicked()), SLOT(makeO_2()));
+	fold->hccManager->connect(ui->createBox,	SIGNAL(clicked()), SLOT(makeBox()));
+
 	this->connect(ui->createU,		SIGNAL(clicked()), SLOT(createU()));
 	this->connect(ui->createChair,	SIGNAL(clicked()), SLOT(createChair()));
+	fold->connect(ui->load_hcc,		SIGNAL(clicked()), SLOT(loadGraph()));
 
 	// hinge detector
 	this->connect(ui->eeHinge,		SIGNAL(stateChanged(int)), SLOT(updateHinges()));
@@ -35,9 +36,8 @@ FoldabilizerWidget::FoldabilizerWidget(Foldabilizer *f, QWidget *parent) :
 	this->connect(ui->temprature,	SIGNAL(valueChanged(int)),		SLOT(updateMHOptimizerPara()));
 	this->connect(ui->resCollProb,	SIGNAL(valueChanged(double)),	SLOT(updateMHOptimizerPara()));
 	this->connect(ui->targetV,		SIGNAL(valueChanged(double)),	SLOT(updateMHOptimizerPara()));
-	this->connect(ui->stepsPerJump, SIGNAL(valueChanged(int)),		SLOT(updateMHOptimizerPara()));
 
-	fold->connect(ui->jumpButton,	SIGNAL(clicked()), SLOT(jump()));
+	this->connect(ui->jumpButton,	SIGNAL(clicked()), SLOT(jump()));
 	fold->connect(ui->test,			SIGNAL(clicked()), SLOT(test()));
 }
 
@@ -49,12 +49,12 @@ FoldabilizerWidget::~FoldabilizerWidget()
 
 void FoldabilizerWidget::createU()
 {
-	fold->createU(ui->ULeft->value(), ui->UMid->value(), ui->URight->value());
+	fold->hccManager->makeU(ui->ULeft->value(), ui->UMid->value(), ui->URight->value());
 }
 
 void FoldabilizerWidget::createChair()
 {
-	fold->createChair(ui->legLength->value());
+	fold->hccManager->makeChair(ui->legLength->value());
 }
 
 void FoldabilizerWidget::updateMHOptimizerPara()
@@ -72,19 +72,18 @@ void FoldabilizerWidget::updateMHOptimizerPara()
 
 	// target
 	opt->targetVPerc = ui->targetV->value();
-	fold->stepsPerJump = ui->stepsPerJump->value();
 }
 
 void FoldabilizerWidget::updateHinges()
 {
-	if (!fold->hccGraph) return;
+	if (!fold->activeHcc()) return;
 
 	bool ee = ui->eeHinge->isChecked();
 	bool ef = ui->efHinge->isChecked();
 	bool ff = ui->ffHinge->isChecked();
 
 	// update hinges
-	fold->hccGraph->detectHinges(ee, ef, ff);
+	fold->activeHcc()->detectHinges(ee, ef, ff);
 	fold->drawArea()->update();
 }
 
@@ -93,4 +92,9 @@ void FoldabilizerWidget::checkAllHinges()
 	ui->eeHinge->setCheckState(Qt::Checked);
 	ui->efHinge->setCheckState(Qt::Checked);
 	ui->ffHinge->setCheckState(Qt::Checked);
+}
+
+void FoldabilizerWidget::jump()
+{
+	fold->mhOptimizer->jump(ui->stepsPerJump->value());
 }
