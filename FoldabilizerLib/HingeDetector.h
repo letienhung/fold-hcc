@@ -17,6 +17,6 @@ public:
 	QVector<Hinge*> getFaceFaceHinges();
 
 	void	getPerpAxisAndExtent( Geom::Box& box, Vector3 hinge_center, Vector3 hinge_axis, QVector<Vector3>& perpAxis, QVector<double> &perpExtent );
-	Hinge*	generateEdgeEdgeHinge( Node* n0, Node* n1, Geom::Segment& e0, Geom::Segment& e1 );
+	Hinge*	generateEdgeEdgeHinge( Node* n0, Node* n1, Geom::Segment& e0 );
 	Hinge*	generateEdgeFaceHinge( Node* n0, Node* n1, Geom::Segment& e0, Geom::Rectangle& f1 );
 };

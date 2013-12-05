@@ -28,11 +28,12 @@ public slots:
 	void makeT();
 	void makeX();
 	void makeSharp();
-	void makeU(double uleft, double umid, double uright);
 	void makeO();
 	void makeO_2();
 	void makeBox();
+	void makeU(double uleft, double umid, double uright);
 	void makeChair(double legL);
+	void makeShelf(int nbLayers);
 
 signals:
 	void activeHccChanged();

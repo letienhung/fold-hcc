@@ -22,6 +22,7 @@ private:
 public slots:
 	void createU();
 	void createChair();
+	void createShelf();
 	void updateMHOptimizerPara();
 	void updateHinges();
 	void checkAllHinges();

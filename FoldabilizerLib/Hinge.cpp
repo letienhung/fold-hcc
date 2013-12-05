@@ -8,7 +8,7 @@ Hinge::Hinge(){}
 
 Hinge::~Hinge(){}
 
-Hinge::Hinge( Node* n1, Node* n2, Point c, Vec3d x, Vector3 y, Vector3 z, double angle_suf )
+Hinge::Hinge( Node* n1, Node* n2, Point c, Vec3d x, Vector3 y, Vector3 z, double angle_suf, HINGE_TYPE ty, double ext )
 {
 	this->node1 = n1;
 	this->node2 = n2;
@@ -17,6 +17,8 @@ Hinge::Hinge( Node* n1, Node* n2, Point c, Vec3d x, Vector3 y, Vector3 z, double
 	this->hY = y.normalized();
 	this->hZ = z.normalized();
 	this->maxAngle = angle_suf;
+	this->type = ty;
+	this->extent = ext;
 
 	// update dihedral frames and angle
 	this->state = UNFOLDED;

@@ -93,4 +93,28 @@ void Link::detectHinges( bool ee, bool ef, bool ff )
 
 	HingeDetector hinge_detector(node1, node2);
 	hinges = hinge_detector.getHinges(ee, ef, ff);
+	this->filterHinges();
+}
+
+void Link::filterHinges()
+{
+	//qDebug() << "Filter hinges between " << this->id;
+	//int origN = hinges.size();
+
+	double maxExt = std::numeric_limits<double>::min();
+	foreach(Hinge* h, hinges){
+		if (h->extent > maxExt)	maxExt = h->extent;		
+	}
+
+	QVector<Hinge*> fH;
+	double threshold = maxExt / 10;
+	foreach(Hinge* h, hinges){
+		if (h->extent > threshold)
+			fH.push_back(h);
+		else
+			delete h;
+	}
+	this->hinges = fH;
+
+	//qDebug() << "\t" << origN << " => " << hinges.size();
 }

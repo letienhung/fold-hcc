@@ -31,7 +31,8 @@ HEADERS += \
     HingeDetector.h \
     Hinge.h \
     HccGraph.h \
-    HccManager.h
+    HccManager.h \
+    NodeSplitter.h
 
 SOURCES += \
     Node.cpp \
@@ -40,4 +41,5 @@ SOURCES += \
     HingeDetector.cpp \
     Hinge.cpp \
     HccGraph.cpp \
-    HccManager.cpp
+    HccManager.cpp \
+    NodeSplitter.cpp

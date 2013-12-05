@@ -23,6 +23,7 @@ FoldabilizerWidget::FoldabilizerWidget(Foldabilizer *f, QWidget *parent) :
 
 	this->connect(ui->createU,		SIGNAL(clicked()), SLOT(createU()));
 	this->connect(ui->createChair,	SIGNAL(clicked()), SLOT(createChair()));
+	this->connect(ui->createShelf,	SIGNAL(clicked()), SLOT(createShelf()));
 	fold->connect(ui->load_hcc,		SIGNAL(clicked()), SLOT(loadGraph()));
 
 	// hinge detector
@@ -56,6 +57,12 @@ void FoldabilizerWidget::createChair()
 {
 	fold->hccManager->makeChair(ui->legLength->value());
 }
+
+void FoldabilizerWidget::createShelf()
+{
+	fold->hccManager->makeShelf(ui->nbLayers->value());
+}
+
 
 void FoldabilizerWidget::updateMHOptimizerPara()
 {

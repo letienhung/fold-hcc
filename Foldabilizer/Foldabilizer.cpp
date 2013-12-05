@@ -73,28 +73,6 @@ void Foldabilizer::loadGraph()
 
 void Foldabilizer::test()
 {
-	qDebug() << "k\t\tn\t\tL0\t\tL1";
-
-	for (int k = 3; k < 100; k++)
-	{
-		int n = 2*k - 1;
-		double m1 = 1;
-		double eps = m1 / k;
-		double m2 = m1 - eps;
-
-		// H
-		double L0 = 2*m1 - eps;
-
-		// N
-		double N0 = 2*m1 - (m1-m2)/pow(2.0, double(k-2));
-		double N1 = 0;
-		for (int i = 0; i < k-1; i++) N1 += 1/pow(2.0, double(i));
-		N1 *= m1;
-		double L1 = Max(N0, N1);
-
-		qDebug() << k << "\t\t" << n << "\t\t" << L0 <<"\t\t" << L1;
-	}
-
 
 }
 

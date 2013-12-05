@@ -228,6 +228,38 @@ void HccManager::makeChair(double legL)
 	emit(activeHccChanged());
 }
 
+void HccManager::makeShelf( int nbLayers )
+{
+	activeHcc()->clear();
+	QVector<Vector3> xyz = XYZ();
+	
+	double thk = 0.125; double depth = 1.5;
+	Node* back = new Node(Box(Point(0, 0, -thk), xyz, Vector3(6, 10, thk)), "back");
+	Node* left = new Node(Box(Point(thk-6, 0, depth), xyz, Vector3(thk, 10, depth)), "left");
+	Node* right = new Node(Box(Point(6-thk, 0, depth), xyz, Vector3(thk, 10, depth)), "right");
+
+	hccGraph->addNode(back);
+	hccGraph->addNode(left);
+	hccGraph->addNode(right);
+	hccGraph->addLink(back, left);
+	hccGraph->addLink(back, right);
+
+	double gap = 20.0 / (nbLayers + 1);
+	for (int i = 0; i < nbLayers; i++)
+	{
+		double y = -10 + gap * (i + 1);
+		Node* layer = new Node(Box(Point(0, y, depth), xyz, Vector3(6-2*thk, thk, depth)), QString("layer%1").arg(i));
+		hccGraph->addNode(layer);
+		hccGraph->addLink(back, layer);
+		hccGraph->addLink(left, layer);
+		hccGraph->addLink(right, layer);
+	}
+
+	hccGraph->computeAabb();
+	hccGraph->updateHingeScale();
+	emit(activeHccChanged());
+}
+
 HccGraph* HccManager::activeHcc()
 {
 	return hccGraph;
@@ -238,3 +270,5 @@ void HccManager::loadHCC( QString filename )
 	activeHcc()->loadHCC(filename);
 	emit(activeHccChanged());
 }
+
+

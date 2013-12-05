@@ -85,7 +85,7 @@ QVector<Hinge*> HingeDetector::getEdgeEdgeHinges(Node* n0, Node* n1)
 			if (e1_j.contains(e0_i))
 			{
 				// generate hinge for e1_j
-				Hinge* h = this->generateEdgeEdgeHinge(n0, n1, e0_i, e1_j);
+				Hinge* h = this->generateEdgeEdgeHinge(n0, n1, e0_i);
 				if (h)
 				{
 					hinges.push_back(h);
@@ -190,7 +190,7 @@ QVector<Hinge*> HingeDetector::getFaceFaceHinges()
 				Vector3 hx = (perpExtent0[0] >= perpExtent0[1]) ? perpAxis0[0] : perpAxis0[1];
 				Vector3 hy = (perpExtent1[0] >= perpExtent1[1]) ? perpAxis1[0] : perpAxis1[1];
 
-				hinges.push_back(new Hinge(node0, node1, hcenter, hx, hy, hz, 2 * M_PI));
+				hinges.push_back(new Hinge(node0, node1, hcenter, hx, hy, hz, 2 * M_PI, Hinge::PIN_HINGE, 0));
 
 				// debug
 				//foreach(Vector3 v, intrPnts) node0->debug_points.push_back(v);
@@ -228,11 +228,11 @@ Hinge* HingeDetector::generateEdgeFaceHinge( Node* n0, Node* n1, Segment& e0, Ge
 	// HxCrossHxPerp and hz have opposite directions
 	if (dot(HxCrossHxPerp, hz) > 0) hz *= -1;
 
-	return new Hinge(n0, n1, hcenter, hx, hy, hz, M_PI_2);
+	return new Hinge(n0, n1, hcenter, hx, hy, hz, M_PI_2, Hinge::EDGE_HINGE, e0.Extent);
 }
 
 // e0 \in e1 : create hinge for e0
-Hinge* HingeDetector::generateEdgeEdgeHinge( Node* n0, Node* n1, Segment& e0, Segment& e1 )
+Hinge* HingeDetector::generateEdgeEdgeHinge( Node* n0, Node* n1, Segment& e0 )
 {
 	// center and hz
 	Vector3 hcenter = e0.Center;
@@ -260,5 +260,5 @@ Hinge* HingeDetector::generateEdgeEdgeHinge( Node* n0, Node* n1, Segment& e0, Se
 	// HxCrossHxPerp and hz have opposite directions
 	if (dot(HxCrossHxPerp, hz) > 0) hz *= -1;
 
-	return new Hinge(n0, n1, hcenter, hx, hy, hz, M_PI);
+	return new Hinge(n0, n1, hcenter, hx, hy, hz, M_PI, Hinge::EDGE_HINGE, e0.Extent);
 }

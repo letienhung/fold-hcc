@@ -29,6 +29,7 @@ public:
 	void	setActiveHingeId(int hid);
 	Hinge*	activeHinge();
 	void	detectHinges(bool ee = true, bool ef = true, bool ff = true);
+	void	filterHinges();
 
 	// restore configuration
 	bool isFixed;				

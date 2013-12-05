@@ -82,5 +82,4 @@ public:
 
 	// Save as obj mesh
 	void saveAsObj();
-
 };
