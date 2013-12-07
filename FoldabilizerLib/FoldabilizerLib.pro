@@ -20,7 +20,19 @@ INCLUDEPATH += ../UtilityLib
 LIBS += -L$$PWD/../GeometryLib/$$CFG/lib -lGeometryLib
 INCLUDEPATH += ../GeometryLib
 
+# Structure library
+LIBS += -L$$PWD/../StructureLib/$$CFG/lib -lStructureLib
+INCLUDEPATH += ../StructureLib
+
 # Library name and destination
 TARGET = FoldabilizerLib
 DESTDIR = $$PWD/$$CFG/lib
+
+HEADERS += \
+    PatchNode.h \
+    RodNode.h
+
+SOURCES += \
+    PatchNode.cpp \
+    RodNode.cpp
 

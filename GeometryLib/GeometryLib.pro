@@ -30,7 +30,8 @@ HEADERS += \
     Segment2.h \
     IntrBoxBox.h \
     IntrSeg2Seg2.h \
-    IntrRectRect.h
+    IntrRectRect.h \
+    Polygon.h
 
 SOURCES += \
     Segment.cpp \
@@ -42,4 +43,5 @@ SOURCES += \
     Segment2.cpp \
     IntrBoxBox.cpp \
     IntrSeg2Seg2.cpp \
-    IntrRectRect.cpp
+    IntrRectRect.cpp \
+    Polygon.cpp
