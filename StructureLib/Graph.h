@@ -5,6 +5,8 @@
 #include "Node.h"
 #include "Link.h"
 
+namespace Structure{
+
 class Graph
 {
 public:
@@ -37,3 +39,4 @@ protected:
 	QVector<Link*> links;
 };
 
+}

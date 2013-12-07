@@ -2,6 +2,8 @@
 
 #include "Link.h"
 
+namespace Structure{
+
 class Node
 {
 public:
@@ -13,3 +15,5 @@ public:
 public:
 	QString	id;
 };                                 
+
+}

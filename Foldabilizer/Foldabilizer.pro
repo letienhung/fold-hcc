@@ -19,6 +19,10 @@ INCLUDEPATH += ../UtilityLib
 LIBS += -L$$PWD/../GeometryLib/$$CFG/lib -lGeometryLib
 INCLUDEPATH += ../GeometryLib
 
+# Structure library
+LIBS += -L$$PWD/../StructureLib/$$CFG/lib -lStructureLib
+INCLUDEPATH += ../StructureLib
+
 # Foldabilizer library
 LIBS += -L$$PWD/../FoldabilizerLib/$$CFG/lib -lFoldabilizerLib
 INCLUDEPATH += ../FoldabilizerLib

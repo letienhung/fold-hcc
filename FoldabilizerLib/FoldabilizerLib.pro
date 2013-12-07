@@ -24,11 +24,3 @@ INCLUDEPATH += ../GeometryLib
 TARGET = FoldabilizerLib
 DESTDIR = $$PWD/$$CFG/lib
 
-HEADERS += \
-    Node.h \
-    Link.h \
-    Graph.h
-
-SOURCES += \
-    Link.cpp \
-    Graph.cpp

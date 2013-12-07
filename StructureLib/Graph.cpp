@@ -1,12 +1,10 @@
 #include "Graph.h"
 
-Graph::Graph()
+Structure::Graph::Graph()
 {
 }
 
-
-
-void Graph::clear()
+void Structure::Graph::clear()
 {
 	foreach(Node* n, nodes) delete n;
 	foreach(Link* l, links) delete l;
@@ -15,22 +13,22 @@ void Graph::clear()
 	links.clear();
 }
 
-void Graph::addNode(Node* node)
+void Structure::Graph::addNode(Node* node)
 {
 	nodes.push_back(node);
 }
 
-void Graph::addLink( Link* link)
+void Structure::Graph::addLink( Link* link)
 {
 	links.push_back(link);
 }
 
-void Graph::addLink( Node* n0, Node* n1 )
+void Structure::Graph::addLink( Node* n0, Node* n1 )
 {
 	links.push_back(new Link(n0, n1));
 }
 
-void Graph::removeNode( QString nodeID )
+void Structure::Graph::removeNode( QString nodeID )
 {
 	// remove incident links
 	foreach(Link* l, links)	{
@@ -53,7 +51,7 @@ void Graph::removeNode( QString nodeID )
 	nodes.remove(idx);
 }
 
-void Graph::removeLink( Link* link )
+void Structure::Graph::removeLink( Link* link )
 {
 	// find and remove
 	for (int i = 0; i < links.size(); i++)	{
@@ -67,7 +65,7 @@ void Graph::removeLink( Link* link )
 	delete link;
 }
 
-Node* Graph::getNode(QString nid)
+Structure::Node* Structure::Graph::getNode(QString nid)
 {
 	foreach(Node* n, nodes)
 		if(n->hasId(nid)) return n;
@@ -75,7 +73,7 @@ Node* Graph::getNode(QString nid)
 	return NULL;
 }
 
-Node* Graph::getNode( int idx )
+Structure::Node* Structure::Graph::getNode( int idx )
 {
 	if (idx >= 0 && idx < nbNodes())
 		return this->nodes[idx];
@@ -83,7 +81,7 @@ Node* Graph::getNode( int idx )
 		return NULL;
 }
 
-Link* Graph::getLink( QString nid1, QString nid2 )
+Structure::Link* Structure::Graph::getLink( QString nid1, QString nid2 )
 {
 	foreach(Link* l, links)	{
 		if (l->hasNode(nid1) && l->hasNode(nid2))
@@ -93,7 +91,7 @@ Link* Graph::getLink( QString nid1, QString nid2 )
 	return NULL;
 }
 
-QVector<Link*> Graph::getLinks( QString nid )
+QVector<Structure::Link*> Structure::Graph::getLinks( QString nid )
 {
 	QVector<Link*> ls;
 	foreach(Link* l, links){
@@ -103,22 +101,22 @@ QVector<Link*> Graph::getLinks( QString nid )
 	return ls;
 }
 
-int Graph::nbNodes()
+int Structure::Graph::nbNodes()
 {
 	return nodes.size();
 }
 
-int Graph::nbLinks()
+int Structure::Graph::nbLinks()
 {
 	return links.size();
 }
 
-bool Graph::isEmpty()
+bool Structure::Graph::isEmpty()
 {
 	return nodes.isEmpty();
 }
 
-void Graph::draw()
+void Structure::Graph::draw()
 {
 	foreach(Link *l, links) l->draw();
 	foreach(Node *n, nodes) n->draw();

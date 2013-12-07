@@ -2,6 +2,8 @@
 
 #include <QString>
 
+namespace Structure{
+
 class Node;
 class Link
 {
@@ -19,3 +21,4 @@ public:
 	Node	*node1, *node2;
 };
 
+}
