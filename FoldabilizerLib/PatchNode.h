@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ScoffoldNode.h"
+#include "FdNode.h"
 
-class PatchNode : public ScoffoldNode
+class PatchNode : public FdNode
 {
 public:
     PatchNode(QString id);

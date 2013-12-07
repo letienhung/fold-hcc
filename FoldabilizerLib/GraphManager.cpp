@@ -6,7 +6,7 @@
 
 GraphManager::GraphManager()
 {
-	this->scoffold = new ScoffoldGraph();
+	this->scoffold = new FdGraph();
 }
 
 void GraphManager::createScoffold( SurfaceMesh::SurfaceMeshModel * entireMesh )
@@ -23,7 +23,7 @@ void GraphManager::createScoffold( SurfaceMesh::SurfaceMeshModel * entireMesh )
 		Geom::Box box = obb.box();
 
 		// create node depends on obb
-		ScoffoldNode * node;
+		FdNode * node;
 		int box_type = box.getType(5);
 		if (box_type == Geom::Box::ROD)	
 			 node = new RodNode(m->name);

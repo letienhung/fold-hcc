@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ScoffoldNode.h"
+#include "FdNode.h"
 
-class RodNode : public ScoffoldNode
+class RodNode : public FdNode
 {
 public:
     RodNode(QString nid);

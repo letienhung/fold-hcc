@@ -2,7 +2,7 @@
 #include <QObject>
 
 #include "UtilityGlobal.h"
-#include "ScoffoldGraph.h"
+#include "FdGraph.h"
 
 class GraphManager : public QObject
 {
@@ -12,7 +12,7 @@ public:
     GraphManager();
 
 private:
-	ScoffoldGraph* scoffold;
+	FdGraph* scoffold;
 
 public slots:
 	void createScoffold(SurfaceMeshModel * entireMesh);

@@ -4,10 +4,10 @@
 #include "Node.h"
 #include "Box.h"
 
-class ScoffoldNode : public Structure::Node
+class FdNode : public Structure::Node
 {
 public:
-    ScoffoldNode(QString nid);
+    FdNode(QString nid);
 
 	void setMesh(SurfaceMesh::SurfaceMeshModel *m);
 	void setCtrlBox(Geom::Box &b);

@@ -31,16 +31,16 @@ DESTDIR = $$PWD/$$CFG/lib
 HEADERS += \
     PatchNode.h \
     RodNode.h \
-    ScoffoldGraph.h \
     GraphManager.h \
-    ScoffoldLink.h \
-    ScoffoldNode.h
+    FdGraph.h \
+    FdLink.h \
+    FdNode.h
 
 SOURCES += \
     PatchNode.cpp \
     RodNode.cpp \
-    ScoffoldGraph.cpp \
     GraphManager.cpp \
-    ScoffoldLink.cpp \
-    ScoffoldNode.cpp
+    FdGraph.cpp \
+    FdLink.cpp \
+    FdNode.cpp
 
