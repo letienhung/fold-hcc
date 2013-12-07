@@ -21,8 +21,10 @@ HEADERS += \
     ProbabilityDistributions.h \
     Numeric.h \
     CustomDrawObjects.h \
-    xmlWriter.h
+    xmlWriter.h \
+    SegMeshLoader.h
 
 SOURCES += \
     Numeric.cpp \
-    xmlWriter.cpp
+    xmlWriter.cpp \
+    SegMeshLoader.cpp

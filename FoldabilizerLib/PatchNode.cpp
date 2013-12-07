@@ -1,5 +1,6 @@
 #include "PatchNode.h"
 
-PatchNode::PatchNode()
+PatchNode::PatchNode(QString id)
+	: Node(id)
 {
 }

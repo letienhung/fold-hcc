@@ -5,6 +5,6 @@
 class PatchNode : public Structure::Node
 {
 public:
-    PatchNode();
+    PatchNode(QString id);
 };
 

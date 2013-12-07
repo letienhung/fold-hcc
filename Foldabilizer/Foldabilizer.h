@@ -16,7 +16,6 @@ class Foldabilizer : public SurfaceMeshModePlugin
 	void destroy();
 	void decorate();
 
-
 public:
     Foldabilizer();
     FoldabilizerWidget	*widget;

@@ -5,6 +5,5 @@
 class RodNode : public Structure::Node
 {
 public:
-    RodNode();
+    RodNode(QString id);
 };
-
