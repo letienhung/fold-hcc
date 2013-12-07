@@ -7,6 +7,7 @@
 #include <math.h>
 #include <algorithm>
 #include <limits>
+#include <QtAlgorithms>
 
 // utility macros
 // alert: keep in mind a macro do NOT check type 

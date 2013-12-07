@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Link.h"
+#include <QString>
 
 namespace Structure{
 

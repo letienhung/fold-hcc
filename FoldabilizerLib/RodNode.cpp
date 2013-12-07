@@ -1,6 +1,6 @@
 #include "RodNode.h"
 
-RodNode::RodNode(QString id)
-	: Node(id)
+RodNode::RodNode(QString nid)
+	: ScoffoldNode(nid)
 {
 }

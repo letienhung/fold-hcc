@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Node.h"
+#include "ScoffoldNode.h"
 
-class RodNode : public Structure::Node
+class RodNode : public ScoffoldNode
 {
 public:
-    RodNode(QString id);
+    RodNode(QString nid);
 };

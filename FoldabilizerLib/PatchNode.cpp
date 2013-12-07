@@ -1,6 +1,6 @@
 #include "PatchNode.h"
 
-PatchNode::PatchNode(QString id)
-	: Node(id)
+PatchNode::PatchNode(QString nid)
+	: ScoffoldNode(nid)
 {
 }

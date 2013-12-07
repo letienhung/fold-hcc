@@ -49,7 +49,6 @@ public:
 	static int QUAD_FACE[6][4];
 	static int TRI_FACE[12][3];
 
-
 	QVector<Point>				getConnerPoints();
 	QVector<Line>				getEdgeLines();
 	QVector<Segment>			getEdgeSegments();
@@ -74,6 +73,10 @@ public:
 	// frontier
 	double calcFrontierWidth(int fid, const QVector<Vector3>& pnts, bool two_side = false);
 	Vector4 calcFrontierWidth(Vector3 hX, Vector3 hZ, const QVector<Vector3>& pnts);
+
+	// type
+	enum TYPE{ROD, PATCH, BRICK};
+	int getType(double threshold);
 };
 
 }

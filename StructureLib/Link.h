@@ -1,10 +1,10 @@
 #pragma once
 
+#include "Node.h"
 #include <QString>
 
 namespace Structure{
 
-class Node;
 class Link
 {
 public:
@@ -18,7 +18,7 @@ public:
 
 public:
 	QString	id;
-	Node	*node1, *node2;
+	Node *node1, *node2;
 };
 
 }

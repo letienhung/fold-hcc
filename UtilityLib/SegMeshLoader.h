@@ -5,12 +5,17 @@
 class SegMeshLoader
 {
 public:
-    SegMeshLoader();
+    SegMeshLoader(SurfaceMeshModel * mesh);
+
+	// Entire mesh
+	SurfaceMesh::SurfaceMeshModel* entireMesh;
+	Vector3VertexProperty entirePoints;
 
 	// Groups
-	SurfaceMesh::SurfaceMeshModel * entireMesh;
 	QMap< QString, QVector<int> > groupFaces;
-	QMap< int, QString > faceGroup;
-	void loadGroupsFromOBJ();
+
+	void loadGroupsFromObj();
+	SurfaceMeshModel * extractMesh( QString gid );
+	QVector<SurfaceMeshModel*> getSegMeshes();
 };
 

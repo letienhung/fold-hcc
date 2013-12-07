@@ -407,3 +407,17 @@ SurfaceMesh::Vector4 Geom::Box::calcFrontierWidth( Vector3 hX, Vector3 hZ, const
 
 	return Vector4(1 + xlow, 1 - xhigh, 1 + zlow, 1 - zhigh);
 }
+
+int Geom::Box::getType( double threshold )
+{
+	QVector<double> ext;
+	ext << Extent[0] << Extent[1] << Extent[2];
+	qSort(ext);
+
+	if (ext[2] / ext[1] > threshold)
+		return ROD;
+	else if (ext[1] / ext[0] > threshold)
+		return PATCH;
+	else
+		return BRICK;
+}
