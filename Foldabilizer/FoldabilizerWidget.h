@@ -18,14 +18,5 @@ public:
 private:
     Ui::FoldabilizerWidget *ui;
 	Foldabilizer *fold;
-
-public slots:
-	void createU();
-	void createChair();
-	void createShelf();
-	void updateMHOptimizerPara();
-	void updateHinges();
-	void checkAllHinges();
-	void jump();
 };
 

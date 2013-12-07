@@ -27,19 +27,8 @@ DESTDIR = $$PWD/$$CFG/lib
 HEADERS += \
     Node.h \
     Link.h \
-    MHOptimizer.h \
-    HingeDetector.h \
-    Hinge.h \
-    HccGraph.h \
-    HccManager.h \
-    NodeSplitter.h
+    Graph.h
 
 SOURCES += \
-    Node.cpp \
     Link.cpp \
-    MHOptimizer.cpp \
-    HingeDetector.cpp \
-    Hinge.cpp \
-    HccGraph.cpp \
-    HccManager.cpp \
-    NodeSplitter.cpp
+    Graph.cpp

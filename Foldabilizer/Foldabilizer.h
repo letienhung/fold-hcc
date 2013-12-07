@@ -3,9 +3,6 @@
 #include "interfaces/ModePluginDockWidget.h"
 #include "SurfaceMeshPlugins.h"
 
-#include "HccManager.h"
-#include "MHOptimizer.h"
-
 class FoldabilizerWidget;
 
 class Foldabilizer : public SurfaceMeshModePlugin
@@ -22,17 +19,11 @@ class Foldabilizer : public SurfaceMeshModePlugin
 
 public:
     Foldabilizer();
-
-	HccManager		*hccManager;
-	MHOptimizer		*mhOptimizer;
     FoldabilizerWidget	*widget;
-
-	HccGraph* activeHcc();
 
 public slots:
 	void updateScene();
 	void resetScene();
-	void loadGraph();
 	void test();
 };
 
