@@ -2,28 +2,28 @@
 
 #include "Numeric.h"
 
-inline double uniformRealDistribution(double a = 0.0, double b = 1.0)
+inline double uniformDistrReal(double a = 0.0, double b = 1.0)
 {
 	double r = qrand() / (double) RAND_MAX;
 	r =  (1 - r) * a + r * b;
 	return RANGED(a, r, b);
 }
 
-inline int uniformDiscreteDistribution(int a, int b)
+inline int uniformDistrDiscrete(int a, int b)
 {
-	double r = uniformRealDistribution();
+	double r = uniformDistrReal();
 	int n = a + int(r * (b - a));
 	return RANGED(a, n, b-1);
 }
 
-inline int discreteDistribution(const QVector<double>& posibility)
+inline int discreteDistr(const QVector<double>& posibility)
 {
 	QVector<double> accPosibility;
 	accPosibility.push_back(0);
 	foreach (double p, posibility)	
 		accPosibility.push_back(accPosibility.last() + p);
 
-	double r = uniformRealDistribution();
+	double r = uniformDistrReal();
 	for (int i = 0; i < accPosibility.size()-1; i++)
 	{
 		if (r >= accPosibility[i] && r <= accPosibility[i+1])
@@ -35,7 +35,7 @@ inline int discreteDistribution(const QVector<double>& posibility)
 
 inline bool winByChance(double probability)
 {
-	return uniformRealDistribution() < probability;
+	return uniformDistrReal() < probability;
 }
 
 // Marsaglia polar method
@@ -52,8 +52,8 @@ public:
 		} else {
 			double u, v, s;
 			do {
-				u = uniformRealDistribution() * 2 - 1;
-				v = uniformRealDistribution() * 2 - 1;
+				u = uniformDistrReal() * 2 - 1;
+				v = uniformDistrReal() * 2 - 1;
 				s = u * u + v * v;
 			} while (s >= 1 || s == 0);
 			double mul = sqrt(-2.0 * log(s) / s);

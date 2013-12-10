@@ -9,6 +9,9 @@ Foldabilizer::Foldabilizer()
 {
 	widget = NULL;
 	g_manager = new GraphManager();
+
+	this->connect(g_manager, SIGNAL(sceneSettingsChanged()), SLOT(updateScene()));
+	this->connect(g_manager, SIGNAL(scaffoldChanged()), SLOT(resetScene()));
 }
 
 void Foldabilizer::create()
@@ -23,6 +26,8 @@ void Foldabilizer::create()
 
 		drawArea()->setPerspectiveProjection();
 	}
+
+	resetMesh();
 }
 
 void Foldabilizer::destroy()
@@ -68,10 +73,10 @@ FdGraph* Foldabilizer::activeScaffold()
 	return g_manager->scaffold;
 }
 
-void Foldabilizer::createScaffold()
+void Foldabilizer::resetMesh()
 {
-	g_manager->createScaffold(mesh());
-	updateScene();
+	g_manager->setMesh(mesh());
+	showMessage("GraphManager: entireMesh = %s", g_manager->entireMesh->path.toStdString());
 }
 
 Q_EXPORT_PLUGIN(Foldabilizer)

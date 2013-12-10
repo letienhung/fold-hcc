@@ -65,15 +65,6 @@ inline double degrees2radians(double a)
 	return M_PI * a / 180;
 }
 
-inline QString qstr(Vector3 v)
-{
-	return QString("(%1, %2, %3)").arg(v.x()).arg(v.y()).arg(v.z());
-}
-
-inline QString qstr(Vector4 &v)
-{
-	return QString("(%1, %2, %3, %4)").arg(v[0]).arg(v[1]).arg(v[2]).arg(v[3]);
-}
 
 inline bool areCollinear(const Vector3& v0, const Vector3& v1)
 {

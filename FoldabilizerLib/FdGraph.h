@@ -10,5 +10,10 @@ public:
     FdGraph();
 
 	QVector<FdNode*> getFdNodes();
+
+	void saveToFile(QString fname);
+
+public:
+	QString path;
 };
 

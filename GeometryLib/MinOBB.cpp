@@ -30,9 +30,9 @@ void Geom::MinOBB::computeMinOBB(SurfaceMeshModel * mesh)
 	{
 		pnts[i] -= aabb.center();
 		pnts[i] *= (1 + enlarge_scale);
-		double nx = uniformRealDistribution() - 0.5;
-		double ny = uniformRealDistribution() - 0.5;
-		double nz = uniformRealDistribution() - 0.5;
+		double nx = uniformDistrReal() - 0.5;
+		double ny = uniformDistrReal() - 0.5;
+		double nz = uniformDistrReal() - 0.5;
 		pnts[i] += Vector3(nx, ny,nz) * noise_scale;
 		pnts[i] += aabb.center();
 	}

@@ -10,14 +10,22 @@ class GraphManager : public QObject
 
 public:
     GraphManager();
+	SurfaceMeshModel* entireMesh;
 	FdGraph* scaffold;
 
 public slots:
-	void createScaffold(SurfaceMeshModel * entireMesh);
+	void setMesh(Model* model);
+
+	void createScaffold();
+	void saveScaffold();
+	void loadScaffold();
+
 	void showCuboids(int state);
 	void showScaffold(int state);
 
 signals:
+	void sceneSettingsChanged();
+	void scaffoldChanged();
 };
 
 

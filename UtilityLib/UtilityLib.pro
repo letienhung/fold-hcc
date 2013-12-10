@@ -27,4 +27,5 @@ HEADERS += \
 SOURCES += \
     Numeric.cpp \
     xmlWriter.cpp \
-    SegMeshLoader.cpp
+    SegMeshLoader.cpp \
+    UtilityGlobal.cpp

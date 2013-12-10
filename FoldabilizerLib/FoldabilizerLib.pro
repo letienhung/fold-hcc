@@ -34,7 +34,8 @@ HEADERS += \
     GraphManager.h \
     FdGraph.h \
     FdLink.h \
-    FdNode.h
+    FdNode.h \
+    FdUtility.h
 
 SOURCES += \
     PatchNode.cpp \
@@ -42,5 +43,6 @@ SOURCES += \
     GraphManager.cpp \
     FdGraph.cpp \
     FdLink.cpp \
-    FdNode.cpp
+    FdNode.cpp \
+    FdUtility.cpp
 

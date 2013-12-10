@@ -1,4 +1,5 @@
 #include "SegMeshLoader.h"
+#include <QFile>
 
 SegMeshLoader::SegMeshLoader( SurfaceMesh::SurfaceMeshModel * mesh )
 {

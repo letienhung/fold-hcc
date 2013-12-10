@@ -28,7 +28,7 @@ public slots:
 	void updateScene();
 	void resetScene();
 
-	void createScaffold();
+	void resetMesh();
 	void test();
 };
 

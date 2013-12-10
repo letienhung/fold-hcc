@@ -1,5 +1,7 @@
 #include "FdNode.h"
 #include "CustomDrawObjects.h"
+#include "Numeric.h"
+#include "FdUtility.h"
 
 FdNode::FdNode( SurfaceMeshModel *m, Geom::Box &b )
 	: Node(m->name), mMesh(m)
@@ -52,3 +54,20 @@ void FdNode::updateBox()
 {
 
 }
+
+void FdNode::writeToXml( XmlWriter& xw )
+{
+	xw.writeOpenTag("node");
+	{
+		xw.writeTaggedString("type", QString::number(mType));
+		xw.writeTaggedString("ID", this->id);
+
+		// box
+		writeBoxToXml(xw, mBox);
+
+		// scaffold
+		this->writeScaffoldToXml(xw);
+	}
+	xw.writeCloseTag("node");
+}
+
