@@ -1,10 +1,13 @@
 #pragma once
 
-#include <QVector>
 #include <QString>
+#include <QtXml/QDomDocument>
+
+#include <QVector>
 #include <QQueue>
 #include <QMap>
-#include <QtXml/QDomDocument>
+#include <QSet>
+
 #include <QFile>
 
 #include "SurfaceMeshModel.h"

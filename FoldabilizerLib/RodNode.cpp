@@ -1,6 +1,6 @@
 #include "RodNode.h"
 
-RodNode::RodNode(QString nid)
-	: FdNode(nid)
+RodNode::RodNode(SurfaceMeshModel *m, Geom::Box &b)
+	: FdNode(m, b)
 {
 }

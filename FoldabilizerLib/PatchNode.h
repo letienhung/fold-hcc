@@ -5,6 +5,9 @@
 class PatchNode : public FdNode
 {
 public:
-    PatchNode(QString id);
+    PatchNode(SurfaceMeshModel *m, Geom::Box &b);
+
+private:
+	//Geom::Rectangle patch;
 };
 

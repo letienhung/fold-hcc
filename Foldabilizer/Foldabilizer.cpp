@@ -8,6 +8,7 @@
 Foldabilizer::Foldabilizer()
 {
 	widget = NULL;
+	g_manager = new GraphManager();
 }
 
 void Foldabilizer::create()
@@ -29,7 +30,10 @@ void Foldabilizer::destroy()
 
 void Foldabilizer::decorate()
 {
-
+	if (activeScaffold())
+	{
+		activeScaffold()->draw();
+	}
 }
 
 void Foldabilizer::updateScene()
@@ -55,4 +59,17 @@ void Foldabilizer::test()
 		<< "nbNodes = " << g->nbNodes() 
 		<< "nbLinks = " << g->nbLinks();
 }
+
+
+FdGraph* Foldabilizer::activeScaffold()
+{
+	return g_manager->scaffold;
+}
+
+void Foldabilizer::createScaffold()
+{
+	g_manager->createScaffold(mesh());
+	updateScene();
+}
+
 Q_EXPORT_PLUGIN(Foldabilizer)

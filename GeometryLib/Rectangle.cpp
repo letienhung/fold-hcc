@@ -2,11 +2,24 @@
 #include "Plane.h"
 #include "Numeric.h"
 #include "Segment2.h"
-
 using namespace Geom;
 
 Rectangle::Rectangle()
 {
+	Center = Vector3(0,0,0);
+	Axis << Vector3(1,0,0) << Vector3(0,1,0);
+	Extent = Vector2(0.5, 0.5);
+
+	Axis[0].normalize(); Axis[1].normalize();
+	Normal = cross(Axis[0], Axis[1]).normalized();
+
+	Conners.clear();
+	Vector3 dx = Extent[0] * Axis[0];
+	Vector3 dy = Extent[1] * Axis[1];
+	Conners.push_back(Center + dx + dy);
+	Conners.push_back(Center - dx + dy);
+	Conners.push_back(Center - dx - dy);
+	Conners.push_back(Center + dx - dy);
 }
 
 Rectangle::Rectangle( QVector<Vector3>& conners )

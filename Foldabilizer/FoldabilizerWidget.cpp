@@ -9,6 +9,7 @@ FoldabilizerWidget::FoldabilizerWidget(Foldabilizer *f, QWidget *parent) :
 	fold = f;
 
 	fold->connect(ui->test, SIGNAL(clicked()), SLOT(test()));
+	fold->connect(ui->createScaffold, SIGNAL(clicked()), SLOT(createScaffold()));
 }
 
 

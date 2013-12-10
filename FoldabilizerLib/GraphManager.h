@@ -10,12 +10,10 @@ class GraphManager : public QObject
 
 public:
     GraphManager();
-
-private:
-	FdGraph* scoffold;
+	FdGraph* scaffold;
 
 public slots:
-	void createScoffold(SurfaceMeshModel * entireMesh);
+	void createScaffold(SurfaceMeshModel * entireMesh);
 };
 
 

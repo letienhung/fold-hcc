@@ -1,6 +1,7 @@
 #include "PatchNode.h"
 
-PatchNode::PatchNode(QString nid)
-	: FdNode(nid)
+PatchNode::PatchNode(SurfaceMeshModel *m, Geom::Box &b)
+	: FdNode(m, b)
 {
+
 }

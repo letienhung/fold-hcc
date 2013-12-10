@@ -32,7 +32,12 @@ HEADERS += \
     IntrSeg2Seg2.h \
     IntrRectRect.h \
     Polygon.h \
-    PcaObb.h
+    AABB.h \
+    ConvexHull2.h \
+    MinOBB2.h \
+    MinOBB.h \
+    PcaOBB.h \
+    ConvexHull.h
 
 SOURCES += \
     Segment.cpp \
@@ -45,4 +50,9 @@ SOURCES += \
     IntrBoxBox.cpp \
     IntrSeg2Seg2.cpp \
     IntrRectRect.cpp \
-    Polygon.cpp
+    Polygon.cpp \
+    AABB.cpp \
+    ConvexHull2.cpp \
+    MinOBB2.cpp \
+    MinOBB.cpp \
+    ConvexHull.cpp

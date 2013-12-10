@@ -2,6 +2,7 @@
 
 #include "interfaces/ModePluginDockWidget.h"
 #include "SurfaceMeshPlugins.h"
+#include "GraphManager.h"
 
 class FoldabilizerWidget;
 
@@ -19,10 +20,15 @@ class Foldabilizer : public SurfaceMeshModePlugin
 public:
     Foldabilizer();
     FoldabilizerWidget	*widget;
+	GraphManager *g_manager;
+
+	FdGraph* activeScaffold();
 
 public slots:
 	void updateScene();
 	void resetScene();
+
+	void createScaffold();
 	void test();
 };
 

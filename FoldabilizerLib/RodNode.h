@@ -5,5 +5,8 @@
 class RodNode : public FdNode
 {
 public:
-    RodNode(QString nid);
+    RodNode(SurfaceMeshModel *m, Geom::Box &b);
+
+private:
+	Geom::Segment rod;
 };

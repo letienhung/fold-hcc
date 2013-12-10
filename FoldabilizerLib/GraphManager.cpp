@@ -1,38 +1,41 @@
 #include "GraphManager.h"
 #include "SegMeshLoader.h"
-#include "PcaObb.h"
 #include "RodNode.h"
 #include "PatchNode.h"
 
+#include "PcaObb.h"
+#include "AABB.h"
+#include "MinOBB.h"
+
 GraphManager::GraphManager()
 {
-	this->scoffold = new FdGraph();
+	this->scaffold = new FdGraph();
 }
 
-void GraphManager::createScoffold( SurfaceMesh::SurfaceMeshModel * entireMesh )
+void GraphManager::createScaffold( SurfaceMesh::SurfaceMeshModel * entireMesh )
 {
 	SegMeshLoader sml(entireMesh);
 	QVector<SurfaceMeshModel*> subMeshes = sml.getSegMeshes();
 
-	this->scoffold->clear();
-	Geom::PcaObb obb;
+	// reset scaffold
+	scaffold->clear();
+
+	// create nodes from meshes
+	Geom::MinOBB bb;
 	foreach (SurfaceMeshModel* m, subMeshes)
 	{
-		// fit obb
-		obb.build_from_mesh(m);
-		Geom::Box box = obb.box();
+		// fit bb
+		bb.computeMinOBB(m);
+		Geom::Box box = bb.mMinBox;
 
 		// create node depends on obb
 		FdNode * node;
 		int box_type = box.getType(5);
 		if (box_type == Geom::Box::ROD)	
-			 node = new RodNode(m->name);
-		else node = new PatchNode(m->name);
+			 node = new RodNode(m, box);
+		else node = new PatchNode(m, box);
 
-		node->setMesh(m);
-		node->setCtrlBox(box);
-
-		// add to graph
-		this->scoffold->addNode(node);
+		// add to scaffold
+		scaffold->addNode(node);
 	}
 }

@@ -17,7 +17,7 @@ public:
 	Vector3 Extent;
 
 	// con(de)structor
-	Box(){}
+	Box(){Axis.resize(3);}
 	~Box(){}
 	Box(const Point& c, const QVector<Vector3>& axis, const Vector3& ext);
 

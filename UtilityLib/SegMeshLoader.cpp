@@ -77,6 +77,8 @@ SurfaceMeshModel * SegMeshLoader::extractMesh( QString gid )
 
 QVector<SurfaceMeshModel*> SegMeshLoader::getSegMeshes()
 {
+	loadGroupsFromObj();
+
 	QVector<SurfaceMeshModel*> meshes;
 	foreach (QString gid, groupFaces.keys())
 		meshes.push_back(extractMesh(gid));
