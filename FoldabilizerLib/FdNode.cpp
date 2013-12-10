@@ -2,27 +2,21 @@
 #include "CustomDrawObjects.h"
 
 FdNode::FdNode( SurfaceMeshModel *m, Geom::Box &b )
-	: Node(m->name)
+	: Node(m->name), mesh(m), mBox(b)
 {
-	this->mesh = m;
-	this->ctrlBox = b;
 	mColor = qRandomColor(); 
 	mColor.setAlphaF(0.5);
 
-	CH = new Geom::ConvexHull(mesh);
+	mType = NONE;
 }
 
 void FdNode::draw()
 {
-	//CH->draw();
-	//return;
-
 	PolygonSoup ps;
-	foreach(QVector<Point> f, ctrlBox.getFacePoints()) 
+	foreach(QVector<Point> f, mBox.getFacePoints()) 
 		ps.addPoly(f, mColor);
 
 	// draw faces
 	ps.drawQuads(true);
 	ps.drawWireframes(2.0, Qt::yellow);
-
 }

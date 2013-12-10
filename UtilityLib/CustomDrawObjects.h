@@ -144,7 +144,7 @@ class LineSegments : public RenderObject::Base{
 	QVector< QPair<QVector3,QVector3> > lines;
 	QVector< QColor > lines_colors;
 public:
-	LineSegments():RenderObject::Base(1, Qt::black){}
+	LineSegments(float width = 1.0):RenderObject::Base(width, Qt::black){}
 
     void draw(QGLWidget &widget){ this->draw(); Q_UNUSED(widget) }
 

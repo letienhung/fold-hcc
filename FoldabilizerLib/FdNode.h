@@ -3,18 +3,19 @@
 #include "UtilityGlobal.h"
 #include "Node.h"
 #include "Box.h"
-#include "ConvexHull.h"
 
 class FdNode : public Structure::Node
 {
+public:
+	enum NODE_TYPE{NONE, ROD, PATCH};
+
 public:
     FdNode(SurfaceMeshModel *m, Geom::Box &b);
 	virtual void draw();
 
 public:
-	SurfaceMesh::SurfaceMeshModel *mesh;
-	Geom::Box ctrlBox;
+	SurfaceMeshModel *mesh;
+	Geom::Box mBox;
 	QColor mColor;
-
-	Geom::ConvexHull* CH;
+	NODE_TYPE mType;
 };

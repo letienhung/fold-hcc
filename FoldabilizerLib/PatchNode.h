@@ -6,8 +6,9 @@ class PatchNode : public FdNode
 {
 public:
     PatchNode(SurfaceMeshModel *m, Geom::Box &b);
+	void draw();
 
 private:
-	//Geom::Rectangle patch;
+	Geom::Rectangle mPatch;
 };
 

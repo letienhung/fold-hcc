@@ -9,6 +9,10 @@ enum {SEG_NEGATIVE, SEG_ON, SEG_POSITIVE, SEG_OFF};
 class Segment
 {
 public:
+	// constructor
+    Segment();
+	Segment(Vector3 p0, Vector3 p1);
+
 	// end points 
 	// this is a open set (P0, P1)
 	// which is useful for intersection
@@ -17,10 +21,6 @@ public:
 	// center-extent representation
 	Vector3 Center, Direction;
 	double	Extent;
-
-	// constructor
-    Segment();
-	Segment(Vector3 p0, Vector3 p1);
 
 	// coordinates
 	// coord(P0) = 0, coord(P1) = 1

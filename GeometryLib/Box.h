@@ -27,8 +27,11 @@ public:
 	// frame
 	Frame	getFrame();
 	void	setFrame(Frame f);
-	int		getFaceID(Vector3 n);
-	int		getAxisID(Vector3 a);
+	int		getFaceId(Vector3 n);
+	int		getFaceId(int aid, bool positive);
+	int		getAxisId(Vector3 a);
+	int		minAxisId();
+	int		maxAxisId();
 
 	// coordinates
 	Vector3 getCoordinates(Vector3 p);
@@ -49,9 +52,12 @@ public:
 	static int QUAD_FACE[6][4];
 	static int TRI_FACE[12][3];
 
+	Vector3 getFaceCenter(int fid);
+
 	QVector<Point>				getConnerPoints();
 	QVector<Line>				getEdgeLines();
 	QVector<Segment>			getEdgeSegments();
+	QVector<Segment>			getEdgeSegmentsAlongAxis(int aid);
 	QVector< QVector<Point> >	getFacePoints();
 	QVector<Plane>				getFacePlanes();
 	QVector<Rectangle>			getFaceRectangles();
@@ -77,6 +83,7 @@ public:
 	// type
 	enum TYPE{ROD, PATCH, BRICK};
 	int getType(double threshold);
+
 };
 
 }

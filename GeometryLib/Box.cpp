@@ -197,6 +197,21 @@ QVector<Segment> Box::getEdgeSegments()
 	return edges;
 }
 
+
+QVector<Segment> Geom::Box::getEdgeSegmentsAlongAxis( int aid )
+{
+	QVector<Segment> edges;
+
+	QVector<Point> pnts = this->getConnerPoints();
+	for (int i = 4 * aid; i < 4 * aid + 4; i++)
+	{
+		edges.push_back(Segment(pnts[EDGE[i][0]], pnts[EDGE[i][1]]));
+	}
+
+	return edges;
+}
+
+
 QVector< QVector<Point> > Box::getFacePoints()
 {
 	QVector< QVector<Point> > faces(6);
@@ -244,6 +259,7 @@ QVector<Segment> Box::getEdgeIncidentOnPoint(Point &p)
 
 	return edges;
 }
+
 QVector<Rectangle> Box::getFaceIncidentOnPoint(Point &p)
 {
 	QVector<Rectangle> rects;
@@ -305,7 +321,7 @@ Geom::Box Geom::Box::scaled( double s )
 	return b;
 }
 
-int Geom::Box::getFaceID( Vector3 n )
+int Geom::Box::getFaceId( Vector3 n )
 {
 	for (int i = 0; i < 3; i++)	
 	{
@@ -320,7 +336,7 @@ int Geom::Box::getFaceID( Vector3 n )
 }
 
 
-int Geom::Box::getAxisID( Vector3 a )
+int Geom::Box::getAxisId( Vector3 a )
 {
 	for (int i = 0; i < 3; i++)	
 		if (areCollinear(a, Axis[i])) return i;
@@ -355,7 +371,7 @@ double Geom::Box::calcFrontierWidth( int fid, const QVector<Vector3>& pnts, bool
 
 SurfaceMesh::Vector4 Geom::Box::calcFrontierWidth( Vector3 hX, Vector3 hZ, const QVector<Vector3>& pnts )
 {
-	int hxId = getAxisID(hX), hzId = getAxisID(hZ);
+	int hxId = getAxisId(hX), hzId = getAxisId(hZ);
 	double xE = Extent[hxId], zE = Extent[hzId];
 
 	double xlow = -1, xhigh = 1, zlow = -1, zhigh = 1;
@@ -420,4 +436,57 @@ int Geom::Box::getType( double threshold )
 		return PATCH;
 	else
 		return BRICK;
+}
+
+
+int Geom::Box::minAxisId()
+{
+	int id = 0;
+	double minExt = Extent[0];
+	for (int i = 1; i < 3; i++)
+	{
+		if (Extent[i] < minExt)
+		{
+			minExt = Extent[i];
+			id = i;
+		}
+	} 
+
+	return id;	
+}
+
+
+int Geom::Box::maxAxisId()
+{
+	int id = 0;
+	double maxExt = Extent[0];
+	for (int i = 1; i < 3; i++)
+	{
+		if (Extent[i] > maxExt)
+		{
+			maxExt = Extent[i];
+			id = i;
+		}
+	} 
+
+	return id;	
+}
+
+SurfaceMesh::Vector3 Geom::Box::getFaceCenter( int fid )
+{
+	Vector3 c = Center;
+
+	int aid = fid / 3;
+	if (fid % 3)
+		c -= Extent[aid] * Axis[aid];
+	else
+		c += Extent[aid] * Axis[aid];
+
+	return c;
+}
+
+
+int Geom::Box::getFaceId( int aid, bool positive )
+{
+	return positive ? (3 * aid) : (3 * aid + 1);
 }
