@@ -2,6 +2,7 @@
 #include "SegMeshLoader.h"
 #include "RodNode.h"
 #include "PatchNode.h"
+#include "FdGraph.h"
 
 #include "PcaObb.h"
 #include "AABB.h"
@@ -38,4 +39,16 @@ void GraphManager::createScaffold( SurfaceMesh::SurfaceMeshModel * entireMesh )
 		// add to scaffold
 		scaffold->addNode(node);
 	}
+}
+
+void GraphManager::showCuboids( int state )
+{
+	foreach(FdNode* n, scaffold->getFdNodes())
+		n->showCuboids = (state == Qt::Checked);
+}
+
+void GraphManager::showScaffold( int state )
+{
+	foreach(FdNode* n, scaffold->getFdNodes())
+		n->showScaffold = (state == Qt::Checked);
 }

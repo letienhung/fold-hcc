@@ -22,9 +22,12 @@ PatchNode::PatchNode(SurfaceMeshModel *m, Geom::Box &b)
 
 void PatchNode::draw()
 {
-	PolygonSoup ps;
-	ps.addPoly(mPatch.Conners);
-	ps.draw();
+	if (showScaffold)
+	{
+		PolygonSoup ps;
+		ps.addPoly(mPatch.Conners);
+		ps.draw();
+	}
 
 	FdNode::draw();
 }

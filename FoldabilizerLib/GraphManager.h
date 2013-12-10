@@ -14,6 +14,10 @@ public:
 
 public slots:
 	void createScaffold(SurfaceMeshModel * entireMesh);
+	void showCuboids(int state);
+	void showScaffold(int state);
+
+signals:
 };
 
 

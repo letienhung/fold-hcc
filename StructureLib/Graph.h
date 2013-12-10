@@ -34,7 +34,7 @@ public:
 	bool isDraw;
 	void draw();
 
-protected:
+public:
 	QVector<Node*> nodes;
 	QVector<Link*> links;
 };

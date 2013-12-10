@@ -20,26 +20,16 @@ Geom::MinOBB::MinOBB( SurfaceMeshModel * mesh )
 
 void Geom::MinOBB::computeMinOBB(SurfaceMeshModel * mesh)
 {
-	// Get points
-	QVector<Vec3d> pnts;	
-
-	Surface_mesh::Vertex_property<Point> points = mesh->vertex_property<Point>("v:point");
-	Surface_mesh::Vertex_iterator vit, vend = mesh->vertices_end();
-
-	for (vit = mesh->vertices_begin(); vit != vend; ++vit)
-		pnts.push_back(points[vit]);
-
 	// Add noise to reduce precision problems in CH
-	AABB aabb(mesh);
+	QVector<Vec3d> pnts = getMeshVertices(mesh);
+	AABB aabb(pnts);
 	double enlarge_scale = 1.0/100;
 	double noise_scale = enlarge_scale / 2 * aabb.radius();
+
 	for (int i = 0; i < (int)pnts.size(); i++)
 	{
 		pnts[i] -= aabb.center();
-		// Enlarge the shape a bit
 		pnts[i] *= (1 + enlarge_scale);
-
-		// Add noise
 		double nx = uniformRealDistribution() - 0.5;
 		double ny = uniformRealDistribution() - 0.5;
 		double nz = uniformRealDistribution() - 0.5;

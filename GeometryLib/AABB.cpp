@@ -1,5 +1,6 @@
 #include "AABB.h"
 #include "Numeric.h"
+#include "UtilityGlobal.h"
 
 Geom::AABB::AABB()
 {
@@ -49,14 +50,5 @@ void Geom::AABB::buildFromPoints( QVector<Vector3>& pnts )
 
 void Geom::AABB::buildFromMesh( SurfaceMeshModel* mesh )
 {
-	// Get points
-	QVector<Vec3d> pnts;
-
-	Surface_mesh::Vertex_property<Point> points = mesh->vertex_property<Point>("v:point");
-	Surface_mesh::Vertex_iterator vit, vend = mesh->vertices_end();
-
-	for (vit = mesh->vertices_begin(); vit != vend; ++vit)
-		pnts.push_back(points[vit]);
-
-	buildFromPoints(pnts);
+	buildFromPoints(getMeshVertices(mesh));
 }

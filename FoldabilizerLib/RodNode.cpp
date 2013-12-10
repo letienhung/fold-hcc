@@ -17,9 +17,12 @@ RodNode::RodNode(SurfaceMeshModel *m, Geom::Box &b)
 
 void RodNode::draw()
 {
-	LineSegments ls(3.0f);
-	ls.addLine(rod.P0, rod.P1);
-	ls.draw();
+	if (showScaffold)
+	{
+		LineSegments ls(3.0f);
+		ls.addLine(rod.P0, rod.P1);
+		ls.draw();
+	}
 
 	FdNode::draw();
 }

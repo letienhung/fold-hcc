@@ -8,5 +8,7 @@ class FdGraph : public Structure::Graph
 {
 public:
     FdGraph();
+
+	QVector<FdNode*> getFdNodes();
 };
 

@@ -11,11 +11,22 @@ public:
 
 public:
     FdNode(SurfaceMeshModel *m, Geom::Box &b);
+
+	// visualization
+	bool showCuboids;
+	bool showScaffold;
 	virtual void draw();
 
+	// deformation
+	virtual void updateBox();
+	void encodeMesh();
+	void deformMesh();
+
 public:
-	SurfaceMeshModel *mesh;
-	Geom::Box mBox;
+	Geom::Box origBox, mBox;
+	SurfaceMeshModel *mMesh;
+	QVector<Vector3> meshCoords;
+
 	QColor mColor;
 	NODE_TYPE mType;
 };

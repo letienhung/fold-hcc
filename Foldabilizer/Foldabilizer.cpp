@@ -20,6 +20,8 @@ void Foldabilizer::create()
 		ModePluginDockWidget *dockwidget = new ModePluginDockWidget("Foldabilizer", mainWindow());
 		dockwidget->setWidget(widget);
 		mainWindow()->addDockWidget(Qt::RightDockWidgetArea, dockwidget);
+
+		drawArea()->setPerspectiveProjection();
 	}
 }
 
