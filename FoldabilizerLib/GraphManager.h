@@ -13,10 +13,13 @@ public:
 	SurfaceMeshModel* entireMesh;
 	FdGraph* scaffold;
 
+private:
+	QMap<QString, Geom::Box> boxMap;
+
 public slots:
 	void setMesh(Model* model);
 
-	void createScaffold();
+	void createScaffold(bool doFitting = true);
 	void saveScaffold();
 	void loadScaffold();
 
@@ -26,6 +29,7 @@ public slots:
 signals:
 	void sceneSettingsChanged();
 	void scaffoldChanged();
+	void message(QString msg);
 };
 
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "xmlWriter.h"
+#include "XmlWriter.h"
 #include <QtXml/QDomDocument>
 
 #include <QString>
@@ -21,3 +21,5 @@ QVector<Vector3> getMeshVertices(SurfaceMeshModel *mesh);
 
 QString qStr(Vector3 v, char sep = ' ');
 QString qStr(const Vector4 &v, char sep = ' ');
+
+Vector3 toVector3(QString string);

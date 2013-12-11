@@ -1,4 +1,5 @@
 #include "FdUtility.h"
+#include "UtilityGlobal.h"
 
 void writeBoxToXml( XmlWriter& xw, Geom::Box& b )
 {
@@ -11,4 +12,21 @@ void writeBoxToXml( XmlWriter& xw, Geom::Box& b )
 		xw.writeTaggedString("e", qStr(b.Extent));
 	}
 	xw.writeCloseTag("box");
+}
+
+Geom::Box getBox( QDomNode& node )
+{
+	QString c = node.firstChildElement("c").text();
+	QString x = node.firstChildElement("x").text();
+	QString y = node.firstChildElement("y").text();
+	QString z = node.firstChildElement("z").text();
+	QString e = node.firstChildElement("e").text();
+
+	Geom::Box box;
+	box.Center = toVector3(c);
+	box.Axis.clear();
+	box.Axis << toVector3(x) << toVector3(y) << toVector3(z);
+	box.Extent = toVector3(e);
+
+	return box;
 }

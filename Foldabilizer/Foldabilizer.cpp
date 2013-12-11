@@ -12,6 +12,7 @@ Foldabilizer::Foldabilizer()
 
 	this->connect(g_manager, SIGNAL(sceneSettingsChanged()), SLOT(updateScene()));
 	this->connect(g_manager, SIGNAL(scaffoldChanged()), SLOT(resetScene()));
+	this->connect(g_manager, SIGNAL(message(QString)), SLOT(showStatus(QString)));
 }
 
 void Foldabilizer::create()
@@ -77,6 +78,11 @@ void Foldabilizer::resetMesh()
 {
 	g_manager->setMesh(mesh());
 	showMessage("GraphManager: entireMesh = %s", g_manager->entireMesh->path.toStdString());
+}
+
+void Foldabilizer::showStatus( QString msg )
+{
+	this->showMessage(msg.toStdString().c_str());
 }
 
 Q_EXPORT_PLUGIN(Foldabilizer)

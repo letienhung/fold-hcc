@@ -2,7 +2,7 @@
 
 #include <QFile>
 #include <QFileInfo>
-#include "xmlWriter.h"
+#include "XmlWriter.h"
 
 FdGraph::FdGraph()
 {
@@ -32,23 +32,13 @@ void FdGraph::saveToFile( QString fname )
 	xw.writeOpenTag("document");
 	{
 		// nodes
-		xw.writeOpenTag("nodes");
-		{
-			xw.writeTaggedString("count", QString::number(nbNodes()));
-
-			foreach(FdNode* node, getFdNodes())
-				node->writeToXml(xw);
-		}
-		xw.writeCloseTag("nodes");
+		xw.writeTaggedString("cN", QString::number(nbNodes()));
+		foreach(FdNode* node, getFdNodes())
+			node->writeToXml(xw);
 
 		// links
-		xw.writeOpenTag("links");
-		{
-			xw.writeTaggedString("count", QString::number(nbLinks()));
-
-
-		}
-		xw.writeCloseTag("links");
+		xw.writeTaggedString("cL", QString::number(nbLinks()));
 	}
 	xw.writeCloseTag("document");
+	file.close();
 }

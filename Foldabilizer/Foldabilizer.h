@@ -29,6 +29,8 @@ public slots:
 	void resetScene();
 
 	void resetMesh();
+	void showStatus(QString msg);
+
 	void test();
 };
 

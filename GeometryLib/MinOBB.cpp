@@ -140,109 +140,109 @@ void Geom::MinOBB::computeMinOBB( QVector<Vector3> &points )
         }
     }
 
-    //// The minimum-volume box can also be supported by three mutually
-    //// orthogonal edges of the convex hull.  For each triple of orthogonal
-    //// edges, compute the minimum-volume box for that coordinate frame by
-    //// projecting the points onto the axes of the frame.
-    //std::set<EdgeKey>::const_iterator e2iter;
-    //for (e2iter = edges.begin(); e2iter != edges.end(); e2iter++)
-    //{
-    //    W = points[e2iter->V[1]] - points[e2iter->V[0]];
-    //    W.normalize();
+    // The minimum-volume box can also be supported by three mutually
+    // orthogonal edges of the convex hull.  For each triple of orthogonal
+    // edges, compute the minimum-volume box for that coordinate frame by
+    // projecting the points onto the axes of the frame.
+    std::set<EdgeKey>::const_iterator e2iter;
+    for (e2iter = edges.begin(); e2iter != edges.end(); e2iter++)
+    {
+        W = points[e2iter->V[1]] - points[e2iter->V[0]];
+        W.normalize();
 
-    //    std::set<EdgeKey>::const_iterator e1iter = e2iter;
-    //    for (++e1iter; e1iter != edges.end(); e1iter++)
-    //    {
-    //        V = points[e1iter->V[1]] - points[e1iter->V[0]];
-    //        V.normalize();
-    //        if (fabs(dot(V, W)) > Epsilon_LOW)
-    //        {
-    //            continue;
-    //        }
+        std::set<EdgeKey>::const_iterator e1iter = e2iter;
+        for (++e1iter; e1iter != edges.end(); e1iter++)
+        {
+            V = points[e1iter->V[1]] - points[e1iter->V[0]];
+            V.normalize();
+            if (fabs(dot(V, W)) > ZERO_TOLERANCE_LOW)
+            {
+                continue;
+            }
 
-    //        std::set<EdgeKey>::const_iterator e0iter = e1iter;
-    //        for (++e0iter; e0iter != edges.end(); e0iter++)
-    //        {
-    //            U = points[e0iter->V[1]] - points[e0iter->V[0]];
-    //            U.normalize();
-    //            if (fabs(dot(U,V)) > Epsilon_LOW)
-    //            {
-    //                continue;
-    //            }
-    //            if (fabs(dot(U,W)) > Epsilon_LOW)
-    //            {
-    //                continue;
-    //            }
-    //
-    //            // The three edges are mutually orthogonal.  Project the
-    //            // hull points onto the lines containing the edges.  Use
-    //            // hull point zero as the origin.
-    //            Real umin = (Real)0, umax = (Real)0;
-    //            Real vmin = (Real)0, vmax = (Real)0;
-    //            Real wmin = (Real)0, wmax = (Real)0;
-    //            origin = points[hullIndices[0]];
+            std::set<EdgeKey>::const_iterator e0iter = e1iter;
+            for (++e0iter; e0iter != edges.end(); e0iter++)
+            {
+                U = points[e0iter->V[1]] - points[e0iter->V[0]];
+                U.normalize();
+                if (fabs(dot(U,V)) > ZERO_TOLERANCE_LOW)
+                {
+                    continue;
+                }
+                if (fabs(dot(U,W)) > ZERO_TOLERANCE_LOW)
+                {
+                    continue;
+                }
+    
+                // The three edges are mutually orthogonal.  Project the
+                // hull points onto the lines containing the edges.  Use
+                // hull point zero as the origin.
+                Real umin = (Real)0, umax = (Real)0;
+                Real vmin = (Real)0, vmax = (Real)0;
+                Real wmin = (Real)0, wmax = (Real)0;
+                origin = points[hullIndices[0]];
 
-    //            std::set<int>::const_iterator iter = uniqueIndices.begin();
-    //            while (iter != uniqueIndices.end())
-    //            {
-    //                int index = *iter++;
-    //                diff = points[index] - origin;
+                std::set<int>::const_iterator iter = uniqueIndices.begin();
+                while (iter != uniqueIndices.end())
+                {
+                    int index = *iter++;
+                    diff = points[index] - origin;
 
-    //                Real fU = dot(U, diff);
-    //                if (fU < umin)
-    //                {
-    //                    umin = fU;
-    //                }
-    //                else if (fU > umax)
-    //                {
-    //                    umax = fU;
-    //                }
+                    Real fU = dot(U, diff);
+                    if (fU < umin)
+                    {
+                        umin = fU;
+                    }
+                    else if (fU > umax)
+                    {
+                        umax = fU;
+                    }
 
-    //                Real fV = dot(V, diff);
-    //                if (fV < vmin)
-    //                {
-    //                    vmin = fV;
-    //                }
-    //                else if (fV > vmax)
-    //                {
-    //                    vmax = fV;
-    //                }
+                    Real fV = dot(V, diff);
+                    if (fV < vmin)
+                    {
+                        vmin = fV;
+                    }
+                    else if (fV > vmax)
+                    {
+                        vmax = fV;
+                    }
 
-    //                Real fW = dot(W, diff);
-    //                if (fW < wmin)
-    //                {
-    //                    wmin = fW;
-    //                }
-    //                else if (fW > wmax)
-    //                {
-    //                    wmax = fW;
-    //                }
-    //            }
+                    Real fW = dot(W, diff);
+                    if (fW < wmin)
+                    {
+                        wmin = fW;
+                    }
+                    else if (fW > wmax)
+                    {
+                        wmax = fW;
+                    }
+                }
 
-    //            Real uExtent = ((Real)0.5)*(umax - umin);
-    //            Real vExtent = ((Real)0.5)*(vmax - vmin);
-    //            Real wExtent = ((Real)0.5)*(wmax - wmin);
+                Real uExtent = ((Real)0.5)*(umax - umin);
+                Real vExtent = ((Real)0.5)*(vmax - vmin);
+                Real wExtent = ((Real)0.5)*(wmax - wmin);
 
-    //            // Update current minimum-volume box (if necessary).
-    //            volume = uExtent*vExtent*wExtent;
-    //            if (volume < minVolume)
-    //            {
-    //                minVolume = volume;
+                // Update current minimum-volume box (if necessary).
+                volume = uExtent*vExtent*wExtent;
+                if (volume < minVolume)
+                {
+                    minVolume = volume;
 
-    //                mMinBox.Extent[0] = uExtent;
-    //                mMinBox.Extent[1] = vExtent;
-    //                mMinBox.Extent[2] = wExtent;
-    //                mMinBox.Axis[0] = U;
-    //                mMinBox.Axis[1] = V;
-    //                mMinBox.Axis[2] = W;
-    //                mMinBox.Center = origin +
-    //                    ((Real)0.5)*(umin+umax)*U +
-    //                    ((Real)0.5)*(vmin+vmax)*V +
-    //                    ((Real)0.5)*(wmin+wmax)*W;
-    //            }
-    //        }
-    //    }
-    //}
+                    mMinBox.Extent[0] = uExtent;
+                    mMinBox.Extent[1] = vExtent;
+                    mMinBox.Extent[2] = wExtent;
+                    mMinBox.Axis[0] = U;
+                    mMinBox.Axis[1] = V;
+                    mMinBox.Axis[2] = W;
+                    mMinBox.Center = origin +
+                        ((Real)0.5)*(umin+umax)*U +
+                        ((Real)0.5)*(vmin+vmax)*V +
+                        ((Real)0.5)*(wmin+wmax)*W;
+                }
+            }
+        }
+    }
 	isReady = true;
 }
 

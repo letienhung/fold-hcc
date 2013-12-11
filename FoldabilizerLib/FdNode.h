@@ -3,7 +3,7 @@
 #include "UtilityGlobal.h"
 #include "Node.h"
 #include "Box.h"
-#include "xmlWriter.h"
+#include "XmlWriter.h"
 
 class FdNode : public Structure::Node
 {
@@ -26,6 +26,7 @@ public:
 	// I/O
 	void writeToXml(XmlWriter& xw);
 	virtual void writeScaffoldToXml(XmlWriter& xw){}
+
 public:
 	Geom::Box origBox, mBox;
 	SurfaceMeshModel *mMesh;
