@@ -9,8 +9,8 @@ class FdGraph : public Structure::Graph
 public:
     FdGraph();
 
+public:
 	QVector<FdNode*> getFdNodes();
-
 	void saveToFile(QString fname);
 
 public:

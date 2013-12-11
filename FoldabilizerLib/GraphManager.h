@@ -17,14 +17,19 @@ private:
 	QMap<QString, Geom::Box> boxMap;
 
 public slots:
+	// entire mesh
 	void setMesh(Model* model);
 
+	// graph
 	void createScaffold(bool doFitting = true);
 	void saveScaffold();
 	void loadScaffold();
 
-	void linkSelectedNodes();
+	// node
+	void refitSelectedNodes(int method);
+	void changeTypeOfSelectedNodes();
 
+	// visualization
 	void showCuboids(int state);
 	void showScaffold(int state);
 

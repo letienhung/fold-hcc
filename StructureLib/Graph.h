@@ -1,5 +1,4 @@
 #pragma once
-
 #include <QVector>
 
 #include "Node.h"
@@ -18,6 +17,7 @@ public:
 	void addLink(Link* link);
 	void addLink(Node* n0, Node* n1);
 	void removeNode(QString nid);
+	void replaceNode(Node* old_node, Node* new_node);
 	void removeLink(Link* link);
 	void clear();
 
@@ -25,10 +25,13 @@ public:
 	int		nbNodes();
 	int		nbLinks();
 	bool	isEmpty();
+	int		getNodeIndex(Node* node);
+	int		getLinkIndex(Link* link);
 	Node*	getNode(int idx);
 	Node*	getNode(QString nid);
 	Link*	getLink(QString nid1, QString nid2);
 	QVector<Link*> getLinks(QString nid);
+	QVector<Node*> getNeighbourNodes(Node* node);
 
 	// Visualize
 	bool isDraw;

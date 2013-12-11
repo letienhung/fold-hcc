@@ -29,41 +29,57 @@ void Structure::Graph::addLink( Node* n0, Node* n1 )
 	links.push_back(new Link(n0, n1));
 }
 
-void Structure::Graph::removeNode( QString nodeID )
+int Structure::Graph::getNodeIndex( Node* node )
 {
-	// remove incident links
-	foreach(Link* l, links)	{
-		if (l->hasNode(nodeID))
-			removeLink(l);
-	}
-
-	// node index
 	int idx = -1;
 	for (int i = 0; i < nodes.size(); i++)	{
-		if (nodes[i]->hasId(nodeID)) {
+		if (nodes[i] == node) {
 			idx = i;
 			break;
 		}
 	}
+
+	return idx;
+}
+
+int Structure::Graph::getLinkIndex( Link* link )
+{
+	int idx = -1;
+	for (int i = 0; i < links.size(); i++)	{
+		if (links[i] == link) {
+			idx = i;
+			break;
+		}
+	}
+
+	return idx;
+}
+
+
+void Structure::Graph::removeNode( QString nid )
+{
+	// node index
+	int idx = getNodeIndex(getNode(nid));
 	if (idx == -1) return;
 
+	// remove incident links
+	foreach(Link* l, links)	{
+		if (l->hasNode(nid)) removeLink(l);
+	}
+
 	// deallocate and remove
-	delete nodes[idx];
+	Node* node = nodes[idx];
 	nodes.remove(idx);
 }
 
 void Structure::Graph::removeLink( Link* link )
 {
-	// find and remove
-	for (int i = 0; i < links.size(); i++)	{
-		if (links[i] == link) {
-			links.remove(i);
-			break;
-		}
-	}
+	// link index
+	int idx = getLinkIndex(link);
+	if (idx == -1) return;
 
 	// deallocate
-	delete link;
+	links.remove(idx);
 }
 
 Structure::Node* Structure::Graph::getNode(QString nid)
@@ -151,4 +167,23 @@ QVector<Structure::Node*> Structure::Graph::selectedNodes()
 	}
 
 	return sn;
+}
+
+void Structure::Graph::replaceNode( Node* old_node, Node* new_node )
+{
+	QVector<Node*> neighbours = getNeighbourNodes(old_node);
+	removeNode(old_node->id);
+	addNode(new_node);
+	
+	foreach(Node* n, neighbours)
+		addLink(n, new_node);
+}
+
+QVector<Structure::Node*> Structure::Graph::getNeighbourNodes( Node* node )
+{
+	QVector<Node*> neighbours;
+	foreach (Link* l, getLinks(node->id))
+		neighbours.push_back(l->getNodeOther(node->id));
+
+	return neighbours;
 }

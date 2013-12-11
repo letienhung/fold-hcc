@@ -2,6 +2,8 @@
 #include "CustomDrawObjects.h"
 #include "Numeric.h"
 #include "FdUtility.h"
+#include "AABB.h"
+#include "MinOBB.h"
 
 FdNode::FdNode( SurfaceMeshModel *m, Geom::Box &b )
 	: Node(m->name), mMesh(m)
@@ -72,3 +74,25 @@ void FdNode::writeToXml( XmlWriter& xw )
 	xw.writeCloseTag("node");
 }
 
+void FdNode::refit( int method )
+{
+	switch(method)
+	{
+	case 0: // AABB
+		{
+			Geom::AABB aabb(mMesh);
+			mBox = aabb.box();
+		}
+		break;
+	case 1: // OBB
+		{
+			Geom::MinOBB obb(mMesh);
+			mBox = obb.mMinBox;
+		}
+		break;
+	}
+
+	// encode mesh
+	origBox = mBox;
+	encodeMesh();
+}

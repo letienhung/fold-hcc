@@ -16,6 +16,9 @@ FoldabilizerWidget::FoldabilizerWidget(Foldabilizer *f, QWidget *parent) :
 	fold->g_manager->connect(ui->saveScaffold, SIGNAL(clicked()), SLOT(saveScaffold()));
 	fold->g_manager->connect(ui->loadScaffold, SIGNAL(clicked()), SLOT(loadScaffold()));
 
+	this->connect(ui->fitCuboid, SIGNAL(clicked()), SLOT(fitCuboid()));
+	fold->g_manager->connect(ui->changeCuboidType, SIGNAL(clicked()), SLOT(changeTypeOfSelectedNodes()));
+
 	fold->g_manager->connect(ui->addLink, SIGNAL(clicked()), SLOT(linkSelectedNodes()));
 
 	// visualization
@@ -29,4 +32,12 @@ FoldabilizerWidget::FoldabilizerWidget(Foldabilizer *f, QWidget *parent) :
 FoldabilizerWidget::~FoldabilizerWidget()
 {
     delete ui;
+}
+
+void FoldabilizerWidget::fitCuboid()
+{
+	if (fold->g_manager)
+	{
+		fold->g_manager->refitSelectedNodes(ui->cuboidMethod->currentIndex());
+	}
 }

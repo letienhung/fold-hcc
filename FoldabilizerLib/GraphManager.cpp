@@ -33,8 +33,8 @@ void GraphManager::createScaffold(bool dofitting)
 		// fit bb
 		if (dofitting)
 		{
-			Geom::MinOBB bb(m);
-			box = bb.mMinBox;
+			Geom::AABB aabb(m);
+			box = aabb.box();
 		}
 		else if (boxMap.contains(m->name))
 		{
@@ -129,7 +129,32 @@ void GraphManager::setMesh( Model* model )
 	qDebug() << "Set active mesh as " << entireMesh->path;
 }
 
-void GraphManager::linkSelectedNodes()
+void GraphManager::changeTypeOfSelectedNodes()
 {
+	foreach(Structure::Node* n, scaffold->selectedNodes())
+	{
+		// create new node
+		FdNode* old_node = (FdNode*)n;
+		FdNode* new_node;
+		if (old_node->mType == FdNode::PATCH)
+			new_node = new RodNode(old_node->mMesh, old_node->mBox);
+		else
+			new_node = new PatchNode(old_node->mMesh, old_node->mBox);
 
+		// replace
+		scaffold->replaceNode(old_node, new_node);
+	}
+
+	emit(scaffoldChanged());
+}
+
+void GraphManager::refitSelectedNodes( int method )
+{
+	foreach(Structure::Node* n, scaffold->selectedNodes())
+	{
+		FdNode* fn = (FdNode*)n;
+		fn->refit(method);
+	}
+
+	emit(scaffoldChanged());
 }

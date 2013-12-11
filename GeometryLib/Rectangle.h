@@ -41,6 +41,9 @@ public:
 	Vector2				Extent;
 	Vector3				Normal;
 	QVector<Vector3>	Conners;
+
+public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 }

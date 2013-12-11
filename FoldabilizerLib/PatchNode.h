@@ -10,5 +10,8 @@ public:
 
 private:
 	Geom::Rectangle mPatch;
+
+public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 

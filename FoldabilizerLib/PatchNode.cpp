@@ -12,11 +12,7 @@ PatchNode::PatchNode(SurfaceMeshModel *m, Geom::Box &b)
 	QVector<Geom::Segment> edges = mBox.getEdgeSegmentsAlongAxis(aid);
 
 	QVector<Vector3> conners;
-	for (int i = 0; i < 4; i++)
-	{
-		conners.push_back(edges[i].Center);
-	}
-
+	for (int i = 0; i < 4; i++)	conners.push_back(edges[i].Center);
 	mPatch = Geom::Rectangle(conners);
 }
 

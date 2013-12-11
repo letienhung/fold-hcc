@@ -18,3 +18,8 @@ Structure::Node* Structure::Link::getNode( QString nid )
 {
 	return (node1->hasId(nid))? node1 : node2;
 }
+
+Structure::Node* Structure::Link::getNodeOther( QString nid )
+{
+	return (node1->hasId(nid))? node2 : node1;
+}

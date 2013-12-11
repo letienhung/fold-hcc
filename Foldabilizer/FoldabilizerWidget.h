@@ -18,5 +18,8 @@ public:
 private:
     Ui::FoldabilizerWidget *ui;
 	Foldabilizer *fold;
+
+public slots:
+	void fitCuboid();
 };
 

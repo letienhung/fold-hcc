@@ -23,6 +23,9 @@ public:
 	void encodeMesh();
 	void deformMesh();
 
+	// fit cuboid
+	void refit(int method);
+
 	// I/O
 	void writeToXml(XmlWriter& xw);
 	virtual void writeScaffoldToXml(XmlWriter& xw){}
