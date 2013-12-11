@@ -5,4 +5,5 @@ SUBDIRS += \
     FoldabilizerLib \
     GeometryLib \
     UtilityLib \
-    StructureLib
+    StructureLib \
+    Demo
