@@ -17,6 +17,9 @@ class Foldabilizer : public SurfaceMeshModePlugin
 	void destroy();
 	void decorate();
 
+	void drawWithNames();
+	bool postSelection(const QPoint& point);
+
 public:
     Foldabilizer();
     FoldabilizerWidget	*widget;

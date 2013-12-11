@@ -1,4 +1,5 @@
 #include "Graph.h"
+#include <QtOpenGL/qgl.h>
 
 Structure::Graph::Graph()
 {
@@ -120,4 +121,34 @@ void Structure::Graph::draw()
 {
 	foreach(Link *l, links) l->draw();
 	foreach(Node *n, nodes) n->draw();
+}
+
+void Structure::Graph::drawWithNames()
+{
+	for (int i = 0; i < nbNodes(); i++)
+	{
+		glPushName(i);
+		nodes[i]->draw();
+		glPopName();
+	}
+}
+
+void Structure::Graph::selectNode( int nid )
+{
+	if (nid >= 0 && nid < nbNodes())
+	{
+		nodes[nid]->select();
+	}
+}
+
+QVector<Structure::Node*> Structure::Graph::selectedNodes()
+{
+	QVector<Node*> sn;
+	foreach(Node* n, nodes)
+	{
+		if (n->isSelected)
+			sn.push_back(n);
+	}
+
+	return sn;
 }

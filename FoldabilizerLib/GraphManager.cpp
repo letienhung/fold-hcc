@@ -128,3 +128,8 @@ void GraphManager::setMesh( Model* model )
 	this->entireMesh = (SurfaceMeshModel*) model;
 	qDebug() << "Set active mesh as " << entireMesh->path;
 }
+
+void GraphManager::linkSelectedNodes()
+{
+
+}

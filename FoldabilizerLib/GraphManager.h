@@ -23,6 +23,8 @@ public slots:
 	void saveScaffold();
 	void loadScaffold();
 
+	void linkSelectedNodes();
+
 	void showCuboids(int state);
 	void showScaffold(int state);
 

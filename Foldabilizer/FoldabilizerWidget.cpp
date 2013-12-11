@@ -16,6 +16,8 @@ FoldabilizerWidget::FoldabilizerWidget(Foldabilizer *f, QWidget *parent) :
 	fold->g_manager->connect(ui->saveScaffold, SIGNAL(clicked()), SLOT(saveScaffold()));
 	fold->g_manager->connect(ui->loadScaffold, SIGNAL(clicked()), SLOT(loadScaffold()));
 
+	fold->g_manager->connect(ui->addLink, SIGNAL(clicked()), SLOT(linkSelectedNodes()));
+
 	// visualization
 	fold->g_manager->connect(ui->showCuboids, SIGNAL(stateChanged(int)), SLOT(showCuboids(int)));
 	fold->g_manager->connect(ui->showScaffold, SIGNAL(stateChanged(int)), SLOT(showScaffold(int)));

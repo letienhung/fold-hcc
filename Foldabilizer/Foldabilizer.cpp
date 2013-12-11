@@ -44,6 +44,14 @@ void Foldabilizer::decorate()
 	}
 }
 
+void Foldabilizer::drawWithNames()
+{
+	if (activeScaffold())
+	{
+		activeScaffold()->drawWithNames();
+	}
+}
+
 void Foldabilizer::updateScene()
 {
 	drawArea()->updateGL();
@@ -82,7 +90,16 @@ void Foldabilizer::resetMesh()
 
 void Foldabilizer::showStatus( QString msg )
 {
-	this->showMessage(msg.toStdString().c_str());
+	showMessage(msg.toStdString().c_str());
 }
+
+bool Foldabilizer::postSelection( const QPoint& point )
+{
+	int nid = drawArea()->selectedName();
+	showMessage("Selected Node: id = %d", nid);
+	activeScaffold()->selectNode(nid);
+	return true;
+}
+
 
 Q_EXPORT_PLUGIN(Foldabilizer)

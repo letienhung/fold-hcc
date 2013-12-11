@@ -34,6 +34,11 @@ public:
 	bool isDraw;
 	void draw();
 
+	// Selection
+	void drawWithNames();
+	void selectNode(int nid);
+	QVector<Node*> selectedNodes();
+
 public:
 	QVector<Node*> nodes;
 	QVector<Link*> links;

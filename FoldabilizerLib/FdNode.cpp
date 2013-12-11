@@ -27,7 +27,8 @@ void FdNode::draw()
 
 		// draw faces
 		ps.drawQuads(true);
-		ps.drawWireframes(2.0, Qt::yellow);
+		QColor c = isSelected ? Qt::yellow : Qt::white;
+		ps.drawWireframes(2.0, c);
 	}
 }
 

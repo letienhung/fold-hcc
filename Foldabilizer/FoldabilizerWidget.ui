@@ -52,6 +52,13 @@
         </property>
        </widget>
       </item>
+      <item row="0" column="2">
+       <widget class="QCheckBox" name="showMesh">
+        <property name="text">
+         <string>Mesh</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
@@ -61,24 +68,83 @@
       <string>Scaffold</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="0">
-       <widget class="QPushButton" name="createScaffold">
+      <item row="2" column="0" alignment="Qt::AlignRight">
+       <widget class="QLabel" name="label_3">
         <property name="text">
-         <string>Create</string>
+         <string>Link:</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="2">
+      <item row="0" column="4">
        <widget class="QPushButton" name="loadScaffold">
         <property name="text">
          <string>Load</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
+      <item row="0" column="2">
+       <widget class="QPushButton" name="createScaffold">
+        <property name="text">
+         <string>Create</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
        <widget class="QPushButton" name="saveScaffold">
         <property name="text">
          <string>Save</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QPushButton" name="addLink">
+        <property name="text">
+         <string>Add</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" alignment="Qt::AlignRight">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Graph:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" alignment="Qt::AlignRight">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Node:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="4">
+       <widget class="QPushButton" name="fitCuboid">
+        <property name="text">
+         <string>Fit</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QComboBox" name="cuboidMethod">
+        <property name="editable">
+         <bool>false</bool>
+        </property>
+        <item>
+         <property name="text">
+          <string>AABB</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>minOBB</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QPushButton" name="changeCuboidType">
+        <property name="text">
+         <string>Change Type</string>
         </property>
        </widget>
       </item>
