@@ -1,6 +1,7 @@
 #include "UtilityGlobal.h"
 
-QVector<Vector3> getMeshVertices( SurfaceMeshModel *mesh )
+
+QVector<Vector3> getMeshVertices( SurfaceMeshModel* mesh )
 {
 	QVector<Vec3d> pnts;	
 

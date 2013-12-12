@@ -3,7 +3,7 @@
 #include "Box.h"
 #include "CustomDrawObjects.h"
 
-PatchNode::PatchNode(SurfaceMeshModel *m, Geom::Box &b)
+PatchNode::PatchNode(MeshPtr m, Geom::Box &b)
 	: FdNode(m, b)
 {
 	mType = FdNode::PATCH;
@@ -15,6 +15,13 @@ PatchNode::PatchNode(SurfaceMeshModel *m, Geom::Box &b)
 	for (int i = 0; i < 4; i++)	conners.push_back(edges[i].Center);
 	mPatch = Geom::Rectangle(conners);
 }
+
+
+PatchNode::~PatchNode()
+{
+
+}
+
 
 void PatchNode::draw()
 {

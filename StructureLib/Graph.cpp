@@ -67,8 +67,8 @@ void Structure::Graph::removeNode( QString nid )
 		if (l->hasNode(nid)) removeLink(l);
 	}
 
-	// deallocate and remove
-	Node* node = nodes[idx];
+	// remove
+	//delete nodes[idx];
 	nodes.remove(idx);
 }
 
@@ -79,6 +79,7 @@ void Structure::Graph::removeLink( Link* link )
 	if (idx == -1) return;
 
 	// deallocate
+	// delete links[idx];
 	links.remove(idx);
 }
 
@@ -172,6 +173,7 @@ QVector<Structure::Node*> Structure::Graph::selectedNodes()
 void Structure::Graph::replaceNode( Node* old_node, Node* new_node )
 {
 	QVector<Node*> neighbours = getNeighbourNodes(old_node);
+
 	removeNode(old_node->id);
 	addNode(new_node);
 	

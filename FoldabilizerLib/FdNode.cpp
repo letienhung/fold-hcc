@@ -5,7 +5,7 @@
 #include "AABB.h"
 #include "MinOBB.h"
 
-FdNode::FdNode( SurfaceMeshModel *m, Geom::Box &b )
+FdNode::FdNode( MeshPtr m, Geom::Box &b )
 	: Node(m->name), mMesh(m)
 {
 	origBox = b;
@@ -17,6 +17,11 @@ FdNode::FdNode( SurfaceMeshModel *m, Geom::Box &b )
 
 	showCuboids = true;
 	showScaffold = true;
+}
+
+FdNode::~FdNode()
+{
+
 }
 
 void FdNode::draw()
@@ -37,7 +42,7 @@ void FdNode::draw()
 void FdNode::encodeMesh()
 {
 	meshCoords.clear();
-	foreach(Vector3 p, getMeshVertices(mMesh))
+	foreach(Vector3 p, getMeshVertices(mMesh.data()))
 		meshCoords.push_back(origBox.getCoordinates(p));
 }
 
@@ -45,7 +50,6 @@ void FdNode::deformMesh()
 {
 	Surface_mesh::Vertex_property<Point> points = mMesh->vertex_property<Point>("v:point");
 
-//#pragma omp parallel for
 	for(int i = 0; i < mMesh->n_vertices(); i++)
 	{
 		Surface_mesh::Vertex vit(i);
@@ -80,13 +84,13 @@ void FdNode::refit( int method )
 	{
 	case 0: // AABB
 		{
-			Geom::AABB aabb(mMesh);
+			Geom::AABB aabb(mMesh.data());
 			mBox = aabb.box();
 		}
 		break;
 	case 1: // OBB
 		{
-			Geom::MinOBB obb(mMesh);
+			Geom::MinOBB obb(mMesh.data());
 			mBox = obb.mMinBox;
 		}
 		break;

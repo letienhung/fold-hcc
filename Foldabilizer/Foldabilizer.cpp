@@ -65,15 +65,6 @@ void Foldabilizer::resetScene()
 
 void Foldabilizer::test()
 {
-	using namespace Structure;
-	Graph *g = new Graph();
-	g->addNode(new Node("node1"));
-	g->addNode(new Node("node2"));
-	g->addLink(g->getNode("node1"), g->getNode("node2"));
-
-	qDebug() << "I am debugging Graph: "
-		<< "nbNodes = " << g->nbNodes() 
-		<< "nbLinks = " << g->nbLinks();
 }
 
 

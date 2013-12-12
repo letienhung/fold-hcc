@@ -10,6 +10,7 @@ public:
 	Node(QString id) : id(id){
 		isSelected = false;
 	}
+	~Node(){}
 
 	bool hasId(QString id){ return this->id == id;}
 	void select(){isSelected = !isSelected;}

@@ -2,7 +2,7 @@
 #include "Box.h"
 #include "CustomDrawObjects.h"
 
-RodNode::RodNode(SurfaceMeshModel *m, Geom::Box &b)
+RodNode::RodNode(MeshPtr m, Geom::Box &b)
 	: FdNode(m, b)
 {
 	mType = FdNode::ROD;
@@ -13,6 +13,11 @@ RodNode::RodNode(SurfaceMeshModel *m, Geom::Box &b)
 	
 	rod.P0 = mBox.getFaceCenter(fid0);
 	rod.P1 = mBox.getFaceCenter(fid1);
+}
+
+RodNode::~RodNode()
+{
+
 }
 
 void RodNode::draw()

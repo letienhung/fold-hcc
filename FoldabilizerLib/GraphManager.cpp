@@ -20,20 +20,20 @@ GraphManager::GraphManager()
 void GraphManager::createScaffold(bool dofitting)
 {
 	SegMeshLoader sml(entireMesh);
-	QVector<SurfaceMeshModel*> subMeshes = sml.getSegMeshes();
+	QVector<MeshPtr> subMeshes = sml.getSegMeshes();
 
 	// reset scaffold
 	scaffold->path = entireMesh->path;
 	scaffold->clear();
 
 	// create nodes from meshes
-	foreach (SurfaceMeshModel* m, subMeshes)
+	foreach (MeshPtr m, subMeshes)
 	{
 		Geom::Box box;
 		// fit bb
 		if (dofitting)
 		{
-			Geom::AABB aabb(m);
+			Geom::AABB aabb(m.data());
 			box = aabb.box();
 		}
 		else if (boxMap.contains(m->name))
@@ -46,7 +46,7 @@ void GraphManager::createScaffold(bool dofitting)
 		}
 
 		// create node depends on obb
-		FdNode * node;
+		FdNode* node;
 		int box_type = box.getType(5);
 		if (box_type == Geom::Box::ROD)	
 			 node = new RodNode(m, box);
@@ -135,9 +135,9 @@ void GraphManager::changeTypeOfSelectedNodes()
 	{
 		// create new node
 		FdNode* old_node = (FdNode*)n;
-		FdNode* new_node;
+		Structure::Node* new_node;
 		if (old_node->mType == FdNode::PATCH)
-			new_node = new RodNode(old_node->mMesh, old_node->mBox);
+			new_node =new RodNode(old_node->mMesh, old_node->mBox);
 		else
 			new_node = new PatchNode(old_node->mMesh, old_node->mBox);
 
@@ -157,4 +157,12 @@ void GraphManager::refitSelectedNodes( int method )
 	}
 
 	emit(scaffoldChanged());
+}
+
+void GraphManager::linkSelectedNodes()
+{
+	QVector<Structure::Node*> snodes = scaffold->selectedNodes();
+	if (snodes.size() < 2) return;
+
+	scaffold->addLink(snodes[0], snodes[1]);
 }

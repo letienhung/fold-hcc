@@ -13,7 +13,7 @@ Geom::MinOBB::MinOBB( QVector<Vector3> &points )
 	computeMinOBB(points);
 }
 
-Geom::MinOBB::MinOBB( SurfaceMeshModel * mesh )
+Geom::MinOBB::MinOBB(SurfaceMeshModel * mesh )
 {
 	computeMinOBB(mesh);
 }

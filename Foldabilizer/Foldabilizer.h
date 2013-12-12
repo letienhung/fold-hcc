@@ -23,7 +23,7 @@ class Foldabilizer : public SurfaceMeshModePlugin
 public:
     Foldabilizer();
     FoldabilizerWidget	*widget;
-	GraphManager *g_manager;
+	GraphManager* g_manager;
 
 	FdGraph* activeScaffold();
 

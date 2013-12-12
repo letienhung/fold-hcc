@@ -11,7 +11,7 @@ Geom::AABB::AABB( QVector<Vector3>& pnts )
 	buildFromPoints(pnts);       
 }
 
-Geom::AABB::AABB( SurfaceMeshModel* mesh)
+Geom::AABB::AABB(SurfaceMeshModel* mesh)
 {
 	buildFromMesh(mesh);
 }
@@ -48,7 +48,7 @@ void Geom::AABB::buildFromPoints( QVector<Vector3>& pnts )
 	} 
 }
 
-void Geom::AABB::buildFromMesh( SurfaceMeshModel* mesh )
+void Geom::AABB::buildFromMesh(SurfaceMeshModel* mesh )
 {
 	buildFromPoints(getMeshVertices(mesh));
 }

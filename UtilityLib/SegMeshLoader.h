@@ -15,7 +15,7 @@ public:
 	QMap< QString, QVector<int> > groupFaces;
 
 	void loadGroupsFromObj();
-	SurfaceMeshModel * extractMesh( QString gid );
-	QVector<SurfaceMeshModel*> getSegMeshes();
+	MeshPtr extractSegMesh( QString gid );
+	QVector<MeshPtr> getSegMeshes();
 };
 

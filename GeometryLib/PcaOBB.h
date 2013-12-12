@@ -178,7 +178,7 @@ public:
 		build_from_covariance_matrix( C, pnts );
 	}
 
-	void build_from_mesh( SurfaceMeshModel * mesh )
+	void build_from_mesh(SurfaceMeshModel * mesh )
 	{
 		// Get points
 		std::vector<Vec3d> pnts;

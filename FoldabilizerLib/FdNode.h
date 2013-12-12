@@ -11,7 +11,8 @@ public:
 	enum NODE_TYPE{NONE, ROD, PATCH};
 
 public:
-    FdNode(SurfaceMeshModel *m, Geom::Box &b);
+    FdNode(MeshPtr m, Geom::Box &b);
+	~FdNode();
 
 	// visualization
 	bool showCuboids;
@@ -32,7 +33,7 @@ public:
 
 public:
 	Geom::Box origBox, mBox;
-	SurfaceMeshModel *mMesh;
+	MeshPtr mMesh;
 	QVector<Vector3> meshCoords;
 
 	QColor mColor;

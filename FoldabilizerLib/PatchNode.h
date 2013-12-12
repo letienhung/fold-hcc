@@ -5,7 +5,10 @@
 class PatchNode : public FdNode
 {
 public:
-    PatchNode(SurfaceMeshModel *m, Geom::Box &b);
+    PatchNode(MeshPtr m, Geom::Box &b);
+	~PatchNode();
+
+public:
 	void draw();
 
 private:

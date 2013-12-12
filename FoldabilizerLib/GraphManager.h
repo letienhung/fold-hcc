@@ -29,6 +29,8 @@ public slots:
 	void refitSelectedNodes(int method);
 	void changeTypeOfSelectedNodes();
 
+	void linkSelectedNodes();
+
 	// visualization
 	void showCuboids(int state);
 	void showScaffold(int state);
