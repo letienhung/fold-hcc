@@ -2,6 +2,7 @@
 
 #include <QString>
 
+
 namespace Structure{
 
 class Node
@@ -12,9 +13,16 @@ public:
 	}
 	~Node(){}
 
-	bool hasId(QString id){ return this->id == id;}
-	void select(){isSelected = !isSelected;}
+	bool hasId(QString id){ 
+		return this->id == id;
+	}
+
+	void select(){
+		isSelected = !isSelected;
+	}
+
 	virtual void draw(){}
+	virtual void drawWithName(int name){}
 
 public:
 	QString	id;

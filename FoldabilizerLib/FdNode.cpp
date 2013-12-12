@@ -4,6 +4,7 @@
 #include "FdUtility.h"
 #include "AABB.h"
 #include "MinOBB.h"
+#include "QuickMeshDraw.h"
 
 FdNode::FdNode( MeshPtr m, Geom::Box &b )
 	: Node(m->name), mMesh(m)
@@ -17,6 +18,7 @@ FdNode::FdNode( MeshPtr m, Geom::Box &b )
 
 	showCuboids = true;
 	showScaffold = true;
+	showMesh = true;
 }
 
 FdNode::~FdNode()
@@ -24,19 +26,30 @@ FdNode::~FdNode()
 
 }
 
+
+void FdNode::drawCuboid()
+{
+	PolygonSoup ps;
+	foreach(QVector<Point> f, mBox.getFacePoints()) 
+		ps.addPoly(f, mColor);
+
+	// draw faces
+	ps.drawQuads(true);
+	QColor c = isSelected ? Qt::yellow : Qt::white;
+	ps.drawWireframes(2.0, c);
+}
+
+
+void FdNode::drawMesh()
+{
+	QuickMeshDraw::drawMeshSolid(mMesh.data());
+}
+
+
 void FdNode::draw()
 {
-	if (showCuboids)
-	{
-		PolygonSoup ps;
-		foreach(QVector<Point> f, mBox.getFacePoints()) 
-			ps.addPoly(f, mColor);
-
-		// draw faces
-		ps.drawQuads(true);
-		QColor c = isSelected ? Qt::yellow : Qt::white;
-		ps.drawWireframes(2.0, c);
-	}
+	if (showCuboids) drawCuboid();
+	if (showMesh) drawMesh();
 }
 
 void FdNode::encodeMesh()
@@ -99,4 +112,16 @@ void FdNode::refit( int method )
 	// encode mesh
 	origBox = mBox;
 	encodeMesh();
+}
+
+Geom::AABB FdNode::computeAABB()
+{
+	return Geom::AABB(mMesh.data());
+}
+
+void FdNode::drawWithName( int name )
+{
+	glPushName(name);
+	drawCuboid();
+	glPopName();
 }

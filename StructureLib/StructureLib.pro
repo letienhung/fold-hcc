@@ -12,7 +12,6 @@ CONFIG(debug, debug|release) {
 TARGET = StructureLib
 DESTDIR = $$PWD/$$CFG/lib
 
-
 HEADERS += \
     Node.h \
     Link.h \

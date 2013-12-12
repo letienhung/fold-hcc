@@ -11,14 +11,16 @@ public:
 	AABB(QVector<Vector3>& pnts);
 	AABB(SurfaceMeshModel* mesh);
 
-	void buildFromPoints(QVector<Vector3>& pnts);
-	void buildFromMesh(SurfaceMeshModel* mesh);
-
-	Vector3 bbmin, bbmax;
+	void add(QVector<Vector3>& pnts);
+	void add(SurfaceMeshModel* mesh);
+	void add(AABB& other);
 
 	Vector3 center();
 	double radius();
 	Box box();
+
+public:
+	Vector3 bbmin, bbmax;
 };
 
 }

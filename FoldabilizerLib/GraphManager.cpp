@@ -9,6 +9,7 @@
 #include "MinOBB.h"
 
 #include <QFileInfo>
+#include <QFileDialog>
 #include "FdUtility.h"
 
 GraphManager::GraphManager()
@@ -17,7 +18,7 @@ GraphManager::GraphManager()
 	this->entireMesh = NULL;
 }
 
-void GraphManager::createScaffold(bool dofitting)
+void GraphManager::createScaffold()
 {
 	SegMeshLoader sml(entireMesh);
 	QVector<MeshPtr> subMeshes = sml.getSegMeshes();
@@ -29,25 +30,12 @@ void GraphManager::createScaffold(bool dofitting)
 	// create nodes from meshes
 	foreach (MeshPtr m, subMeshes)
 	{
-		Geom::Box box;
-		// fit bb
-		if (dofitting)
-		{
-			Geom::AABB aabb(m.data());
-			box = aabb.box();
-		}
-		else if (boxMap.contains(m->name))
-		{
-			box = boxMap[m->name];
-		}
-		else
-		{
-			emit(message("Loading scaffold failed: box doesn't exist."));
-		}
-
 		// create node depends on obb
-		FdNode* node;
+		Geom::AABB aabb(m.data());
+		Geom::Box box = aabb.box();
 		int box_type = box.getType(5);
+
+		FdNode* node;
 		if (box_type == Geom::Box::ROD)	
 			 node = new RodNode(m, box);
 		else node = new PatchNode(m, box);
@@ -61,63 +49,47 @@ void GraphManager::createScaffold(bool dofitting)
 
 void GraphManager::showCuboids( int state )
 {
+	bool show = (state == Qt::Checked);
 	foreach(FdNode* n, scaffold->getFdNodes())
-		n->showCuboids = (state == Qt::Checked);
+		n->showCuboids = show;
 
 	emit(sceneSettingsChanged());
 }
 
 void GraphManager::showScaffold( int state )
 {
+	bool show = (state == Qt::Checked);
 	foreach(FdNode* n, scaffold->getFdNodes())
-		n->showScaffold = (state == Qt::Checked);
+		n->showScaffold = show;
 
 	emit(sceneSettingsChanged());
 }
 
+
+void GraphManager::showMeshes( int state )
+{
+	bool show = (state == Qt::Checked);
+	foreach(FdNode* n, scaffold->getFdNodes())
+		n->showMesh = show;
+
+	emit(sceneSettingsChanged());
+}
+
+
 void GraphManager::saveScaffold()
 {
 	if (!scaffold) return;
-
-	QFileInfo finfo(scaffold->path);
-	QString fname = finfo.absolutePath() + '/'+ finfo.baseName() + ".xml";
-	scaffold->saveToFile(fname);
+	QFileInfo fileInfo(scaffold->path);
+	QString filename = QFileDialog::getSaveFileName(0, tr("Save Scaffold"), "../data", tr("Graph Files (*.xml)"));
+	scaffold->saveToFile(filename);
 
 	emit(message("Saved."));
 }
 
 void GraphManager::loadScaffold()
 {
-	if (!entireMesh) return;
-
-	// open the file
-	QFileInfo finfo(entireMesh->path);
-	QString fname = finfo.absolutePath() + '/'+ finfo.baseName() + ".xml";
-	QFile file(fname);
-	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) return;
-
-	// cast as dom
-	QDomDocument doc;
-	if (!doc.setContent(&file, false)) {
-		file.close();
-		return;
-	}
-	file.close();
-
-	// parse dom
-	boxMap.clear();
-	QDomNodeList nodeList = doc.firstChildElement("document").elementsByTagName("node");
-	for (int i = 0; i < nodeList.size(); i++)
-	{
-		QDomNode node = nodeList.at(i);
-		QString nid = node.firstChildElement("ID").text();
-		Geom::Box box = getBox(node.firstChildElement("box"));
-
-		boxMap[nid] = box;
-	}
-
-	// create scaffold w\o fitting
-	this->createScaffold(false);
+	QString filename = QFileDialog::getOpenFileName(0, tr("Load Scaffold"), "../data", tr("Graph Files (*.xml)"));
+	scaffold->loadFromFile(filename);
 
 	emit(scaffoldChanged());
 	emit(message("Loaded."));

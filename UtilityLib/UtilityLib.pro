@@ -22,7 +22,8 @@ HEADERS += \
     Numeric.h \
     CustomDrawObjects.h \
     SegMeshLoader.h \
-    XmlWriter.h
+    XmlWriter.h \
+    QuickMeshDraw.h
 
 SOURCES += \
     Numeric.cpp \

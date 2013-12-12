@@ -7,9 +7,6 @@ Structure::Graph::Graph()
 
 void Structure::Graph::clear()
 {
-	foreach(Node* n, nodes) delete n;
-	foreach(Link* l, links) delete l;
-
 	nodes.clear();
 	links.clear();
 }
@@ -144,9 +141,7 @@ void Structure::Graph::drawWithNames()
 {
 	for (int i = 0; i < nbNodes(); i++)
 	{
-		glPushName(i);
-		nodes[i]->draw();
-		glPopName();
+		nodes[i]->drawWithName(i);
 	}
 }
 
@@ -189,3 +184,4 @@ QVector<Structure::Node*> Structure::Graph::getNeighbourNodes( Node* node )
 
 	return neighbours;
 }
+

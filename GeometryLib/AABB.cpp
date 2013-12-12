@@ -4,16 +4,22 @@
 
 Geom::AABB::AABB()
 {
+	bbmin = Point( FLT_MAX,  FLT_MAX,  FLT_MAX);
+	bbmax = Point(-FLT_MAX, -FLT_MAX, -FLT_MAX);    
 }
 
 Geom::AABB::AABB( QVector<Vector3>& pnts )
 {
-	buildFromPoints(pnts);       
+	bbmin = Point( FLT_MAX,  FLT_MAX,  FLT_MAX);
+	bbmax = Point(-FLT_MAX, -FLT_MAX, -FLT_MAX);    
+	add(pnts);       
 }
 
 Geom::AABB::AABB(SurfaceMeshModel* mesh)
 {
-	buildFromMesh(mesh);
+	bbmin = Point( FLT_MAX,  FLT_MAX,  FLT_MAX);
+	bbmax = Point(-FLT_MAX, -FLT_MAX, -FLT_MAX);    
+	add(mesh);
 }
 
 SurfaceMesh::Vector3 Geom::AABB::center()
@@ -36,19 +42,21 @@ Geom::Box Geom::AABB::box()
 	return b;
 }
 
-void Geom::AABB::buildFromPoints( QVector<Vector3>& pnts )
+void Geom::AABB::add( QVector<Vector3>& pnts )
 {
-	bbmin = Point( FLT_MAX,  FLT_MAX,  FLT_MAX);
-	bbmax = Point(-FLT_MAX, -FLT_MAX, -FLT_MAX);    
-
-
 	foreach(Point p, pnts) {
 		bbmin = minimize(bbmin, p);
 		bbmax = maximize(bbmax, p);
 	} 
 }
 
-void Geom::AABB::buildFromMesh(SurfaceMeshModel* mesh )
+void Geom::AABB::add(SurfaceMeshModel* mesh )
 {
-	buildFromPoints(getMeshVertices(mesh));
+	add(getMeshVertices(mesh));
+}
+
+void Geom::AABB::add( AABB& other )
+{
+	bbmin = minimize(bbmin, other.bbmin);
+	bbmax = maximize(bbmax, other.bbmax);
 }

@@ -57,6 +57,9 @@
         <property name="text">
          <string>Mesh</string>
         </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
      </layout>
@@ -68,6 +71,23 @@
       <string>Scaffold</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
+      <item row="1" column="3">
+       <widget class="QComboBox" name="cuboidMethod">
+        <property name="editable">
+         <bool>false</bool>
+        </property>
+        <item>
+         <property name="text">
+          <string>AABB</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>minOBB</string>
+         </property>
+        </item>
+       </widget>
+      </item>
       <item row="2" column="0" alignment="Qt::AlignRight">
        <widget class="QLabel" name="label_3">
         <property name="text">
@@ -75,24 +95,10 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="4">
-       <widget class="QPushButton" name="loadScaffold">
-        <property name="text">
-         <string>Load</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="2">
        <widget class="QPushButton" name="createScaffold">
         <property name="text">
          <string>Create</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="3">
-       <widget class="QPushButton" name="saveScaffold">
-        <property name="text">
-         <string>Save</string>
         </property>
        </widget>
       </item>
@@ -124,27 +130,24 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="3">
-       <widget class="QComboBox" name="cuboidMethod">
-        <property name="editable">
-         <bool>false</bool>
-        </property>
-        <item>
-         <property name="text">
-          <string>AABB</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>minOBB</string>
-         </property>
-        </item>
-       </widget>
-      </item>
       <item row="1" column="2">
        <widget class="QPushButton" name="changeCuboidType">
         <property name="text">
          <string>Change Type</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="3" colspan="2">
+       <widget class="QPushButton" name="loadScaffold">
+        <property name="text">
+         <string>Load</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="4">
+       <widget class="QPushButton" name="saveScaffold">
+        <property name="text">
+         <string>Save</string>
         </property>
        </widget>
       </item>
@@ -164,19 +167,6 @@
      </property>
     </spacer>
    </item>
-   <item row="9" column="1">
-    <widget class="QDoubleSpinBox" name="targetV">
-     <property name="maximum">
-      <double>1.000000000000000</double>
-     </property>
-     <property name="singleStep">
-      <double>0.100000000000000</double>
-     </property>
-     <property name="value">
-      <double>0.200000000000000</double>
-     </property>
-    </widget>
-   </item>
    <item row="10" column="1">
     <widget class="QPushButton" name="test">
      <property name="text">
@@ -184,14 +174,36 @@
      </property>
     </widget>
    </item>
-   <item row="9" column="0">
-    <widget class="QLabel" name="label_5">
-     <property name="text">
-      <string>Target Volume</string>
+   <item row="3" column="0" colspan="2">
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>Fold</string>
      </property>
-     <property name="alignment">
-      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-     </property>
+     <layout class="QGridLayout" name="gridLayout_4">
+      <item row="1" column="1">
+       <widget class="QDoubleSpinBox" name="targetV">
+        <property name="maximum">
+         <double>1.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.100000000000000</double>
+        </property>
+        <property name="value">
+         <double>0.200000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Target Volume</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
   </layout>

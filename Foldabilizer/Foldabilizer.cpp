@@ -59,6 +59,10 @@ void Foldabilizer::updateScene()
 
 void Foldabilizer::resetScene()
 {
+	Geom::AABB aabb = activeScaffold()->computeAABB();
+	qglviewer::Vec bbmin(aabb.bbmin.data());
+	qglviewer::Vec bbmax(aabb.bbmax.data());
+	drawArea()->camera()->setSceneBoundingBox(bbmin, bbmax);
 	drawArea()->camera()->showEntireScene();
 	drawArea()->updateGL();
 }

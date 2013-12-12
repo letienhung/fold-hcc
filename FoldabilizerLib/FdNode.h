@@ -4,6 +4,7 @@
 #include "Node.h"
 #include "Box.h"
 #include "XmlWriter.h"
+#include "AABB.h"
 
 class FdNode : public Structure::Node
 {
@@ -17,7 +18,11 @@ public:
 	// visualization
 	bool showCuboids;
 	bool showScaffold;
+	bool showMesh;
 	virtual void draw();
+	void drawCuboid();
+	void drawMesh();
+	void drawWithName(int name);
 
 	// deformation
 	virtual void updateBox();
@@ -30,6 +35,9 @@ public:
 	// I/O
 	void writeToXml(XmlWriter& xw);
 	virtual void writeScaffoldToXml(XmlWriter& xw){}
+
+	// aabb
+	Geom::AABB computeAABB();
 
 public:
 	Geom::Box origBox, mBox;

@@ -21,7 +21,7 @@ public slots:
 	void setMesh(Model* model);
 
 	// graph
-	void createScaffold(bool doFitting = true);
+	void createScaffold();
 	void saveScaffold();
 	void loadScaffold();
 
@@ -34,6 +34,7 @@ public slots:
 	// visualization
 	void showCuboids(int state);
 	void showScaffold(int state);
+	void showMeshes(int state);
 
 signals:
 	void sceneSettingsChanged();
