@@ -22,7 +22,7 @@ public:
 	}
 
 	virtual void draw(){}
-	virtual void drawWithName(int name){}
+	virtual void drawWithName(int name){Q_UNUSED(name);}
 
 public:
 	QString	id;

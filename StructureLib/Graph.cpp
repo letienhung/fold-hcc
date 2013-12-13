@@ -133,8 +133,10 @@ bool Structure::Graph::isEmpty()
 
 void Structure::Graph::draw()
 {
-	foreach(Link *l, links) l->draw();
-	foreach(Node *n, nodes) n->draw();
+	foreach(Link *l, links) 
+		l->draw();
+	foreach(Node *n, nodes) 
+		n->draw();
 }
 
 void Structure::Graph::drawWithNames()

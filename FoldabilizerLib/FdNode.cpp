@@ -18,7 +18,7 @@ FdNode::FdNode( MeshPtr m, Geom::Box &b )
 
 	showCuboids = true;
 	showScaffold = true;
-	showMesh = true;
+	showMesh = false;
 }
 
 FdNode::~FdNode()
@@ -48,8 +48,10 @@ void FdNode::drawMesh()
 
 void FdNode::draw()
 {
-	if (showCuboids) drawCuboid();
 	if (showMesh) drawMesh();
+
+	// transparent
+	if (showCuboids) drawCuboid();
 }
 
 void FdNode::encodeMesh()
@@ -63,7 +65,7 @@ void FdNode::deformMesh()
 {
 	Surface_mesh::Vertex_property<Point> points = mMesh->vertex_property<Point>("v:point");
 
-	for(int i = 0; i < mMesh->n_vertices(); i++)
+	for(int i = 0; i < (int)mMesh->n_vertices(); i++)
 	{
 		Surface_mesh::Vertex vit(i);
 		points[vit] = mBox.getPosition(meshCoords[i]);
@@ -95,16 +97,16 @@ void FdNode::refit( int method )
 {
 	switch(method)
 	{
-	case 0: // AABB
-		{
-			Geom::AABB aabb(mMesh.data());
-			mBox = aabb.box();
-		}
-		break;
-	case 1: // OBB
+	case 0: // OBB
 		{
 			Geom::MinOBB obb(mMesh.data());
 			mBox = obb.mMinBox;
+		}
+		break;
+	case 1: // AABB
+		{
+			Geom::AABB aabb(mMesh.data());
+			mBox = aabb.box();
 		}
 		break;
 	}

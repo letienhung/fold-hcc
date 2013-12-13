@@ -19,7 +19,7 @@ public:
 	bool showCuboids;
 	bool showScaffold;
 	bool showMesh;
-	virtual void draw();
+	void draw();
 	void drawCuboid();
 	void drawMesh();
 	void drawWithName(int name);
@@ -30,11 +30,11 @@ public:
 	void deformMesh();
 
 	// fit cuboid
-	void refit(int method);
+	virtual void refit(int method);
 
 	// I/O
 	void writeToXml(XmlWriter& xw);
-	virtual void writeScaffoldToXml(XmlWriter& xw){}
+	virtual void writeScaffoldToXml(XmlWriter& xw){Q_UNUSED(xw);}
 
 	// aabb
 	Geom::AABB computeAABB();

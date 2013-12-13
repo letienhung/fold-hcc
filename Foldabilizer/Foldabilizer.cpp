@@ -90,6 +90,8 @@ void Foldabilizer::showStatus( QString msg )
 
 bool Foldabilizer::postSelection( const QPoint& point )
 {
+	Q_UNUSED(point);
+
 	int nid = drawArea()->selectedName();
 	showMessage("Selected Node: id = %d", nid);
 	activeScaffold()->selectNode(nid);

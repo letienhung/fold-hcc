@@ -7,7 +7,18 @@ PatchNode::PatchNode(MeshPtr m, Geom::Box &b)
 	: FdNode(m, b)
 {
 	mType = FdNode::PATCH;
+	createPatch();
+}
 
+
+PatchNode::~PatchNode()
+{
+
+}
+
+
+void PatchNode::createPatch()
+{
 	int aid = mBox.minAxisId();
 	QVector<Geom::Segment> edges = mBox.getEdgeSegmentsAlongAxis(aid);
 
@@ -16,11 +27,6 @@ PatchNode::PatchNode(MeshPtr m, Geom::Box &b)
 	mPatch = Geom::Rectangle(conners);
 }
 
-
-PatchNode::~PatchNode()
-{
-
-}
 
 
 void PatchNode::draw()
@@ -33,4 +39,12 @@ void PatchNode::draw()
 	}
 
 	FdNode::draw();
+}
+
+void PatchNode::refit(int method)
+{
+	FdNode::refit(method);
+
+	// update patch
+	createPatch();
 }

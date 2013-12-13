@@ -10,7 +10,8 @@ public:
 
 public:
 	void draw();
-
+	void refit(int method);
+	void createPatch();
 private:
 	Geom::Rectangle mPatch;
 

@@ -18,7 +18,7 @@ GraphManager::GraphManager()
 	this->entireMesh = NULL;
 }
 
-void GraphManager::createScaffold()
+void GraphManager::createScaffold( int method )
 {
 	SegMeshLoader sml(entireMesh);
 	QVector<MeshPtr> subMeshes = sml.getSegMeshes();
@@ -30,12 +30,18 @@ void GraphManager::createScaffold()
 	// create nodes from meshes
 	foreach (MeshPtr m, subMeshes)
 	{
-		// create node depends on obb
-		Geom::AABB aabb(m.data());
-		Geom::Box box = aabb.box();
-		int box_type = box.getType(5);
+		Geom::Box box;
+		if (method == 0){
+			Geom::AABB aabb(m.data());
+			box = aabb.box();
+		}else{
+			Geom::MinOBB obb(m.data());
+			box = obb.mMinBox;
+		}
 
+		// create node depends on box type
 		FdNode* node;
+		int box_type = box.getType(5);
 		if (box_type == Geom::Box::ROD)	
 			 node = new RodNode(m, box);
 		else node = new PatchNode(m, box);
@@ -46,6 +52,7 @@ void GraphManager::createScaffold()
 
 	emit(scaffoldChanged());
 }
+
 
 void GraphManager::showCuboids( int state )
 {
@@ -125,7 +132,7 @@ void GraphManager::refitSelectedNodes( int method )
 	foreach(Structure::Node* n, scaffold->selectedNodes())
 	{
 		FdNode* fn = (FdNode*)n;
-		fn->refit(method);
+		fn->refit(method); 
 	}
 
 	emit(scaffoldChanged());
@@ -136,5 +143,8 @@ void GraphManager::linkSelectedNodes()
 	QVector<Structure::Node*> snodes = scaffold->selectedNodes();
 	if (snodes.size() < 2) return;
 
-	scaffold->addLink(snodes[0], snodes[1]);
+	FdLink* new_link = new FdLink((FdNode*)snodes[0], (FdNode*)snodes[1]);
+	scaffold->addLink(new_link);
+
+	emit(scaffoldChanged());
 }

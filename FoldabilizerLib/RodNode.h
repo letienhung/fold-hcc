@@ -10,6 +10,8 @@ public:
 
 public:
 	void draw();
+	void createRod();
+	void refit(int method);
 
 private:
 	Geom::Segment rod;

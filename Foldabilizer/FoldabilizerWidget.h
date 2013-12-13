@@ -20,6 +20,7 @@ private:
 	Foldabilizer *fold;
 
 public slots:
+	void createScaffold();
 	void fitCuboid();
 };
 

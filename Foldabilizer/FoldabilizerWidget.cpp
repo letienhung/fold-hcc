@@ -10,7 +10,7 @@ FoldabilizerWidget::FoldabilizerWidget(Foldabilizer *f, QWidget *parent) :
 
 	// creation and refine
 	fold->connect(ui->createScaffold, SIGNAL(clicked()), SLOT(resetMesh()));
-	fold->g_manager->connect(ui->createScaffold, SIGNAL(clicked()), SLOT(createScaffold()));
+	this->connect(ui->createScaffold, SIGNAL(clicked()), SLOT(createScaffold()));
 
 	this->connect(ui->fitCuboid, SIGNAL(clicked()), SLOT(fitCuboid()));
 	fold->g_manager->connect(ui->changeCuboidType, SIGNAL(clicked()), SLOT(changeTypeOfSelectedNodes()));
@@ -41,6 +41,14 @@ void FoldabilizerWidget::fitCuboid()
 {
 	if (fold->g_manager)
 	{
-		fold->g_manager->refitSelectedNodes(ui->cuboidMethod->currentIndex());
+		fold->g_manager->refitSelectedNodes(ui->fitMethod->currentIndex());
+	}
+}
+
+void FoldabilizerWidget::createScaffold()
+{
+	if (fold->g_manager)
+	{
+		fold->g_manager->createScaffold(ui->createMethod->currentIndex());
 	}
 }

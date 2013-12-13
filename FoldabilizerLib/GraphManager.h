@@ -21,7 +21,7 @@ public slots:
 	void setMesh(Model* model);
 
 	// graph
-	void createScaffold();
+	void createScaffold(int method);
 	void saveScaffold();
 	void loadScaffold();
 
