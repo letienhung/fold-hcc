@@ -40,9 +40,9 @@ void SegMeshLoader::loadGroupsFromObj()
 }
 
 
-MeshPtr SegMeshLoader::extractSegMesh( QString gid )
+SurfaceMeshModel* SegMeshLoader::extractSegMesh( QString gid )
 {
-	MeshPtr subMesh( new SurfaceMeshModel(gid + ".obj", gid) );
+	SurfaceMeshModel* subMesh = new SurfaceMeshModel(gid + ".obj", gid);
 
 	QVector<int> part = groupFaces[gid];
 	
@@ -76,11 +76,11 @@ MeshPtr SegMeshLoader::extractSegMesh( QString gid )
 	return subMesh;
 }
 
-QVector<MeshPtr> SegMeshLoader::getSegMeshes()
+QVector<SurfaceMeshModel*> SegMeshLoader::getSegMeshes()
 {
 	loadGroupsFromObj();
 
-	QVector< MeshPtr > meshes;
+	QVector<SurfaceMeshModel*> meshes;
 	foreach (QString gid, groupFaces.keys())
 		meshes.push_back(extractSegMesh(gid));
 

@@ -12,7 +12,7 @@ public:
 	enum NODE_TYPE{NONE, ROD, PATCH};
 
 public:
-    FdNode(MeshPtr m, Geom::Box &b);
+    FdNode(SurfaceMeshModel* m, Geom::Box &b);
 	~FdNode();
 
 	// visualization
@@ -38,6 +38,9 @@ public:
 
 	// aabb
 	Geom::AABB computeAABB();
+
+	// weak reference to mesh
+	SurfaceMeshModel* getMesh();
 
 public:
 	Geom::Box origBox, mBox;

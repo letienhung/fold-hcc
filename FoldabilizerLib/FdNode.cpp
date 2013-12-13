@@ -6,9 +6,11 @@
 #include "MinOBB.h"
 #include "QuickMeshDraw.h"
 
-FdNode::FdNode( MeshPtr m, Geom::Box &b )
-	: Node(m->name), mMesh(m)
+FdNode::FdNode( SurfaceMeshModel* m, Geom::Box &b )
+	: Node(m->name)
 {
+	mMesh = MeshPtr(m);
+
 	origBox = b;
 	mBox = b;
 
@@ -126,4 +128,9 @@ void FdNode::drawWithName( int name )
 	glPushName(name);
 	drawCuboid();
 	glPopName();
+}
+
+SurfaceMeshModel* FdNode::getMesh()
+{
+	return mMesh.data();
 }

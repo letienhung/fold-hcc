@@ -88,7 +88,7 @@ void FdGraph::loadFromFile(QString fname)
 
 		// mesh
 		QString mesh_fname = meshFolder + "/" + nid + ".obj";
-		MeshPtr mesh(new SurfaceMeshModel(mesh_fname, nid));
+		SurfaceMeshModel* mesh(new SurfaceMeshModel(mesh_fname, nid));
 		mesh->read( qPrintable(mesh_fname) );
 		mesh->update_face_normals();
 		mesh->update_vertex_normals();

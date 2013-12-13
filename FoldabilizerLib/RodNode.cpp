@@ -2,7 +2,7 @@
 #include "Box.h"
 #include "CustomDrawObjects.h"
 
-RodNode::RodNode(MeshPtr m, Geom::Box &b)
+RodNode::RodNode(SurfaceMeshModel* m, Geom::Box &b)
 	: FdNode(m, b)
 {
 	mType = FdNode::ROD;

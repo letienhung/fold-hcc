@@ -21,21 +21,21 @@ GraphManager::GraphManager()
 void GraphManager::createScaffold( int method )
 {
 	SegMeshLoader sml(entireMesh);
-	QVector<MeshPtr> subMeshes = sml.getSegMeshes();
+	QVector<SurfaceMeshModel*> subMeshes = sml.getSegMeshes();
 
 	// reset scaffold
 	scaffold->path = entireMesh->path;
 	scaffold->clear();
 
 	// create nodes from meshes
-	foreach (MeshPtr m, subMeshes)
+	foreach (SurfaceMeshModel* m, subMeshes)
 	{
 		Geom::Box box;
 		if (method == 0){
-			Geom::AABB aabb(m.data());
+			Geom::AABB aabb(m);
 			box = aabb.box();
 		}else{
-			Geom::MinOBB obb(m.data());
+			Geom::MinOBB obb(m);
 			box = obb.mMinBox;
 		}
 
@@ -116,9 +116,9 @@ void GraphManager::changeTypeOfSelectedNodes()
 		FdNode* old_node = (FdNode*)n;
 		Structure::Node* new_node;
 		if (old_node->mType == FdNode::PATCH)
-			new_node =new RodNode(old_node->mMesh, old_node->mBox);
+			new_node =new RodNode(old_node->getMesh(), old_node->mBox);
 		else
-			new_node = new PatchNode(old_node->mMesh, old_node->mBox);
+			new_node = new PatchNode(old_node->getMesh(), old_node->mBox);
 
 		// replace
 		scaffold->replaceNode(old_node, new_node);

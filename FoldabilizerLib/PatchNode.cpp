@@ -3,7 +3,7 @@
 #include "Box.h"
 #include "CustomDrawObjects.h"
 
-PatchNode::PatchNode(MeshPtr m, Geom::Box &b)
+PatchNode::PatchNode(SurfaceMeshModel* m, Geom::Box &b)
 	: FdNode(m, b)
 {
 	mType = FdNode::PATCH;
