@@ -1,0 +1,29 @@
+<RCC>
+  <qresource prefix="/Resources">
+    <file>toolIcons/box.png</file>
+    <file>toolIcons/undo.png</file>
+    <file>toolIcons/redo.png</file>
+    <file>toolIcons/split.png</file>
+    <file>toolIcons/insertObject.png</file>
+    <file>toolIcons/export.png</file>
+    <file>toolIcons/newScene.png</file>
+    <file>icon.png</file>
+    <file>toolIcons/moveIcon.png</file>
+    <file>toolIcons/rotate.png</file>
+    <file>toolIcons/scale.png</file>
+    <file>toolIcons/selectCurve.png</file>
+    <file>toolIcons/selectPrimitive.png</file>
+    <file>toolIcons/selectRegion.png</file>
+    <file>toolIcons/reset.png</file>
+    <file>intro.png</file>
+    <file>toolIcons/stackDirection.png</file>
+    <file>logo.svg</file>
+    <file>app.ico</file>
+    <file>toolIcons/freeDeform.png</file>
+    <file>nextPage.ico</file>
+    <file>tutorial.mp4</file>
+    <file>toolIcons/FFD.png</file>
+    <file>toolIcons/volumeFFD.png</file>
+    <file>toolIcons/camera.png</file>
+  </qresource>
+</RCC>
