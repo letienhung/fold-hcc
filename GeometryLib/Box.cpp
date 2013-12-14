@@ -70,7 +70,8 @@ Box::Box(const Point& c, const QVector<Vector3>& axis, const Vector3& ext)
 		Axis[i].normalize();
 
 	// right handed system
-	if (dot(cross(Axis[0], Axis[1]) , Axis[2]) < 0)
+	Vector3 cross01 = cross(Axis[0], Axis[1]);
+	if (dot(cross01, Axis[2]) < 0)
 		Axis[2] *= -1;
 }
 

@@ -37,6 +37,7 @@ HEADERS += \
     MinOBB2.h \
     MinOBB.h \
     PcaOBB.h \
+    Circle.h\
     ConvexHull.h
 
 SOURCES += \
@@ -55,4 +56,5 @@ SOURCES += \
     ConvexHull2.cpp \
     MinOBB2.cpp \
     MinOBB.cpp \
+    Circle.cpp\
     ConvexHull.cpp
