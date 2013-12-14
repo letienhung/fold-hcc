@@ -4,9 +4,9 @@
 #include "SurfaceMeshPlugins.h"
 #include "GraphManager.h"
 
-class FoldabilizerWidget;
+class FdWidget;
 
-class Foldabilizer : public SurfaceMeshModePlugin
+class FdPlugin : public SurfaceMeshModePlugin
 {
 	Q_OBJECT
 	Q_INTERFACES(ModePlugin)
@@ -21,8 +21,8 @@ class Foldabilizer : public SurfaceMeshModePlugin
 	bool postSelection(const QPoint& point);
 
 public:
-    Foldabilizer();
-    FoldabilizerWidget	*widget;
+    FdPlugin();
+    FdWidget	*widget;
 	GraphManager* g_manager;
 
 	FdGraph* activeScaffold();

@@ -1,9 +1,9 @@
-#include "FoldabilizerWidget.h"
-#include "ui_FoldabilizerWidget.h"
+#include "FdWidget.h"
+#include "ui_FdWidget.h"
 
-FoldabilizerWidget::FoldabilizerWidget(Foldabilizer *f, QWidget *parent) :
+FdWidget::FdWidget(FdPlugin *f, QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::FoldabilizerWidget)
+    ui(new Ui::FdWidget)
 {
     ui->setupUi(this);
 	fold = f;
@@ -32,12 +32,12 @@ FoldabilizerWidget::FoldabilizerWidget(Foldabilizer *f, QWidget *parent) :
 }
 
 
-FoldabilizerWidget::~FoldabilizerWidget()
+FdWidget::~FdWidget()
 {
     delete ui;
 }
 
-void FoldabilizerWidget::fitCuboid()
+void FdWidget::fitCuboid()
 {
 	if (fold->g_manager)
 	{
@@ -45,7 +45,7 @@ void FoldabilizerWidget::fitCuboid()
 	}
 }
 
-void FoldabilizerWidget::createScaffold()
+void FdWidget::createScaffold()
 {
 	if (fold->g_manager)
 	{

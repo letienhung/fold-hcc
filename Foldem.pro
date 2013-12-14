@@ -1,9 +1,8 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    Foldabilizer \
-    FoldabilizerLib \
+    FoldPlugin \
+    FoldLib \
     GeometryLib \
     UtilityLib \
-    StructureLib \
-    Demo
+    StructureLib

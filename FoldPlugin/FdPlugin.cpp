@@ -1,11 +1,11 @@
-#include "Foldabilizer.h"
-#include "FoldabilizerWidget.h"
+#include "FdPlugin.h"
+#include "FdWidget.h"
 #include "StarlabDrawArea.h"
 
 #include "Graph.h"
 #include <QDebug>
 
-Foldabilizer::Foldabilizer()
+FdPlugin::FdPlugin()
 {
 	widget = NULL;
 	g_manager = new GraphManager();
@@ -15,11 +15,11 @@ Foldabilizer::Foldabilizer()
 	this->connect(g_manager, SIGNAL(message(QString)), SLOT(showStatus(QString)));
 }
 
-void Foldabilizer::create()
+void FdPlugin::create()
 {
 	if (!widget)
 	{
-        widget = new FoldabilizerWidget(this);
+        widget = new FdWidget(this);
 
 		ModePluginDockWidget *dockwidget = new ModePluginDockWidget("Foldabilizer", mainWindow());
 		dockwidget->setWidget(widget);
@@ -31,12 +31,12 @@ void Foldabilizer::create()
 	resetMesh();
 }
 
-void Foldabilizer::destroy()
+void FdPlugin::destroy()
 {
 
 }
 
-void Foldabilizer::decorate()
+void FdPlugin::decorate()
 {
 	if (activeScaffold())
 	{
@@ -44,7 +44,7 @@ void Foldabilizer::decorate()
 	}
 }
 
-void Foldabilizer::drawWithNames()
+void FdPlugin::drawWithNames()
 {
 	if (activeScaffold())
 	{
@@ -52,12 +52,12 @@ void Foldabilizer::drawWithNames()
 	}
 }
 
-void Foldabilizer::updateScene()
+void FdPlugin::updateScene()
 {
 	drawArea()->updateGL();
 }
 
-void Foldabilizer::resetScene()
+void FdPlugin::resetScene()
 {
 	Geom::AABB aabb = activeScaffold()->computeAABB();
 	qglviewer::Vec bbmin(aabb.bbmin.data());
@@ -67,28 +67,28 @@ void Foldabilizer::resetScene()
 	drawArea()->updateGL();
 }
 
-void Foldabilizer::test()
+void FdPlugin::test()
 {
 }
 
 
-FdGraph* Foldabilizer::activeScaffold()
+FdGraph* FdPlugin::activeScaffold()
 {
 	return g_manager->scaffold;
 }
 
-void Foldabilizer::resetMesh()
+void FdPlugin::resetMesh()
 {
 	g_manager->setMesh(mesh());
 	showMessage("GraphManager: entireMesh = %s", g_manager->entireMesh->path.toStdString());
 }
 
-void Foldabilizer::showStatus( QString msg )
+void FdPlugin::showStatus( QString msg )
 {
 	showMessage(msg.toStdString().c_str());
 }
 
-bool Foldabilizer::postSelection( const QPoint& point )
+bool FdPlugin::postSelection( const QPoint& point )
 {
 	Q_UNUSED(point);
 
@@ -99,4 +99,4 @@ bool Foldabilizer::postSelection( const QPoint& point )
 }
 
 
-Q_EXPORT_PLUGIN(Foldabilizer)
+Q_EXPORT_PLUGIN(FdPlugin)

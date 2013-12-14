@@ -1,9 +1,8 @@
 load($$[STARLAB])
 load($$[SURFACEMESH])
-StarlabTemplate(none)
 
-TEMPLATE = lib
-CONFIG += staticlib
+StarlabTemplate(plugin)
+
 
 # Build flag
 CONFIG(debug, debug|release) {
@@ -24,25 +23,20 @@ INCLUDEPATH += ../GeometryLib
 LIBS += -L$$PWD/../StructureLib/$$CFG/lib -lStructureLib
 INCLUDEPATH += ../StructureLib
 
-# Library name and destination
-TARGET = FoldabilizerLib
-DESTDIR = $$PWD/$$CFG/lib
+# Foldabilizer library
+LIBS += -L$$PWD/../FoldLib/$$CFG/lib -lFoldLib
+INCLUDEPATH += ../FoldLib
 
 HEADERS += \
-    PatchNode.h \
-    RodNode.h \
-    GraphManager.h \
-    FdGraph.h \
-    FdLink.h \
-    FdNode.h \
-    FdUtility.h
+    FdPlugin.h \
+    FdWidget.h
 
 SOURCES += \
-    PatchNode.cpp \
-    RodNode.cpp \
-    GraphManager.cpp \
-    FdGraph.cpp \
-    FdLink.cpp \
-    FdNode.cpp \
-    FdUtility.cpp
+    FdWidget.cpp \
+    FdPlugin.cpp
 
+RESOURCES += \
+    FoldPlugin.qrc
+
+FORMS += \
+    FdWidget.ui

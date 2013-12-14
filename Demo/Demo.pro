@@ -10,8 +10,8 @@ CONFIG(debug, debug|release) {
 }
 
 # Foldabilizer Library
-LIBS += -L$$PWD/../FoldabilizerLib/$$CFG/lib -lFoldabilizerLib
-INCLUDEPATH += ../FoldabilizerLib
+LIBS += -L$$PWD/../FoldLib/$$CFG/lib -lFoldLib
+INCLUDEPATH += ../FoldLib
 
 # Geometry Library
 LIBS += -L$$PWD/../GeometryLib/$$CFG/lib -lGeometryLib
