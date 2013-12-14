@@ -73,7 +73,7 @@ MyDesigner::MyDesigner( Ui::DesignWidget * useDesignWidget, QWidget * parent /*=
 	isSceneEmpty = true;
 
 	// Connect to show / hide Graph and Model
-	connect(designWidget->showGraph, SIGNAL(stateChanged(int)), SLOT(showLccStateChanged(int)));
+	connect(designWidget->showGraph, SIGNAL(stateChanged(int)), SLOT(showGraphStateChanged(int)));
 	connect(designWidget->showModel, SIGNAL(stateChanged(int)), SLOT(showObjectStateChanged(int)));
 
 }
