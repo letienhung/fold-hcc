@@ -1,5 +1,6 @@
 #include "Box.h"
 #include "Numeric.h"
+#include "CustomDrawObjects.h"
 
 //		  7-----------6                     Y
 //		 /|          /|                   f2^   /f5
@@ -488,4 +489,23 @@ SurfaceMesh::Vector3 Geom::Box::getFaceCenter( int fid )
 int Geom::Box::getFaceId( int aid, bool positive )
 {
 	return positive ? (3 * aid) : (3 * aid + 1);
+}
+
+
+void Geom::Box::draw( QColor color )
+{
+	PolygonSoup ps;
+	foreach(QVector<Point> f, getFacePoints()) 
+		ps.addPoly(f, color);
+
+	ps.drawQuads(true);
+}
+
+void Geom::Box::drawWireframe( double width /*= 2.0*/, QColor color /*= Qt::white*/ )
+{
+	PolygonSoup ps;
+	foreach(QVector<Point> f, getFacePoints()) 
+		ps.addPoly(f, color);
+
+	ps.drawWireframes(width, color);
 }

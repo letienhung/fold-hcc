@@ -60,3 +60,23 @@ void Geom::AABB::add( AABB& other )
 	bbmin = minimize(bbmin, other.bbmin);
 	bbmax = maximize(bbmax, other.bbmax);
 }
+
+bool Geom::AABB::isValid()
+{
+	for (int i = 0; i < 3; i++)
+	{
+		if (bbmax[i] <= bbmin[i])
+			return false;
+	}
+
+	return true;
+}
+
+void Geom::AABB::validate()
+{
+	if (!isValid())
+	{
+		bbmin = Vector3(-1,-1,-1);
+		bbmax = Vector3( 1, 1, 1);
+	}
+}

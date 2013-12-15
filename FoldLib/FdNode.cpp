@@ -28,32 +28,22 @@ FdNode::~FdNode()
 
 }
 
-
-void FdNode::drawCuboid()
-{
-	PolygonSoup ps;
-	foreach(QVector<Point> f, mBox.getFacePoints()) 
-		ps.addPoly(f, mColor);
-
-	// draw faces
-	ps.drawQuads(true);
-	QColor c = isSelected ? Qt::yellow : Qt::white;
-	ps.drawWireframes(2.0, c);
-}
-
-
-void FdNode::drawMesh()
-{
-	QuickMeshDraw::drawMeshSolid(mMesh.data());
-}
-
-
 void FdNode::draw()
 {
-	if (showMesh) drawMesh();
+	if (showMesh)
+		QuickMeshDraw::drawMeshSolid(mMesh.data());
 
-	// transparent
-	if (showCuboids) drawCuboid();
+	if (showCuboids)
+	{
+		// faces
+		mBox.draw(mColor);
+
+		// wireframes
+		if(isSelected)	
+			mBox.drawWireframe(4.0, Qt::yellow);
+		else			
+			mBox.drawWireframe();
+	}
 }
 
 void FdNode::encodeMesh()
@@ -120,13 +110,13 @@ void FdNode::refit( int method )
 
 Geom::AABB FdNode::computeAABB()
 {
-	return Geom::AABB(mMesh.data());
+	return Geom::AABB(mBox.getConnerPoints());
 }
 
 void FdNode::drawWithName( int name )
 {
 	glPushName(name);
-	drawCuboid();
+	mBox.draw();
 	glPopName();
 }
 

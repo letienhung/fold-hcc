@@ -35,7 +35,7 @@ public:
 
 	// Visualize
 	bool isDraw;
-	void draw();
+	virtual void draw();
 
 	// Selection
 	void drawWithNames();

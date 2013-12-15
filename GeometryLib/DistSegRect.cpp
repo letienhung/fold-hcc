@@ -1,17 +1,19 @@
 #include "DistSegRect.h"
 #include "DistLineRect.h"
+#include "DistPointRect.h"
 
 Geom::DistSegRect::DistSegRect(Segment& seg, Rectangle& rect)
 {
 	mSegment = &seg;
 	mRectangle = &rect;
+
+	compute();
 }
 
 void Geom::DistSegRect::compute()
 {
 	Line line(mSegment->Center, mSegment->Direction);
 	DistLineRect queryLR(line, *mRectangle);
-	double sqrDist = queryLR.getSquared();
 	mSegmentParameter = queryLR.mLineParameter;
 
 	if (mSegmentParameter >= -mSegment->Extent)
@@ -25,24 +27,34 @@ void Geom::DistSegRect::compute()
 		}
 		else
 		{
-			//mClosestPoint0 = mSegment->P1;
-			//DistPoint3Rectangle3<Real> queryPR(mClosestPoint0,
-			//	*mRectangle);
-			//sqrDist = queryPR.GetSquared();
-			//mClosestPoint1 = queryPR.GetClosestPoint1();
-			//mSegmentParameter = mSegment->Extent;
-			//mRectCoord[0] = queryPR.GetRectangleCoordinate(0);
-			//mRectCoord[1] = queryPR.GetRectangleCoordinate(1);
+			mClosestPoint0 = mSegment->P1;
+			DistPointRect queryPR(mClosestPoint0, *mRectangle);
+			mClosestPoint1 = queryPR.mClosestPoint1;
+			mSegmentParameter = mSegment->Extent;
+			mRectCoord[0] = queryPR.mRectCoord[0];
+			mRectCoord[1] = queryPR.mRectCoord[1];
 		}
 	}
 	else
 	{
-		//mClosestPoint0 = mSegment->P0;
-		//DistPoint3Rectangle3<Real> queryPR(mClosestPoint0, *mRectangle);
-		//sqrDist = queryPR.GetSquared();
-		//mClosestPoint1 = queryPR.GetClosestPoint1();
-		//mSegmentParameter = -mSegment->Extent;
-		//mRectCoord[0] = queryPR.GetRectangleCoordinate(0);
-		//mRectCoord[1] = queryPR.GetRectangleCoordinate(1);
+		mClosestPoint0 = mSegment->P0;
+		DistPointRect queryPR(mClosestPoint0, *mRectangle);
+		mClosestPoint1 = queryPR.mClosestPoint1;
+		mSegmentParameter = -mSegment->Extent;
+		mRectCoord[0] = queryPR.mRectCoord[0];
+		mRectCoord[1] = queryPR.mRectCoord[1];
 	}
+}
+
+
+double Geom::DistSegRect::get()
+{
+	Vector3 diff = mClosestPoint0 - mClosestPoint1;
+	return diff.norm();
+}
+
+double Geom::DistSegRect::getSquared()
+{
+	Vector3 diff = mClosestPoint0 - mClosestPoint1;
+	return diff.squaredNorm();
 }

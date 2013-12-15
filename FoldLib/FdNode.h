@@ -20,8 +20,6 @@ public:
 	bool showScaffold;
 	bool showMesh;
 	void draw();
-	void drawCuboid();
-	void drawMesh();
 	void drawWithName(int name);
 
 	// deformation

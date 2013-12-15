@@ -6,6 +6,8 @@ Geom::DistLineRect::DistLineRect( Line& line, Rectangle& rect )
 {
 	mLine = &line;
 	mRectangle = &rect;
+
+	compute();
 }
 
 void Geom::DistLineRect::compute()
@@ -52,49 +54,48 @@ void Geom::DistLineRect::compute()
 
 			mClosestPoint1 = mRectangle->Center +
 				s0*mRectangle->Axis[0] + s1*mRectangle->Axis[1];
+
+			return;
 		}
 	}
-	else
+
+	// Either (1) the line is not parallel to the rectangle and the point of
+	// intersection of the line and the plane of the rectangle is outside the
+	// rectangle or (2) the line and rectangle are parallel.  Regardless, the
+	// closest point on the rectangle is on an edge of the rectangle.  Compare
+	// the line to all four edges of the rectangle.
+	double sqrDist = std::numeric_limits<double>::max();
+	Vector3 scaledDir[2] =
 	{
-		// Either (1) the line is not parallel to the rectangle and the point of
-		// intersection of the line and the plane of the rectangle is outside the
-		// rectangle or (2) the line and rectangle are parallel.  Regardless, the
-		// closest point on the rectangle is on an edge of the rectangle.  Compare
-		// the line to all four edges of the rectangle.
-		double sqrDist = std::numeric_limits<double>::max();
-		Vector3 scaledDir[2] =
+		mRectangle->Extent[0]*mRectangle->Axis[0],
+		mRectangle->Extent[1]*mRectangle->Axis[1]
+	};
+	for (int i1 = 0; i1 < 2; ++i1)
+	{
+		for (int i0 = 0; i0 < 2; ++i0)
 		{
-			mRectangle->Extent[0]*mRectangle->Axis[0],
-			mRectangle->Extent[1]*mRectangle->Axis[1]
-		};
-		for (int i1 = 0; i1 < 2; ++i1)
-		{
-			for (int i0 = 0; i0 < 2; ++i0)
+			Segment segment;
+			segment.Center = mRectangle->Center +
+				((double)(2*i0-1))*scaledDir[i1];
+			segment.Direction = mRectangle->Axis[1-i1];
+			segment.Extent = mRectangle->Extent[1-i1];
+			segment.computeEndPoints();
+
+			DistLineSeg queryLS(*mLine, segment);
+			double sqrDistTmp = queryLS.getSquared();
+			if (sqrDistTmp < sqrDist)
 			{
-				Segment segment;
-				segment.Center = mRectangle->Center +
-					((double)(2*i0-1))*scaledDir[i1];
-				segment.Direction = mRectangle->Axis[1-i1];
-				segment.Extent = mRectangle->Extent[1-i1];
-				segment.computeEndPoints();
+				mClosestPoint0 = queryLS.mClosestPoint0;
+				mClosestPoint1 = queryLS.mClosestPoint1;
+				sqrDist = sqrDistTmp;
 
-				DistLineSeg queryLS(*mLine, segment);
-				double sqrDistTmp = queryLS.getSquared();
-				if (sqrDistTmp < sqrDist)
-				{
-					mClosestPoint0 = queryLS.mClosestPoint0;
-					mClosestPoint1 = queryLS.mClosestPoint1;
-					sqrDist = sqrDistTmp;
-
-					mLineParameter = queryLS.mLineParameter;
-					double ratio = queryLS.mSegmentParameter/segment.Extent;
-					mRectCoord[0] = mRectangle->Extent[0]*((1-i1)*(2*i0-1) + i1*ratio);
-					mRectCoord[1] = mRectangle->Extent[1]*((1-i0)*(2*i1-1) + i0*ratio);
-				}
+				mLineParameter = queryLS.mLineParameter;
+				double ratio = queryLS.mSegmentParameter/segment.Extent;
+				mRectCoord[0] = mRectangle->Extent[0]*((1-i1)*(2*i0-1) + i1*ratio);
+				mRectCoord[1] = mRectangle->Extent[1]*((1-i0)*(2*i1-1) + i0*ratio);
 			}
 		}
 	}
-
 }
 
 

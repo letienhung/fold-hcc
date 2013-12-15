@@ -84,6 +84,9 @@ public:
 	enum TYPE{ROD, PATCH, BRICK};
 	int getType(double threshold);
 
+	// draw
+	void draw(QColor color = Qt::white);
+	void drawWireframe(double width = 2.0, QColor color = Qt::white);
 };
 
 }

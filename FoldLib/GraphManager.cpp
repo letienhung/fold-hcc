@@ -86,6 +86,15 @@ void GraphManager::showMeshes( int state )
 }
 
 
+void GraphManager::showAABB( int state )
+{
+	scaffold->showAABB = (state == Qt::Checked);
+
+	emit(sceneSettingsChanged());
+}
+
+
+
 void GraphManager::saveScaffold()
 {
 	if (!scaffold) return;
@@ -99,6 +108,7 @@ void GraphManager::saveScaffold()
 void GraphManager::loadScaffold()
 {
 	QString filename = QFileDialog::getOpenFileName(0, tr("Load Scaffold"), "../data", tr("Graph Files (*.xml)"));
+	if (filename.isEmpty()) return;
 	scaffold->loadFromFile(filename);
 
 	emit(scaffoldChanged());

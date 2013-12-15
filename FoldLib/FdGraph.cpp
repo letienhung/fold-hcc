@@ -11,6 +11,7 @@
 
 FdGraph::FdGraph()
 {
+	showAABB = false;
 }
 
 QVector<FdNode*> FdGraph::getFdNodes()
@@ -89,10 +90,12 @@ void FdGraph::loadFromFile(QString fname)
 		// mesh
 		QString mesh_fname = meshFolder + "/" + nid + ".obj";
 		SurfaceMeshModel* mesh(new SurfaceMeshModel(mesh_fname, nid));
-		mesh->read( qPrintable(mesh_fname) );
-		mesh->update_face_normals();
-		mesh->update_vertex_normals();
-		mesh->updateBoundingBox();
+		if(mesh->read( qPrintable(mesh_fname) ))
+		{
+			mesh->update_face_normals();
+			mesh->update_vertex_normals();
+			mesh->updateBoundingBox();
+		}
 
 		// create new node
 		FdNode* new_node;
@@ -115,5 +118,21 @@ Geom::AABB FdGraph::computeAABB()
 	{
 		aabb.add(n->computeAABB());
 	}
+
+	// in case the graph is empty
+	aabb.validate();
+
 	return aabb;
+}
+
+void FdGraph::draw()
+{
+	Structure::Graph::draw();
+
+	// draw aabb
+	if (showAABB)
+	{
+		Geom::AABB aabb = computeAABB();
+		aabb.box().drawWireframe(2.0, Qt::cyan);
+	}
 }

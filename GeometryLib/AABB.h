@@ -19,6 +19,9 @@ public:
 	double radius();
 	Box box();
 
+	bool isValid();
+	void validate();
+
 public:
 	Vector3 bbmin, bbmax;
 };

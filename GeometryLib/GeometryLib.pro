@@ -43,7 +43,9 @@ HEADERS += \
     DistSegSeg.h \
     DistSegRect.h \
     DistLineRect.h \
-    DistLineSeg.h
+    DistLineSeg.h \
+    DistPointRect.h \
+    DistRectRect.h
 
 SOURCES += \
     Segment.cpp \
@@ -67,4 +69,6 @@ SOURCES += \
     DistSegSeg.cpp \
     DistSegRect.cpp \
     DistLineRect.cpp \
-    DistLineSeg.cpp
+    DistLineSeg.cpp \
+    DistPointRect.cpp \
+    DistRectRect.cpp

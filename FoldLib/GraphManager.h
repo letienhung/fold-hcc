@@ -36,6 +36,7 @@ public slots:
 	void showCuboids(int state);
 	void showScaffold(int state);
 	void showMeshes(int state);
+	void showAABB(int state);
 
 signals:
 	void sceneSettingsChanged();
