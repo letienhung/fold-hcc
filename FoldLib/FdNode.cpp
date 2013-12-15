@@ -6,10 +6,10 @@
 #include "MinOBB.h"
 #include "QuickMeshDraw.h"
 
-FdNode::FdNode( SurfaceMeshModel* m, Geom::Box &b )
+FdNode::FdNode( MeshPtr m, Geom::Box &b )
 	: Node(m->name)
 {
-	mMesh = MeshPtr(m);
+	mMesh = m;
 
 	origBox = b;
 	mBox = b;

@@ -13,7 +13,7 @@ public:
 	Vector3 getPoint(double t);
 	bool	contains(Vector3 p);
 
-private:
+public:
 	Vector3 Origin, Direction;
 };
 

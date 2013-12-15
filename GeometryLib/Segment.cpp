@@ -1,15 +1,21 @@
 #include "Segment.h"
 #include "Numeric.h"
 
-using namespace Geom;
-
-Segment::Segment()
+Geom::Segment::Segment()
 {
 }
 
-Segment::Segment( Vector3 p0, Vector3 p1 )
-	:P0(p0), P1(p1)
+Geom::Segment::Segment( Vector3 p0, Vector3 p1 )
 {
+	setFromEnds(p0, p1);
+}
+
+
+void Geom::Segment::setFromEnds( Vector3 p0, Vector3 p1 )
+{
+	P0 = p0;
+	P1 = p1;
+
 	Vector3 d = P1 - P0;
 
 	this->Center = (P0 + P1) / 2;
@@ -17,13 +23,14 @@ Segment::Segment( Vector3 p0, Vector3 p1 )
 	this->Extent = d.norm()/2;
 }
 
-bool Segment::isCollinearWith( const Segment& other )
+
+bool Geom::Segment::isCollinearWith( const Segment& other )
 {
 	return this->isCollinearWith(other.P0)
 		&& this->isCollinearWith(other.P1);
 }
 
-bool Segment::isCollinearWith( Vector3 p )
+bool Geom::Segment::isCollinearWith( Vector3 p )
 {
 	Vector3 d = p - this->Center;
 
@@ -33,7 +40,7 @@ bool Segment::isCollinearWith( Vector3 p )
 		return areCollinear(this->Direction, d);
 }
 
-bool Segment::overlaps( const Segment& other )
+bool Geom::Segment::overlaps( const Segment& other )
 {
 
 	if (!this->isCollinearWith(other))
@@ -69,18 +76,18 @@ bool Segment::overlaps( const Segment& other )
 	}
 }
 
-double Segment::getProjectedCoordinate( Vector3 p )
+double Geom::Segment::getProjectedCoordinate( Vector3 p )
 {
 	Vector3 pv = p - this->Center;
 	return dot(pv, this->Direction) / Extent;
 }
 
-Vector3 Segment::getPosition( double coord )
+Vector3 Geom::Segment::getPosition( double coord )
 {
 	return Center +  coord * Extent * Direction;
 }
 
-int Segment::whichSide( Vector3 p )
+int Geom::Segment::whichSide( Vector3 p )
 {
 	if (!this->isCollinearWith(p))
 		return SEG_OFF;
@@ -94,7 +101,7 @@ int Segment::whichSide( Vector3 p )
 		return SEG_ON;
 }
 
-bool Segment::contains( const Vector3 p )
+bool Geom::Segment::contains( const Vector3 p )
 {
 	if (!this->isCollinearWith(p))
 		return false;
@@ -103,7 +110,7 @@ bool Segment::contains( const Vector3 p )
 	return c >= -1 && c <= 1;
 }
 
-bool Segment::contains( const Segment& other )
+bool Geom::Segment::contains( const Segment& other )
 {
 	return this->contains(other.P0) 
 		&& this->contains(other.P1);

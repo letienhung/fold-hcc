@@ -1,9 +1,8 @@
 #include "IntrBoxBox.h"
 #include "Numeric.h"
 
-using namespace Geom;
 
-IntrBoxBox::IntrBoxBox()
+Geom::IntrBoxBox::IntrBoxBox()
 {
 }
 

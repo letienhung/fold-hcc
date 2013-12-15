@@ -12,7 +12,7 @@ public:
 	enum NODE_TYPE{NONE, ROD, PATCH};
 
 public:
-    FdNode(SurfaceMeshModel* m, Geom::Box &b);
+    FdNode(MeshPtr m, Geom::Box &b);
 	~FdNode();
 
 	// visualization

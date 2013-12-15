@@ -5,7 +5,7 @@
 class RodNode : public FdNode
 {
 public:
-    RodNode(SurfaceMeshModel* m, Geom::Box &b);
+    RodNode(MeshPtr m, Geom::Box &b);
 	~RodNode();
 
 public:
@@ -13,6 +13,6 @@ public:
 	void createRod();
 	void refit(int method);
 
-private:
-	Geom::Segment rod;
+public:
+	Geom::Segment mRod;
 };

@@ -5,14 +5,15 @@
 class PatchNode : public FdNode
 {
 public:
-    PatchNode(SurfaceMeshModel* m, Geom::Box &b);
+    PatchNode(MeshPtr m, Geom::Box &b);
 	~PatchNode();
 
 public:
 	void draw();
 	void refit(int method);
 	void createPatch();
-private:
+
+public:
 	Geom::Rectangle mPatch;
 
 public:

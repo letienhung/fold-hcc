@@ -1,5 +1,6 @@
-#ifndef POLYGON_H
-#define POLYGON_H
+#include "UtilityGlobal.h"
+
+namespace Geom{
 
 class Polygon
 {
@@ -7,4 +8,4 @@ public:
     Polygon();
 };
 
-#endif // POLYGON_H
+}

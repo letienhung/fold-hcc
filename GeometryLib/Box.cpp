@@ -12,13 +12,11 @@
 //								      f4|/  |f3
 //	
 
-using namespace Geom;
+int Geom::Box::NB_FACES = 6;
+int Geom::Box::NB_EDGES = 12;
+int Geom::Box::NB_VERTICES = 8;
 
-int Box::NB_FACES = 6;
-int Box::NB_EDGES = 12;
-int Box::NB_VERTICES = 8;
-
-int Box::EDGE[12][2] = {
+int Geom::Box::EDGE[12][2] = {
 	0, 1,
 	2, 3,
 	6, 7,
@@ -33,7 +31,7 @@ int Box::EDGE[12][2] = {
 	4, 7
 };
 
-int Box::QUAD_FACE[6][4] = 
+int Geom::Box::QUAD_FACE[6][4] = 
 {
 	1, 2, 6, 5,
 	0, 4, 7, 3,
@@ -43,7 +41,7 @@ int Box::QUAD_FACE[6][4] =
 	2, 3, 7, 6
 };
 
-int Box::TRI_FACE[12][3] = 
+int Geom::Box::TRI_FACE[12][3] = 
 {
 	1, 2, 6,
 	6, 5, 1,
@@ -59,7 +57,7 @@ int Box::TRI_FACE[12][3] =
 	7, 6, 2
 };
 
-Box::Box(const Point& c, const QVector<Vector3>& axis, const Vector3& ext)
+Geom::Box::Box(const Point& c, const QVector<Vector3>& axis, const Vector3& ext)
 {
 	Center = c;
 	Axis = axis;
@@ -75,7 +73,7 @@ Box::Box(const Point& c, const QVector<Vector3>& axis, const Vector3& ext)
 		Axis[2] *= -1;
 }
 
-Box &Box::operator =(const Box &b)
+Geom::Box &Geom::Box::operator =(const Box &b)
 {
 	Center = b.Center;
 	Axis = b.Axis;
@@ -84,12 +82,12 @@ Box &Box::operator =(const Box &b)
     return *this;
 }
 
-Frame Box::getFrame()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+Geom::Frame Geom::Box::getFrame()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
 {
 	return Frame(this->Center, this->Axis[0], this->Axis[1], this->Axis[2]);
 }
 
-void Box::setFrame( Frame f )
+void Geom::Box::setFrame( Frame f )
 {
 	this->Center = f.c;
 	this->Axis[0] = f.r;
@@ -97,7 +95,7 @@ void Box::setFrame( Frame f )
 	this->Axis[2] = f.t;
 }
 
-Vector3 Box::getCoordinates( Vector3 p )
+Vector3 Geom::Box::getCoordinates( Vector3 p )
 {
 	Vector3 coord;
 	p = p - Center;
@@ -107,7 +105,7 @@ Vector3 Box::getCoordinates( Vector3 p )
 	return coord;
 }
 
-Vector3 Box::getPosition( Vector3 coord )
+Vector3 Geom::Box::getPosition( Vector3 coord )
 {
 	Vector3 pos = Center;
 	for (int i = 0; i < 3; i++)
@@ -116,17 +114,17 @@ Vector3 Box::getPosition( Vector3 coord )
 	return pos;
 }
 
-void Box::translate( Vector3 t )
+void Geom::Box::translate( Vector3 t )
 {
 	this->Center += t;
 }
 
-void Box::scale( double s )
+void Geom::Box::scale( double s )
 {
 	this->Extent *= s;
 }
 
-void Box::scale( Vector3 s )
+void Geom::Box::scale( Vector3 s )
 {
 	for (int i = 0; i < 3; i++)	
 		this->Extent[i] *= s[i];
@@ -138,7 +136,7 @@ void Geom::Box::scale( int axisID, double s )
 		this->Extent[axisID] *= s;
 }
 
-bool Box::hasFaceCoplanarWith( Line line )
+bool Geom::Box::hasFaceCoplanarWith( Line line )
 {
 	Vector3 p1 = line.getPoint(0);
 	Vector3 p2 = line.getPoint(1);
@@ -151,7 +149,7 @@ bool Box::hasFaceCoplanarWith( Line line )
 	return false;
 }
 
-QVector<Point> Box::getConnerPoints()
+QVector<Point> Geom::Box::getConnerPoints()
 {
 	QVector<Point> pnts(8);
 
@@ -172,7 +170,7 @@ QVector<Point> Box::getConnerPoints()
 	return pnts;
 }
 
-QVector<Line> Box::getEdgeLines()
+QVector<Geom::Line> Geom::Box::getEdgeLines()
 {
 	QVector<Line> lines;
 
@@ -185,7 +183,7 @@ QVector<Line> Box::getEdgeLines()
 	return lines;
 }
 
-QVector<Segment> Box::getEdgeSegments()
+QVector<Geom::Segment> Geom::Box::getEdgeSegments()
 {
 	QVector<Segment> edges;
 
@@ -199,7 +197,7 @@ QVector<Segment> Box::getEdgeSegments()
 }
 
 
-QVector<Segment> Geom::Box::getEdgeSegmentsAlongAxis( int aid )
+QVector<Geom::Segment> Geom::Box::getEdgeSegmentsAlongAxis( int aid )
 {
 	QVector<Segment> edges;
 
@@ -213,7 +211,7 @@ QVector<Segment> Geom::Box::getEdgeSegmentsAlongAxis( int aid )
 }
 
 
-QVector< QVector<Point> > Box::getFacePoints()
+QVector< QVector<Point> > Geom::Box::getFacePoints()
 {
 	QVector< QVector<Point> > faces(6);
 
@@ -227,7 +225,7 @@ QVector< QVector<Point> > Box::getFacePoints()
 	return faces;
 }
 
-QVector<Plane> Box::getFacePlanes()
+QVector<Geom::Plane> Geom::Box::getFacePlanes()
 {
 	QVector<Plane> faces;
 	for (int i = 0; i < 3; i++)
@@ -239,7 +237,7 @@ QVector<Plane> Box::getFacePlanes()
 	return faces;
 }
 
-QVector<Rectangle> Box::getFaceRectangles()
+QVector<Geom::Rectangle> Geom::Box::getFaceRectangles()
 {
 	QVector<Rectangle> rects;
 
@@ -249,7 +247,7 @@ QVector<Rectangle> Box::getFaceRectangles()
 	return rects;
 }
 
-QVector<Segment> Box::getEdgeIncidentOnPoint(Point &p)
+QVector<Geom::Segment> Geom::Box::getEdgeIncidentOnPoint(Point &p)
 {
 	QVector<Segment> edges;
 	
@@ -261,7 +259,7 @@ QVector<Segment> Box::getEdgeIncidentOnPoint(Point &p)
 	return edges;
 }
 
-QVector<Rectangle> Box::getFaceIncidentOnPoint(Point &p)
+QVector<Geom::Rectangle> Geom::Box::getFaceIncidentOnPoint(Point &p)
 {
 	QVector<Rectangle> rects;
 

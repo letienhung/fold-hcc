@@ -1,5 +1,5 @@
 #include "Polygon.h"
 
-Polygon::Polygon()
+Geom::Polygon::Polygon()
 {
 }

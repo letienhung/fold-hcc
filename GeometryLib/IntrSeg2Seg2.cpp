@@ -1,9 +1,7 @@
 #include "IntrSeg2Seg2.h"
 #include "Numeric.h"
 
-using namespace Geom;
-
-int IntrSeg2Seg2::test( const Segment2& segment0, const Segment2& segment1, Vector2& it )
+int Geom::IntrSeg2Seg2::test( const Segment2& segment0, const Segment2& segment1, Vector2& it )
 {
 	// The intersection of two lines is a solution to P0+s0*D0 = P1+s1*D1.
 	// Rewrite this as s0*D0 - s1*D1 = P1 - P0 = Q.  

@@ -13,6 +13,9 @@ public:
     Segment();
 	Segment(Vector3 p0, Vector3 p1);
 
+	// setter
+	void setFromEnds(Vector3 p0, Vector3 p1);
+
 	// end points 
 	// this is a open set (P0, P1)
 	// which is useful for intersection

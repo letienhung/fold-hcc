@@ -2,9 +2,8 @@
 #include "Plane.h"
 #include "Numeric.h"
 #include "Segment2.h"
-using namespace Geom;
 
-Rectangle::Rectangle()
+Geom::Rectangle::Rectangle()
 {
 	Center = Vector3(0,0,0);
 	Axis << Vector3(1,0,0) << Vector3(0,1,0);
@@ -22,7 +21,7 @@ Rectangle::Rectangle()
 	Conners.push_back(Center + dx - dy);
 }
 
-Rectangle::Rectangle( QVector<Vector3>& conners )
+Geom::Rectangle::Rectangle( QVector<Vector3>& conners )
 {
 	Center = Vector3(0, 0, 0);
 	foreach (Vector3 p, conners) Center += p;
@@ -59,13 +58,13 @@ Geom::Rectangle::Rectangle( Vector3& c, QVector<Vector3>& a, Vector2& e )
 	Conners.push_back(Center + dx - dy);
 }
 
-bool Rectangle::isCoplanarWith( Vector3 p )
+bool Geom::Rectangle::isCoplanarWith( Vector3 p )
 {
 	Plane plane(Center, Normal);
 	return plane.whichSide(p) == 0;
 }
 
-bool Rectangle::isCoplanarWith( Segment s )
+bool Geom::Rectangle::isCoplanarWith( Segment s )
 {
 	Plane plane(Center, Normal);
 	return (plane.whichSide(s.P0) == 0) 
@@ -73,7 +72,7 @@ bool Rectangle::isCoplanarWith( Segment s )
 }
 
 
-bool Rectangle::isCoplanarWith( const Rectangle& other )
+bool Geom::Rectangle::isCoplanarWith( const Rectangle& other )
 {
 	foreach (Vector3 p, other.Conners)
 		if (!this->isCoplanarWith(p)) return false;
@@ -81,7 +80,7 @@ bool Rectangle::isCoplanarWith( const Rectangle& other )
 	return true;
 }
 
-Vector2 Rectangle::getUniformCoordinates( Vector3 p )
+Vector2 Geom::Rectangle::getUniformCoordinates( Vector3 p )
 {
 	Vector3 v = p - Center;
 	double x = dot(v, Axis[0])/Extent[0];
@@ -90,7 +89,7 @@ Vector2 Rectangle::getUniformCoordinates( Vector3 p )
 	return Vector2(x, y);
 }
 
-bool Rectangle::contains( Vector3 p)
+bool Geom::Rectangle::contains( Vector3 p)
 {
 	if (!this->isCoplanarWith(p)) return false;
 
@@ -101,12 +100,12 @@ bool Rectangle::contains( Vector3 p)
 		&& (fabs(coord[1]) < threshold);
 }
 
-bool Rectangle::contains( Segment s)
+bool Geom::Rectangle::contains( Segment s)
 {
 	return this->contains(s.P0) && this->contains(s.P1);
 }
 
-bool Rectangle::contains( const Rectangle& other )
+bool Geom::Rectangle::contains( const Rectangle& other )
 {
 	foreach (Vector3 p, other.Conners)
 		if (!this->contains(p)) return false;
@@ -114,14 +113,14 @@ bool Rectangle::contains( const Rectangle& other )
 	return true;
 }
 
-Plane Rectangle::getPlane()
+Geom::Plane Geom::Rectangle::getPlane()
 {
 	return Plane(this->Center, this->Normal);
 }
 
 
 
-QVector<Segment> Geom::Rectangle::getEdges()
+QVector<Geom::Segment> Geom::Rectangle::getEdges()
 {
 	QVector<Segment> edges;
 	for (int i = 0; i < 4; i++)
@@ -130,7 +129,7 @@ QVector<Segment> Geom::Rectangle::getEdges()
 	return edges;
 }
 
-QVector<Segment2> Geom::Rectangle::get2DEdges()
+QVector<Geom::Segment2> Geom::Rectangle::get2DEdges()
 {
 	QVector<Segment2> edges;
 

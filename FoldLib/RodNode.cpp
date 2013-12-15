@@ -2,7 +2,7 @@
 #include "Box.h"
 #include "CustomDrawObjects.h"
 
-RodNode::RodNode(SurfaceMeshModel* m, Geom::Box &b)
+RodNode::RodNode(MeshPtr m, Geom::Box &b)
 	: FdNode(m, b)
 {
 	mType = FdNode::ROD;
@@ -21,8 +21,10 @@ void RodNode::createRod()
 	int fid0 = mBox.getFaceId(aid, true);
 	int fid1 = mBox.getFaceId(aid, false);
 
-	rod.P0 = mBox.getFaceCenter(fid0);
-	rod.P1 = mBox.getFaceCenter(fid1);
+	Vector3 fc0 = mBox.getFaceCenter(fid0);
+	Vector3 fc1 = mBox.getFaceCenter(fid1);
+
+	mRod.setFromEnds(fc0, fc1);
 }
 
 
@@ -31,7 +33,7 @@ void RodNode::draw()
 	if (showScaffold)
 	{
 		LineSegments ls(3.0f);
-		ls.addLine(rod.P0, rod.P1);
+		ls.addLine(mRod.P0, mRod.P1);
 		ls.draw();
 	}
 

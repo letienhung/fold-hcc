@@ -2,7 +2,7 @@
 
 #include "IntrSeg2Seg2.h"
 #include "Numeric.h"
-using namespace Geom;
+
 
 QVector<Vector3> Geom::IntrRectRect::test( Rectangle& rect0, Rectangle& rect1 )
 {

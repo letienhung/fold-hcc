@@ -2,15 +2,13 @@
 
 #include "qglviewer/qglviewer.h"
 
-using namespace Geom;
-
-Circle::Circle()
+Geom::Circle::Circle()
 {
 	this->radius = 1.0;
 	this->numSides = 0;
 }
 
-Circle::Circle( const Vec3d& circle_center, const Vec3d& circle_normal, double from_radius /*= 1.0*/, int number_of_sides /*= 2.0*/ )
+Geom::Circle::Circle( const Vec3d& circle_center, const Vec3d& circle_normal, double from_radius /*= 1.0*/, int number_of_sides /*= 2.0*/ )
 {
 	this->radius = from_radius;
 	this->numSides = number_of_sides;
@@ -32,7 +30,7 @@ Circle::Circle( const Vec3d& circle_center, const Vec3d& circle_normal, double f
 }
 
 
-Circle& Circle::operator= (const Circle& from)
+Geom::Circle& Geom::Circle::operator= (const Circle& from)
 {
 	this->radius = from.radius;
 	this->normal = from.normal;
@@ -43,7 +41,7 @@ Circle& Circle::operator= (const Circle& from)
 	return *this;
 }
 
-void Circle::translate(const Vec3d & to)
+void Geom::Circle::translate(const Vec3d & to)
 {
 	Vec3d delta = to - center;
 
@@ -53,22 +51,22 @@ void Circle::translate(const Vec3d & to)
 	center = to;
 }
 
-Vec3d & Circle::getNormal()
+Vec3d & Geom::Circle::getNormal()
 {
 	return normal;
 }
 
-Vec3d & Circle::getCenter()
+Vec3d & Geom::Circle::getCenter()
 {
 	return center;
 }
 
-QVector<Vec3d> Circle::getPoints()
+QVector<Vec3d> Geom::Circle::getPoints()
 {
 	return point;
 }
 
-void Circle::draw(double lineWidth, const Vec4d & color)
+void Geom::Circle::draw(double lineWidth, const Vec4d & color)
 {
 	glLineWidth(lineWidth);
 	glColor4d(color[0],color[1],color[2],color[3]);
@@ -89,7 +87,7 @@ void Circle::draw(double lineWidth, const Vec4d & color)
 	//glEnd();
 }
 
-void Circle::drawFilled(const Vec4d & fillColor, double lineWidth, const Vec4d & borderColor)
+void Geom::Circle::drawFilled(const Vec4d & fillColor, double lineWidth, const Vec4d & borderColor)
 {
 	draw(lineWidth, borderColor);
 

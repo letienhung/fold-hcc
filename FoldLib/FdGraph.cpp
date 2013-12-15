@@ -96,10 +96,11 @@ void FdGraph::loadFromFile(QString fname)
 
 		// create new node
 		FdNode* new_node;
+		MeshPtr m(mesh);
 		if(ntype == FdNode::ROD)
-			new_node = new RodNode(mesh, box);
+			new_node = new RodNode(m, box);
 		else
-			new_node = new PatchNode(mesh, box);
+			new_node = new PatchNode(m, box);
 
 		addNode(new_node);
 	}

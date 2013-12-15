@@ -2,6 +2,8 @@
 #include "SegMeshLoader.h"
 #include "RodNode.h"
 #include "PatchNode.h"
+#include "PointLink.h"
+#include "LinearLink.h"
 #include "FdGraph.h"
 
 #include "PcaObb.h"
@@ -41,10 +43,11 @@ void GraphManager::createScaffold( int method )
 
 		// create node depends on box type
 		FdNode* node;
+		MeshPtr mesh(m);
 		int box_type = box.getType(5);
 		if (box_type == Geom::Box::ROD)	
-			 node = new RodNode(m, box);
-		else node = new PatchNode(m, box);
+			 node = new RodNode(mesh, box);
+		else node = new PatchNode(mesh, box);
 
 		// add to scaffold
 		scaffold->addNode(node);
@@ -116,9 +119,9 @@ void GraphManager::changeTypeOfSelectedNodes()
 		FdNode* old_node = (FdNode*)n;
 		Structure::Node* new_node;
 		if (old_node->mType == FdNode::PATCH)
-			new_node =new RodNode(old_node->getMesh(), old_node->mBox);
+			new_node =new RodNode(old_node->mMesh, old_node->mBox);
 		else
-			new_node = new PatchNode(old_node->getMesh(), old_node->mBox);
+			new_node = new PatchNode(old_node->mMesh, old_node->mBox);
 
 		// replace
 		scaffold->replaceNode(old_node, new_node);
@@ -140,10 +143,17 @@ void GraphManager::refitSelectedNodes( int method )
 
 void GraphManager::linkSelectedNodes()
 {
-	QVector<Structure::Node*> snodes = scaffold->selectedNodes();
-	if (snodes.size() < 2) return;
+	QVector<Structure::Node*> sn = scaffold->selectedNodes();
+	if (sn.size() < 2) return;
 
-	FdLink* new_link = new FdLink((FdNode*)snodes[0], (FdNode*)snodes[1]);
+	FdNode* n1 = (FdNode*)sn[0];
+	FdNode* n2 = (FdNode*)sn[1];
+
+	FdLink* new_link;
+	if (n1->mType == FdNode::PATCH && n2->mType == FdNode::PATCH)
+		new_link = new LinearLink(n1, n2);
+	else
+		new_link = new PointLink(n1, n2);
 	scaffold->addLink(new_link);
 
 	emit(scaffoldChanged());

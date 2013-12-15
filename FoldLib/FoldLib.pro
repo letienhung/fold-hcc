@@ -35,7 +35,10 @@ HEADERS += \
     FdGraph.h \
     FdLink.h \
     FdNode.h \
-    FdUtility.h
+    FdUtility.h \
+    PointLink.h \
+    LinearLink.h \
+    Foldabilizer.h
 
 SOURCES += \
     PatchNode.cpp \
@@ -44,5 +47,8 @@ SOURCES += \
     FdGraph.cpp \
     FdLink.cpp \
     FdNode.cpp \
-    FdUtility.cpp
+    FdUtility.cpp \
+    PointLink.cpp \
+    LinearLink.cpp \
+    Foldabilizer.cpp
 

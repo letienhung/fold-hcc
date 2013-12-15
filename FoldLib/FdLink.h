@@ -9,8 +9,10 @@ class FdLink : public Structure::Link
 public:
     FdLink(FdNode* n1, FdNode* n2);
 
-	void draw();
-	Geom::Segment mSeg;
+	virtual void draw();
+
+public:
+	Geom::Segment mLink;
 };
 
 

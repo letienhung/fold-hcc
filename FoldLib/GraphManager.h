@@ -29,6 +29,7 @@ public slots:
 	void refitSelectedNodes(int method);
 	void changeTypeOfSelectedNodes();
 
+	// link
 	void linkSelectedNodes();
 
 	// visualization
