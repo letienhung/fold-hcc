@@ -12,11 +12,5 @@ FdLink::FdLink( FdNode* n1, FdNode* n2 )
 
 void FdLink::draw()
 {
-	LineSegments ls;
-	ls.addLine(mLink.P0, mLink.P1, Qt::red);
-	ls.draw();
-
-	PointSoup ps(10);
-	ps.addPoint(mLink.Center);
-	ps.draw();
+	mLink.draw(2.0, Qt::red);
 }

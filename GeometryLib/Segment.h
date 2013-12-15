@@ -10,22 +10,12 @@ class Segment
 {
 public:
 	// constructor
-    Segment();
-	Segment(Vector3 p0, Vector3 p1);
+	Segment(Vector3 p0 = Vector3(0,0,0), Vector3 p1 = Vector3(1,0,0));
 
 	// setter
 	void setFromEnds(Vector3 p0, Vector3 p1);
 	void computeEndPoints();
 	void computeCenterDirectionExtent();
-
-	// end points 
-	// this is a open set (P0, P1)
-	// which is useful for intersection
-	Vector3 P0, P1;
-
-	// center-extent representation
-	Vector3 Center, Direction;
-	double	Extent;
 
 	// coordinates
 	// coord(P0) = 0, coord(P1) = 1
@@ -39,6 +29,20 @@ public:
 	bool overlaps(const Segment& other);
 	bool contains(Vector3 p);
 	bool contains(const Segment& other);
+
+	// visualization
+	void draw(double width = 3.0, QColor color = Qt::blue);
+
+
+public:
+	// end points 
+	// this is a open set (P0, P1)
+	// which is useful for intersection
+	Vector3 P0, P1;
+
+	// center-extent representation
+	Vector3 Center, Direction;
+	double	Extent;
 
 	// intersection info that can be queried
 	// point intersection: IT0

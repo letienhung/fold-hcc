@@ -40,7 +40,8 @@ public slots:
 
 signals:
 	void sceneSettingsChanged();
-	void scaffoldChanged();
+	void scaffoldModified();
+	void scaffoldChanged(QString name);
 	void message(QString msg);
 };
 

@@ -1,9 +1,7 @@
 #include "Segment.h"
 #include "Numeric.h"
+#include "CustomDrawObjects.h"
 
-Geom::Segment::Segment()
-{
-}
 
 Geom::Segment::Segment( Vector3 p0, Vector3 p1 )
 {
@@ -127,4 +125,11 @@ void Geom::Segment::computeEndPoints()
 {
 	P0 = Center - Extent * Direction;
 	P1 = Center + Extent * Direction;
+}
+
+void Geom::Segment::draw(double width, QColor color)
+{
+	LineSegments ls(width);
+	ls.addLine(P0, P1, color);
+	ls.draw();
 }

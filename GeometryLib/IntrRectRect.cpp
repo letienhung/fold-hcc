@@ -16,7 +16,7 @@ QVector<Vector3> Geom::IntrRectRect::test( Rectangle& rect0, Rectangle& rect1 )
 void Geom::IntrRectRect::unilateralTest( Rectangle& rect0, Rectangle& rect1 )
 {
 	// corners and edges in 3D
-	QVector<Vector3> &conner0 = rect0.Conners;
+	QVector<Vector3> conner0 = rect0.getConners();
 	QVector<Segment> seg0 = rect0.getEdges();
 	QVector<Segment> seg1 = rect1.getEdges();
 

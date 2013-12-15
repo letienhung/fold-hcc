@@ -33,9 +33,8 @@ void PatchNode::draw()
 {
 	if (showScaffold)
 	{
-		PolygonSoup ps;
-		ps.addPoly(mPatch.Conners);
-		ps.draw();
+		QColor c = Qt::red;
+		mPatch.draw(c.lighter());
 	}
 
 	FdNode::draw();

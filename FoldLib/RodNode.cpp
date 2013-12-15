@@ -32,9 +32,7 @@ void RodNode::draw()
 {
 	if (showScaffold)
 	{
-		LineSegments ls(3.0f);
-		ls.addLine(mRod.P0, mRod.P1);
-		ls.draw();
+		mRod.draw(3.0, Qt::blue);
 	}
 
 	FdNode::draw();

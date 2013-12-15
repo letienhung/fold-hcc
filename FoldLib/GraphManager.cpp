@@ -53,7 +53,7 @@ void GraphManager::createScaffold( int method )
 		scaffold->addNode(node);
 	}
 
-	emit(scaffoldChanged());
+	emit(scaffoldChanged(scaffold->path));
 }
 
 
@@ -111,7 +111,7 @@ void GraphManager::loadScaffold()
 	if (filename.isEmpty()) return;
 	scaffold->loadFromFile(filename);
 
-	emit(scaffoldChanged());
+	emit(scaffoldChanged(scaffold->path));
 	emit(message("Loaded."));
 }
 
@@ -137,7 +137,7 @@ void GraphManager::changeTypeOfSelectedNodes()
 		scaffold->replaceNode(old_node, new_node);
 	}
 
-	emit(scaffoldChanged());
+	emit(scaffoldModified());
 }
 
 void GraphManager::refitSelectedNodes( int method )
@@ -148,7 +148,7 @@ void GraphManager::refitSelectedNodes( int method )
 		fn->refit(method); 
 	}
 
-	emit(scaffoldChanged());
+	emit(scaffoldModified());
 }
 
 void GraphManager::linkSelectedNodes()
@@ -166,5 +166,5 @@ void GraphManager::linkSelectedNodes()
 		new_link = new PointLink(n1, n2);
 	scaffold->addLink(new_link);
 
-	emit(scaffoldChanged());
+	emit(scaffoldModified());
 }

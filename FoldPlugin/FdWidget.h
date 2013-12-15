@@ -22,5 +22,6 @@ private:
 public slots:
 	void createScaffold();
 	void fitCuboid();
+	void setScaffoldName(QString name);
 };
 

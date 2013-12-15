@@ -265,7 +265,7 @@ QVector<Geom::Rectangle> Geom::Box::getFaceIncidentOnPoint(Point &p)
 	QVector<Rectangle> rects;
 
 	foreach(Rectangle r, this->getFaceRectangles()){
-		foreach(Point cp, r.Conners){
+		foreach(Point cp, r.getConners()){
 			if(p == cp)
 				rects.push_back(r);
 		}

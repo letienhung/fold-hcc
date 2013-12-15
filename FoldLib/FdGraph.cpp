@@ -12,6 +12,7 @@
 FdGraph::FdGraph()
 {
 	showAABB = false;
+	path = "";
 }
 
 QVector<FdNode*> FdGraph::getFdNodes()
@@ -62,6 +63,7 @@ void FdGraph::saveToFile(QString fname)
 void FdGraph::loadFromFile(QString fname)
 {
 	clear();
+	path = fname;
 
 	// open the file
 	QFileInfo finfo(fname);

@@ -11,7 +11,8 @@ FdPlugin::FdPlugin()
 	g_manager = new GraphManager();
 
 	this->connect(g_manager, SIGNAL(sceneSettingsChanged()), SLOT(updateScene()));
-	this->connect(g_manager, SIGNAL(scaffoldChanged()), SLOT(resetScene()));
+	this->connect(g_manager, SIGNAL(scaffoldChanged(QString)), SLOT(resetScene()));
+	this->connect(g_manager, SIGNAL(scaffoldModified()), SLOT(resetScene()));
 	this->connect(g_manager, SIGNAL(message(QString)), SLOT(showStatus(QString)));
 }
 
@@ -25,7 +26,11 @@ void FdPlugin::create()
 		dockwidget->setWidget(widget);
 		mainWindow()->addDockWidget(Qt::RightDockWidgetArea, dockwidget);
 
+		// perspective
 		drawArea()->setPerspectiveProjection();
+
+		// connections
+		widget->connect(g_manager, SIGNAL(scaffoldChanged(QString)), SLOT(setScaffoldName(QString)));
 	}
 
 	resetMesh();

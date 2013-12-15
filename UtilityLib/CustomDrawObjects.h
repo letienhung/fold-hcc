@@ -4,9 +4,9 @@
 #include <qgl.h>
 #include <QVector3D>
 #include "RenderObject.h"
+#include "UtilityGlobal.h"
+#include "ProbabilityDistributions.h"
 
-#include "SurfaceMeshModel.h"
-using namespace SurfaceMesh;
 using namespace Eigen;
 
 #define glVertQt(v) glVertex3d(v.x(), v.y(), v.z())
@@ -723,12 +723,6 @@ static QColor qRandomColor2(double saturation = 0.5, double val = 0.95)
 	return QColor::fromHsvF(h, saturation, val);
 }
 
-// Helper functions
-double inline uniformRand(double a = 0.0, double b = 1.0){
-	double len = b - a;
-	return ((double)rand()/RAND_MAX) * len + a;
-}
-
 // for mid = 0, colors are centered around Red
 static QColor qRandomColor3(double mid = 0, double range = 0.5, double saturation = 1.0, double val = 1.0)
 {
@@ -736,7 +730,7 @@ static QColor qRandomColor3(double mid = 0, double range = 0.5, double saturatio
 	mid = qMax(0.0, qMin(1.0, mid));
 	range = qMin(0.5, range);
 
-	double h = uniformRand( -range + mid, range + mid );
+	double h = uniformDistrReal( -range + mid, range + mid );
 
 	h = fmod(1.0 + h, 1.0);
 
