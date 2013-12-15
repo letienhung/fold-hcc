@@ -77,3 +77,6 @@ bool isPerp(const Vector3& v0, const Vector3& v1);
 double dotPerp(const Vector2& v0, const Vector2& v1);
 
 bool inRange(double t, double low, double high);
+
+double invSqrt (double value);
+void generateComplementBasis (Vector3& u, Vector3& v, const Vector3& w);

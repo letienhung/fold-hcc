@@ -15,6 +15,8 @@ public:
 
 	// setter
 	void setFromEnds(Vector3 p0, Vector3 p1);
+	void computeEndPoints();
+	void computeCenterDirectionExtent();
 
 	// end points 
 	// this is a open set (P0, P1)

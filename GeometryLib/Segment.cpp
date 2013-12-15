@@ -11,16 +11,23 @@ Geom::Segment::Segment( Vector3 p0, Vector3 p1 )
 }
 
 
-void Geom::Segment::setFromEnds( Vector3 p0, Vector3 p1 )
+void Geom::Segment::computeCenterDirectionExtent()
 {
-	P0 = p0;
-	P1 = p1;
-
 	Vector3 d = P1 - P0;
 
 	this->Center = (P0 + P1) / 2;
 	this->Direction = d.normalized();
 	this->Extent = d.norm()/2;
+}
+
+
+
+void Geom::Segment::setFromEnds( Vector3 p0, Vector3 p1 )
+{
+	P0 = p0;
+	P1 = p1;
+
+	computeCenterDirectionExtent();
 }
 
 
@@ -114,4 +121,10 @@ bool Geom::Segment::contains( const Segment& other )
 {
 	return this->contains(other.P0) 
 		&& this->contains(other.P1);
+}
+
+void Geom::Segment::computeEndPoints()
+{
+	P0 = Center - Extent * Direction;
+	P1 = Center + Extent * Direction;
 }

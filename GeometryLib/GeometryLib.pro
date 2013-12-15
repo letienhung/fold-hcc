@@ -39,9 +39,11 @@ HEADERS += \
     PcaOBB.h \
     Circle.h\
     ConvexHull.h \
-    IntrRectSeg.h \
     DistLineLine.h \
-    DistSegSeg.h
+    DistSegSeg.h \
+    DistSegRect.h \
+    DistLineRect.h \
+    DistLineSeg.h
 
 SOURCES += \
     Segment.cpp \
@@ -61,6 +63,8 @@ SOURCES += \
     MinOBB.cpp \
     Circle.cpp\
     ConvexHull.cpp \
-    IntrRectSeg.cpp \
     DistLineLine.cpp \
-    DistSegSeg.cpp
+    DistSegSeg.cpp \
+    DistSegRect.cpp \
+    DistLineRect.cpp \
+    DistLineSeg.cpp
