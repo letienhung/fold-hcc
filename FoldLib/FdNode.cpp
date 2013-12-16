@@ -23,6 +23,21 @@ FdNode::FdNode( MeshPtr m, Geom::Box &b )
 	showMesh = false;
 }
 
+FdNode::FdNode(FdNode& other)
+	:Node(other)
+{
+	mMesh = other.mMesh;
+	origBox = other.origBox;
+	mBox = other.mBox;
+	mColor = other.mColor;
+	mType = other.mType;
+
+	showCuboids = true;
+	showScaffold = true;
+	showMesh = false;
+}
+
+
 FdNode::~FdNode()
 {
 
@@ -120,7 +135,12 @@ void FdNode::drawWithName( int name )
 	glPopName();
 }
 
-SurfaceMeshModel* FdNode::getMesh()
+Structure::Node* FdNode::clone()
 {
-	return mMesh.data();
+	return new FdNode(*this);
+}
+
+bool FdNode::isPerpTo( Vector3 v, double dotThreshold )
+{
+	return false;
 }

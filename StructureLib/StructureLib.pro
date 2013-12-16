@@ -19,4 +19,5 @@ HEADERS += \
 
 SOURCES += \
     Link.cpp \
-    Graph.cpp
+    Graph.cpp \
+    Node.cpp

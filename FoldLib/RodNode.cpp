@@ -9,6 +9,12 @@ RodNode::RodNode(MeshPtr m, Geom::Box &b)
 	createRod();
 }
 
+RodNode::RodNode(RodNode& other)
+	:FdNode(other)
+{
+	mRod = other.mRod;
+}
+
 RodNode::~RodNode()
 {
 
@@ -18,13 +24,7 @@ RodNode::~RodNode()
 void RodNode::createRod()
 {
 	int aid = mBox.maxAxisId();
-	int fid0 = mBox.getFaceId(aid, true);
-	int fid1 = mBox.getFaceId(aid, false);
-
-	Vector3 fc0 = mBox.getFaceCenter(fid0);
-	Vector3 fc1 = mBox.getFaceCenter(fid1);
-
-	mRod.setFromEnds(fc0, fc1);
+	mRod = mBox.getSkeleton(aid);
 }
 
 
@@ -44,4 +44,15 @@ void RodNode::refit( int method )
 
 	// update rod
 	createRod();
+}
+
+bool RodNode::isPerpTo( Vector3 v, double dotThreshold )
+{
+	double dotProd = dot(mRod.Direction, v);
+	return (fabs(dotProd) < dotThreshold);
+}
+
+Structure::Node* RodNode::clone()
+{
+	return new RodNode(*this);
 }

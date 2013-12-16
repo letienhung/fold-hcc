@@ -8,12 +8,44 @@
 
 #include "RodNode.h"
 #include "PatchNode.h"
+#include "FdLink.h"
+#include "LinearLink.h"
+#include "PointLink.h"
 
 FdGraph::FdGraph()
 {
 	showAABB = false;
 	path = "";
 }
+
+FdGraph::FdGraph( FdGraph& other )
+	:Graph(other)
+{
+	path = other.path;
+	showAABB = false;
+}
+
+
+Structure::Graph* FdGraph::clone()
+{
+	return new FdGraph(*this);
+}
+
+
+void FdGraph::addLink( Structure::Node* n1, Structure::Node* n2 )
+{
+	FdNode* fn1 = (FdNode*)n1;
+	FdNode* fn2 = (FdNode*)n2;
+
+	FdLink* new_link;
+	if (fn1->mType == FdNode::PATCH && fn2->mType == FdNode::PATCH)
+		new_link = new LinearLink(fn1, fn2);
+	else
+		new_link = new PointLink(fn1, fn2);
+
+	Graph::addLink(new_link);
+}
+
 
 QVector<FdNode*> FdGraph::getFdNodes()
 {

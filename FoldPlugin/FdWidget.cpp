@@ -28,6 +28,9 @@ FdWidget::FdWidget(FdPlugin *f, QWidget *parent) :
 	fold->g_manager->connect(ui->showAABB, SIGNAL(stateChanged(int)), SLOT(showAABB(int)));
 
 	// fold
+	fold->connect(ui->fold, SIGNAL(clicked()), SLOT(fold()));
+
+	// test
 	fold->connect(ui->test, SIGNAL(clicked()), SLOT(test()));
 }
 

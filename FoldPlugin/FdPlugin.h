@@ -3,6 +3,7 @@
 #include "interfaces/ModePluginDockWidget.h"
 #include "SurfaceMeshPlugins.h"
 #include "GraphManager.h"
+#include "Foldabilizer.h"
 
 class FdWidget;
 
@@ -33,6 +34,8 @@ public slots:
 
 	void resetMesh();
 	void showStatus(QString msg);
+
+	void fold();
 
 	void test();
 };

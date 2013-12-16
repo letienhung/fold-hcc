@@ -509,3 +509,14 @@ void Geom::Box::drawWireframe( double width /*= 2.0*/, QColor color /*= Qt::whit
 
 	ps.drawWireframes(width, color);
 }
+
+Geom::Segment Geom::Box::getSkeleton( int aid )
+{
+	int fid0 = getFaceId(aid, true);
+	int fid1 = getFaceId(aid, false);
+
+	Vector3 fc0 = getFaceCenter(fid0);
+	Vector3 fc1 = getFaceCenter(fid1);
+
+	return Segment(fc0, fc1);
+}

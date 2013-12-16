@@ -20,6 +20,13 @@ GraphManager::GraphManager()
 	this->entireMesh = NULL;
 }
 
+
+GraphManager::~GraphManager()
+{
+	delete scaffold;
+}
+
+
 void GraphManager::createScaffold( int method )
 {
 	SegMeshLoader sml(entireMesh);
@@ -156,15 +163,7 @@ void GraphManager::linkSelectedNodes()
 	QVector<Structure::Node*> sn = scaffold->selectedNodes();
 	if (sn.size() < 2) return;
 
-	FdNode* n1 = (FdNode*)sn[0];
-	FdNode* n2 = (FdNode*)sn[1];
-
-	FdLink* new_link;
-	if (n1->mType == FdNode::PATCH && n2->mType == FdNode::PATCH)
-		new_link = new LinearLink(n1, n2);
-	else
-		new_link = new PointLink(n1, n2);
-	scaffold->addLink(new_link);
+	scaffold->addLink(sn[0], sn[1]);
 
 	emit(scaffoldModified());
 }

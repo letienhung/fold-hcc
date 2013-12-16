@@ -8,21 +8,19 @@ namespace Structure{
 class Node
 {
 public:
-	Node(QString id) : id(id){
-		isSelected = false;
-	}
-	~Node(){}
+	Node(QString nid); 
+	Node(Node &other);
+	virtual Node* clone();
 
-	bool hasId(QString id){ 
-		return this->id == id;
-	}
+	// identity
+	bool hasId(QString id);
 
-	void select(){
-		isSelected = !isSelected;
-	}
+	// selection
+	void flipSelect();
 
-	virtual void draw(){}
-	virtual void drawWithName(int name){Q_UNUSED(name);}
+	// visualization
+	virtual void draw();
+	virtual void drawWithName(int name);
 
 public:
 	QString	id;

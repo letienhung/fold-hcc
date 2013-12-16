@@ -9,9 +9,12 @@ class FdGraph : public Structure::Graph
 {
 public:
     FdGraph();
+	FdGraph(FdGraph& other);
+	virtual Graph* clone();
 
 public:
 	// accessors
+	virtual void addLink(Structure::Node* n1, Structure::Node* n2);
 	QVector<FdNode*> getFdNodes();
 
 	// I/O

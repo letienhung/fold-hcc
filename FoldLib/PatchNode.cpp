@@ -10,6 +10,12 @@ PatchNode::PatchNode(MeshPtr m, Geom::Box &b)
 	createPatch();
 }
 
+PatchNode::PatchNode(PatchNode& other)
+	:FdNode(other)
+{
+	mPatch = other.mPatch;
+}
+
 
 PatchNode::~PatchNode()
 {
@@ -46,4 +52,15 @@ void PatchNode::refit(int method)
 
 	// update patch
 	createPatch();
+}
+
+bool PatchNode::isPerpTo( Vector3 v, double dotThreshold )
+{
+	double dotProd = dot(mPatch.Normal, v);
+	return (fabs(dotProd) > 1 - dotThreshold);
+}
+
+Structure::Node* PatchNode::clone()
+{
+	return new PatchNode(*this);
 }

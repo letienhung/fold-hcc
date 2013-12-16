@@ -103,5 +103,11 @@ bool FdPlugin::postSelection( const QPoint& point )
 	return true;
 }
 
+void FdPlugin::fold()
+{
+	Foldabilizer fdzer(activeScaffold());
+	fdzer.run();
+}
+
 
 Q_EXPORT_PLUGIN(FdPlugin)

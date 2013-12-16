@@ -13,7 +13,10 @@ public:
 
 public:
     FdNode(MeshPtr m, Geom::Box &b);
+	FdNode(FdNode& other);
 	~FdNode();
+
+	virtual Node* clone();
 
 	// visualization
 	bool showCuboids;
@@ -37,8 +40,8 @@ public:
 	// aabb
 	Geom::AABB computeAABB();
 
-	// weak reference to mesh
-	SurfaceMeshModel* getMesh();
+	// relation with pushing direction
+	virtual bool isPerpTo(Vector3 v, double dotThreshold);
 
 public:
 	Geom::Box origBox, mBox;

@@ -10,11 +10,11 @@ class GraphManager : public QObject
 
 public:
     GraphManager();
+	~GraphManager();
+
+public:
 	SurfaceMeshModel* entireMesh;
 	FdGraph* scaffold;
-
-private:
-	QMap<QString, Geom::Box> boxMap;
 
 public slots:
 	// entire mesh

@@ -3,11 +3,10 @@
 
 Structure::Link::Link( Structure::Node* n1, Structure::Node* n2 )
 {
-	this->node1 = n1;
-	this->node2 = n2;
-	this->id = node1->id + ":" + node2->id;
+	node1 = n1;
+	node2 = n2;
+	id = node1->id + ":" + node2->id;
 }
-
 
 bool Structure::Link::hasNode( QString nid )
 {

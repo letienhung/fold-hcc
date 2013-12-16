@@ -27,11 +27,6 @@ public:
 	// frame
 	Frame	getFrame();
 	void	setFrame(Frame f);
-	int		getFaceId(Vector3 n);
-	int		getFaceId(int aid, bool positive);
-	int		getAxisId(Vector3 a);
-	int		minAxisId();
-	int		maxAxisId();
 
 	// coordinates
 	Vector3 getCoordinates(Vector3 p);
@@ -52,7 +47,13 @@ public:
 	static int QUAD_FACE[6][4];
 	static int TRI_FACE[12][3];
 
+	int		getFaceId(Vector3 n);
+	int		getFaceId(int aid, bool positive);
+	int		getAxisId(Vector3 a);
+	int		minAxisId();
+	int		maxAxisId();
 	Vector3 getFaceCenter(int fid);
+	Segment getSkeleton(int aid);
 
 	QVector<Point>				getConnerPoints();
 	QVector<Line>				getEdgeLines();

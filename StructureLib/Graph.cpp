@@ -5,6 +5,25 @@ Structure::Graph::Graph()
 {
 }
 
+Structure::Graph::Graph(Graph& other)
+{
+	foreach (Node* n, other.nodes)
+		addNode(n->clone());
+
+	foreach (Link* l, other.links)	
+	{
+		Node* n1 = getNode(l->node1->id);
+		Node* n2 = getNode(l->node2->id);
+		addLink(n1, n2);
+	}
+}
+
+Structure::Graph* Structure::Graph::clone()
+{
+	return new Graph(*this);
+}
+
+
 void Structure::Graph::clear()
 {
 	nodes.clear();
@@ -21,9 +40,9 @@ void Structure::Graph::addLink( Link* link)
 	links.push_back(link);
 }
 
-void Structure::Graph::addLink( Node* n0, Node* n1 )
+void Structure::Graph::addLink( Node* n1, Node* n2 )
 {
-	links.push_back(new Link(n0, n1));
+	links.push_back(new Link(n1, n2));
 }
 
 int Structure::Graph::getNodeIndex( Node* node )
@@ -151,7 +170,7 @@ void Structure::Graph::selectNode( int nid )
 {
 	if (nid >= 0 && nid < nbNodes())
 	{
-		nodes[nid]->select();
+		nodes[nid]->flipSelect();
 	}
 }
 
@@ -186,4 +205,3 @@ QVector<Structure::Node*> Structure::Graph::getNeighbourNodes( Node* node )
 
 	return neighbours;
 }
-

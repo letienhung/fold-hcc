@@ -10,12 +10,14 @@ class Graph
 {
 public:
     Graph();
+	Graph(Graph& other);
+	virtual Graph* clone();
 
 public:
 	// Modifier
 	void addNode(Node* node);
 	void addLink(Link* link);
-	void addLink(Node* n0, Node* n1);
+	virtual void addLink(Node* n1, Node* n2);
 	void removeNode(QString nid);
 	void replaceNode(Node* old_node, Node* new_node);
 	void removeLink(Link* link);
