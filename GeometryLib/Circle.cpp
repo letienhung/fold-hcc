@@ -2,12 +2,6 @@
 
 #include "qglviewer/qglviewer.h"
 
-Geom::Circle::Circle()
-{
-	this->radius = 1.0;
-	this->numSides = 0;
-}
-
 Geom::Circle::Circle( const Vec3d& circle_center, const Vec3d& circle_normal, double from_radius /*= 1.0*/, int number_of_sides /*= 2.0*/ )
 {
 	this->radius = from_radius;

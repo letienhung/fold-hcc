@@ -10,7 +10,20 @@ FdLink::FdLink( FdNode* n1, FdNode* n2 )
 	mLink.P1 = n2->mBox.Center; 
 }
 
+FdLink::FdLink( FdLink& other )
+	:Link(other)
+{
+	mLink = other.mLink;
+}
+
+Structure::Link* FdLink::clone()
+{
+	return new FdLink(*this);
+}
+
 void FdLink::draw()
 {
 	mLink.draw(2.0, Qt::red);
 }
+
+

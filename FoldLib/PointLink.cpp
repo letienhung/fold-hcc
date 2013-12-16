@@ -47,3 +47,14 @@ PointLink::PointLink( FdNode* n1, FdNode* n2 )
 
 	mPos = mLink.Center;
 }
+
+PointLink::PointLink( PointLink& other )
+	:FdLink(other)
+{
+	mPos = other.mPos;
+}
+
+Structure::Link* PointLink::clone()
+{
+	return new PointLink(*this);
+}

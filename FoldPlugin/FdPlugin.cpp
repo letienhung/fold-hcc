@@ -74,6 +74,7 @@ void FdPlugin::resetScene()
 
 void FdPlugin::test()
 {
+	g_manager->test();
 }
 
 

@@ -167,3 +167,12 @@ void GraphManager::linkSelectedNodes()
 
 	emit(scaffoldModified());
 }
+
+void GraphManager::test()
+{
+	FdGraph* fd = (FdGraph*)(scaffold->clone());
+	delete scaffold;
+	scaffold = fd;
+
+	emit(scaffoldChanged(scaffold->path));
+}

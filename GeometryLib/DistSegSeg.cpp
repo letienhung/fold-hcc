@@ -15,7 +15,6 @@ void Geom::DistSegSeg::compute()
 	double a01 = -mSegment0.Direction.dot(mSegment1.Direction);
 	double b0 = diff.dot(mSegment0.Direction);
 	double b1 = -diff.dot(mSegment1.Direction);
-	double c = diff.squaredNorm();
 	double det = fabs((double)1 - a01*a01);
 	double s0, s1, extDet0, extDet1, tmpS0, tmpS1;
 

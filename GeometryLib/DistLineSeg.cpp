@@ -14,7 +14,6 @@ void Geom::DistLineSeg::compute()
 	Vector3 diff = mLine->Origin - mSegment->Center;
 	double a01 = -mLine->Direction.dot(mSegment->Direction);
 	double b0 = diff.dot(mLine->Direction);
-	double c = diff.squaredNorm();
 	double det = fabs((double)1 - a01*a01);
 	double b1, s0, s1, extDet;
 

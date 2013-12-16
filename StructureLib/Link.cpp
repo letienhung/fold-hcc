@@ -3,9 +3,25 @@
 
 Structure::Link::Link( Structure::Node* n1, Structure::Node* n2 )
 {
+	nid1 = n1->id;
+	nid2 = n2->id;
 	node1 = n1;
 	node2 = n2;
+
 	id = node1->id + ":" + node2->id;
+}
+
+Structure::Link::Link( Link& other )
+{
+	// note: pointers to nodes are not copied
+	nid1 = other.nid1;
+	nid2 = other.nid2;
+	id = other.id;
+}
+
+Structure::Link* Structure::Link::clone()
+{
+	return new Link(*this);
 }
 
 bool Structure::Link::hasNode( QString nid )

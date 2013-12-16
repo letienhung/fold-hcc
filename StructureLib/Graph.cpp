@@ -12,9 +12,9 @@ Structure::Graph::Graph(Graph& other)
 
 	foreach (Link* l, other.links)	
 	{
-		Node* n1 = getNode(l->node1->id);
-		Node* n2 = getNode(l->node2->id);
-		addLink(n1, n2);
+		addLink(l->clone());
+		l->node1 = getNode(l->nid1);
+		l->node2 = getNode(l->nid2);
 	}
 }
 

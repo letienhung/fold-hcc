@@ -25,8 +25,6 @@ private:
 	QVector<Vec3d> point;
 
 public:
-	Circle();
-
 	Circle(const Vec3d& circle_center = Vec3d(0,0,0), const Vec3d& circle_normal = Vec3d(0,0,1), 
 		double from_radius = 1.0, int number_of_sides = 40);
 	Circle& operator= (const Circle& from);

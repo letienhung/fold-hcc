@@ -21,7 +21,7 @@ FdGraph::FdGraph()
 FdGraph::FdGraph( FdGraph& other )
 	:Graph(other)
 {
-	path = other.path;
+	path = other.path + "_cloned";
 	showAABB = false;
 }
 

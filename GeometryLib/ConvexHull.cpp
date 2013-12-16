@@ -197,7 +197,6 @@ bool Geom::ConvexHull::Update (int i)
     mHull.insert(tri);
 
     // Save information for linking first/last inserted new TriFaces.
-    int saveV0 = edge->second.V[0];
     TriFace* saveTri = tri;
 
     // Establish adjacency links across terminator edge.
@@ -358,7 +357,6 @@ bool Geom::ConvexHull::getExtremes( QVector<int> &mExtreme )
 	mDirection[1].normalize();
 	mDirection[2] = cross(mDirection[0], mDirection[1]);
 	maxDistance = (Real)0;
-	Real maxSign = (Real)0;
 	mExtreme[3] = mExtreme[0];
 	for (i = 0; i < nbPnts; ++i)
 	{

@@ -17,3 +17,14 @@ LinearLink::LinearLink( FdNode* n1, FdNode* n2 )
 		mLink.setFromEnds(drr.mClosestPoint0, drr.mClosestPoint1);
 	}	
 }
+
+LinearLink::LinearLink( LinearLink& other )
+	:FdLink(other)
+{
+
+}
+
+Structure::Link* LinearLink::clone()
+{
+	return new LinearLink(*this);
+}

@@ -38,6 +38,9 @@ public slots:
 	void showMeshes(int state);
 	void showAABB(int state);
 
+	// test
+	void test();
+
 signals:
 	void sceneSettingsChanged();
 	void scaffoldModified();

@@ -142,5 +142,7 @@ Structure::Node* FdNode::clone()
 
 bool FdNode::isPerpTo( Vector3 v, double dotThreshold )
 {
+	Q_UNUSED(v);
+	Q_UNUSED(dotThreshold);
 	return false;
 }
