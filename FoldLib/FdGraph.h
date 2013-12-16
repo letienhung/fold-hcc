@@ -4,18 +4,24 @@
 #include "FdNode.h"
 #include "FdLink.h"
 #include "AABB.h"
+#include <QSharedPointer>
 
 class FdGraph : public Structure::Graph
 {
 public:
     FdGraph();
 	FdGraph(FdGraph& other);
+
 	virtual Graph* clone();
+	virtual void addLink(Structure::Node* n1, Structure::Node* n2);
 
 public:
 	// accessors
-	virtual void addLink(Structure::Node* n1, Structure::Node* n2);
 	QVector<FdNode*> getFdNodes();
+
+	// modifier
+	void mergeNodes(QVector<FdNode*> ns);
+	void addNode(SurfaceMeshModel* mesh, int method);
 
 	// I/O
 	void saveToFile(QString fname);
@@ -32,3 +38,4 @@ public:
 	bool showAABB;
 };
 
+typedef QSharedPointer<FdGraph> FdGraphPtr;

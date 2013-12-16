@@ -1,6 +1,6 @@
 #include "Foldabilizer.h"
 
-Foldabilizer::Foldabilizer( FdGraph* graph )
+Foldabilizer::Foldabilizer( FdGraphPtr graph )
 {
 	scaffold = graph;
 	direct = Z;
@@ -27,6 +27,8 @@ void Foldabilizer::run()
 {
 	setDirection(Z);
 	findControlNodes();
+	groupControlNodes();
+	createControlPanels();
 }
 
 void Foldabilizer::findControlNodes()
@@ -60,7 +62,7 @@ void Foldabilizer::groupControlNodes()
 	foreach (double pos, posNodeMap.keys())
 	{
 		// create a new group
-		if (fabs(pos - prePos) < layerHeightThreshold && !ctrlGroup.isEmpty())
+		if (fabs(pos - prePos) > layerHeightThreshold && !ctrlGroup.isEmpty())
 		{
 			controlGroups.push_back(ctrlGroup);
 			ctrlGroup.clear();
@@ -81,5 +83,8 @@ void Foldabilizer::groupControlNodes()
 
 void Foldabilizer::createControlPanels()
 {
-
+	foreach (QVector<FdNode*> cg, controlGroups)
+	{
+		scaffold->mergeNodes(cg);
+	}
 }

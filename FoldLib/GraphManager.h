@@ -14,11 +14,12 @@ public:
 
 public:
 	SurfaceMeshModel* entireMesh;
-	FdGraph* scaffold;
+	FdGraphPtr scaffold;
 
 public slots:
-	// entire mesh
+	// setter
 	void setMesh(Model* model);
+	void setScaffold(FdGraphPtr fdg);
 
 	// graph
 	void createScaffold(int method);

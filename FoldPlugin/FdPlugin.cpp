@@ -78,7 +78,7 @@ void FdPlugin::test()
 }
 
 
-FdGraph* FdPlugin::activeScaffold()
+FdGraphPtr FdPlugin::activeScaffold()
 {
 	return g_manager->scaffold;
 }

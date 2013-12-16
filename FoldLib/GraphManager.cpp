@@ -6,24 +6,19 @@
 #include "LinearLink.h"
 #include "FdGraph.h"
 
-#include "PcaObb.h"
-#include "AABB.h"
-#include "MinOBB.h"
-
 #include <QFileInfo>
 #include <QFileDialog>
 #include "FdUtility.h"
 
 GraphManager::GraphManager()
 {
-	this->scaffold = new FdGraph();
+	this->scaffold = FdGraphPtr(new FdGraph());
 	this->entireMesh = NULL;
 }
 
 
 GraphManager::~GraphManager()
 {
-	delete scaffold;
 }
 
 
@@ -39,25 +34,7 @@ void GraphManager::createScaffold( int method )
 	// create nodes from meshes
 	foreach (SurfaceMeshModel* m, subMeshes)
 	{
-		Geom::Box box;
-		if (method == 0){
-			Geom::AABB aabb(m);
-			box = aabb.box();
-		}else{
-			Geom::MinOBB obb(m);
-			box = obb.mMinBox;
-		}
-
-		// create node depends on box type
-		FdNode* node;
-		MeshPtr mesh(m);
-		int box_type = box.getType(5);
-		if (box_type == Geom::Box::ROD)	
-			 node = new RodNode(mesh, box);
-		else node = new PatchNode(mesh, box);
-
-		// add to scaffold
-		scaffold->addNode(node);
+		scaffold->addNode(m, method);
 	}
 
 	emit(scaffoldChanged(scaffold->path));
@@ -170,9 +147,12 @@ void GraphManager::linkSelectedNodes()
 
 void GraphManager::test()
 {
-	FdGraph* fd = (FdGraph*)(scaffold->clone());
-	delete scaffold;
-	scaffold = fd;
+	scaffold = FdGraphPtr((FdGraph*)(scaffold->clone()));
 
 	emit(scaffoldChanged(scaffold->path));
+}
+
+void GraphManager::setScaffold( FdGraphPtr fdg )
+{
+	scaffold = fdg;
 }

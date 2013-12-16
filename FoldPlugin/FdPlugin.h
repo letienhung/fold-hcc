@@ -26,7 +26,7 @@ public:
     FdWidget	*widget;
 	GraphManager* g_manager;
 
-	FdGraph* activeScaffold();
+	FdGraphPtr activeScaffold();
 
 public slots:
 	void updateScene();

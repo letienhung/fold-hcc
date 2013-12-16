@@ -23,10 +23,12 @@ HEADERS += \
     CustomDrawObjects.h \
     SegMeshLoader.h \
     XmlWriter.h \
-    QuickMeshDraw.h
+    QuickMeshDraw.h \
+    MeshMerger.h
 
 SOURCES += \
     Numeric.cpp \
     SegMeshLoader.cpp \
     UtilityGlobal.cpp \
-    XmlWriter.cpp
+    XmlWriter.cpp \
+    MeshMerger.cpp

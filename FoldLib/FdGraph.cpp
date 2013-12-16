@@ -5,12 +5,16 @@
 #include <QFileInfo>
 #include "XmlWriter.h"
 #include "FdUtility.h"
+#include "MeshMerger.h"
 
 #include "RodNode.h"
 #include "PatchNode.h"
 #include "FdLink.h"
 #include "LinearLink.h"
 #include "PointLink.h"
+
+#include "AABB.h"
+#include "MinOBB.h"
 
 FdGraph::FdGraph()
 {
@@ -139,7 +143,7 @@ void FdGraph::loadFromFile(QString fname)
 		else
 			new_node = new PatchNode(m, box);
 
-		addNode(new_node);
+		Graph::addNode(new_node);
 	}
 }
 
@@ -169,4 +173,39 @@ void FdGraph::draw()
 		Geom::AABB aabb = computeAABB();
 		aabb.box().drawWireframe(2.0, Qt::cyan);
 	}
+}
+
+void FdGraph::mergeNodes( QVector<FdNode*> ns )
+{
+	MeshMerger mm;
+	foreach (FdNode* n, ns)
+	{
+		mm.addMesh(n->mMesh.data());
+		removeNode(n->id);
+	}
+
+	addNode(mm.getMesh(), 0);
+}
+
+
+void FdGraph::addNode( SurfaceMeshModel* mesh, int method )
+{
+	Geom::Box box;
+	if (method == 0){
+		Geom::AABB aabb(mesh);
+		box = aabb.box();
+	}else{
+		Geom::MinOBB obb(mesh);
+		box = obb.mMinBox;
+	}
+
+	// create node depends on box type
+	FdNode* node;
+	MeshPtr mesh_ptr(mesh);
+	int box_type = box.getType(5);
+	if (box_type == Geom::Box::ROD)	
+		node = new RodNode(mesh_ptr, box);
+	else node = new PatchNode(mesh_ptr, box);
+
+	Graph::addNode(node);
 }

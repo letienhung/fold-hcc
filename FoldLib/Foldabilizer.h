@@ -6,10 +6,10 @@ enum DIRECTION{X, Y, Z};
 class Foldabilizer
 {
 public:
-    Foldabilizer(FdGraph* graph);
+    Foldabilizer(FdGraphPtr graph);
 
 public:
-	FdGraph* scaffold;
+	FdGraphPtr scaffold;
 
 	DIRECTION direct;
 	double perpThreshold;
