@@ -29,10 +29,10 @@ void QManualDeformer::updateBox()
 	Vec3d delta(0,0,0);
 
 	Point p = pos();
-	int i = mBox->getOrthoAxis(mBox->selPlane);
-	Point center = (mBox->selPlane.Conners[0] + mBox->selPlane.Conners[1] + mBox->selPlane.Conners[2] + mBox->selPlane.Conners[3])/4;
-    double factor = fabs(p[i] - center[i]);
-	mBox->deform(i, factor);
+	//int i = mBox->getOrthoAxis(mBox->selPlane);
+	Point center = (mBox->selPlane[0]+mBox->selPlane[1]+mBox->selPlane[2]+mBox->selPlane[3])/4;
+    double factor = fabs(p[mBox->axisID] - center[mBox->axisID]);
+	mBox->deform(factor);
 
 	emit( objectModified() );
 }

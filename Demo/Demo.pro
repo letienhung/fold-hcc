@@ -62,6 +62,8 @@ SOURCES += ./Screens/MyDesigner.cpp \
     ./Screens/UiUtility/BBox.cpp \
     ./Screens/UiUtility/Triangle.cpp \
     ./Screens/UiUtility/SimpleDraw.cpp\
+    ./Screens/UiUtility/GL/VBO/VBO.cpp \
+    ./Screens/UiUtility/GL/Glee.c\
     ./main.cpp \
     ./MainWindow.cpp
 	

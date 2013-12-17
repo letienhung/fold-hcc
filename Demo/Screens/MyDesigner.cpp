@@ -2,9 +2,6 @@
 #include "UiUtility/QManualDeformer.h"
 #include "AABB.h"
 
-#include "MyDesigner.h"
-#define GL_MULTISAMPLE 0x809D
-
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QKeyEvent>
@@ -21,15 +18,17 @@
 using namespace Geom;
 
 QFontMetrics * fm;
-std::vector<Vector3> segPlane;
-Line intLine;
-Point intPnt;
+//std::vector<Vector3> segPlane;
+//Line intLine;
+//Point intPnt;
 // Misc.
 #include "UiUtility/sphereDraw.h"
 #include "UiUtility/drawRoundRect.h"
 #include "UiUtility/drawPlane.h"
 #include "UiUtility/drawCube.h"
 #include "UiUtility/SimpleDraw.h"
+
+#include "MyDesigner.h"
 
 #include <QTime>
 extern QTime * globalTimer;
@@ -52,6 +51,8 @@ MyDesigner::MyDesigner( Ui::DesignWidget * useDesignWidget, QWidget * parent /*=
 	isMousePressed = false;
 	loadedMeshHalfHight = 1.0;
 
+	isShow = true;
+
 	fm = new QFontMetrics(QFont());
 
 	connect(this, SIGNAL(objectInserted()), SLOT(updateGL()));
@@ -62,20 +63,15 @@ MyDesigner::MyDesigner( Ui::DesignWidget * useDesignWidget, QWidget * parent /*=
 	// TEXT ON SCREEN
 	timerScreenText = new QTimer(this);
 	connect(timerScreenText, SIGNAL(timeout()), SLOT(dequeueLastMessage()));
+    connect(camera()->frame(), SIGNAL(manipulated()), SLOT(cameraMoved()));
 
-	connect(camera()->frame(), SIGNAL(manipulated()), SLOT(cameraMoved()));
+	connect(designWidget->showCuboid, SIGNAL(stateChanged(int)),  SLOT(showCuboids(int)));
+	connect(designWidget->showGraph, SIGNAL(stateChanged(int)),  SLOT(showGraph(int)));
+	connect(designWidget->showModel, SIGNAL(stateChanged(int)), SLOT(showModel(int)));
 
 	this->setMouseTracking(true);
 
 	viewTitle = "View";
-	showGraph = true;
-	showObject = true;
-	isSceneEmpty = true;
-
-	// Connect to show / hide Graph and Model
-	connect(designWidget->showGraph, SIGNAL(stateChanged(int)), SLOT(showGraphStateChanged(int)));
-	connect(designWidget->showModel, SIGNAL(stateChanged(int)), SLOT(showObjectStateChanged(int)));
-
 }
 
 void MyDesigner::init()
@@ -103,6 +99,7 @@ void MyDesigner::init()
 
 	camera()->frame()->setSpinningSensitivity(100.0);
 
+	if (!VBO::isVBOSupported()) std::cout << "VBO is not supported." << std::endl;
 }
 
 void MyDesigner::setupLights()
@@ -171,7 +168,7 @@ void MyDesigner::preDraw()
 
 void MyDesigner::drawShadows()
 {
-	//if(!gManager|| camera()->position().z < loadedMeshHalfHight || isDrawStacking) return;
+	if(!gManager || camera()->position().z < loadedMeshHalfHight) return;
 	
 	// Compute shadow matrix
 	GLfloat floorShadow[4][4];
@@ -186,10 +183,10 @@ void MyDesigner::drawShadows()
 	glColor4d(0,0,0,0.04);
 	glDisable(GL_LIGHTING);
 	glDisable(GL_DEPTH_TEST);
-	/*for (QMap<QString, VBO>::iterator i = vboCollection.begin(); i != vboCollection.end(); ++i)
+	for (QMap<QString, VBO>::iterator i = vboCollection.begin(); i != vboCollection.end(); ++i)
 	{
-	i->render_depth();
-	}*/
+		i->render_depth();
+	}
 	glEnable(GL_LIGHTING);
 	glEnable(GL_DEPTH_TEST);
 	glPopMatrix();
@@ -201,44 +198,36 @@ void MyDesigner::draw()
 	// No object to draw
 	if (isEmpty()) return;
 
-
 	// The main object
-	//if(showObject && activeObject()){
-	//	drawObject();
-	//	SurfaceMeshModel *mesh = activeObject();
-	//	AABB aabb(mesh);
-	//	mBbox = new BBox(aabb.center(), (mesh->bbmax-mesh->bbmin)*0.5f);
-	//    mBbox->draw();
-	//}
+	if(gManager->scaffold){
+		drawObject();
+		gManager->scaffold->draw();
+		/*Geom::AABB aabb = gManager->scaffold->computeAABB();
+		mBox = new BBox(aabb.center(), (aabb.bbmax-aabb.bbmin)*0.5f);
+		mBox->draw();*/
+	}
 
-	//if(showLcc && mHccGraph ){
-	//	mHccGraph->isDraw = showLcc;
-	//	mHccGraph->computeAabb();	
-	//	
-	//	mHccGraph->draw();
+	if(selectMode == BOX && gManager->scaffold){
+		Geom::AABB aabb = gManager->scaffold->computeAABB();
+		if(mBox == NULL)
+			mBox = new BBox(aabb.center(), (aabb.bbmax-aabb.bbmin)*0.5f);
+		mBox->draw();
+	}
 
-	//}
-
-	//// Draw debug geometries
+	// Draw debug geometries
 	//activeObject()->drawDebug();
 
-	// Draw stacked
-	//if(selectMode == STACK_DIR_MODE) isDrawStacking = true;
-	//if(activeOffset) drawStacking();
-	if(transformMode == SPLIT_MODE && segPlane.size()){	
-		//SimpleDraw::DrawArrow(Vec3d(startMouseOrigin[0],startMouseOrigin[1],startMouseOrigin[2]), 
-		//	                  Vec3d((startMouseDir+startMouseOrigin)[0],(startMouseDir+startMouseOrigin)[1],(startMouseDir+startMouseOrigin)[2]), true, true, 0.3f);
-		SimpleDraw::DrawSphere(intPnt, 0.01f);
-		//SimpleDraw::DrawArrow(intLine.a, intLine.b, true, true, 0.1f);
-		SimpleDraw::DrawSquare(segPlane[0], segPlane[1], segPlane[2], segPlane[3],true,1.0f,Vec4d(0.8,0.65,0.2,1));
-	}
-	// Draw controller and primitives
-	//if(ctrl() && (selectMode == CONTROLLER || selectMode == CONTROLLER_ELEMENT)) 
-		//ctrl()->draw();
+	//if(transformMode == SPLIT_MODE && segPlane.size()){	
+	//	//SimpleDraw::DrawArrow(Vec3d(startMouseOrigin[0],startMouseOrigin[1],startMouseOrigin[2]), 
+	//	//	                  Vec3d((startMouseDir+startMouseOrigin)[0],(startMouseDir+startMouseOrigin)[1],(startMouseDir+startMouseOrigin)[2]), true, true, 0.3f);
+	//	SimpleDraw::DrawSphere(intPnt, 0.01f);
+	//	//SimpleDraw::DrawArrow(intLine.a, intLine.b, true, true, 0.1f);
+	//	SimpleDraw::DrawSquare(segPlane[0], segPlane[1], segPlane[2], segPlane[3],true,1.0f,Vec4d(0.8,0.65,0.2,1));
+	//}
 
 	glEnable(GL_BLEND);
 
-	drawDebug();
+	//drawDebug();
 }
 
 void MyDesigner::drawTool()
@@ -342,63 +331,111 @@ void MyDesigner::drawDebug()
 	{glVertex3dv(line->first); glVertex3dv(line->second);}
 	glEnd();
 
-	//foreach(Plane p, debugPlanes) p.draw();
+	foreach(PolygonSoup p, debugPlanes) p.draw();
 
 	glEnable(GL_LIGHTING);
 }
 
-//void MyDesigner::drawObject()
-//{
-//	if (VBO::isVBOSupported()){
-//		updateVBOs();
-//
-//		glPushAttrib (GL_POLYGON_BIT);
-//		glEnable (GL_CULL_FACE);
-//
-//		drawObjectOutline();
-//
-//		/** Draw front-facing polygons as filled */
-//		glPolygonMode (GL_FRONT, GL_FILL);
-//		glCullFace (GL_BACK);
-//		
-//		/* Draw solid object */
-//		for (QMap<QString, VBO>::iterator i = vboCollection.begin(); i != vboCollection.end(); ++i)
-//		{
-//			if(viewTitle != "View")
-//				i->render_regular(false, true);
-//			else
-//				i->render();
-//		}
-//
-//		/* GL_POLYGON_BIT */
-//		glPopAttrib ();
-//	} 
-//	else{// Fall back
-//		activeObject()->simpleDraw();
-//	}
-//}
+void MyDesigner::drawObject()
+{
+	if (VBO::isVBOSupported())
+	{
+		updateVBOs();
 
-//void MyDesigner::drawObjectOutline()
-//{
-//	/** Draw back-facing polygons as red lines	*/
-//	/* Disable lighting for outlining */
-//	glPushAttrib (GL_LIGHTING_BIT | GL_LINE_BIT | GL_DEPTH_BUFFER_BIT);
-//	glDisable (GL_LIGHTING);
-//
-//	glPolygonMode(GL_BACK, GL_LINE);
-//	glCullFace (GL_FRONT);
-//
-//	glDepthFunc (GL_LEQUAL);
-//	glLineWidth (Max(0.5, Min(5,skyRadius / 2.0)));
-//
-//	/* Draw wire object */
-//	glColor3f (0.0f, 0.0f, 0.0f);
-//	for (QMap<QString, VBO>::iterator i = vboCollection.begin(); i != vboCollection.end(); ++i)
-//		i->render_depth();
-//	
-//	/* GL_LIGHTING_BIT | GL_LINE_BIT | GL_DEPTH_BUFFER_BIT */
-//	glPopAttrib ();
-//}
+		glPushAttrib (GL_POLYGON_BIT);
+		glEnable (GL_CULL_FACE);
+
+		if(isShow){
+		   drawObjectOutline();
+		}
+		/** Draw front-facing polygons as filled */
+		glPolygonMode (GL_FRONT, GL_FILL);
+		glCullFace (GL_BACK);
+		
+		/* Draw solid object */
+		for (QMap<QString, VBO>::iterator i = vboCollection.begin(); i != vboCollection.end(); ++i)
+		{
+			if(viewTitle != "View")
+				i->render_regular(false, true);
+			else
+				i->render();
+		}
+
+		/* GL_POLYGON_BIT */
+		glPopAttrib ();
+	} 
+	else{// Fall back
+		gManager->scaffold->draw();
+	}
+}
+
+void MyDesigner::drawObjectOutline()
+{
+	/** Draw back-facing polygons as red lines	*/
+	/* Disable lighting for outlining */
+	glPushAttrib (GL_LIGHTING_BIT | GL_LINE_BIT | GL_DEPTH_BUFFER_BIT);
+	glDisable (GL_LIGHTING);
+
+	glPolygonMode(GL_BACK, GL_LINE);
+	glCullFace (GL_FRONT);
+
+	glDepthFunc (GL_LEQUAL);
+	glLineWidth (Max(0.5, Min(5,skyRadius / 2.0)));
+
+	/* Draw wire object */
+	glColor3f (0.0f, 0.0f, 0.0f);
+	for (QMap<QString, VBO>::iterator i = vboCollection.begin(); i != vboCollection.end(); ++i)
+		i->render_depth();
+	
+	/* GL_LIGHTING_BIT | GL_LINE_BIT | GL_DEPTH_BUFFER_BIT */
+	glPopAttrib ();
+}
+
+QVector<uint> MyDesigner::fillTrianglesList(FdNode* n)
+{
+	// get face indices
+	QVector<uint> triangles;
+	Surface_mesh::Face_iterator fit, fend = n->mMesh->faces_end();
+	Surface_mesh::Vertex_around_face_circulator fvit, fvend;
+	Vertex v0, v1, v2;
+
+	for (fit = n->mMesh->faces_begin(); fit != fend; ++fit)
+	{
+		fvit = fvend = n->mMesh->vertices(fit);
+		v0 = fvit; v1 = ++fvit; v2 = ++fvit;
+
+		triangles.push_back(v0.idx());
+		triangles.push_back(v1.idx());
+		triangles.push_back(v2.idx());
+	}
+	return triangles;
+}
+
+void MyDesigner::updateVBOs()
+{
+	if(gManager && gManager->scaffold)
+	{
+		// Create VBO for each segment if needed
+	    QVector<FdNode*> nodes = gManager->scaffold->getFdNodes();
+		for (int i=0;i<nodes.size();i++)
+		{			
+			QSharedPointer<SurfaceMeshModel> seg = nodes[i]->mMesh;
+			QString objId = nodes[i]->id;
+
+			if (VBO::isVBOSupported())// && !vboCollection.contains(objId))
+			{
+				Surface_mesh::Vertex_property<Point>  points   = seg->vertex_property<Point>("v:point");
+				Surface_mesh::Vertex_property<Point>  vnormals = seg->vertex_property<Point>("v:normal");
+				Surface_mesh::Vertex_property<Color>  vcolors  = seg->vertex_property<Color>("v:color");
+
+				QVector<uint> traingles = fillTrianglesList(nodes[i]);
+
+				// Create VBO 
+				vboCollection[objId] = VBO( (uint)seg->n_vertices(), points.data(), vnormals.data(), vcolors.data(), traingles);		
+			}
+		}
+	}
+}
 
 void MyDesigner::postDraw()
 {
@@ -507,7 +544,7 @@ void MyDesigner::drawOSD()
 {
 	QStringList selectModeTxt, toolModeTxt;
 	selectModeTxt << "Camera" << "Mesh" << "Vertex" << "Edge" 
-		<< "Face" << "Primitive" << "Curve";
+		<< "Face" << "Primitive" << "Curve"<<"Box";
 	toolModeTxt << "None" << "Move" << "Rotate" << "Scale"<<"Split";
 
 	int paddingX = 15, paddingY = 5;
@@ -537,6 +574,9 @@ void MyDesigner::drawOSD()
 			curveId = QString::number(ctrl()->getSelectedPrimitive()->selectedCurveId);
 		drawMessage("Curve - " + curveId, padY(lineNum), Vec4d(0,1.0,0,0.25));
 	}*/
+
+	if(selectMode == BOX)
+		drawMessage("Push AABB", padY(lineNum), Vec4d(0,1.0,0,0.25));
 
 	if(transformMode != NONE_MODE)
 	{
@@ -586,14 +626,16 @@ void MyDesigner::drawCircleFade(Vec4d &color, double radius)
 	glBegin(GL_TRIANGLE_FAN);
 	glColor4d(color[0],color[1],color[2],color[3]); glVertex3d(c.getCenter().x(),c.getCenter().y(),c.getCenter().z());
 	glColor4d(color[0],color[1],color[2],0); 
-	foreach(Point p, c.getPoints())	glVertex3d(p[0], p[1], p[2]); 
-	glVertex3d(pnts.front().x(), pnts.front().y(),pnts.front().y());
+	foreach(Point p, pnts)	glVertex3d(p[0], p[1], p[2]); 
+	glVertex3d(pnts[0].x(), pnts[0].y(), pnts[0].z());
+	//glVertex3d(pnts.front().x(), pnts.front().y(),pnts.front().y());
 	glEnd();
 	//glEnable(GL_LIGHTING);
 }
 
 void MyDesigner::updateActiveObject()
 {
+	vboCollection.clear();
 	emit(objectUpdated());
 }
 
@@ -610,164 +652,22 @@ bool MyDesigner::isEmpty()
 void MyDesigner::resetView()
 {
 	setupCamera();
-	//camera()->setSceneRadius(gManager->entireMesh->radius);
+	camera()->setSceneRadius(gManager->scaffold->computeAABB().radius());
 	camera()->showEntireScene();
 }
 
-//bool MyDesigner::modded_read_obj(SurfaceMeshModel& mesh, const std::string& filename){
-//	char   s[200];
-//	float  x, y, z;
-//	float  nx,ny,nz;
-//	std::vector<Surface_mesh::Vertex>  vertices;
-//
-//	// open file (in ASCII mode)
-//	FILE* in = fopen(filename.c_str(), "r");
-//	if (!in) return false;
-//
-//	// if mesh is not empty we need an offset for vertex indices
-//	// also take into accout that OBJ indices start at 1 (not 0)
-//	const int voffset = mesh.n_vertices() - 1;
-//
-//	// clear line once
-//	memset(&s, 0, 200);
-//
-//	bool hasnormals = false;
-//
-//	// parse line by line (currently only supports vertex positions & faces
-//	while(in && !feof(in) && fgets(s, 200, in)) {
-//		// comment
-//		if (s[0] == '#' || isspace(s[0])) continue;
-//
-//		// vertex
-//		else if (strncmp(s, "v ", 2) == 0) {
-//			if (sscanf(s, "v %f %f %f", &x, &y, &z)) {
-//				mesh.add_vertex(Surface_mesh::Point(x,y,z));
-//			}
-//		}
-//
-//		// face
-//		else if (strncmp(s, "f ", 2) == 0) {
-//			int component(0), nV(0);
-//			bool endOfVertex(false);
-//			char *p0, *p1(s+1);
-//
-//			vertices.clear();
-//
-//			// skip white-spaces
-//			while (*p1==' ') ++p1;
-//
-//			while (p1) {
-//				p0 = p1;
-//
-//				// overwrite next separator
-//
-//				// skip '/', '\n', ' ', '\0', '\r' <-- don't forget Windows
-//				while (*p1!='/' && *p1!='\r' && *p1!='\n' && *p1!=' ' && *p1!='\0') ++p1;
-//
-//				// detect end of vertex
-//				if (*p1 != '/') {
-//					endOfVertex = true;
-//				}
-//
-//				// replace separator by '\0'
-//				if (*p1 != '\0') {
-//					*p1 = '\0';
-//					p1++; // point to next token
-//				}
-//
-//				// detect end of line and break
-//				if (*p1 == '\0' || *p1 == '\n') {
-//					p1 = 0;
-//				}
-//
-//				// read next vertex component
-//				if (*p0 != '\0') {
-//					switch (component) {
-//					case 0: // vertex
-//						vertices.push_back( Surface_mesh::Vertex(atoi(p0) + voffset) );
-//						break;
-//
-//					case 1: // texture coord
-//						break;
-//
-//					case 2: // normal
-//						break;
-//					}
-//				}
-//
-//				++component;
-//
-//				if (endOfVertex) {
-//					component = 0;
-//					nV++;
-//					endOfVertex = false;
-//				}
-//			}
-//
-//			mesh.add_face(vertices);
-//		}
-//		else if( !hasnormals && (strncmp(s, "vn ", 3) == 0)){
-//			hasnormals = true;
-//		}
-//
-//
-//		// clear line
-//		memset(&s, 0, 200);
-//	}
-//
-//	/// Normals
-//	if(hasnormals){
-//		/// Go back to beginning of file
-//		rewind(in);
-//		/// And start reading
-//		unsigned int ncounter = 0;
-//		Vector3VertexProperty normals = mesh.vertex_normals(true);
-//		while(in && !feof(in) && fgets(s, 200, in)) {   
-//			if (strncmp(s, "vn ", 3) == 0) {
-//				int nread = sscanf(s, "vn %f %f %f", &nx, &ny, &nz);
-//				assert(nread==3);
-//				if(ncounter >= mesh.n_vertices()) continue; // skip duplicated normals
-//				normals[Vertex(ncounter)] = Vector3(nx,ny,nz);
-//				// qDebug() << normals[Vertex(ncounter)];                
-//				ncounter++;    
-//			}
-//		}        
-//
-//		if(ncounter!=mesh.n_vertices())
-//			qWarning("Warning: while reading file #normals=%d while #vertices=%d", (int)ncounter, mesh.n_vertices());  
-//	}
-//
-//	fclose(in);
-//	return true;
-//}
-
-void MyDesigner::loadObject( QString fileName)
+void MyDesigner::loadObject()
 {
 	clearButtons();
-
 	selection.clear();
 
-	QString originalFileName = fileName;
-
-	if(fileName.isEmpty() || !QFileInfo(fileName).exists()) return;
-
-	QString newObjId = QFileInfo(fileName).fileName();
-	newObjId.chop(4);
-
-	//SurfaceMeshModel* loadedMesh = new SurfaceMeshModel(QFileInfo(fileName).filePath(), QFileInfo(fileName).fileName());    
-
-	// Reading mesh
-	//modded_read_obj(*loadedMesh, qPrintable(originalFileName));
-	/// If they are not loaded from file, compute normals
-	/*NormalsHelper h(loadedMesh);
-	if(!loadedMesh->has_face_normals())
-		h.compute_face_normals();
-	if(!loadedMesh->has_vertex_normals()) 
-		h.compute_vertex_normals();    */
-
-	// Set global ID for the mesh and all its segments
-	/*loadedMesh->setObjectName(newObjId);	
-	setActiveObject(loadedMesh);*/
+	gManager = NULL;
+	mBox = NULL;
+	gManager = new GraphManager();
+	gManager->loadScaffold();
+	
+	Geom::AABB aabb = gManager->scaffold->computeAABB();
+	mBox = new BBox(aabb.center(), (aabb.bbmax-aabb.bbmin)*0.5f);
 
 	setManipulatedFrame(activeFrame);
 
@@ -782,13 +682,13 @@ void MyDesigner::setActiveObject(GraphManager *gm)
 {
 	// Delete the original object
 	if (gManager)
-		//emit( objectDiscarded( activeMesh->objectName() ) );
+		emit(objectDiscarded());
 
 	// Setup the new object
 	gManager = gm;
 
 	// Change title of scene
-	//setWindowTitle(activeMesh->objectName());
+	setWindowTitle(gManager->scaffold->path);
 
 	// Set camera
 	resetView();
@@ -798,7 +698,6 @@ void MyDesigner::setActiveObject(GraphManager *gm)
 
 	//SaveUndo();
 
-	// Stack panel 
 	emit(objectInserted());
 }
 
@@ -806,7 +705,7 @@ void MyDesigner::newScene()
 {
 	clearButtons();
 	if(gManager)
-		//emit( objectDiscarded( activeMesh->objectName()));
+		emit( objectDiscarded());
 
 	selection.clear();
 	
@@ -817,9 +716,8 @@ void MyDesigner::newScene()
 
 	//SaveUndo();
 	selectMode = SELECT_NONE;
-	isSceneEmpty = true;
-    segPlane.clear();
-	updateWidget();
+    //segPlane.clear();
+	//updateWidget();
 	updateGL();
 }
 
@@ -860,7 +758,7 @@ void MyDesigner::mousePressEvent( QMouseEvent* e )
 			*/
 			//std::vector<Line> edges = ((Cuboid *)ctrl()->getSelectedPrimitive())->getEdges();
 			//Line intLine;
-			Vec3d vec;
+			//Vec3d vec;
 			//double minDist = 100000, dist;
 			//foreach(Line l, edges){
 			//	dist = l.distanceToUnbounded(Vec3d((startMouseOrigin+startMouseDir)[0], (startMouseOrigin+startMouseDir)[1],(startMouseOrigin+startMouseDir)[2]));
@@ -887,6 +785,19 @@ void MyDesigner::mousePressEvent( QMouseEvent* e )
 
 			updateHCC(vec);
 			updateWidget();*/
+		}
+
+		if(selectMode == BOX && mBox)
+		{
+			Point start(startMouseOrigin[0], startMouseOrigin[1],startMouseOrigin[2]);
+			Vec3d dir(startMouseDir[0], startMouseDir[1], startMouseDir[2]);
+			int idx = mBox->manipulate(start,dir);
+			if(idx < 0){
+			   selectMode = SELECT_NONE;
+			   this->displayMessage("Select one face to push in");
+			}
+			mBox->draw();
+			updateGL();
 		}
 	}
 
@@ -941,6 +852,11 @@ void MyDesigner::mousePressEvent( QMouseEvent* e )
 			startScalePos = p;
 		}
 
+		if(selectMode == BOX)
+		{
+
+		}
+
 		if(transformMode != NONE_MODE && selectMode != SELECT_NONE)
 		{
 			//SaveUndo();
@@ -959,7 +875,7 @@ void MyDesigner::mouseReleaseEvent( QMouseEvent* e )
 	if(transformMode == ROTATE_MODE)
 	{
 		//defCtrl->saveOriginal();
-		defCtrl->getFrame()->setOrientation(Quaternion());
+		defCtrl->getFrame()->setOrientation(qglviewer::Quaternion());
 	}
 
 	if(transformMode == TRANSLATE_MODE)
@@ -977,16 +893,22 @@ void MyDesigner::mouseReleaseEvent( QMouseEvent* e )
 
 	}
 
+	if(selectMode == BOX)
+	{
+		//defCtrl->getFrame()->setOrientation(qglviewer::Quaternion());
+	}
+
 	// View changer box area
 	double scale = 90;
 	int x = e->pos().x(), y = e->pos().y();
-	if(x > width() - scale && y > height() - scale && gManager)
+	if(x > width() - scale && y > height() - scale && gManager->scaffold)
 	{
 		QPoint p(abs(x - width() + scale), abs(y - height() + scale));
+		Geom::AABB aabb = gManager->scaffold->computeAABB();
 
-		double meshHeight = 10.0;//activeMesh->bbmax.z() - activeMesh->bbmin.z();
-		double meshLength = 10.0;//activeMesh->bbmax.y() - activeMesh->bbmin.y();
-		double meshWidth = 10.0;//activeMesh->bbmax.x() - activeMesh->bbmin.x();
+		double meshHeight = aabb.bbmax.z() - aabb.bbmin.z();
+		double meshLength = aabb.bbmax.y() - aabb.bbmin.y();
+		double meshWidth = aabb.bbmax.x() - aabb.bbmin.x();
 
 		QSize box(QSize(scale * 0.25, scale * 0.25));
 
@@ -999,50 +921,50 @@ void MyDesigner::mouseReleaseEvent( QMouseEvent* e )
 		QRect bottom(QPoint(30,70), box);
 
 		if(top.contains(p)){
-			qglviewer::Frame f(Vec(0,0,3*meshHeight), Quaternion());
+			qglviewer::Frame f(Vec(0,0,3*meshHeight), qglviewer::Quaternion());
 			camera()->interpolateTo(f,0.25);camera()->setType(Camera::ORTHOGRAPHIC);
 			viewTitle = "Top";
 		}
 
 		if(bottom.contains(p)){
-			qglviewer::Frame f(Vec(0,0,-3*meshHeight), Quaternion());
-			f.rotate(Quaternion(Vec(1,0,0), M_PI));
+			qglviewer::Frame f(Vec(0,0,-3*meshHeight), qglviewer::Quaternion());
+			f.rotate(qglviewer::Quaternion(Vec(1,0,0), M_PI));
 			camera()->interpolateTo(f,0.25);camera()->setType(Camera::ORTHOGRAPHIC);
 			viewTitle = "Bottom";
 		}
 
 		if(front.contains(p)){
-			qglviewer::Frame f(Vec(3*meshLength,0,0), Quaternion(Vec(0,0,1),Vec(1,0,0)));
-			f.rotate(Quaternion(Vec(0,0,1), M_PI / 2.0));
+			qglviewer::Frame f(Vec(3*meshLength,0,0), qglviewer::Quaternion(Vec(0,0,1),Vec(1,0,0)));
+			f.rotate(qglviewer::Quaternion(Vec(0,0,1), M_PI / 2.0));
 			camera()->interpolateTo(f,0.25);camera()->setType(Camera::ORTHOGRAPHIC);
 			viewTitle = "Front";
 		}
 
 		if(side.contains(p)){
-			qglviewer::Frame f(Vec(0,-3*meshWidth,0), Quaternion(Vec(0,0,1),Vec(0,-1,0)));
+			qglviewer::Frame f(Vec(0,-3*meshWidth,0), qglviewer::Quaternion(Vec(0,0,1),Vec(0,-1,0)));
 			camera()->interpolateTo(f,0.25);camera()->setType(Camera::ORTHOGRAPHIC);
 			viewTitle = "Side";
 		}
 		
 		if(backside.contains(p)){
-			qglviewer::Frame f(Vec(0,3*meshWidth,0), Quaternion(Vec(0,0,1),Vec(0,1,0)));
-			f.rotate(Quaternion(Vec(0,0,1), M_PI));
+			qglviewer::Frame f(Vec(0,3*meshWidth,0), qglviewer::Quaternion(Vec(0,0,1),Vec(0,1,0)));
+			f.rotate(qglviewer::Quaternion(Vec(0,0,1), M_PI));
 			camera()->interpolateTo(f,0.25);camera()->setType(Camera::ORTHOGRAPHIC);
 			viewTitle = "Back-side";
 		}
 		 
 		if(back.contains(p)){
-			qglviewer::Frame f(Vec(-3*meshLength,0,0), Quaternion(Vec(0,0,-1),Vec(1,0,0)));
-			f.rotate(Quaternion(Vec(0,0,-1), M_PI / 2.0));
+			qglviewer::Frame f(Vec(-3*meshLength,0,0), qglviewer::Quaternion(Vec(0,0,-1),Vec(1,0,0)));
+			f.rotate(qglviewer::Quaternion(Vec(0,0,-1), M_PI / 2.0));
 			camera()->interpolateTo(f,0.25);camera()->setType(Camera::ORTHOGRAPHIC);
 			viewTitle = "Back";
 		}
 
 		if(corner.contains(p)){
 			double mx = 2*Max(meshLength, Max(meshWidth, meshHeight));
-			qglviewer::Frame f(Vec(mx,-mx,mx), Quaternion());
-			f.rotate(Quaternion(Vec(0,0,1), M_PI / 4.0));
-			f.rotate(Quaternion(Vec(1,0,0), M_PI / 3.3));
+			qglviewer::Frame f(Vec(mx,-mx,mx), qglviewer::Quaternion());
+			f.rotate(qglviewer::Quaternion(Vec(0,0,1), M_PI / 4.0));
+			f.rotate(qglviewer::Quaternion(Vec(1,0,0), M_PI / 3.3));
 			camera()->interpolateTo(f,0.25);camera()->setType(Camera::PERSPECTIVE);
 			viewTitle = "View";
 		}
@@ -1160,6 +1082,11 @@ void MyDesigner::mouseMoveEvent( QMouseEvent* e )
 		{
 			// Should constraint to closest axis line..
 		}
+
+		if(selectMode == BOX)
+		{
+
+		}
 	}
 
 	double scale = 90;
@@ -1173,41 +1100,15 @@ void MyDesigner::mouseMoveEvent( QMouseEvent* e )
 
 void MyDesigner::wheelEvent( QWheelEvent* e )
 {
-	/*if(selectMode != CONTROLLER_ELEMENT)
 	QGLViewer::wheelEvent(e);
-
-	switch (selectMode)
-	{
-	case CONTROLLER_ELEMENT:
-	{
-	if(!defCtrl) break;
-
-	SaveUndo();
-
-	double s = 0.1 * (e->delta() / 120.0);
-	defCtrl->scaleUp(1 + s);		
-
-	updateOffset();
-	updateGL();
-	}
-	break;
-	}*/
+    //updateGL();
 }
 
 void MyDesigner::keyPressEvent( QKeyEvent *e )
 {
 	if(e->key() == Qt::Key_L)
 	{
-		QString fileName = QFileDialog::getOpenFileName(0, "Import Mesh", "", "Mesh Files (*.obj *.off *.stl)"); 
-		this->loadObject(fileName);
-	}
-
-	if(e->key() == Qt::Key_S)
-	{
-		//isDrawStacking = !isDrawStacking;
-		//if(isDrawStacking) updateOffset();
-
-		//designWidget->showStacking->setChecked(isDrawStacking);
+		this->loadObject();
 	}
 
 	//if(e->key() == Qt::Key_Space)	selectPrimitiveMode();
@@ -1215,6 +1116,7 @@ void MyDesigner::keyPressEvent( QKeyEvent *e )
 	if(e->key() == Qt::Key_M)		moveMode();
 	if(e->key() == Qt::Key_R)		rotateMode();
 	if(e->key() == Qt::Key_E)		scaleMode();
+	if(e->key() == Qt::Key_A)		pushAABB();
 
 	updateGL();
 
@@ -1222,27 +1124,10 @@ void MyDesigner::keyPressEvent( QKeyEvent *e )
 		QGLViewer::keyPressEvent(e);
 }
 
-void MyDesigner::saveObject(QString filename)
+void MyDesigner::saveObject()
 {
-    //if(!activeObject() || !activeObject()->ptr["controller"])	return;
-
-	// Call joint detector to find joints
-	//Controller* c = ctrl();
-	//JointDetector JD;
-	//QVector<Group*> jointGroups = JD.detect(c->getPrimitives());
-
-	//int i = c->groups.size();
-	//foreach(Group* g, jointGroups)
-	//{
-	//	g->id = QString::number(i++);
-	//	c->groups[g->id] = g;
-	//}
-	/*std::ofstream outF(qPrintable(filename), std::ios::out);
-	outF<<"\<!--LCC Version = \"1.0\"--\>\n";
-	outF<<"\<Graph\>\n";
-	c->save(outF);
-	outF<<"\<\/Graph\>\n";
-	outF.close();*/
+	if(gManager && gManager->scaffold)
+		gManager->saveScaffold();
 }
 
 void MyDesigner::beginUnderMesh()
@@ -1275,48 +1160,32 @@ void MyDesigner::postSelection( const QPoint& point )
 	if(currMousePos2D.x() > width() - 90 && currMousePos2D.y() > height() - 90)
 		return;
 
-	int selected = selectedName();
+	//int selected = selectedName();
 
-	// General selection
-	if(selected == -1)
-		selection.clear();
-	else
-	{
-		if(selection.contains( selected ))
-			selection.remove(selection.indexOf(selected));
-		else
-		{
-			//if(selectMode != CONTROLLER_ELEMENT)
-			//{
-			//	selection.clear();
-			//	ctrl()->selectPrimitive(-1);
-			//	selection.push_back(selected); // to start from 0
-			//}
-		}
-	}
+	//// General selection
+	//if(selected == -1)
+	//	selection.clear();
+	//else
+	//{
+	//	if(selection.contains( selected ))
+	//		selection.remove(selection.indexOf(selected));
+	//	else
+	//	{
+	//		if(selectMode != CONTROLLER_ELEMENT)
+	//		{
+	//			selection.clear();
+	//		    ctrl()->selectPrimitive(-1);
+	//			selection.push_back(selected); // to start from 0
+	//		}
+	//	}
+	//}
 
-	// FFD and such deformers
-	/*if(activeDeformer && selectMode == FFD_DEFORMER){
-	activeDeformer->postSelection(selected);
-
-	if(selected >= 0)
-	setManipulatedFrame( activeDeformer->getQControlPoint(selected) );
-	else
-	setManipulatedFrame( activeFrame );
-	}
-
-	if(activeVoxelDeformer && selectMode == VOXEL_DEFORMER){
-	if(selected >= 0)
-	setManipulatedFrame( activeVoxelDeformer->getQControlPoint(selected) );
-	else
-	setManipulatedFrame( activeFrame );
-
-	activeVoxelDeformer->select(selected);
-	}
-	*/
 	// Selection mode cases
 	switch (selectMode)
 	{
+	case BOX:
+		transformAABB();
+		break;
 		/*case CONTROLLER:
 		transformPrimitive();
 		break;
@@ -1331,6 +1200,32 @@ void MyDesigner::postSelection( const QPoint& point )
 	}
 
 	updateGL();
+}
+
+void MyDesigner::transformAABB(bool modifySelect)
+{
+	if(modifySelect)
+	{
+		transformMode = NONE_MODE;
+		designWidget->pushButton->setChecked(true);
+		return;
+	}
+
+	if(mBox && mBox->selPlane.size())
+	{
+		defCtrl = new QManualDeformer(mBox);
+		setManipulatedFrame( defCtrl->getFrame() );
+
+		Vec3d q = (mBox->selPlane[0]+mBox->selPlane[1]+mBox->selPlane[2]+mBox->selPlane[3])/4;
+		manipulatedFrame()->setPosition( Vec(q.x(), q.y(), q.z()) );
+
+		this->connect(defCtrl, SIGNAL(objectModified()), SLOT(updateActiveObject()));
+	}
+}
+
+void MyDesigner::transformNode(bool modifySelect)
+{
+
 }
 
 /*void MyDesigner::transformPrimitive(bool modifySelect)
@@ -1521,12 +1416,23 @@ void MyDesigner::selectTool()
 {
 	if(gManager == NULL) return;
 
+	if(selectMode == BOX) designWidget->pushButton->setChecked(true);
 	//if(selectMode == CONTROLLER) designWidget->selectCuboidButton->setChecked(true);
 	//if(selectMode == CONTROLLER_ELEMENT) designWidget->selectCurveButton->setChecked(true);
 	transformMode= NONE_MODE;
 	updateGL();
 
 	//designWidget->showStacking->setChecked(isDrawStacking);
+}
+
+void MyDesigner::pushAABB()
+{
+	clearButtons();
+
+	setMouseBinding(Qt::LeftButton, FRAME, TRANSLATE);
+	setMouseBinding(Qt::RightButton, CAMERA, TRANSLATE);
+	selectMode = BOX;
+	toolMode();
 }
 
 void MyDesigner::moveMode()
@@ -1564,35 +1470,35 @@ void MyDesigner::scaleMode()
 	//this->displayMessage("* Please SCROLL THE MOUSE to scale *", 5000);
 }
 
-//void MyDesigner::splitingMode()
-//{
-//	clearButtons();
-//	setManipulatedFrame(activeFrame);
-//
-//	if(activeMesh == NULL) return;
-//
-//	if(ctrl()->getSelectedPrimitive() == NULL)
-//	{
-//		selectMode = CONTROLLER;
-//		selectTool();
-//		displayMessage("Select a spliting plane first!");
-//		return;
-//	}
-//
-//	setMouseBinding(Qt::LeftButton, SELECT);
-//	setMouseBinding(Qt::ShiftModifier | Qt::LeftButton, CAMERA, ROTATE);
-//
-//	//setSelectMode(EDGE);
-//	transformMode = SPLIT_MODE;
-//	designWidget->splitButton->setChecked(true);
-//	//selectTool();
-//	updateGL();
-//}
+void MyDesigner::splitingMode()
+{
+	clearButtons();
+	setManipulatedFrame(activeFrame);
+
+	if(gManager == NULL) return;
+
+	if(gManager->scaffold== NULL)
+	{
+		//selectMode = CONTROLLER;
+		selectTool();
+		displayMessage("Select a splitting plane first!");
+		return;
+	}
+
+	setMouseBinding(Qt::LeftButton, SELECT);
+	setMouseBinding(Qt::ShiftModifier | Qt::LeftButton, CAMERA, ROTATE);
+
+	//setSelectMode(EDGE);
+	transformMode = SPLIT_MODE;
+	designWidget->splitButton->setChecked(true);
+	//selectTool();
+	updateGL();
+}
 
 
 void MyDesigner::toolMode()
 {
-	if(selection.empty())
+	if(selection.empty() && !mBox && !gManager)
 	{
 		this->displayMessage("* Please select a part to transform *");
 
@@ -1614,6 +1520,10 @@ void MyDesigner::toolMode()
 		//if(selectMode == CONTROLLER) transformPrimitive(false);
 		//if(selectMode == CONTROLLER_ELEMENT) transformCurve(false);
 		//if(transformMode == SPLIT_MODE) splitCuboid(false);
+		if(selectMode == BOX){
+			transformAABB(false);
+			designWidget->pushButton->setChecked(true);
+		}
 
 		this->displayMessage("Press shift to move camera");
 
@@ -1626,21 +1536,6 @@ void MyDesigner::toolMode()
 
 void MyDesigner::clearButtons()
 {
-	// un-check all buttons
-	/*int count = designWidget->dockWidgetContents->layout()->count();
-	for(int i = 0; i < count; i++){
-		QLayoutItem * item = designWidget->dockWidgetContents->layout()->itemAt(2);
-		QGroupBox *box = qobject_cast<QGroupBox*>(item->widget());
-		QString name = box->objectName();
-		if(box){
-			int c = box->layout()->count();
-			for(int j = 0; j < c; j++){
-				QToolButton *button = qobject_cast<QToolButton*>(box->layout()->itemAt(j)->widget());
-				if(button) 
-					button->setChecked(false);
-			}
-		}
-	}*/
 	designWidget->selectCameraButton->setChecked(false);
 	designWidget->selectCuboidButton->setChecked(false);
 	designWidget->moveButton->setChecked(false);
@@ -1649,7 +1544,7 @@ void MyDesigner::clearButtons()
 	designWidget->splitButton->setChecked(false);
 	designWidget->undoButton->setChecked(false);
 	designWidget->redoButton->setChecked(false);
-	designWidget->createBoxButton->setChecked(false);
+	designWidget->pushButton->setChecked(false);
 }
 
 void MyDesigner::print( QString message, long age )
@@ -1670,4 +1565,22 @@ void MyDesigner::dequeueLastMessage()
 int MyDesigner::editTime()
 {
 	return globalTimer->elapsed();
+}
+
+void MyDesigner::showCuboids(int state)
+{
+	gManager->showCuboids(state);
+	updateGL();
+}
+void MyDesigner::showGraph(int state)
+{
+	gManager->showScaffold(state);
+	updateGL();
+}
+
+void MyDesigner::showModel(int state)
+{
+	gManager->showMeshes(state);
+	isShow = (state == Qt::Checked);
+	updateGL();
 }

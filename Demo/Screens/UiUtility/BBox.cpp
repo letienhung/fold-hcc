@@ -21,6 +21,7 @@ BBox::BBox(const Point& c, const QVector<Vector3>& axis, const Vector3& ext)
 	Extent = ext;
 	
 	isSelected = false;
+
 }
 
 BBox::BBox(const BBox &b)
@@ -30,6 +31,7 @@ BBox::BBox(const BBox &b)
 	Extent = b.Extent;
 
 	isSelected = b.isSelected;
+	selPlane = b.selPlane;
 }
 
 BBox &BBox::operator =(const BBox &b)
@@ -38,6 +40,7 @@ BBox &BBox::operator =(const BBox &b)
 	Axis = b.Axis;
 	Extent = b.Extent;
 	isSelected = b.isSelected;
+	selPlane = b.selPlane;
 
 	return *this;
 }
@@ -139,9 +142,9 @@ QVector<Line> BBox::getEdges()
 	return lns;
 }
 
-QVector<Geom::Rectangle> BBox::getBoxFaces()
+QVector<QVector<Point>> BBox::getBoxFaces()
 {
-	QVector<Geom::Rectangle> faces(6);
+	QVector<QVector<Point>> faces;
 	QVector<Point> pnts = getBoxCorners();
 
 	for (int i = 0; i < 6; i++)	{
@@ -149,19 +152,21 @@ QVector<Geom::Rectangle> BBox::getBoxFaces()
 		for (int j = 0; j < 4; j++)	{
 			conners.push_back( pnts[cubeIds[i][j] ] );
 		}
-		faces.push_back(Geom::Rectangle(conners));
+		faces.push_back(conners);
 	}	
 
 	return faces;
 }
 
-int BBox::getOrthoAxis(Geom::Rectangle &plane)
+int BBox::getOrthoAxis(QVector<Point> &plane)
 {
 	for(int i = 0; i < 3; i++){
-		Vector3 d01 = (plane.Conners[0] - plane.Conners[1]).normalized();
-		Vector3 d03 = (plane.Conners[0] - plane.Conners[3]).normalized();
-		if(dot(d01, Axis[i]) == 0 && dot(d03, Axis[i]) == 0)
+		Vector3 d01 = (plane[0] - plane[1]).normalized();
+		Vector3 d03 = (plane[0] - plane[3]).normalized();
+		if(dot(d01, Axis[i]) == 0 && dot(d03, Axis[i]) == 0){
+			axisID = i;
 			return i;
+		}
 	}
 	return -1;
 }
@@ -222,11 +227,12 @@ void BBox::computeBBMinMax()
 
 bool BBox::isFaceContainPnt(Point &pnt)
 {
-	QVector<Geom::Rectangle> faces = getBoxFaces();
+	selPlane.clear();
+	QVector<QVector<Point>> faces = getBoxFaces();
 	Point coord = getCoordinates(pnt);
-	foreach(Geom::Rectangle f, faces){
+	foreach(QVector<Point> f, faces){
 		double xmax = 0, xmin = 100000, ymax = 0, ymin = 100000, zmax = 0, zmin = 100000;
-		foreach(Point p, f.Conners){
+		foreach(Point p, f){
 			Point pt = getCoordinates(p);
 			if(pt[0] > xmax)
 				xmax = pt[0];
@@ -245,23 +251,34 @@ bool BBox::isFaceContainPnt(Point &pnt)
 			coord[1] <= ymax && coord[1] >= ymin &&
 			coord[2] <= zmax && coord[2] >= zmin){
             selPlane = f;
+			isSelected = true;
 			return true;
 		}		
 	}
     return false;
 }
 
-void BBox::deform(int i, double factor)
+int BBox::manipulate(Point &start, Vec3d &startDir)
 {
-	if(i<0 || i > 2)
+	Point intPnt;
+	if(IntersectRayBox(start, startDir, intPnt)){
+	   if(isFaceContainPnt(intPnt))
+		  return getOrthoAxis(selPlane);
+	}
+	return -1;
+}
+
+void BBox::deform(double factor)
+{
+	if(axisID < 0 || axisID > 2)
 		return;
-	Extent[i] -= factor; 
-	Center[i] -= factor/2;
+	Extent[axisID] -= factor; 
+	Center[axisID] -= factor/2;
 }
 
 void BBox::draw()
 {
-	QVector< Geom::Rectangle> faces = getBoxFaces();
+	QVector<QVector<Point>> faces = getBoxFaces();
 
 	for(int i = 0; i < faces.size(); i++)
 		DrawSquare(faces[i], false, 2, Vec4d(0,0.5,1,0.5));
@@ -270,7 +287,7 @@ void BBox::draw()
 		DrawSquare(selPlane, true, 3, Vec4d(1,1,0,0.8));
 }
 
-void BBox::DrawSquare(Geom::Rectangle &f, bool isOpaque, float lineWidth, const Vec4d &color)
+void BBox::DrawSquare(QVector<Point> &f, bool isOpaque, float lineWidth, const Vec4d &color)
 {
 	glEnable(GL_LIGHTING);
 
@@ -287,15 +304,15 @@ void BBox::DrawSquare(Geom::Rectangle &f, bool isOpaque, float lineWidth, const 
 
 		glBegin(GL_QUADS);
 
-		Vec3d v10 = f.Conners[1] - f.Conners[0];
-		Vec3d v20 = f.Conners[2] - f.Conners[0];
+		Vec3d v10 = f[1] - f[0];
+		Vec3d v20 = f[2] - f[0];
 		Vec3d n = cross(v10 , v20).normalized(); 
 
 		glNormal3d(n[0],n[1],n[2]);
-		glVertex3d(f.Conners[0].x(),f.Conners[0].y(),f.Conners[0].z());
-		glVertex3d(f.Conners[1].x(),f.Conners[1].y(),f.Conners[1].z());
-		glVertex3d(f.Conners[2].x(),f.Conners[2].y(),f.Conners[2].z());
-		glVertex3d(f.Conners[3].x(),f.Conners[3].y(),f.Conners[3].z());
+		glVertex3d(f[0].x(),f[0].y(),f[0].z());
+		glVertex3d(f[1].x(),f[1].y(),f[1].z());
+		glVertex3d(f[2].x(),f[2].y(),f[2].z());
+		glVertex3d(f[3].x(),f[3].y(),f[3].z());
 		glEnd();
 
 		glDisable(GL_POLYGON_OFFSET_FILL);
@@ -309,11 +326,11 @@ void BBox::DrawSquare(Geom::Rectangle &f, bool isOpaque, float lineWidth, const 
 	glColor4f(color[0], color[1], color[2], color[3]);
 
 	glBegin(GL_LINE_STRIP);
-	glVertex3d(f.Conners[0].x(),f.Conners[0].y(),f.Conners[0].z());
-	glVertex3d(f.Conners[1].x(),f.Conners[1].y(),f.Conners[1].z());
-	glVertex3d(f.Conners[2].x(),f.Conners[2].y(),f.Conners[2].z());
-	glVertex3d(f.Conners[3].x(),f.Conners[3].y(),f.Conners[3].z());
-	glVertex3d(f.Conners[0].x(),f.Conners[0].y(),f.Conners[0].z());
+	glVertex3d(f[0].x(),f[0].y(),f[0].z());
+	glVertex3d(f[1].x(),f[1].y(),f[1].z());
+	glVertex3d(f[2].x(),f[2].y(),f[2].z());
+	glVertex3d(f[3].x(),f[3].y(),f[3].z());
+	glVertex3d(f[0].x(),f[0].y(),f[0].z());
 	glEnd();
 
 	glEnable(GL_LIGHTING);

@@ -12,12 +12,15 @@
 #include <numeric>
 #include <math.h>
 
-// GL extensions
+//GL extensions
 //#ifdef _WIN32
-//	#include "GL/GLee.h"
+//#ifdef __gl_h_
+//#undef __gl_h_
+//#endif
+//#include "GL/GLee.h"
 //#else
-//    #include <GL/glew.h>
-//    #define GLEE_ARB_vertex_buffer_object GLEW_ARB_vertex_buffer_object
+//#include <GL/glew.h>
+//#define GLEE_ARB_vertex_buffer_object GLEW_ARB_vertex_buffer_object
 //#endif
 
 // Constants

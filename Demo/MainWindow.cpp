@@ -47,15 +47,15 @@ MainWindow::MainWindow(QWidget *parent, Qt::WFlags flags)
 	//nextButtonTutorial(); // to test Designer
 	//nextButtonEvaluate(); // test Send data
 
-	initTutorial();
+	//initTutorial();
 }
 
 MainWindow::~MainWindow()
 {
 	if (designWidget)
 		delete designWidget;
-	if(tutorPanel)
-		delete tutorPanel;
+	//if(tutorPanel)
+		//delete tutorPanel;
 }
 
 void MainWindow::addNewScene()
@@ -70,13 +70,10 @@ void MainWindow::addNewScene()
 void MainWindow::importObject()
 {
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-	
-	QString fileName = QFileDialog::getOpenFileName(designer, "Import object", DEFAULT_FILE_PATH, "Mesh Files (*.obj)"); 
-	if (fileName.isNull()) return;
 
-	//designer->loadMesh(fileName);
+	designer->loadObject();
 
-	DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
+	//DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
 
 	QApplication::restoreOverrideCursor();
 }
@@ -85,15 +82,10 @@ void MainWindow::exportObject()
 {
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
-	QString fileName = QFileDialog::getSaveFileName(designer, "Export object", DEFAULT_FILE_PATH, "Mesh Files (*.obj)"); 
-	if (fileName.isNull()) return;
+	designer->saveObject();
 
-	//designer->activeObject()->saveObj(fileName);
-
-	//designer->saveConfig(fileName);
-	//designer->saveLCC(filename);
-
-	DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
+	//DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
+	QApplication::restoreOverrideCursor();
 }
 
 void MainWindow::initTutorial()
@@ -151,6 +143,7 @@ void MainWindow::initDesign()
 	designer->connect(designWidget->rotateButton, SIGNAL(clicked()), SLOT(rotateMode()));
 	designer->connect(designWidget->scaleButton, SIGNAL(clicked()), SLOT(scaleMode()));
 	designer->connect(designWidget->splitButton, SIGNAL(clicked()), SLOT(splitingMode()));
+	designer->connect(designWidget->pushButton, SIGNAL(clicked()), SLOT(pushAABB()));
 	
 	// Connect deformers buttons
 	//designer->connect(designWidget->ffdButton, SIGNAL(clicked()), SLOT(setActiveFFDDeformer()));

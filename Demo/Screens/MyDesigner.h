@@ -11,6 +11,9 @@
 
 #include "UiUtility/QManualDeformer.h"
 
+#include "UiUtility/GL/VBO/VBO.h"
+#include "CustomDrawObjects.h"
+
 using namespace SurfaceMesh;
 using namespace qglviewer;
 
@@ -23,7 +26,7 @@ using namespace qglviewer;
 #define EPSILON 1.0e-6
 
 enum ViewMode { CAMERAMODE, SELECTION, MODIFY };
-enum SelectMode { SELECT_NONE, MESH, VERTEX, EDGE, FACE, AABB};
+enum SelectMode { SELECT_NONE, MESH, VERTEX, EDGE, FACE, BOX};
 enum TransformMode { NONE_MODE, TRANSLATE_MODE, ROTATE_MODE, SCALE_MODE, SPLIT_MODE};
 
 class MyDesigner : public QGLViewer{
@@ -48,13 +51,12 @@ public:
 
 	//void animate();
 
-	//void drawObject();
-	//void drawObjectOutline();
-	
-	// Draw handles
-	bool showGraph;
-	bool showObject;
-	bool isSceneEmpty;
+	// VBOS
+	QMap<QString, VBO> vboCollection;
+	void updateVBOs();
+	QVector<uint> fillTrianglesList(FdNode* n);
+	void drawObject();
+	void drawObjectOutline();
 
 	// Mouse & Keyboard stuff
 	void mousePressEvent(QMouseEvent* e);
@@ -75,6 +77,7 @@ public:
 	// Object in the scene
 	GraphManager* gManager;
 	BBox * mBox;
+	bool isShow;
 	
 	GraphManager* activeObject();
 	bool isEmpty();
@@ -84,9 +87,6 @@ public:
 	// Deformer
 	ManipulatedFrame * activeFrame;
 	QManualDeformer * defCtrl;
-
-	//Load Graph and Mesh
-	void loadObject(QString fileName);
 
 	// TEXT ON SCREEN
 	QQueue<QString> osdMessages;
@@ -112,26 +112,11 @@ public:
 
 	QString viewTitle;
 
-	//void setSelectMode( SelectMode toMode );
-
 	// Data
 	int editTime();
 
 public slots:
-    void showGraphStateChanged(int state)
-	{
-		this->showGraph = state;
-		updateGL();
-	}
-
-	void showObjectStateChanged(int state)
-	{
-		this->showObject = state;
-		updateGL();
-	}
-	
 	// Select buttons
-	//void selectAABBMode();
 	void selectCameraMode();
 
 	// Transform buttons
@@ -139,7 +124,8 @@ public slots:
 	void rotateMode();
 	void scaleMode();
 	void drawTool();
-	//void pushAABB();
+	void splitingMode();
+	void pushAABB();
 
 	void updateActiveObject();
 
@@ -147,36 +133,44 @@ public slots:
 	void dequeueLastMessage();
 
 	void cameraMoved();
-											
-	void saveObject(QString filename);
-	//void loadLCC(QString filename);
+	
+	//Load Graph and Mesh
+	void loadObject();
+	void saveObject();
 	void updateWidget();
+
+	// visualization
+	void showCuboids(int state);
+	void showGraph(int state);
+	void showModel(int state);
 	
 private:
 	// DEBUG:
 	std::vector<Vec> debugPoints;
 	std::vector< std::pair<Vec,Vec> > debugLines;
-	std::vector< Geom::Plane > debugPlanes;
+	std::vector< PolygonSoup > debugPlanes;
 	void drawDebug();
 
 private:
+	// Draw Scene
 	void drawCircleFade(Vec4d &color, double radius = 1.0);
 	void drawMessage(QString message, int x = 10, int y = 10, Vec4d &backcolor = Vec4d(0,0,0,0.25), Vec4d &frontcolor = Vec4d(1.0,1.0,1.0,1.0));
 	void drawShadows();
 	void drawViewChanger();
 	double skyRadius;
 
-	/*void transformCuboid(bool modifySelect = true);
+	// Setup interactive deformer with manipulatedFrame
+	void transformNode(bool modifySelect = true);
 	void transformAABB(bool modifySelect = true);
-	void splitCuboid(bool modifySelect = true);*/
+	//void splitCuboid(bool modifySelect = true);
 
+	// Set buttons for different mode
 	void toolMode();
 	void selectTool();
 	void clearButtons();
 
 signals:
 	void objectInserted();
-	void objectDiscarded( QString );
+	void objectDiscarded();
 	void objectUpdated();
-
 };
