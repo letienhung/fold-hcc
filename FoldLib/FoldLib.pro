@@ -1,6 +1,6 @@
 load($$[STARLAB])
 load($$[SURFACEMESH])
-StarlabTemplate(none)
+
 
 TEMPLATE = lib
 CONFIG += staticlib
@@ -23,6 +23,10 @@ INCLUDEPATH += ../GeometryLib
 # Structure library
 LIBS += -L$$PWD/../StructureLib/$$CFG/lib -lStructureLib
 INCLUDEPATH += ../StructureLib
+
+# Mesh Utility library
+LIBS += -L$$PWD/../MeshUtilityLib/$$CFG/lib -lMeshUtilityLib
+INCLUDEPATH += ../MeshUtilityLib
 
 # Library name and destination
 TARGET = FoldLib

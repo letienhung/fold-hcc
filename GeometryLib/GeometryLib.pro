@@ -1,6 +1,6 @@
 load($$[STARLAB])
 load($$[SURFACEMESH])
-StarlabTemplate(none)
+
 
 TEMPLATE = lib
 CONFIG += staticlib

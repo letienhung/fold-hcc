@@ -1,6 +1,7 @@
 TEMPLATE = lib
 CONFIG += staticlib
 
+
 # Build flag
 CONFIG(debug, debug|release) {
     CFG = debug

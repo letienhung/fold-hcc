@@ -5,4 +5,5 @@ SUBDIRS += \
     FoldLib \
     GeometryLib \
     UtilityLib \
-    StructureLib
+    StructureLib \
+    MeshUtilityLib

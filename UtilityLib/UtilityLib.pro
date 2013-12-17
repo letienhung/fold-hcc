@@ -1,6 +1,5 @@
 load($$[STARLAB])
 load($$[SURFACEMESH])
-StarlabTemplate(none)
 
 TEMPLATE = lib
 CONFIG += staticlib
@@ -21,14 +20,9 @@ HEADERS += \
     ProbabilityDistributions.h \
     Numeric.h \
     CustomDrawObjects.h \
-    SegMeshLoader.h \
-    XmlWriter.h \
-    QuickMeshDraw.h \
-    MeshMerger.h
+    XmlWriter.h
 
 SOURCES += \
     Numeric.cpp \
-    SegMeshLoader.cpp \
     UtilityGlobal.cpp \
-    XmlWriter.cpp \
-    MeshMerger.cpp
+    XmlWriter.cpp
