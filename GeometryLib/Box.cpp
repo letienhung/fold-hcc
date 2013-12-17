@@ -512,8 +512,8 @@ void Geom::Box::drawWireframe( double width /*= 2.0*/, QColor color /*= Qt::whit
 
 Geom::Segment Geom::Box::getSkeleton( int aid )
 {
-	int fid0 = getFaceId(aid, true);
-	int fid1 = getFaceId(aid, false);
+	int fid0 = getFaceId(aid, false);
+	int fid1 = getFaceId(aid, true);
 
 	Vector3 fc0 = getFaceCenter(fid0);
 	Vector3 fc1 = getFaceCenter(fid1);

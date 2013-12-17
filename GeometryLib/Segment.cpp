@@ -133,3 +133,8 @@ void Geom::Segment::draw(double width, QColor color)
 	ls.addLine(P0, P1, color);
 	ls.draw();
 }
+
+double Geom::Segment::length()
+{
+	return 2 * Extent;
+}

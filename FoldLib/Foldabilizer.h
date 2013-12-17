@@ -11,18 +11,27 @@ public:
 public:
 	FdGraphPtr scaffold;
 
+public:
+	// preparation
 	DIRECTION direct;
+	void setDirection(DIRECTION i);
+	Vector3 getDirection();
+
+	// control panels
 	double perpThreshold;
 	double layerHeightThreshold;
 	QVector<FdNode*> controlNodes;
 	QVector< QVector<FdNode*> > controlGroups;
-
-public:
-	void setDirection(DIRECTION i);
-	Vector3 getDirection();
 	void findControlNodes();
 	void groupControlNodes();
 	void createControlPanels();
+
+	double connectThreshold;
+	QVector< QVector<FdNode*> > extractConnectedGraphs(QVector<FdNode*> nodes);
+
+	// layers
+
+	// fold a layer
 
 public slots:
 	void run();

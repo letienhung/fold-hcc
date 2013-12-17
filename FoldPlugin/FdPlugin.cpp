@@ -98,9 +98,17 @@ bool FdPlugin::postSelection( const QPoint& point )
 {
 	Q_UNUSED(point);
 
-	int nid = drawArea()->selectedName();
-	showMessage("Selected Node: id = %d", nid);
-	activeScaffold()->selectNode(nid);
+	int nidx = drawArea()->selectedName();
+
+	Structure::Node* sn = activeScaffold()->getNode(nidx);
+	if (sn)
+	{
+		showMessage("Selected name = %d, nodeId = %s", nidx, sn->id.toStdString().c_str());
+		activeScaffold()->selectNode(nidx);
+	}
+	else
+		showMessage("Selected name = %d", nidx);
+
 	return true;
 }
 

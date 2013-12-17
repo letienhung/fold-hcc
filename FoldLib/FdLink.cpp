@@ -3,11 +3,10 @@
 #include "PatchNode.h"
 #include "CustomDrawObjects.h"
 
-FdLink::FdLink( FdNode* n1, FdNode* n2 )
+FdLink::FdLink( FdNode* n1, FdNode* n2, Geom::Segment& distSeg )
 	: Link(n1, n2)
 {
-	mLink.P0 = n1->mBox.Center;
-	mLink.P1 = n2->mBox.Center; 
+	mLink = distSeg;
 }
 
 FdLink::FdLink( FdLink& other )

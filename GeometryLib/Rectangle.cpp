@@ -190,10 +190,21 @@ QVector<Vector3> Geom::Rectangle::getConnersReverse()
 	return conners;
 }
 
-void Geom::Rectangle::draw(QColor color)
+void Geom::Rectangle::draw( QColor color /*= Qt::red*/ )
 {
 	PolygonSoup ps;
 	ps.addPoly(getConners(), color);
+	ps.drawQuads();
+}
+
+void Geom::Rectangle::drawBackFace( QColor color /*= Qt::red*/ )
+{
+	QVector<Vector3> pnts = getConnersReverse();
+	for (int i = 0; i < 4; i++) 
+		pnts[i] -= Extent[0] * (10e-4) * Normal;
+
+	PolygonSoup ps;
+	ps.addPoly(pnts, color);
 	ps.drawQuads();
 }
 

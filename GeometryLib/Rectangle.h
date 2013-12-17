@@ -37,6 +37,7 @@ public:
 
 	// visualization
 	void draw(QColor color = Qt::red);
+	void drawBackFace(QColor color = Qt::red);
 
 public:
 	Vector3				Center;

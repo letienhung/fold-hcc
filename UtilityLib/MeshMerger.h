@@ -9,5 +9,6 @@ public:
 	SurfaceMeshModel* getMesh();
 
 private:
+	QString name;
 	SurfaceMeshModel* mergedMesh;
 };

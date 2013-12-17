@@ -8,6 +8,8 @@ Foldabilizer::Foldabilizer( FdGraphPtr graph )
 	// threshold
 	perpThreshold = 0.1;
 	layerHeightThreshold = 0.2;
+	Geom::AABB aabb = graph->computeAABB();
+	connectThreshold = aabb.radius() * 0.2;
 }
 
 
@@ -59,7 +61,7 @@ void Foldabilizer::groupControlNodes()
 	controlGroups.clear();
 	QVector<FdNode*> ctrlGroup;
 	double prePos = 0;
-	foreach (double pos, posNodeMap.keys())
+	foreach (double pos, posNodeMap.uniqueKeys())
 	{
 		// create a new group
 		if (fabs(pos - prePos) > layerHeightThreshold && !ctrlGroup.isEmpty())
@@ -85,6 +87,70 @@ void Foldabilizer::createControlPanels()
 {
 	foreach (QVector<FdNode*> cg, controlGroups)
 	{
-		scaffold->mergeNodes(cg);
+		QVector< QVector<FdNode*> > cgraphs = extractConnectedGraphs(cg);
+		if (cgraphs.size() == 1)
+			scaffold->mergeNodes(cg);
 	}
+}
+
+QVector< QVector<FdNode*> > Foldabilizer::extractConnectedGraphs( QVector<FdNode*> nodes )
+{
+	QVector< QVector<FdNode*> > graphs;
+	if (nodes.isEmpty()) return graphs;
+	
+	// tags used for searching
+	QVector<bool> visited(nodes.size(), false);
+	int nbVisited = 0;
+
+	// initial current graph
+	QVector<FdNode*> curr_g;
+	curr_g.push_back(nodes[0]);
+	visited[0] = true;
+	nbVisited++;
+
+	// search for connected node to current graph
+	while(nbVisited < nodes.size())
+	{
+		int preN = nbVisited;
+		for (int i = 0; i < nodes.size(); i++)
+		{
+			// skip visited node
+			if (visited[i]) continue;
+
+			foreach(FdNode* cgn, curr_g)
+			{
+				if (FdGraph::getDistance(nodes[i], cgn) < connectThreshold)
+				{
+					curr_g.push_back(nodes[i]);
+					visited[i] = true;
+					nbVisited++;
+				}
+			}
+		}
+
+		// cannot find more nodes
+		if (preN == nbVisited)
+		{
+			// save current graph
+			graphs.push_back(curr_g);
+
+			// reset current graph with an unvisited node
+			for (int i = 0; i < nodes.size(); i++)
+			{
+				if (!visited[i])
+				{
+					curr_g.clear();
+					curr_g.push_back(nodes[i]);
+					visited[i] = true;
+					nbVisited++;
+					break;
+				}
+			}
+		}
+	}
+
+	// save current graph
+	graphs.push_back(curr_g);
+
+	return graphs;
 }

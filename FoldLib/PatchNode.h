@@ -19,6 +19,7 @@ public:
 
 public:
 	Geom::Rectangle mPatch;
+	QColor mPatchColor;
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW

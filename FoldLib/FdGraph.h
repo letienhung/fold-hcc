@@ -20,8 +20,9 @@ public:
 	QVector<FdNode*> getFdNodes();
 
 	// modifier
-	void mergeNodes(QVector<FdNode*> ns);
-	void addNode(SurfaceMeshModel* mesh, int method);
+	FdNode* mergeNodes(QVector<FdNode*> ns);
+	FdNode* addNode(SurfaceMeshModel* mesh, int method);
+
 
 	// I/O
 	void saveToFile(QString fname);
@@ -30,8 +31,12 @@ public:
 	// aabb
 	Geom::AABB computeAABB();
 
-	// visualization
+	// visual
 	void draw();
+
+	// helpers
+	static Geom::Segment getDistSegment(FdNode* n1, FdNode* n2);
+	static double getDistance(FdNode* n1, FdNode* n2);
 
 public:
 	QString path;

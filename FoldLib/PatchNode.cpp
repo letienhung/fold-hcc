@@ -8,6 +8,9 @@ PatchNode::PatchNode(MeshPtr m, Geom::Box &b)
 {
 	mType = FdNode::PATCH;
 	createPatch();
+
+	mPatchColor = mColor.lighter();
+	mPatchColor.setAlpha(255);
 }
 
 PatchNode::PatchNode(PatchNode& other)
@@ -39,8 +42,8 @@ void PatchNode::draw()
 {
 	if (showScaffold)
 	{
-		QColor c = Qt::red;
-		mPatch.draw(c.lighter());
+		mPatch.draw(mPatchColor);
+		mPatch.drawBackFace(mPatchColor);
 	}
 
 	FdNode::draw();

@@ -33,6 +33,8 @@ public:
 	// visualization
 	void draw(double width = 3.0, QColor color = Qt::blue);
 
+	// geometry
+	double length();
 
 public:
 	// end points 
