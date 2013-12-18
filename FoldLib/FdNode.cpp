@@ -142,34 +142,3 @@ bool FdNode::isPerpTo( Vector3 v, double dotThreshold )
 	Q_UNUSED(dotThreshold);
 	return false;
 }
-
-FdNode* FdNode::split( Geom::Plane& plane, double thr )
-{
-	// cut point along skeleton
-	int aid = mBox.getAxisId(plane.Normal);
-	Vector3 cutPoint = plane.getProjection(mBox.Center);
-	Vector3 cutCoord = mBox.getCoordinates(cutPoint);
-	double cp = cutCoord[aid];
-	cutPoint = mBox.getPosition(aid, cp);
-
-	// no cut
-	if (cp + 1 < thr || 1 - cp < thr)	return NULL;
-
-	// positive side box
-	Geom::Box box1 = mBox;
-	Vector3 fc1 = box1.getFaceCenter(aid, true);
-	box1.Center = (cutPoint + fc1) / 2;
-	box1.Extent[aid] *= (1-cp) / 2;
-
-	// negative side box
-	Geom::Box box2 = mBox;
-	Vector3 fc2 = box2.getFaceCenter(aid, false);
-	box2.Center = (cutPoint + fc2) / 2;
-	box2.Extent[aid] *= (cp+1) / 2;
-
-	// split mesh
-	SurfaceMeshModel* mesh1 = MeshBoolean::getDifference(mMesh.data(), box2);
-	mMesh = MeshPtr(mesh1);
-
-	return this;
-}

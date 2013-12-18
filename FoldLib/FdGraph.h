@@ -18,10 +18,11 @@ public:
 public:
 	// accessors
 	QVector<FdNode*> getFdNodes();
+	FdNode* addNode(SurfaceMeshModel* mesh, int method);
 
 	// modifier
-	FdNode* mergeNodes(QVector<FdNode*> ns);
-	FdNode* addNode(SurfaceMeshModel* mesh, int method);
+	FdNode*			 merge(QVector<FdNode*> ns);
+	QVector<FdNode*> split( FdNode* fn, Geom::Plane& plane, double thr );
 
 
 	// I/O
@@ -37,7 +38,7 @@ public:
 	// helpers
 	static Geom::Segment getDistSegment(FdNode* n1, FdNode* n2);
 	static double getDistance(FdNode* n1, FdNode* n2);
-
+	
 public:
 	QString path;
 	bool showAABB;

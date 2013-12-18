@@ -7,6 +7,9 @@ RodNode::RodNode(MeshPtr m, Geom::Box &b)
 {
 	mType = FdNode::ROD;
 	createRod();
+
+	mRodColor = mColor.lighter();
+	mRodColor.setAlpha(255);
 }
 
 RodNode::RodNode(RodNode& other)
@@ -32,7 +35,7 @@ void RodNode::draw()
 {
 	if (showScaffold)
 	{
-		mRod.draw(3.0, Qt::blue);
+		mRod.draw(3.0, mRodColor);
 	}
 
 	FdNode::draw();

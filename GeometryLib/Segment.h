@@ -18,7 +18,6 @@ public:
 	void computeCenterDirectionExtent();
 
 	// coordinates
-	// coord(P0) = 0, coord(P1) = 1
 	double	getProjectedCoordinate(Vector3 p);
 	Vector3 getPosition(double coord); 
 	int		whichSide(Vector3 p);

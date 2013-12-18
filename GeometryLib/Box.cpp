@@ -533,15 +533,33 @@ Geom::Segment Geom::Box::getSkeleton( int aid )
 
 Geom::Rectangle Geom::Box::getPatch( int aid, double c )
 {
-	// c \in [-1, 1]
-	// sc \in [0, 1]
-	double sc = (c + 1) / 2;
-
 	QVector<Vector3> conners;
 	foreach(Geom::Segment edge, getEdgeSegments(aid))
 	{
-		conners.push_back(edge.getPosition(sc));
+		conners.push_back(edge.getPosition(c));
 	}
 
 	return Geom::Rectangle(conners);
+}
+
+bool Geom::Box::split( int aid, double cp, Box& box1, Box& box2 )
+{
+	if (!inRange(cp, -1, 1)) return false;
+
+	// cut point on skeleton
+	Vector3 cutPoint = getPosition(aid, cp);
+
+	// positive side box
+	box1 = *this;
+	Vector3 fc1 = getFaceCenter(aid, true);
+	box1.Center = (cutPoint + fc1) / 2;
+	box1.Extent[aid] *= (1-cp) / 2;
+
+	// negative side box
+	box2 = *this;
+	Vector3 fc2 = getFaceCenter(aid, false);
+	box2.Center = (cutPoint + fc2) / 2;
+	box2.Extent[aid] *= (cp+1) / 2;
+
+	return true;
 }

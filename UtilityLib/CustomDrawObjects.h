@@ -161,7 +161,7 @@ public:
 		}
 		glEnd();
 
-		glPointSize(_size+2);
+		glPointSize(_size+4);
 		glBegin(GL_POINTS);
 		for(int i = 0; i < (int) lines.size(); i++){
 			glColorQt(lines_colors[i]);

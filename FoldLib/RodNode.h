@@ -20,4 +20,5 @@ public:
 
 public:
 	Geom::Segment mRod;
+	QColor mRodColor;
 };

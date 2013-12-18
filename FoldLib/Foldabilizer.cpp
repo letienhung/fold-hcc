@@ -91,7 +91,7 @@ void Foldabilizer::createControlPanels()
 			// accept if size is above threshold
 			if (area > areaThr)
 			{
-				FdNode* ctrlPanel = scaffold->mergeNodes(cluster);
+				FdNode* ctrlPanel = scaffold->merge(cluster);
 				ctrlPanel->isCtrlPanel = true; 
 				controlPanels.push_back(ctrlPanel);
 			}
@@ -166,16 +166,13 @@ void Foldabilizer::splitByControlPanels()
 	foreach (FdNode* cn, controlPanels)
 	{
 		PatchNode* cutNode = (PatchNode*)cn;
+		Geom::Plane cutPlane = cutNode->mPatch.getPlane();
 
 		foreach(FdNode* n, scaffold->getFdNodes())
 		{
 			if (n->isCtrlPanel) continue;
 
-			if (n->split(cutNode->mPatch.getPlane(), 0.1))
-			{
-			}
-
+			scaffold->split(n, cutPlane, 0.1);
 		}
-
 	}
 }

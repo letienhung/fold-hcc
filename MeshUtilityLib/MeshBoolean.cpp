@@ -2,12 +2,14 @@
 #include "Numeric.h"
 #include "MeshHelper.h"
 
-QString MeshBoolean::workPath = "C:/Development/FOLD/MeshUtilityLib/wincork/";
+//QString MeshBoolean::workPath = "C:/Development/FOLD/MeshUtilityLib/wincork/";
+QString MeshBoolean::workPath = "C:/Projects-Win7/FOLD/MeshUtilityLib/wincork/";
 QString MeshBoolean::appName = "wincork";
 QString MeshBoolean::boxName = "box.off";
 
 
-SurfaceMeshModel* MeshBoolean::getDifference(SurfaceMeshModel* mesh, Geom::Box cutBox)
+
+SurfaceMeshModel* MeshBoolean::cork( SurfaceMeshModel* m, Geom::Box box, OPERATOR op )
 {
 	// load box
 	SurfaceMeshModel* boxMesh = new SurfaceMeshModel();
@@ -15,17 +17,16 @@ SurfaceMeshModel* MeshBoolean::getDifference(SurfaceMeshModel* mesh, Geom::Box c
 	boxMesh->read(boxPath.toStdString());
 
 	// deform to be cut box
-	Geom::Box boxBox(Vector3(0,0,0), XYZ(), Vector3(1,1,1));
-	cutBox.Extent *= 1.1;
-	MeshHelper::deformMeshByBoxes(boxMesh, boxBox, cutBox);
+	Geom::Box box0(Vector3(0,0,0), XYZ(), Vector3(1,1,1));
+	MeshHelper::deformMeshByBoxes(boxMesh, box0, box);
 
 	// call cork
-	SurfaceMeshModel* diff = cork(mesh, boxMesh, DIFF);
+	SurfaceMeshModel* res = cork(m, boxMesh, op);
 
 	// delete box mesh
 	delete boxMesh;
 
-	return diff;
+	return res;
 }
 
 SurfaceMeshModel* MeshBoolean::cork( SurfaceMeshModel* m1, SurfaceMeshModel* m2, OPERATOR op )

@@ -29,9 +29,6 @@ public:
 	void encodeMesh();
 	void deformMesh();
 
-	// split
-	FdNode* split(Geom::Plane& plane, double thr);
-
 	// fit cuboid
 	virtual void refit(int method);
 

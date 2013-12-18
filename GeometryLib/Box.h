@@ -40,6 +40,9 @@ public:
 	void scale(int axisID, double s);
 	Box  scaled(double s);
 
+	// split
+	bool split(int aid, double cp, Box& box1, Box& box2);
+
 	// geometry
 	static int NB_FACES;
 	static int NB_EDGES;

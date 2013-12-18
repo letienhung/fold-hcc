@@ -9,7 +9,7 @@ class MeshBoolean
 public:
 	enum OPERATOR{	UNION, DIFF, ISCT, XOR, RESOLVE	};
 
-	static SurfaceMeshModel* getDifference(SurfaceMeshModel* m, Geom::Box cutBox);
+	static SurfaceMeshModel* cork(SurfaceMeshModel* m, Geom::Box box, OPERATOR op);
 
 	static SurfaceMeshModel* cork(SurfaceMeshModel* m1, SurfaceMeshModel* m2, OPERATOR op);
 
