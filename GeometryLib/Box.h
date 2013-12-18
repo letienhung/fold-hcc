@@ -31,6 +31,7 @@ public:
 	// coordinates
 	Vector3 getCoordinates(Vector3 p);
 	Vector3 getPosition(Vector3 coord);
+	Vector3 getPosition(int aid, double c);
 
 	// transform
 	void translate(Vector3 t);
@@ -53,12 +54,14 @@ public:
 	int		minAxisId();
 	int		maxAxisId();
 	Vector3 getFaceCenter(int fid);
+	Vector3 getFaceCenter(int aid, bool positive);
 	Segment getSkeleton(int aid);
+	Rectangle getPatch(int aid, double c);
 
 	QVector<Point>				getConnerPoints();
 	QVector<Line>				getEdgeLines();
 	QVector<Segment>			getEdgeSegments();
-	QVector<Segment>			getEdgeSegmentsAlongAxis(int aid);
+	QVector<Segment>			getEdgeSegments(int aid);
 	QVector< QVector<Point> >	getFacePoints();
 	QVector<Plane>				getFacePlanes();
 	QVector<Rectangle>			getFaceRectangles();

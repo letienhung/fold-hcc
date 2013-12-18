@@ -19,8 +19,8 @@ int Geom::Box::NB_VERTICES = 8;
 
 int Geom::Box::EDGE[12][2] = {
 	0, 1,
-	2, 3,
-	6, 7,
+	3, 2,
+	7, 6,
 	4, 5,
 	0, 4,
 	1, 5,
@@ -115,6 +115,11 @@ Vector3 Geom::Box::getPosition( Vector3 coord )
 	return pos;
 }
 
+SurfaceMesh::Vector3 Geom::Box::getPosition( int aid, double c )
+{
+	return Center + c * Extent[aid] * Axis[aid];
+}
+
 void Geom::Box::translate( Vector3 t )
 {
 	this->Center += t;
@@ -198,7 +203,7 @@ QVector<Geom::Segment> Geom::Box::getEdgeSegments()
 }
 
 
-QVector<Geom::Segment> Geom::Box::getEdgeSegmentsAlongAxis( int aid )
+QVector<Geom::Segment> Geom::Box::getEdgeSegments( int aid )
 {
 	QVector<Segment> edges;
 
@@ -485,6 +490,11 @@ SurfaceMesh::Vector3 Geom::Box::getFaceCenter( int fid )
 	return c;
 }
 
+SurfaceMesh::Vector3 Geom::Box::getFaceCenter( int aid, bool positive )
+{
+	return getFaceCenter(getFaceId(aid, positive));
+}
+
 
 int Geom::Box::getFaceId( int aid, bool positive )
 {
@@ -519,4 +529,19 @@ Geom::Segment Geom::Box::getSkeleton( int aid )
 	Vector3 fc1 = getFaceCenter(fid1);
 
 	return Segment(fc0, fc1);
+}
+
+Geom::Rectangle Geom::Box::getPatch( int aid, double c )
+{
+	// c \in [-1, 1]
+	// sc \in [0, 1]
+	double sc = (c + 1) / 2;
+
+	QVector<Vector3> conners;
+	foreach(Geom::Segment edge, getEdgeSegments(aid))
+	{
+		conners.push_back(edge.getPosition(sc));
+	}
+
+	return Geom::Rectangle(conners);
 }

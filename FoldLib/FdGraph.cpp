@@ -6,6 +6,7 @@
 #include "XmlWriter.h"
 #include "FdUtility.h"
 #include "MeshMerger.h"
+#include "MeshHelper.h"
 
 #include "RodNode.h"
 #include "PatchNode.h"
@@ -96,7 +97,7 @@ void FdGraph::saveToFile(QString fname)
 	meshesFolder =  graphDir.path() + "/" + meshesFolder;
 	foreach(FdNode* node, getFdNodes())
 	{
-		saveOBJ(node->mMesh.data(), meshesFolder + '/' + node->id + ".obj");
+		MeshHelper::saveOBJ(node->mMesh.data(), meshesFolder + '/' + node->id + ".obj");
 	}
 }
 
@@ -199,11 +200,12 @@ FdNode* FdGraph::addNode( SurfaceMeshModel* mesh, int method )
 {
 	// box type
 	Geom::Box box;
+	QVector<Vector3> points = MeshHelper::getMeshVertices(mesh);
 	if (method == 0){
-		Geom::AABB aabb(mesh);
+		Geom::AABB aabb(points);
 		box = aabb.box();
 	}else{
-		Geom::MinOBB obb(mesh);
+		Geom::MinOBB obb(points, true);
 		box = obb.mMinBox;
 	}
 	int box_type = box.getType(5);

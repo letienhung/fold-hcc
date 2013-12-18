@@ -1,4 +1,5 @@
 #include "MeshMerger.h"
+#include "MeshHelper.h"
 
 MeshMerger::MeshMerger()
 {
@@ -22,7 +23,7 @@ void MeshMerger::addMesh( SurfaceMeshModel* subMesh )
 {
 	int offset = mergedMesh->n_vertices();
 	
-	foreach (Vector3 p, getMeshVertices(subMesh))
+	foreach (Vector3 p, MeshHelper::getMeshVertices(subMesh))
 	{
 		mergedMesh->add_vertex(p);
 	}

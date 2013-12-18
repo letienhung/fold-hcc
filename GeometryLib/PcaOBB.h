@@ -178,34 +178,6 @@ public:
 		build_from_covariance_matrix( C, pnts );
 	}
 
-	void build_from_mesh(SurfaceMeshModel * mesh )
-	{
-		// Get points
-		std::vector<Vec3d> pnts;
-		
-		Surface_mesh::Vertex_property<Point> points = mesh->vertex_property<Point>("v:point");
-		Surface_mesh::Vertex_iterator vit, vend = mesh->vertices_end();
-
-		for (vit = mesh->vertices_begin(); vit != vend; ++vit)
-			pnts.push_back(points[vit]);
-
-		// Get face indices
-		std::vector<int> tris;
-		Surface_mesh::Face_iterator fit, fend = mesh->faces_end();
-		Surface_mesh::Vertex_around_face_circulator fvit;
-		Surface_mesh::Vertex v0, v1, v2;
-
-		for(fit = mesh->faces_begin(); fit != fend; ++fit){
-			fvit = mesh->vertices(fit);
-			v0 = fvit; v1 = ++fvit; v2 = ++fvit;
-			tris.push_back(v0.idx()); 
-			tris.push_back(v1.idx()); 
-			tris.push_back(v2.idx());
-		}
-		
-		build_from_triangles(pnts, tris);
-	}
-
 	Point center()
 	{
 		return m_pos;

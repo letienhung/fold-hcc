@@ -54,3 +54,9 @@ bool Geom::Plane::contains( Line line )
 	return this->whichSide(line.getPoint(0)) == 0 
 		&& this->whichSide(line.getPoint(1)) == 0;
 }
+
+SurfaceMesh::Vector3 Geom::Plane::getProjection( Vector3 p )
+{
+	double dis = signedDistanceTo(p);
+	return p - dis * Normal;
+}

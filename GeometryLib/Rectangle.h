@@ -22,6 +22,7 @@ public:
     bool contains(Rectangle& other);
 
 	// geometry
+	double area();
 	Plane getPlane();
 	QVector<Segment> getEdges();
 	QVector<Vector2> get2DConners();

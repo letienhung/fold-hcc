@@ -16,6 +16,10 @@ CONFIG(debug, debug|release) {
 LIBS += -L$$PWD/../UtilityLib/$$CFG/lib -lUtilityLib
 INCLUDEPATH += ../UtilityLib
 
+# Geometry library
+LIBS += -L$$PWD/../GeometryLib/$$CFG/lib -lGeometryLib
+INCLUDEPATH += ../GeometryLib
+
 # Library name and destination
 TARGET = MeshUtilityLib
 DESTDIR = $$PWD/$$CFG/lib
@@ -24,9 +28,11 @@ HEADERS += \
     SegMeshLoader.h \
     QuickMeshDraw.h \
     MeshMerger.h \
-    MeshSplitter.h
+    MeshHelper.h \
+    MeshBoolean.h
 
 SOURCES += \
     SegMeshLoader.cpp \
     MeshMerger.cpp \
-    MeshSplitter.cpp
+    MeshHelper.cpp \
+    MeshBoolean.cpp

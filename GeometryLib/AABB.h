@@ -9,10 +9,8 @@ class AABB
 public:
 	AABB();
 	AABB(QVector<Vector3>& pnts);
-	AABB(SurfaceMeshModel* mesh);
 
 	void add(QVector<Vector3>& pnts);
-	void add(SurfaceMeshModel* mesh);
 	void add(AABB& other);
 
 	Vector3 center();

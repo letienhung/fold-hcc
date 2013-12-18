@@ -15,13 +15,6 @@ Geom::AABB::AABB( QVector<Vector3>& pnts )
 	add(pnts);       
 }
 
-Geom::AABB::AABB(SurfaceMeshModel* mesh)
-{
-	bbmin = Point( FLT_MAX,  FLT_MAX,  FLT_MAX);
-	bbmax = Point(-FLT_MAX, -FLT_MAX, -FLT_MAX);    
-	add(mesh);
-}
-
 SurfaceMesh::Vector3 Geom::AABB::center()
 {
 	return (bbmin + bbmax) * 0.5f;
@@ -48,11 +41,6 @@ void Geom::AABB::add( QVector<Vector3>& pnts )
 		bbmin = minimize(bbmin, p);
 		bbmax = maximize(bbmax, p);
 	} 
-}
-
-void Geom::AABB::add(SurfaceMeshModel* mesh )
-{
-	add(getMeshVertices(mesh));
 }
 
 void Geom::AABB::add( AABB& other )

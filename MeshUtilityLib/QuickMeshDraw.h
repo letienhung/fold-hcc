@@ -8,7 +8,7 @@
 
 struct QuickMeshDraw{
 
-	static void drawMeshSolid( SurfaceMeshModel * mesh, QColor c = QColor(255,255,255,255) )
+	static void drawMeshSolid( SurfaceMeshModel * mesh, QColor c = Qt::gray )
 	{
 		if(!mesh) return;
 

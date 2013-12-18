@@ -6,30 +6,31 @@ enum DIRECTION{X, Y, Z};
 class Foldabilizer
 {
 public:
-    Foldabilizer(FdGraphPtr graph);
+    Foldabilizer(FdGraphPtr graph, Vector3 d);
 
 public:
 	FdGraphPtr scaffold;
 
 public:
-	// preparation
-	DIRECTION direct;
-	void setDirection(DIRECTION i);
-	Vector3 getDirection();
+	// parameter
+	int fdAId;
+	Vector3 direct;
 
 	// control panels
-	double perpThreshold;
-	double layerHeightThreshold;
+	double perpThr;
+	double layerHeightThr;
+	double clusterDistThr;
+	double areaThr;
 	QVector<FdNode*> controlNodes;
 	QVector< QVector<FdNode*> > controlGroups;
+	QVector<FdNode*> controlPanels;
 	void findControlNodes();
 	void groupControlNodes();
+	QVector< QVector<FdNode*> > clusterNodes(QVector<FdNode*> nodes);
 	void createControlPanels();
 
-	double connectThreshold;
-	QVector< QVector<FdNode*> > extractConnectedGraphs(QVector<FdNode*> nodes);
-
 	// layers
+	void splitByControlPanels();
 
 	// fold a layer
 

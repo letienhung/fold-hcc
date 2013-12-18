@@ -20,9 +20,6 @@ typedef Eigen::Vector4d Vector4;
 
 typedef QSharedPointer<SurfaceMeshModel> MeshPtr;
 
-QVector<Vector3> getMeshVertices(SurfaceMeshModel* mesh);
-void saveOBJ(SurfaceMesh::Model * mesh, QString filename);
-
 QString qStr(Vector3 v, char sep = ' ');
 QString qStr(const Vector4 &v, char sep = ' ');
 

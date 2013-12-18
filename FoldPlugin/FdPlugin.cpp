@@ -114,7 +114,7 @@ bool FdPlugin::postSelection( const QPoint& point )
 
 void FdPlugin::fold()
 {
-	Foldabilizer fdzer(activeScaffold());
+	Foldabilizer fdzer(activeScaffold(), Vector3(0, 0, 1));
 	fdzer.run();
 }
 

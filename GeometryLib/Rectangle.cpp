@@ -208,4 +208,9 @@ void Geom::Rectangle::drawBackFace( QColor color /*= Qt::red*/ )
 	ps.drawQuads();
 }
 
+double Geom::Rectangle::area()
+{
+	return 4 * Extent[0] * Extent[1];
+}
+
 

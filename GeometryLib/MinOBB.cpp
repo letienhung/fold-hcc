@@ -4,44 +4,36 @@
 #include "AABB.h"
 #include "ProbabilityDistributions.h"
 
-Geom::MinOBB::MinOBB()
+
+Geom::MinOBB::MinOBB( QVector<Vector3> &points, bool addNoise)
 {
+	if (addNoise) computeWithNoise(points);
+	else compute(points);
 }
 
-Geom::MinOBB::MinOBB( QVector<Vector3> &points )
-{
-	computeMinOBB(points);
-}
-
-Geom::MinOBB::MinOBB(SurfaceMeshModel * mesh )
-{
-	computeMinOBB(mesh);
-}
-
-void Geom::MinOBB::computeMinOBB(SurfaceMeshModel * mesh)
+void Geom::MinOBB::computeWithNoise( QVector<Vector3> &points )
 {
 	// Add noise to reduce precision problems in CH
-	QVector<Vec3d> pnts = getMeshVertices(mesh);
-	AABB aabb(pnts);
+	AABB aabb(points);
 	double enlarge_scale = 1.0/100;
 	double noise_scale = enlarge_scale / 2 * aabb.radius();
 
-	for (int i = 0; i < (int)pnts.size(); i++)
+	for (int i = 0; i < (int)points.size(); i++)
 	{
-		pnts[i] -= aabb.center();
-		pnts[i] *= (1 + enlarge_scale);
+		points[i] -= aabb.center();
+		points[i] *= (1 + enlarge_scale);
 		double nx = uniformDistrReal() - 0.5;
 		double ny = uniformDistrReal() - 0.5;
 		double nz = uniformDistrReal() - 0.5;
-		pnts[i] += Vector3(nx, ny,nz) * noise_scale;
-		pnts[i] += aabb.center();
+		points[i] += Vector3(nx, ny,nz) * noise_scale;
+		points[i] += aabb.center();
 	}
 
 	// Compute minOBB
-	computeMinOBB(pnts);
+	compute(points);
 }
 
-void Geom::MinOBB::computeMinOBB( QVector<Vector3> &points )
+void Geom::MinOBB::compute( QVector<Vector3> &points )
 {
  	isReady = false;
 

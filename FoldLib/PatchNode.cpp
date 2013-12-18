@@ -29,17 +29,16 @@ PatchNode::~PatchNode()
 void PatchNode::createPatch()
 {
 	int aid = mBox.minAxisId();
-	QVector<Geom::Segment> edges = mBox.getEdgeSegmentsAlongAxis(aid);
-
-	QVector<Vector3> conners;
-	for (int i = 0; i < 4; i++)	conners.push_back(edges[i].Center);
-	mPatch = Geom::Rectangle(conners);
+	mPatch = mBox.getPatch(aid, 0);
 }
 
 
 
 void PatchNode::draw()
 {
+	if (isCtrlPanel)
+		mPatchColor = Qt::red;
+
 	if (showScaffold)
 	{
 		mPatch.draw(mPatchColor);

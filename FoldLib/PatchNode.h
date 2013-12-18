@@ -11,11 +11,13 @@ public:
 	virtual Node* clone();
 
 public:
-	void draw();
-	void refit(int method);
 	void createPatch();
 
+	// virtual functions
+	void refit(int method);
 	bool isPerpTo(Vector3 v, double dotThreshold);
+	FdNode* split(Geom::Plane& plane);
+	void draw();
 
 public:
 	Geom::Rectangle mPatch;

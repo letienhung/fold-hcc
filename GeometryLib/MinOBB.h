@@ -11,12 +11,10 @@ namespace Geom{
 class  MinOBB
 {
 public:
-	MinOBB();
-    MinOBB(QVector<Vector3> &points);
-	MinOBB(SurfaceMeshModel * mesh);
+	MinOBB(QVector<Vector3> &points, bool addNoise);
 
-	void computeMinOBB( QVector<Vector3> &points );
-	void computeMinOBB(SurfaceMeshModel * mesh);
+	void compute( QVector<Vector3> &points );
+	void computeWithNoise(QVector<Vector3> &points);
 	void GenerateComplementBasis (Vector3& u, Vector3& v, const Vector3& w);
 	void getCorners( QVector<Vector3> &pnts );
 

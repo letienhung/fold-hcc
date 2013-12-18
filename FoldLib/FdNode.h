@@ -26,9 +26,11 @@ public:
 	void drawWithName(int name);
 
 	// deformation
-	virtual void updateBox();
 	void encodeMesh();
 	void deformMesh();
+
+	// split
+	FdNode* split(Geom::Plane& plane, double thr);
 
 	// fit cuboid
 	virtual void refit(int method);
@@ -50,4 +52,6 @@ public:
 
 	QColor mColor;
 	NODE_TYPE mType;
+
+	bool isCtrlPanel;
 };
