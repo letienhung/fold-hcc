@@ -25,6 +25,10 @@ INCLUDEPATH += ../StructureLib
 LIBS += -L$$PWD/../UtilityLib/$$CFG/lib -lUtilityLib
 INCLUDEPATH += ../UtilityLib
 
+# Mesh Utility Library
+LIBS += -L$$PWD/../MeshUtilityLib/$$CFG/lib -lMeshUtilityLib
+INCLUDEPATH += ../MeshUtilityLib
+
 # TEMPLATE = app
 TARGET = Demo
 DESTDIR = ../

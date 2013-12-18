@@ -3,6 +3,7 @@
 //#include "FoldabilizerLibGlobal.h"
 #include <QGLWidget>
 #include "Line.h"
+#include "Rectangle.h"
 
 //		  7-----------6                     Y
 //		 /|          /|                   f2^   /f5
@@ -25,12 +26,13 @@ public:
 	~BBox(){}
 
 	Point Center;
+	QVector<Geom::Rectangle> mFaces;
 	QVector<Vector3> Axis;
 	Vector3 Extent;
 
 	// Selected plane and axis
 	bool isSelected;
-	QVector<Point> selPlane;
+	int selPlaneID;
 	int axisID;
 
 	Point bbmax, bbmin;
@@ -45,9 +47,9 @@ public:
 
 	QVector<Point> getBoxCorners();
 	QVector<Geom::Line> getEdges();
-	QVector<QVector<Point>> getBoxFaces();
+	void getBoxFaces();
 	
-	int getOrthoAxis(QVector<Point> &plane);
+	void getOrthoAxis(Geom::Rectangle &plane);
 	
 	bool IntersectRayBox(Point &start, Vec3d &startDir, Point &intPnt);
 	
@@ -56,12 +58,14 @@ public:
 	// Check if intersection point is contained in the face
 	bool isFaceContainPnt(Point &pnt);
 
-	// Get idx of axis to fold after intersection
-	int manipulate(Point &start, Vec3d &startDir);
+	// Get selection information by intersection detection
+	void selectFace(Point &start, Vec3d &startDir);
+
+	Geom::Rectangle getSelectedFace();
 
 	void deform(double factor); 
 	void draw();
-	static void DrawSquare(QVector<Point> &f, bool isOpaque, float lineWidth, const Vec4d &color);
+	static void DrawSquare(Geom::Rectangle &f, bool isOpaque, float lineWidth, const Vec4d &color);
 	
 };
 

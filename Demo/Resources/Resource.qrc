@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="/Resources">
+    <file>push.png</file>
     <file>toolIcons/box.png</file>
     <file>toolIcons/undo.png</file>
     <file>toolIcons/redo.png</file>

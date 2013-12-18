@@ -8,7 +8,7 @@ QManualDeformer::QManualDeformer(BBox * b)
 	this->mBox = b;
 	this->frame->setSpinningSensitivity(100.0);
 
-	this->connect(frame, SIGNAL(manipulated()), SLOT(updateBox()));
+	//this->connect(frame, SIGNAL(manipulated()), SLOT(updateBox()));
 }
 
 qglviewer::ManipulatedFrame * QManualDeformer::getFrame()
@@ -25,13 +25,14 @@ Vec3d QManualDeformer::pos()
 void QManualDeformer::updateBox()
 {
 	if(!mBox) return;
+	if(mBox->selPlaneID < 0)
+		return;
 
 	Vec3d delta(0,0,0);
 
 	Point p = pos();
-	//int i = mBox->getOrthoAxis(mBox->selPlane);
-	Point center = (mBox->selPlane[0]+mBox->selPlane[1]+mBox->selPlane[2]+mBox->selPlane[3])/4;
-    double factor = fabs(p[mBox->axisID] - center[mBox->axisID]);
+	Point center = mBox->getSelectedFace().Center;
+    double factor = (p - center).norm()/mBox->Extent[mBox->axisID];
 	mBox->deform(factor);
 
 	emit( objectModified() );

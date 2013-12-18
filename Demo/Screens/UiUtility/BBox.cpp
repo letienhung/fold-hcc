@@ -21,7 +21,9 @@ BBox::BBox(const Point& c, const QVector<Vector3>& axis, const Vector3& ext)
 	Extent = ext;
 	
 	isSelected = false;
-
+	getBoxFaces();
+	selPlaneID = -1;
+	axisID = -1;
 }
 
 BBox::BBox(const BBox &b)
@@ -31,7 +33,9 @@ BBox::BBox(const BBox &b)
 	Extent = b.Extent;
 
 	isSelected = b.isSelected;
-	selPlane = b.selPlane;
+	getBoxFaces();
+	selPlaneID = b.selPlaneID;
+	axisID = b.axisID;
 }
 
 BBox &BBox::operator =(const BBox &b)
@@ -40,7 +44,9 @@ BBox &BBox::operator =(const BBox &b)
 	Axis = b.Axis;
 	Extent = b.Extent;
 	isSelected = b.isSelected;
-	selPlane = b.selPlane;
+	getBoxFaces();
+	selPlaneID = b.selPlaneID;
+	axisID = b.axisID;
 
 	return *this;
 }
@@ -55,6 +61,9 @@ BBox::BBox(const Point& c, const Vector3& ext)
 	Axis = axis;
 	Extent = ext;
 	isSelected = false;
+	getBoxFaces();
+	selPlaneID = -1;
+	axisID = -1;
 }
 
 Vector3 BBox::getCoordinates( Vector3 p )
@@ -142,9 +151,8 @@ QVector<Line> BBox::getEdges()
 	return lns;
 }
 
-QVector<QVector<Point>> BBox::getBoxFaces()
+void BBox::getBoxFaces()
 {
-	QVector<QVector<Point>> faces;
 	QVector<Point> pnts = getBoxCorners();
 
 	for (int i = 0; i < 6; i++)	{
@@ -152,23 +160,21 @@ QVector<QVector<Point>> BBox::getBoxFaces()
 		for (int j = 0; j < 4; j++)	{
 			conners.push_back( pnts[cubeIds[i][j] ] );
 		}
-		faces.push_back(conners);
+		mFaces.push_back(Geom::Rectangle(conners ));
 	}	
-
-	return faces;
 }
 
-int BBox::getOrthoAxis(QVector<Point> &plane)
+void BBox::getOrthoAxis(Geom::Rectangle &plane)
 {
+	axisID = -1;
+	QVector<Point> conners = plane.getConners();
 	for(int i = 0; i < 3; i++){
-		Vector3 d01 = (plane[0] - plane[1]).normalized();
-		Vector3 d03 = (plane[0] - plane[3]).normalized();
+		Vector3 d01 = (conners[0] - conners[1]).normalized();
+		Vector3 d03 = (conners[0] - conners[3]).normalized();
 		if(dot(d01, Axis[i]) == 0 && dot(d03, Axis[i]) == 0){
 			axisID = i;
-			return i;
 		}
 	}
-	return -1;
 }
 
 bool BBox::IntersectRayBox(Point &start, Vec3d &startDir, Point &intPnt)
@@ -205,7 +211,6 @@ bool BBox::IntersectRayBox(Point &start, Vec3d &startDir, Point &intPnt)
 	// Ray intersects all 3 slabs. Return point (q) and intersection t value (tmin)
 	intPnt = getPosition(p + d * tmin);
 	if(isFaceContainPnt(intPnt)){
-       isSelected = true;
 	   return true;
 	}
 	return false;
@@ -227,69 +232,59 @@ void BBox::computeBBMinMax()
 
 bool BBox::isFaceContainPnt(Point &pnt)
 {
-	selPlane.clear();
-	QVector<QVector<Point>> faces = getBoxFaces();
-	Point coord = getCoordinates(pnt);
-	foreach(QVector<Point> f, faces){
-		double xmax = 0, xmin = 100000, ymax = 0, ymin = 100000, zmax = 0, zmin = 100000;
-		foreach(Point p, f){
-			Point pt = getCoordinates(p);
-			if(pt[0] > xmax)
-				xmax = pt[0];
-			if(pt[0] < xmin)
-				xmin = pt[0];
-			if(pt[1] > ymax)
-				ymax = pt[1];
-			if(pt[1] < ymin)
-				ymin = pt[1];
-			if(pt[2] > zmax)
-				zmax = pt[2];
-			if(pt[2] < zmin)
-				zmin = pt[2];
-		}
-		if(coord[0] <= xmax && coord[0] >= xmin &&
-			coord[1] <= ymax && coord[1] >= ymin &&
-			coord[2] <= zmax && coord[2] >= zmin){
-            selPlane = f;
-			isSelected = true;
+	selPlaneID = -1;
+	for(int i = 0; i < mFaces.size();i++)
+	{
+		if(mFaces[i].contains(pnt)){
+		    isSelected = true;
+			selPlaneID = i;
 			return true;
-		}		
+		}
 	}
-    return false;
+	return false;
 }
 
-int BBox::manipulate(Point &start, Vec3d &startDir)
+void BBox::selectFace(Point &start, Vec3d &startDir)
 {
 	Point intPnt;
-	if(IntersectRayBox(start, startDir, intPnt)){
-	   if(isFaceContainPnt(intPnt))
-		  return getOrthoAxis(selPlane);
-	}
-	return -1;
+	if(IntersectRayBox(start, startDir, intPnt))
+		getOrthoAxis(mFaces[selPlaneID]);
+}
+
+Geom::Rectangle BBox::getSelectedFace()
+{
+	if(selPlaneID >= 0)
+	   return mFaces[selPlaneID];
 }
 
 void BBox::deform(double factor)
 {
 	if(axisID < 0 || axisID > 2)
 		return;
-	Extent[axisID] -= factor; 
-	Center[axisID] -= factor/2;
+	Extent[axisID] -= fabs(factor)/(2*Extent[axisID]); 
+	Center[axisID] -= factor/(2*Extent[axisID]);
+	/*selPlane[0][axisID] += factor;
+	selPlane[1][axisID] += factor; 
+	selPlane[2][axisID] += factor;
+	selPlane[3][axisID] += factor; */
 }
 
 void BBox::draw()
 {
-	QVector<QVector<Point>> faces = getBoxFaces();
+	for(int i = 0; i < mFaces.size(); i++)
+		DrawSquare(mFaces[i], false, 2, Vec4d(0,0.5,1,0.5));
 
-	for(int i = 0; i < faces.size(); i++)
-		DrawSquare(faces[i], false, 2, Vec4d(0,0.5,1,0.5));
-
-	if(isSelected) 
-		DrawSquare(selPlane, true, 3, Vec4d(1,1,0,0.8));
+	if(isSelected && selPlaneID >= 0) 
+		DrawSquare(mFaces[selPlaneID], true, 3, Vec4d(1,1,0,0.8));
 }
 
-void BBox::DrawSquare(QVector<Point> &f, bool isOpaque, float lineWidth, const Vec4d &color)
+void BBox::DrawSquare(Geom::Rectangle &f, bool isOpaque, float lineWidth, const Vec4d &color)
 {
 	glEnable(GL_LIGHTING);
+
+	QVector<Point> conners = f.getConners();
+	if(conners.size() == 0)
+		return;
 
 	if(isOpaque)
 	{
@@ -304,15 +299,15 @@ void BBox::DrawSquare(QVector<Point> &f, bool isOpaque, float lineWidth, const V
 
 		glBegin(GL_QUADS);
 
-		Vec3d v10 = f[1] - f[0];
-		Vec3d v20 = f[2] - f[0];
+		Vec3d v10 = conners[1] - conners[0];
+		Vec3d v20 = conners[2] - conners[0];
 		Vec3d n = cross(v10 , v20).normalized(); 
 
 		glNormal3d(n[0],n[1],n[2]);
-		glVertex3d(f[0].x(),f[0].y(),f[0].z());
-		glVertex3d(f[1].x(),f[1].y(),f[1].z());
-		glVertex3d(f[2].x(),f[2].y(),f[2].z());
-		glVertex3d(f[3].x(),f[3].y(),f[3].z());
+		glVertex3d(conners[0].x(),conners[0].y(),conners[0].z());
+		glVertex3d(conners[1].x(),conners[1].y(),conners[1].z());
+		glVertex3d(conners[2].x(),conners[2].y(),conners[2].z());
+		glVertex3d(conners[3].x(),conners[3].y(),conners[3].z());
 		glEnd();
 
 		glDisable(GL_POLYGON_OFFSET_FILL);
@@ -326,11 +321,11 @@ void BBox::DrawSquare(QVector<Point> &f, bool isOpaque, float lineWidth, const V
 	glColor4f(color[0], color[1], color[2], color[3]);
 
 	glBegin(GL_LINE_STRIP);
-	glVertex3d(f[0].x(),f[0].y(),f[0].z());
-	glVertex3d(f[1].x(),f[1].y(),f[1].z());
-	glVertex3d(f[2].x(),f[2].y(),f[2].z());
-	glVertex3d(f[3].x(),f[3].y(),f[3].z());
-	glVertex3d(f[0].x(),f[0].y(),f[0].z());
+	glVertex3d(conners[0].x(),conners[0].y(),conners[0].z());
+	glVertex3d(conners[1].x(),conners[1].y(),conners[1].z());
+	glVertex3d(conners[2].x(),conners[2].y(),conners[2].z());
+	glVertex3d(conners[3].x(),conners[3].y(),conners[3].z());
+	glVertex3d(conners[0].x(),conners[0].y(),conners[0].z());
 	glEnd();
 
 	glEnable(GL_LIGHTING);

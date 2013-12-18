@@ -636,6 +636,7 @@ void MyDesigner::drawCircleFade(Vec4d &color, double radius)
 void MyDesigner::updateActiveObject()
 {
 	vboCollection.clear();
+
 	emit(objectUpdated());
 }
 
@@ -787,16 +788,21 @@ void MyDesigner::mousePressEvent( QMouseEvent* e )
 			updateWidget();*/
 		}
 
+		switch(selectMode)
+		{
+		case BOX: this->setCursor(QCursor(QPixmap(":/Resources/push.png"), 0, 32)); break;
+		default: this->setCursor(Qt::ArrowCursor); break;
+		}
+
 		if(selectMode == BOX && mBox)
 		{
-			Point start(startMouseOrigin[0], startMouseOrigin[1],startMouseOrigin[2]);
+			 Point start(startMouseOrigin[0], startMouseOrigin[1],startMouseOrigin[2]);
 			Vec3d dir(startMouseDir[0], startMouseDir[1], startMouseDir[2]);
-			int idx = mBox->manipulate(start,dir);
-			if(idx < 0){
-			   selectMode = SELECT_NONE;
-			   this->displayMessage("Select one face to push in");
+			mBox->selectFace(start,dir);
+			if(mBox->axisID < 0){
+				selectMode = BOX;
+				this->displayMessage("No face has been selected. Ctrl + LeftClick to select a face to push in");
 			}
-			mBox->draw();
 			updateGL();
 		}
 	}
@@ -896,6 +902,7 @@ void MyDesigner::mouseReleaseEvent( QMouseEvent* e )
 	if(selectMode == BOX)
 	{
 		//defCtrl->getFrame()->setOrientation(qglviewer::Quaternion());
+
 	}
 
 	// View changer box area
@@ -991,6 +998,18 @@ void MyDesigner::mouseMoveEvent( QMouseEvent* e )
 		isMousePressed = true;
 	}
 
+	if((e->modifiers() & Qt::ControlModifier) && isMousePressed){
+		if(selectMode == BOX)
+		{
+			camera()->convertClickToLine(e->pos(), currMouseOrigin, currMouseDir);
+			Point start = mBox->getSelectedFace().Center;
+			double factor = currMouseOrigin[mBox->axisID] - start[mBox->axisID];
+			mBox->deform(factor);
+			mBox->getBoxFaces();
+			updateGL();
+		}
+	}
+
 	if(isMousePressed && defCtrl && !(e->modifiers() & Qt::ShiftModifier))
 	{
 		Vec3d o(currMouseOrigin[0],currMouseOrigin[1],currMouseOrigin[2]);
@@ -1081,11 +1100,6 @@ void MyDesigner::mouseMoveEvent( QMouseEvent* e )
 		if(transformMode == TRANSLATE_MODE)
 		{
 			// Should constraint to closest axis line..
-		}
-
-		if(selectMode == BOX)
-		{
-
 		}
 	}
 
@@ -1211,14 +1225,13 @@ void MyDesigner::transformAABB(bool modifySelect)
 		return;
 	}
 
-	if(mBox && mBox->selPlane.size())
+	if(mBox && mBox->selPlaneID >= 0)
 	{
 		defCtrl = new QManualDeformer(mBox);
 		setManipulatedFrame( defCtrl->getFrame() );
 
-		Vec3d q = (mBox->selPlane[0]+mBox->selPlane[1]+mBox->selPlane[2]+mBox->selPlane[3])/4;
+		Vec3d q = mBox->getSelectedFace().Center;
 		manipulatedFrame()->setPosition( Vec(q.x(), q.y(), q.z()) );
-
 		this->connect(defCtrl, SIGNAL(objectModified()), SLOT(updateActiveObject()));
 	}
 }
@@ -1433,6 +1446,8 @@ void MyDesigner::pushAABB()
 	setMouseBinding(Qt::RightButton, CAMERA, TRANSLATE);
 	selectMode = BOX;
 	toolMode();
+
+	this->displayMessage("* Ctrl + LeftClick to select a face to push in*", 5000);
 }
 
 void MyDesigner::moveMode()
