@@ -22,20 +22,37 @@ class FdPlugin : public SurfaceMeshModePlugin
 	bool postSelection(const QPoint& point);
 
 public:
-    FdPlugin();
-    FdWidget	*widget;
+	FdWidget* widget;
 	GraphManager* g_manager;
+	Foldabilizer* fold;
 
-	FdGraphPtr activeScaffold();
+	bool drawAABB;
+	bool drawCuboid;
+	bool drawScaffold;
+	bool drawMesh;
+	bool drawFolded;
+
+public:
+    FdPlugin();
+	
+	// helpers
+	FdGraph* activeScaffold();
 
 public slots:
+	// to graph manager
+	void resetMesh();
+
+	// show options
+	void showAABB(int state);
+	void showCuboid(int state);
+	void showScaffold(int state);
+	void showMesh(int state);
+	void showFolded(int state);
+
+	// scene and message
 	void updateScene();
 	void resetScene();
-
-	void resetMesh();
 	void showStatus(QString msg);
-
-	void fold();
 
 	void test();
 };

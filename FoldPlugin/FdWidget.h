@@ -12,16 +12,15 @@ class FdWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit FdWidget(FdPlugin *f, QWidget *parent = 0);
+    explicit FdWidget(FdPlugin *fp, QWidget *parent = 0);
     ~FdWidget();
 
 private:
     Ui::FdWidget *ui;
-	FdPlugin *fold;
+	FdPlugin *plugin;
 
 public slots:
-	void createScaffold();
-	void fitCuboid();
-	void setScaffoldName(QString name);
+	// to Ui
+	void setScaffold(FdGraph* fdg);
 };
 

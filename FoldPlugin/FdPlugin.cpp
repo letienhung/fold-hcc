@@ -8,12 +8,20 @@
 FdPlugin::FdPlugin()
 {
 	widget = NULL;
-	g_manager = new GraphManager();
 
-	this->connect(g_manager, SIGNAL(sceneSettingsChanged()), SLOT(updateScene()));
-	this->connect(g_manager, SIGNAL(scaffoldChanged(QString)), SLOT(resetScene()));
+	g_manager = new GraphManager();
+	this->connect(g_manager, SIGNAL(scaffoldChanged(FdGraph*)), SLOT(resetScene()));
 	this->connect(g_manager, SIGNAL(scaffoldModified()), SLOT(resetScene()));
 	this->connect(g_manager, SIGNAL(message(QString)), SLOT(showStatus(QString)));
+
+	fold = new Foldabilizer();
+	fold->connect(g_manager, SIGNAL(scaffoldChanged(FdGraph*)), SLOT(setScaffold(FdGraph*)));
+	
+	drawFolded = false;
+	drawAABB = false;
+	drawCuboid = true;
+	drawScaffold = true;
+	drawMesh = false;
 }
 
 void FdPlugin::create()
@@ -30,7 +38,7 @@ void FdPlugin::create()
 		drawArea()->setPerspectiveProjection();
 
 		// connections
-		widget->connect(g_manager, SIGNAL(scaffoldChanged(QString)), SLOT(setScaffoldName(QString)));
+		widget->connect(g_manager, SIGNAL(scaffoldChanged(FdGraph*)), SLOT(setScaffold(FdGraph*)));
 	}
 
 	resetMesh();
@@ -44,43 +52,53 @@ void FdPlugin::destroy()
 void FdPlugin::decorate()
 {
 	if (activeScaffold())
-	{
 		activeScaffold()->draw();
-	}
 }
 
 void FdPlugin::drawWithNames()
 {
 	if (activeScaffold())
-	{
 		activeScaffold()->drawWithNames();
-	}
 }
 
 void FdPlugin::updateScene()
 {
+	if (activeScaffold())
+	{
+		activeScaffold()->showAABB = drawAABB;
+		activeScaffold()->showCuboids(drawCuboid);
+		activeScaffold()->showScaffold(drawScaffold);
+		activeScaffold()->showMeshes(drawMesh);
+	}
+
 	drawArea()->updateGL();
 }
 
 void FdPlugin::resetScene()
 {
-	Geom::AABB aabb = activeScaffold()->computeAABB();
-	qglviewer::Vec bbmin(aabb.bbmin.data());
-	qglviewer::Vec bbmax(aabb.bbmax.data());
-	drawArea()->camera()->setSceneBoundingBox(bbmin, bbmax);
-	drawArea()->camera()->showEntireScene();
-	drawArea()->updateGL();
+	if (activeScaffold())
+	{
+		Geom::AABB aabb = activeScaffold()->computeAABB();
+		aabb.validate();
+
+		qglviewer::Vec bbmin(aabb.bbmin.data());
+		qglviewer::Vec bbmax(aabb.bbmax.data());
+		drawArea()->camera()->setSceneBoundingBox(bbmin, bbmax);
+		drawArea()->camera()->showEntireScene();
+	}
+	
+	updateScene();
 }
 
 void FdPlugin::test()
 {
-	g_manager->test();
+
 }
 
 
-FdGraphPtr FdPlugin::activeScaffold()
+FdGraph* FdPlugin::activeScaffold()
 {
-	return g_manager->scaffold;
+	return (drawFolded ? fold->selectedScaffold() : g_manager->scaffold);
 }
 
 void FdPlugin::resetMesh()
@@ -98,24 +116,52 @@ bool FdPlugin::postSelection( const QPoint& point )
 {
 	Q_UNUSED(point);
 
-	int nidx = drawArea()->selectedName();
-
-	Structure::Node* sn = activeScaffold()->getNode(nidx);
-	if (sn)
+	if (activeScaffold())
 	{
-		showMessage("Selected name = %d, nodeId = %s", nidx, sn->id.toStdString().c_str());
-		activeScaffold()->selectNode(nidx);
+		int nidx = drawArea()->selectedName();
+
+		Structure::Node* sn = activeScaffold()->getNode(nidx);
+		if (sn)
+		{
+			showMessage("Selected name = %d, nodeId = %s", nidx, sn->id.toStdString().c_str());
+			activeScaffold()->selectNode(nidx);
+		}
+		else
+			showMessage("Selected name = %d", nidx);
 	}
-	else
-		showMessage("Selected name = %d", nidx);
 
 	return true;
 }
 
-void FdPlugin::fold()
+void FdPlugin::showFolded( int state )
 {
-	Foldabilizer fdzer(activeScaffold(), Vector3(0, 0, 1));
-	fdzer.run();
+	drawFolded = (state == Qt::Checked);
+	updateScene();
+}
+
+
+void FdPlugin::showAABB( int state )
+{
+	drawAABB = (state == Qt::Checked);
+	updateScene();
+}
+
+void FdPlugin::showCuboid( int state )
+{
+	drawCuboid = (state == Qt::Checked);
+	updateScene();
+}
+
+void FdPlugin::showScaffold( int state )
+{
+	drawScaffold = (state == Qt::Checked);
+	updateScene();
+}
+
+void FdPlugin::showMesh( int state )
+{
+	drawMesh = (state == Qt::Checked);
+	updateScene();
 }
 
 

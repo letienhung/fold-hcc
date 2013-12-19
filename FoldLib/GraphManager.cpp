@@ -8,21 +8,24 @@
 
 #include <QFileInfo>
 #include <QFileDialog>
-#include "FdUtility.h"
 
 GraphManager::GraphManager()
 {
-	this->scaffold = FdGraphPtr(new FdGraph());
-	this->entireMesh = NULL;
+	entireMesh = NULL;
+	scaffold = new FdGraph();
+
+	fitMethod = 0;
+	refitMethod = 0;
 }
 
 
 GraphManager::~GraphManager()
 {
+	delete scaffold;
 }
 
 
-void GraphManager::createScaffold( int method )
+void GraphManager::createScaffold()
 {
 	SegMeshLoader sml(entireMesh);
 	QVector<SurfaceMeshModel*> subMeshes = sml.getSegMeshes();
@@ -34,50 +37,11 @@ void GraphManager::createScaffold( int method )
 	// create nodes from meshes
 	foreach (SurfaceMeshModel* m, subMeshes)
 	{
-		scaffold->addNode(m, method);
+		scaffold->addNode(m, fitMethod);
 	}
 
-	emit(scaffoldChanged(scaffold->path));
+	emit(scaffoldChanged(scaffold));
 }
-
-
-void GraphManager::showCuboids( int state )
-{
-	bool show = (state == Qt::Checked);
-	foreach(FdNode* n, scaffold->getFdNodes())
-		n->showCuboids = show;
-
-	emit(sceneSettingsChanged());
-}
-
-void GraphManager::showScaffold( int state )
-{
-	bool show = (state == Qt::Checked);
-	foreach(FdNode* n, scaffold->getFdNodes())
-		n->showScaffold = show;
-
-	emit(sceneSettingsChanged());
-}
-
-
-void GraphManager::showMeshes( int state )
-{
-	bool show = (state == Qt::Checked);
-	foreach(FdNode* n, scaffold->getFdNodes())
-		n->showMesh = show;
-
-	emit(sceneSettingsChanged());
-}
-
-
-void GraphManager::showAABB( int state )
-{
-	scaffold->showAABB = (state == Qt::Checked);
-
-	emit(sceneSettingsChanged());
-}
-
-
 
 void GraphManager::saveScaffold()
 {
@@ -95,17 +59,17 @@ void GraphManager::loadScaffold()
 	if (filename.isEmpty()) return;
 	scaffold->loadFromFile(filename);
 
-	emit(scaffoldChanged(scaffold->path));
+	emit(scaffoldChanged(scaffold));
 	emit(message("Loaded."));
 }
 
-void GraphManager::setMesh( Model* model )
+void GraphManager::setMesh( SurfaceMeshModel* mesh )
 {
-	this->entireMesh = (SurfaceMeshModel*) model;
+	this->entireMesh = mesh;
 	qDebug() << "Set active mesh as " << entireMesh->path;
 }
 
-void GraphManager::changeTypeOfSelectedNodes()
+void GraphManager::changeNodeType()
 {
 	foreach(Structure::Node* n, scaffold->selectedNodes())
 	{
@@ -124,18 +88,18 @@ void GraphManager::changeTypeOfSelectedNodes()
 	emit(scaffoldModified());
 }
 
-void GraphManager::refitSelectedNodes( int method )
+void GraphManager::refitNodes()
 {
 	foreach(Structure::Node* n, scaffold->selectedNodes())
 	{
 		FdNode* fn = (FdNode*)n;
-		fn->refit(method); 
+		fn->refit(refitMethod); 
 	}
 
 	emit(scaffoldModified());
 }
 
-void GraphManager::linkSelectedNodes()
+void GraphManager::linkNodes()
 {
 	QVector<Structure::Node*> sn = scaffold->selectedNodes();
 	if (sn.size() < 2) return;
@@ -147,12 +111,17 @@ void GraphManager::linkSelectedNodes()
 
 void GraphManager::test()
 {
-	scaffold = FdGraphPtr((FdGraph*)(scaffold->clone()));
 
-	emit(scaffoldChanged(scaffold->path));
 }
 
-void GraphManager::setScaffold( FdGraphPtr fdg )
+void GraphManager::setFitMethod( int method )
 {
-	scaffold = fdg;
+	fitMethod = method;
 }
+
+void GraphManager::setRefitMethod( int method )
+{
+	refitMethod = method;
+}
+
+

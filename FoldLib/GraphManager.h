@@ -14,38 +14,32 @@ public:
 
 public:
 	SurfaceMeshModel* entireMesh;
-	FdGraphPtr scaffold;
+	FdGraph* scaffold;
+
+	// ui 
+	int fitMethod;
+	int refitMethod;
 
 public slots:
-	// setter
-	void setMesh(Model* model);
-	void setScaffold(FdGraphPtr fdg);
+	// creation
+	void setMesh(SurfaceMeshModel* mesh);
+	void setFitMethod(int method);
+	void setRefitMethod(int method);
+	void createScaffold();
+	void refitNodes();
+	void changeNodeType();
+	void linkNodes();
 
-	// graph
-	void createScaffold(int method);
+	// I/O
 	void saveScaffold();
 	void loadScaffold();
-
-	// node
-	void refitSelectedNodes(int method);
-	void changeTypeOfSelectedNodes();
-
-	// link
-	void linkSelectedNodes();
-
-	// visualization
-	void showCuboids(int state);
-	void showScaffold(int state);
-	void showMeshes(int state);
-	void showAABB(int state);
 
 	// test
 	void test();
 
 signals:
-	void sceneSettingsChanged();
 	void scaffoldModified();
-	void scaffoldChanged(QString name);
+	void scaffoldChanged(FdGraph* fdg);
 	void message(QString msg);
 };
 

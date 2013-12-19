@@ -1,40 +1,28 @@
 #include "FdGraph.h"
+#include "LayerModel.h"
+#include "Numeric.h"
+#include <QObject>
 
-
-enum DIRECTION{X, Y, Z};
-
-class Foldabilizer
+class Foldabilizer : public QObject
 {
-public:
-    Foldabilizer(FdGraphPtr graph, Vector3 d);
+	Q_OBJECT
 
 public:
-	FdGraphPtr scaffold;
+    Foldabilizer();
 
 public:
-	// parameter
-	int fdAId;
-	Vector3 direct;
+	FdGraph* scaffold; // weak reference to input scaffold
 
-	// control panels
-	double perpThr;
-	double layerHeightThr;
-	double clusterDistThr;
-	double areaThr;
-	QVector<FdNode*> controlNodes;
-	QVector< QVector<FdNode*> > controlGroups;
-	QVector<FdNode*> controlPanels;
-	void findControlNodes();
-	void groupControlNodes();
-	QVector< QVector<FdNode*> > clusterNodes(QVector<FdNode*> nodes);
-	void createControlPanels();
+	int pushAxis;
+	int selectedId;
+	QVector<LayerModel*> layerModels;
 
-	// layers
-	void splitByControlPanels();
-
-	// fold a layer
+public:
+	FdGraph* selectedScaffold();
 
 public slots:
-	void run();
+	void setScaffold(FdGraph* fdg);
+	void setPushAxis(int aid);
+	void fold();
 };
 

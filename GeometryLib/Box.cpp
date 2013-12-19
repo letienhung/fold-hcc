@@ -563,3 +563,30 @@ bool Geom::Box::split( int aid, double cp, Box& box1, Box& box2 )
 
 	return true;
 }
+
+void Geom::Box::write( XmlWriter& xw )
+{
+	xw.writeOpenTag("box");
+	{
+		xw.writeTaggedString("c", qStr(Center));
+		xw.writeTaggedString("x", qStr(Axis[0]));
+		xw.writeTaggedString("y", qStr(Axis[1]));
+		xw.writeTaggedString("z", qStr(Axis[2]));
+		xw.writeTaggedString("e", qStr(Extent));
+	}
+	xw.writeCloseTag("box");
+}
+
+void Geom::Box::read( QDomNode& node )
+{
+	QString c = node.firstChildElement("c").text();
+	QString x = node.firstChildElement("x").text();
+	QString y = node.firstChildElement("y").text();
+	QString z = node.firstChildElement("z").text();
+	QString e = node.firstChildElement("e").text();
+
+	Center = toVector3(c);
+	Axis.clear();
+	Axis << toVector3(x) << toVector3(y) << toVector3(z);
+	Extent = toVector3(e);
+}

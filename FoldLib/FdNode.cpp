@@ -1,7 +1,6 @@
 #include "FdNode.h"
 #include "CustomDrawObjects.h"
 #include "Numeric.h"
-#include "FdUtility.h"
 #include "AABB.h"
 #include "MinOBB.h"
 #include "QuickMeshDraw.h"
@@ -79,7 +78,7 @@ void FdNode::deformMesh()
 	MeshHelper::decodeMeshInBox(mMesh.data(), mBox, meshCoords);
 }
 
-void FdNode::writeToXml( XmlWriter& xw )
+void FdNode::write( XmlWriter& xw )
 {
 	xw.writeOpenTag("node");
 	{
@@ -87,10 +86,10 @@ void FdNode::writeToXml( XmlWriter& xw )
 		xw.writeTaggedString("ID", this->id);
 
 		// box
-		writeBoxToXml(xw, mBox);
+		mBox.write(xw);
 
 		// scaffold
-		this->writeScaffoldToXml(xw);
+		writeScaffold(xw);
 	}
 	xw.writeCloseTag("node");
 }
@@ -135,6 +134,7 @@ Structure::Node* FdNode::clone()
 {
 	return new FdNode(*this);
 }
+
 
 bool FdNode::isPerpTo( Vector3 v, double dotThreshold )
 {

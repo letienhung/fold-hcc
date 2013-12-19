@@ -32,8 +32,11 @@ public:
 	// aabb
 	Geom::AABB computeAABB();
 
-	// visual
+	// visualization
 	void draw();
+	void showCuboids(bool show);
+	void showMeshes(bool show);
+	void showScaffold(bool show);
 
 	// helpers
 	static Geom::Segment getDistSegment(FdNode* n1, FdNode* n2);

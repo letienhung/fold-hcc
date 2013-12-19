@@ -6,6 +6,9 @@
 #include "Segment.h"
 #include "Rectangle.h"
 
+#include "XmlWriter.h"
+#include <QDomNode>
+
 namespace Geom{
 
 class Box 
@@ -94,6 +97,10 @@ public:
 	// draw
 	void draw(QColor color = Qt::white);
 	void drawWireframe(double width = 2.0, QColor color = Qt::white);
+
+	// I/O
+	void write( XmlWriter& xw);
+	void read(QDomNode& node);
 };
 
 }

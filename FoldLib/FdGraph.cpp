@@ -4,7 +4,6 @@
 #include <QFile>
 #include <QFileInfo>
 #include "XmlWriter.h"
-#include "FdUtility.h"
 #include "MeshMerger.h"
 #include "MeshHelper.h"
 #include "MeshBoolean.h"
@@ -81,7 +80,7 @@ void FdGraph::saveToFile(QString fname)
 		xw.writeTaggedString("cN", QString::number(nbNodes()));
 		foreach(FdNode* node, getFdNodes())
 		{
-			node->writeToXml(xw);
+			node->write(xw);
 		}
 
 		// links
@@ -129,7 +128,8 @@ void FdGraph::loadFromFile(QString fname)
 		// scaffold
 		QString nid = node.firstChildElement("ID").text();
 		int ntype = node.firstChildElement("type").text().toInt();
-		Geom::Box box = getBox(node.firstChildElement("box"));
+		Geom::Box box;
+		box.read(node.firstChildElement("box"));
 
 		// mesh
 		QString mesh_fname = meshFolder + "/" + nid + ".obj";
@@ -333,4 +333,22 @@ QVector<FdNode*> FdGraph::split( FdNode* fn, Geom::Plane& plane, double thr )
 	splitted.push_back(node1);
 	splitted.push_back(node2);
 	return splitted;
+}
+
+void FdGraph::showCuboids( bool show )
+{
+	foreach(FdNode* n, getFdNodes())
+		n->showCuboids = show;
+}
+
+void FdGraph::showScaffold( bool show )
+{
+	foreach(FdNode* n, getFdNodes())
+		n->showScaffold = show;
+}
+
+void FdGraph::showMeshes( bool show )
+{
+	foreach(FdNode* n, getFdNodes())
+		n->showMesh = show;
 }

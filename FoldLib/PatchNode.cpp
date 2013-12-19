@@ -17,6 +17,7 @@ PatchNode::PatchNode(PatchNode& other)
 	:FdNode(other)
 {
 	mPatch = other.mPatch;
+	mPatchColor = other.mPatchColor;
 }
 
 

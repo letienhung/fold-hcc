@@ -45,6 +45,7 @@ inline QVector<Vector3> XYZ()
 	return a;
 }
 
+
 inline double periodicalRanged(double a, double b, double v)
 {
 	double p = b -a;

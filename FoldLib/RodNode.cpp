@@ -16,6 +16,7 @@ RodNode::RodNode(RodNode& other)
 	:FdNode(other)
 {
 	mRod = other.mRod;
+	mRodColor = other.mRodColor;
 }
 
 RodNode::~RodNode()

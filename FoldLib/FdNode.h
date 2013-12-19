@@ -33,8 +33,8 @@ public:
 	virtual void refit(int method);
 
 	// I/O
-	void writeToXml(XmlWriter& xw);
-	virtual void writeScaffoldToXml(XmlWriter& xw){Q_UNUSED(xw);}
+	void write(XmlWriter& xw);
+	virtual void writeScaffold(XmlWriter& xw){Q_UNUSED(xw);}
 
 	// aabb
 	Geom::AABB computeAABB();

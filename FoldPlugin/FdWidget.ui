@@ -86,7 +86,7 @@
        </widget>
       </item>
       <item row="2" column="3">
-       <widget class="QComboBox" name="fitMethod">
+       <widget class="QComboBox" name="refitMethod">
         <property name="editable">
          <bool>false</bool>
         </property>
@@ -159,7 +159,7 @@
        </widget>
       </item>
       <item row="1" column="2">
-       <widget class="QComboBox" name="createMethod">
+       <widget class="QComboBox" name="fitMethod">
         <item>
          <property name="text">
           <string>AABB</string>
@@ -175,12 +175,12 @@
       <item row="0" column="1" alignment="Qt::AlignRight">
        <widget class="QLabel" name="label_4">
         <property name="text">
-         <string>Name:</string>
+         <string>Path:</string>
         </property>
        </widget>
       </item>
       <item row="0" column="2" colspan="3">
-       <widget class="QLabel" name="fdName">
+       <widget class="QLabel" name="fdPath">
         <property name="text">
          <string>this is a place holder...</string>
         </property>
@@ -215,7 +215,34 @@
       <string>Foldabilizer</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
-      <item row="1" column="1">
+      <item row="2" column="0" colspan="4">
+       <widget class="QTableView" name="fdList"/>
+      </item>
+      <item row="3" column="2">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Target Volume</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" alignment="Qt::AlignRight">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Direction:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QCheckBox" name="showFolded">
+        <property name="text">
+         <string>Show Folded</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="3">
        <widget class="QDoubleSpinBox" name="targetV">
         <property name="maximum">
          <double>1.000000000000000</double>
@@ -228,17 +255,31 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>Target Volume</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="pushDirection">
+        <item>
+         <property name="text">
+          <string>X</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Y</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Z</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>ALL</string>
+         </property>
+        </item>
        </widget>
       </item>
-      <item row="0" column="0">
+      <item row="0" column="2" colspan="2">
        <widget class="QPushButton" name="fold">
         <property name="text">
          <string>Fold</string>
