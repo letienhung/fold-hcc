@@ -154,13 +154,14 @@ QVector<Line> BBox::getEdges()
 void BBox::getBoxFaces()
 {
 	QVector<Point> pnts = getBoxCorners();
+	mFaces.resize(6);
 
 	for (int i = 0; i < 6; i++)	{
 		QVector<Vector3> conners;
 		for (int j = 0; j < 4; j++)	{
 			conners.push_back( pnts[cubeIds[i][j] ] );
 		}
-		mFaces.push_back(Geom::Rectangle(conners ));
+		mFaces[i] = Geom::Rectangle(conners);
 	}	
 }
 
@@ -257,12 +258,35 @@ Geom::Rectangle BBox::getSelectedFace()
 	   return mFaces[selPlaneID];
 }
 
-void BBox::deform(double factor)
+int BBox::getParallelFace(Geom::Rectangle &f)
+{
+	for(int i = 0; i < 6; i++)
+		if(mFaces[i].Center != f.Center && mFaces[i].Normal == f.Normal || mFaces[i].Normal == -f.Normal)
+			return i;
+	return -1;
+}
+
+void BBox::deform(double f)
 {
 	if(axisID < 0 || axisID > 2)
 		return;
-	Extent[axisID] -= fabs(factor)/(2*Extent[axisID]); 
-	Center[axisID] -= factor/(2*Extent[axisID]);
+	double factor = (fabs(f) > 2*Extent[axisID])?(f/fabs(f)*(fabs(f) - 2*Extent[axisID])):f;
+	int paral = getParallelFace(mFaces[selPlaneID]);
+	if(paral < 0)
+		return;
+ 
+	QVector<Point> newConners = mFaces[selPlaneID].getConners();
+	for(int i = 0; i < newConners.size(); i++){
+		if(mFaces[selPlaneID].Center[axisID]>Center[axisID])
+			newConners[i][axisID] -= fabs(factor)/(2*Extent[axisID]); 
+		else
+			newConners[i][axisID] += fabs(factor)/(2*Extent[axisID]);
+	}
+
+	mFaces[selPlaneID].update(newConners);
+	Center = (mFaces[selPlaneID].Center + mFaces[paral].Center)/2;
+    Extent[axisID] = (mFaces[selPlaneID].Center - mFaces[paral].Center).norm()/2; 
+	//Center[axisID] += factor/(2*Extent[axisID]);
 	/*selPlane[0][axisID] += factor;
 	selPlane[1][axisID] += factor; 
 	selPlane[2][axisID] += factor;

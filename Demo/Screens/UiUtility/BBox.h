@@ -4,6 +4,7 @@
 #include <QGLWidget>
 #include "Line.h"
 #include "Rectangle.h"
+#include "CustomDrawObjects.h"
 
 //		  7-----------6                     Y
 //		 /|          /|                   f2^   /f5
@@ -63,7 +64,9 @@ public:
 
 	Geom::Rectangle getSelectedFace();
 
-	void deform(double factor); 
+	// Return id of parallel face of f.
+	int getParallelFace(Geom::Rectangle &f);
+	void deform(double f); 
 	void draw();
 	static void DrawSquare(Geom::Rectangle &f, bool isOpaque, float lineWidth, const Vec4d &color);
 	

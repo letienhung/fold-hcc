@@ -796,7 +796,7 @@ void MyDesigner::mousePressEvent( QMouseEvent* e )
 
 		if(selectMode == BOX && mBox)
 		{
-			 Point start(startMouseOrigin[0], startMouseOrigin[1],startMouseOrigin[2]);
+			Point start(startMouseOrigin[0], startMouseOrigin[1],startMouseOrigin[2]);
 			Vec3d dir(startMouseDir[0], startMouseDir[1], startMouseDir[2]);
 			mBox->selectFace(start,dir);
 			if(mBox->axisID < 0){
@@ -875,6 +875,26 @@ void MyDesigner::mousePressEvent( QMouseEvent* e )
 void MyDesigner::mouseReleaseEvent( QMouseEvent* e )
 {
 	QGLViewer::mouseReleaseEvent(e);
+   
+	if((e->modifiers() & Qt::ControlModifier) && isMousePressed){
+		if(selectMode == BOX)
+		{
+			camera()->convertClickToLine(e->pos(), currMouseOrigin, currMouseDir);
+			Point currPos(startMouseOrigin[0], startMouseOrigin[1],startMouseOrigin[2]);
+			Vec3d currDir(startMouseDir[0], startMouseDir[1], startMouseDir[2]);
+			Point currPnt;
+			if(mBox->IntersectRayBox(currPos,currDir,currPnt)){
+				Point startPnt = mBox->getSelectedFace().Center;
+				//double factor = currPnt[mBox->axisID] - startPnt[mBox->axisID];
+				double factor = (currPnt - startPnt).norm() * (currPnt[mBox->axisID] - startPnt[mBox->axisID])/fabs(currPnt[mBox->axisID] - startPnt[mBox->axisID]);
+				mBox->deform(factor);
+				mBox->getBoxFaces();
+			}
+			else
+                this->displayMessage("* Fail to push in the right direction *", 5000);
+			 updateGL();
+		}
+	}
 
 	isMousePressed = false;
 
@@ -896,12 +916,6 @@ void MyDesigner::mouseReleaseEvent( QMouseEvent* e )
 
 	if(transformMode == SPLIT_MODE)
 	{
-
-	}
-
-	if(selectMode == BOX)
-	{
-		//defCtrl->getFrame()->setOrientation(qglviewer::Quaternion());
 
 	}
 
@@ -998,17 +1012,25 @@ void MyDesigner::mouseMoveEvent( QMouseEvent* e )
 		isMousePressed = true;
 	}
 
-	if((e->modifiers() & Qt::ControlModifier) && isMousePressed){
-		if(selectMode == BOX)
-		{
-			camera()->convertClickToLine(e->pos(), currMouseOrigin, currMouseDir);
-			Point start = mBox->getSelectedFace().Center;
-			double factor = currMouseOrigin[mBox->axisID] - start[mBox->axisID];
-			mBox->deform(factor);
-			mBox->getBoxFaces();
-			updateGL();
-		}
-	}
+	//if((e->modifiers() & Qt::ControlModifier) && isMousePressed){
+	//	if(selectMode == BOX)
+	//	{
+	//		camera()->convertClickToLine(e->pos(), currMouseOrigin, currMouseDir);
+	//		Point currPos(startMouseOrigin[0], startMouseOrigin[1],startMouseOrigin[2]);
+	//		Vec3d currDir(startMouseDir[0], startMouseDir[1], startMouseDir[2]);
+	//		Point currPnt;
+	//		if(mBox->IntersectRayBox(currPos,currDir,currPnt)){
+	//			Point startPnt = mBox->getSelectedFace().Center;
+	//			//double factor = currPnt[mBox->axisID] - startPnt[mBox->axisID];
+	//			double factor = (currPnt - startPnt).norm() * (currPnt[mBox->axisID] - startPnt[mBox->axisID])/fabs(currPnt[mBox->axisID] - startPnt[mBox->axisID]);
+	//			mBox->deform(factor);
+	//			mBox->getBoxFaces();
+	//		}
+	//		else
+ //               this->displayMessage("* Fail to push in the right direction *", 5000);
+	//		 updateGL();
+	//	}
+	//}
 
 	if(isMousePressed && defCtrl && !(e->modifiers() & Qt::ShiftModifier))
 	{
@@ -1440,6 +1462,10 @@ void MyDesigner::selectTool()
 
 void MyDesigner::pushAABB()
 {
+	if(!mBox){
+		this->displayMessage("* Please import an object first *", 5000);
+		return;
+	}
 	clearButtons();
 
 	setMouseBinding(Qt::LeftButton, FRAME, TRANSLATE);

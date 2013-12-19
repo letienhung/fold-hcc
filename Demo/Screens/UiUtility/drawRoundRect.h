@@ -10,7 +10,7 @@ typedef struct
 	float x;
 	float y;
 
-} Vector2f;
+} Vect2f;
 
 #define roundf(x) (floor(x+0.5f))
 
@@ -31,10 +31,10 @@ void drawRoundRect( int x,
 	unsigned int index = 0,
 		segment_count = ( int )( resolution / 4 );
 
-	Vector2f *top_left     = ( Vector2f * ) malloc( segment_count * sizeof( Vector2f ) ), 
-		*bottom_left       = ( Vector2f * ) malloc( segment_count * sizeof( Vector2f ) ),
-		*top_right         = ( Vector2f * ) malloc( segment_count * sizeof( Vector2f ) ),
-		*bottom_right      = ( Vector2f * ) malloc( segment_count * sizeof( Vector2f ) ),
+	Vect2f *top_left     = ( Vect2f * ) malloc( segment_count * sizeof( Vect2f ) ), 
+		*bottom_left       = ( Vect2f * ) malloc( segment_count * sizeof( Vect2f ) ),
+		*top_right         = ( Vect2f * ) malloc( segment_count * sizeof( Vect2f ) ),
+		*bottom_right      = ( Vect2f * ) malloc( segment_count * sizeof( Vect2f ) ),
 		bottom_left_corner = { x + radius, y - height + radius }; 
 
 	while( i != segment_count )
