@@ -211,9 +211,11 @@ bool BBox::IntersectRayBox(Point &start, Vec3d &startDir, Point &intPnt)
 	}
 	// Ray intersects all 3 slabs. Return point (q) and intersection t value (tmin)
 	intPnt = getPosition(p + d * tmin);
-	if(isFaceContainPnt(intPnt)){
-	   return true;
-	}
+	/*if(isFaceContainPnt(intPnt)){
+	return true;
+	}*/
+	if(contain(intPnt))
+		return true;
 	return false;
 }
 
@@ -229,6 +231,14 @@ void BBox::computeBBMinMax()
 		bbmin = minimize(bbmin, getCoordinates(p));
 		bbmax = maximize(bbmax, getCoordinates(p));
 	}		
+}
+
+bool BBox::contain(Point &p)
+{
+	Point c = this->getCoordinates(p);
+	return inRange(c.x(), -1, 1)
+		&& inRange(c.y(), -1, 1)
+		&& inRange(c.z(), -1, 1);
 }
 
 bool BBox::isFaceContainPnt(Point &pnt)
@@ -249,7 +259,8 @@ void BBox::selectFace(Point &start, Vec3d &startDir)
 {
 	Point intPnt;
 	if(IntersectRayBox(start, startDir, intPnt))
-		getOrthoAxis(mFaces[selPlaneID]);
+		if(isFaceContainPnt(intPnt))
+			getOrthoAxis(mFaces[selPlaneID]);
 }
 
 Geom::Rectangle BBox::getSelectedFace()
@@ -270,17 +281,24 @@ void BBox::deform(double f)
 {
 	if(axisID < 0 || axisID > 2)
 		return;
-	double factor = (fabs(f) > 2*Extent[axisID])?(f/fabs(f)*(fabs(f) - 2*Extent[axisID])):f;
+	double sgn = f/fabs(f);
+	double factor = (fabs(f) > 2*Extent[axisID])?(sgn*(fabs(f) - 2*Extent[axisID])):f;
 	int paral = getParallelFace(mFaces[selPlaneID]);
 	if(paral < 0)
 		return;
- 
+
+	if(mFaces[selPlaneID].Center[axisID]>Center[axisID] && sgn < 0){
+		if(fabs(factor) > 2*Extent[axisID])
+			factor = sgn*2*Extent[axisID];		
+	}
+	else if(mFaces[selPlaneID].Center[axisID]<Center[axisID] && sgn > 0){
+		if(fabs(factor) > 2*Extent[axisID])
+			factor = sgn*2*Extent[axisID];	
+	}
+    
 	QVector<Point> newConners = mFaces[selPlaneID].getConners();
 	for(int i = 0; i < newConners.size(); i++){
-		if(mFaces[selPlaneID].Center[axisID]>Center[axisID])
-			newConners[i][axisID] -= fabs(factor)/(2*Extent[axisID]); 
-		else
-			newConners[i][axisID] += fabs(factor)/(2*Extent[axisID]);
+		newConners[i][axisID] += factor;///(2*Extent[axisID]);
 	}
 
 	mFaces[selPlaneID].update(newConners);

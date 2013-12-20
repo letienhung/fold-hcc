@@ -56,6 +56,8 @@ public:
 	
 	void computeBBMinMax();
 
+	bool contain(Point &p);
+
 	// Check if intersection point is contained in the face
 	bool isFaceContainPnt(Point &pnt);
 
