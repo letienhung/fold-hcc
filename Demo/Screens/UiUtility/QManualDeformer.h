@@ -17,6 +17,7 @@ public:
 
 public slots:
 	void updateBox();
+	void deform(double f); 
 
 signals:
 	void objectModified();

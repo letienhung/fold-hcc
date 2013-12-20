@@ -162,7 +162,7 @@ void BBox::getBoxFaces()
 			conners.push_back( pnts[cubeIds[i][j] ] );
 		}
 		mFaces[i] = Geom::Rectangle(conners);
-	}	
+	}
 }
 
 void BBox::getOrthoAxis(Geom::Rectangle &plane)
@@ -282,7 +282,8 @@ void BBox::deform(double f)
 	if(axisID < 0 || axisID > 2)
 		return;
 	double sgn = f/fabs(f);
-	double factor = (fabs(f) > 2*Extent[axisID])?(sgn*(fabs(f) - 2*Extent[axisID])):f;
+	//double factor = (fabs(f) > 2*Extent[axisID])?(sgn*(fabs(f) - 2*Extent[axisID])):f;
+	double factor = f * 2 * Extent[axisID];
 	int paral = getParallelFace(mFaces[selPlaneID]);
 	if(paral < 0)
 		return;

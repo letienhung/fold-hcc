@@ -747,7 +747,7 @@ void MyDesigner::mousePressEvent( QMouseEvent* e )
 {
 	QGLViewer::mousePressEvent(e);
 
-	if((e->modifiers() & Qt::ControlModifier) && (e->button() == Qt::LeftButton))//
+	if((e->button() == Qt::LeftButton))//(e->modifiers() & Qt::ControlModifier) && 
 	{
 		this->startMousePos2D = e->pos();
 		camera()->convertClickToLine(e->pos(), startMouseOrigin, startMouseDir);
@@ -801,9 +801,10 @@ void MyDesigner::mousePressEvent( QMouseEvent* e )
 			mBox->selectFace(start,dir);
 			if(mBox->axisID < 0){
 				selectMode = BOX;
-				this->displayMessage("No face has been selected. Ctrl + LeftClick to select a face to push in");
+				this->displayMessage("No face has been selected. Left click to select a face to push in");
 			}
-		updateGL();
+			this->displayMessage("* Please CTRL + SCROLL THE MOUSE to squeeze the box *", 5000);
+		    updateGL();
 		}
 	}
 
@@ -1006,25 +1007,25 @@ void MyDesigner::mouseMoveEvent( QMouseEvent* e )
 		isMousePressed = true;
 	}
 
-	if(isMousePressed && mBox->selPlaneID >= 0){//(e->modifiers() & Qt::ControlModifier) && 
-		if(selectMode == BOX)
-		{
-			camera()->convertClickToLine(e->pos(), currMouseOrigin, currMouseDir);
-			Point currPos(startMouseOrigin[0], startMouseOrigin[1],startMouseOrigin[2]);
-			Vec3d currDir(startMouseDir[0], startMouseDir[1], startMouseDir[2]);
-			Point currPnt;
-			if(mBox->IntersectRayBox(currPos,currDir,currPnt)){
-				Point startPnt = mBox->getSelectedFace().Center;
-				//double factor = currPnt[mBox->axisID] - startPnt[mBox->axisID];
-				double factor = (currPnt - startPnt).norm() * (currPnt[mBox->axisID] - startPnt[mBox->axisID])/fabs(currPnt[mBox->axisID] - startPnt[mBox->axisID]);
-				mBox->deform(factor);
-				mBox->getBoxFaces();
-			}
-			else
-                this->displayMessage("* Fail to push in the right direction *", 5000);
-			 updateGL();
-		}
-	}
+	//if(isMousePressed && mBox->selPlaneID >= 0){//(e->modifiers() & Qt::ControlModifier) && 
+	//	if(selectMode == BOX)
+	//	{
+	//		camera()->convertClickToLine(e->pos(), currMouseOrigin, currMouseDir);
+	//		Point currPos(startMouseOrigin[0], startMouseOrigin[1],startMouseOrigin[2]);
+	//		Vec3d currDir(startMouseDir[0], startMouseDir[1], startMouseDir[2]);
+	//		Point currPnt;
+	//		if(mBox->IntersectRayBox(currPos,currDir,currPnt)){
+	//			Point startPnt = mBox->getSelectedFace().Center;
+	//			//double factor = currPnt[mBox->axisID] - startPnt[mBox->axisID];
+	//			double factor = (currPnt - startPnt).norm() * (currPnt[mBox->axisID] - startPnt[mBox->axisID])/fabs(currPnt[mBox->axisID] - startPnt[mBox->axisID]);
+	//			mBox->deform(factor);
+	//			mBox->getBoxFaces();
+	//		}
+	//		else
+ //               this->displayMessage("* Fail to push in the right direction *", 5000);
+	//		 updateGL();
+	//	}
+	//}
 
 	if(isMousePressed && defCtrl && !(e->modifiers() & Qt::ShiftModifier))
 	{
@@ -1131,7 +1132,18 @@ void MyDesigner::mouseMoveEvent( QMouseEvent* e )
 void MyDesigner::wheelEvent( QWheelEvent* e )
 {
 	QGLViewer::wheelEvent(e);
-    //updateGL();
+ 
+	if(selectMode == BOX && (e->modifiers() & Qt::ControlModifier))
+	{
+		if(mBox->selPlaneID >= 0){
+			double factor =  0.05 * (e->delta() / 120.0);
+			mBox->deform(factor);
+			mBox->getBoxFaces();
+		}
+		else
+	        this->displayMessage("* Fail to push in the right direction *", 5000);
+		updateGL();
+	}		
 }
 
 void MyDesigner::keyPressEvent( QKeyEvent *e )
@@ -1248,6 +1260,7 @@ void MyDesigner::transformAABB(bool modifySelect)
 
 		Vec3d q = mBox->getSelectedFace().Center;
 		manipulatedFrame()->setPosition( Vec(q.x(), q.y(), q.z()) );
+		
 		this->connect(defCtrl, SIGNAL(objectModified()), SLOT(updateActiveObject()));
 	}
 }
@@ -1462,12 +1475,14 @@ void MyDesigner::pushAABB()
 	}
 	clearButtons();
 
+	/*setMouseBinding(Qt::LeftButton, FRAME, TRANSLATE);
+	setMouseBinding(Qt::RightButton, CAMERA, TRANSLATE);*/
 	setMouseBinding(Qt::LeftButton, FRAME, TRANSLATE);
 	setMouseBinding(Qt::RightButton, CAMERA, TRANSLATE);
 	selectMode = BOX;
 	toolMode();
 
-	this->displayMessage("* Ctrl + LeftClick to select a face to push in*", 5000);
+	this->displayMessage("* Left click to select a face to push in *", 5000);
 }
 
 void MyDesigner::moveMode()

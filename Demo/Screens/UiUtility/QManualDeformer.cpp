@@ -38,6 +38,11 @@ void QManualDeformer::updateBox()
 	emit( objectModified() );
 }
 
+void QManualDeformer::deform(double f)
+{
+	mBox->deform(f);
+}
+
 void QManualDeformer::draw()
 {
 	SimpleDraw::IdentifyPoint(pos(), 1,1,0,20);
