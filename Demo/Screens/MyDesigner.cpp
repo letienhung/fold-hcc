@@ -1006,7 +1006,7 @@ void MyDesigner::mouseMoveEvent( QMouseEvent* e )
 		isMousePressed = true;
 	}
 
-	if(isMousePressed && mBox->selPlaneID >= 0 && defCtrl){//(e->modifiers() & Qt::ControlModifier) && 
+	if(isMousePressed && mBox->selPlaneID >= 0){//(e->modifiers() & Qt::ControlModifier) && 
 		if(selectMode == BOX)
 		{
 			camera()->convertClickToLine(e->pos(), currMouseOrigin, currMouseDir);
