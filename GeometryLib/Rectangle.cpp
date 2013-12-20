@@ -41,19 +41,51 @@ Geom::Rectangle::Rectangle( Vector3& c, QVector<Vector3>& a, Vector2& e )
 	Normal = cross(Axis[0], Axis[1]).normalized();
 }
 
+Geom::Rectangle::Rectangle(const Rectangle &r)
+{
+	Center = r.Center;
+	Axis = r.Axis;
+	Extent = r.Extent;
+
+	Axis[0].normalize(); Axis[1].normalize();
+	Normal = cross(Axis[0], Axis[1]).normalized();
+}
+
+Geom::Rectangle& Geom::Rectangle::operator=(const Rectangle &r)
+{
+	Center = r.Center;
+	Axis = r.Axis;
+	Extent = r.Extent;
+
+	Axis[0].normalize(); Axis[1].normalize();
+	Normal = cross(Axis[0], Axis[1]).normalized();
+
+	return *this;
+}
+
+void Geom::Rectangle::update(QVector<Vector3>& conners)
+{
+	Center = Vector3(0, 0, 0);
+	foreach (Vector3 p, conners) Center += p;
+	Center /= 4;
+
+	Vector3 e0 = conners[1] - conners[0];
+	Vector3 e1 = conners[3] - conners[0];
+
+	Axis.push_back(e0.normalized());
+	Axis.push_back(e1.normalized());
+
+	Extent = Vector2(e0.norm()/2, e1.norm()/2);
+
+	Normal = cross(e0, e1).normalized();
+}
+
+
 bool Geom::Rectangle::isCoplanarWith( Vector3 p )
 {
 	Plane plane(Center, Normal);
 	return plane.whichSide(p) == 0;
 }
-
-bool Geom::Rectangle::isCoplanarWith( Segment s )
-{
-	Plane plane(Center, Normal);
-	return (plane.whichSide(s.P0) == 0) 
-		&& (plane.whichSide(s.P1) == 0);
-}
-
 
 bool Geom::Rectangle::isCoplanarWith( Rectangle& other )
 {

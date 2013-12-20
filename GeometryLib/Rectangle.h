@@ -12,6 +12,10 @@ public:
     Rectangle();
     Rectangle(QVector<Vector3>& conners);
 	Rectangle(Vector3& c, QVector<Vector3>& a, Vector2& e);
+	Rectangle(const Rectangle &);
+	Rectangle &operator =(const Rectangle &);
+
+	void update(QVector<Vector3>& conners);
 	
 	// relations
 	bool isCoplanarWith(Vector3 p);
