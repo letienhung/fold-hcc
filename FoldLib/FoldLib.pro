@@ -41,8 +41,9 @@ HEADERS += \
     FdNode.h \
     PointLink.h \
     LinearLink.h \
-    Foldabilizer.h \
-    LayerModel.h
+    LyGraph.h \
+    FoldManager.h \
+    FdUtility.h
 
 SOURCES += \
     PatchNode.cpp \
@@ -53,6 +54,7 @@ SOURCES += \
     FdNode.cpp \
     PointLink.cpp \
     LinearLink.cpp \
-    Foldabilizer.cpp \
-    LayerModel.cpp
+    LyGraph.cpp \
+    FoldManager.cpp \
+    FdUtility.cpp
 

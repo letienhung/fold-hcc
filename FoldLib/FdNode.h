@@ -52,3 +52,5 @@ public:
 
 	bool isCtrlPanel;
 };
+
+typedef QVector< QVector<FdNode*> > FdNodeArray2D;

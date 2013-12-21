@@ -22,8 +22,8 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->g_manager->connect(ui->loadScaffold, SIGNAL(clicked()), SLOT(loadScaffold()));
 
 	// fold
-	plugin->fold->connect(ui->pushDirection, SIGNAL(currentIndexChanged(int)), SLOT(setDirection(int)));
-	plugin->fold->connect(ui->fold, SIGNAL(clicked()), SLOT(fold()));
+	plugin->f_manager->connect(ui->pushDirection, SIGNAL(currentIndexChanged(int)), SLOT(setDirection(int)));
+	plugin->f_manager->connect(ui->fold, SIGNAL(clicked()), SLOT(fold()));
 	plugin->connect(ui->showFolded, SIGNAL(stateChanged(int)), SLOT(showFolded(int)));
 
 	// visualization

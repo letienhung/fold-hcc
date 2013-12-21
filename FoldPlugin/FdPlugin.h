@@ -3,7 +3,7 @@
 #include "interfaces/ModePluginDockWidget.h"
 #include "SurfaceMeshPlugins.h"
 #include "GraphManager.h"
-#include "Foldabilizer.h"
+#include "FoldManager.h"
 
 class FdWidget;
 
@@ -24,7 +24,7 @@ class FdPlugin : public SurfaceMeshModePlugin
 public:
 	FdWidget* widget;
 	GraphManager* g_manager;
-	Foldabilizer* fold;
+	FoldManager* f_manager;
 
 	bool drawAABB;
 	bool drawCuboid;

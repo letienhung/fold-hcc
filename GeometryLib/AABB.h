@@ -14,7 +14,7 @@ public:
 	void add(AABB& other);
 
 	Vector3 center();
-	double radius();
+	double radius(); 
 	Box box();
 
 	bool isValid();

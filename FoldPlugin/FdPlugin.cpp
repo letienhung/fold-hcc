@@ -14,8 +14,8 @@ FdPlugin::FdPlugin()
 	this->connect(g_manager, SIGNAL(scaffoldModified()), SLOT(resetScene()));
 	this->connect(g_manager, SIGNAL(message(QString)), SLOT(showStatus(QString)));
 
-	fold = new Foldabilizer();
-	fold->connect(g_manager, SIGNAL(scaffoldChanged(FdGraph*)), SLOT(setScaffold(FdGraph*)));
+	f_manager = new FoldManager();
+	f_manager->connect(g_manager, SIGNAL(scaffoldChanged(FdGraph*)), SLOT(setScaffold(FdGraph*)));
 	
 	drawFolded = false;
 	drawAABB = false;
@@ -98,7 +98,7 @@ void FdPlugin::test()
 
 FdGraph* FdPlugin::activeScaffold()
 {
-	return (drawFolded ? fold->selectedScaffold() : g_manager->scaffold);
+	return (drawFolded ? f_manager->activeScaffold() : g_manager->scaffold);
 }
 
 void FdPlugin::resetMesh()
