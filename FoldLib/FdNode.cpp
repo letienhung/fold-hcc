@@ -38,6 +38,8 @@ FdNode::FdNode(FdNode& other)
 	showCuboids = true;
 	showScaffold = true;
 	showMesh = false;
+
+	isCtrlPanel = false;
 }
 
 
@@ -141,4 +143,9 @@ bool FdNode::isPerpTo( Vector3 v, double dotThreshold )
 	Q_UNUSED(v);
 	Q_UNUSED(dotThreshold);
 	return false;
+}
+
+SurfaceMesh::Vector3 FdNode::center()
+{
+	return mBox.Center;
 }

@@ -181,8 +181,17 @@ void FdGraph::draw()
 	}
 }
 
-FdNode* FdGraph::merge( QVector<FdNode*> ns )
+FdNode* FdGraph::merge( QVector<QString> nids )
 {
+	// retrieve all nodes
+	QVector<FdNode*> ns;
+	foreach(QString nid, nids)
+	{
+		Structure::Node* n = getNode(nid);
+		if (n) ns.push_back((FdNode*)n);
+	}
+
+	// special cases
 	if (ns.isEmpty()) return NULL;
 	if (ns.size() == 1) return ns[0];
 
@@ -312,15 +321,16 @@ QVector<FdNode*> FdGraph::split( FdNode* fn, Geom::Plane& plane, double thr )
 
 	// create new nodes
 	FdNode *node1, *node2;
+	MeshPtr meshPtr1(mesh1), meshPtr2(mesh2);
 	if (fn->mType == FdNode::ROD)
 	{
-		node1 = new RodNode(MeshPtr(mesh1), box1);
-		node2 = new RodNode(MeshPtr(mesh2), box2);
+		node1 = new RodNode(meshPtr1, box1);
+		node2 = new RodNode(meshPtr2, box2);
 	}
 	else
 	{
-		node1 = new PatchNode(MeshPtr(mesh1), box1);
-		node2 = new PatchNode(MeshPtr(mesh2), box2);
+		node1 = new PatchNode(meshPtr1, box1);
+		node2 = new PatchNode(meshPtr2, box2);
 	}
 	node1->id = fn->id + "_1";
 	node2->id = fn->id + "_2";

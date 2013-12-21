@@ -24,3 +24,5 @@ QString qStr(Vector3 v, char sep = ' ');
 QString qStr(const Vector4 &v, char sep = ' ');
 
 Vector3 toVector3(QString string);
+
+typedef QVector< QVector<QString> > StrArray2D;

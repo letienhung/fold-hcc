@@ -21,7 +21,7 @@ public:
 	FdNode* addNode(SurfaceMeshModel* mesh, int method);
 
 	// modifier
-	FdNode*			 merge(QVector<FdNode*> ns);
+	FdNode*			 merge(QVector<QString> nids);
 	QVector<FdNode*> split( FdNode* fn, Geom::Plane& plane, double thr );
 
 

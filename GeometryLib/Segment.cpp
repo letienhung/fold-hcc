@@ -81,7 +81,7 @@ bool Geom::Segment::overlaps( const Segment& other )
 	}
 }
 
-double Geom::Segment::getProjectedCoordinate( Vector3 p )
+double Geom::Segment::getProjCoordinates( Vector3 p )
 {
 	Vector3 pv = p - this->Center;
 	return dot(pv, this->Direction) / Extent;
@@ -97,7 +97,7 @@ int Geom::Segment::whichSide( Vector3 p )
 	if (!this->isCollinearWith(p))
 		return SEG_OFF;
 
-	double c = this->getProjectedCoordinate(p);
+	double c = this->getProjCoordinates(p);
 	if (c <= -1) 
 		return SEG_NEGATIVE;
 	else if (c >= 1) 
@@ -111,7 +111,7 @@ bool Geom::Segment::contains( const Vector3 p )
 	if (!this->isCollinearWith(p))
 		return false;
 
-	double c = this->getProjectedCoordinate(p);
+	double c = this->getProjCoordinates(p);
 	return c >= -1 && c <= 1;
 }
 

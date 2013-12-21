@@ -139,3 +139,17 @@ double getDistance( FdNode* n, QVector<FdNode*> nset )
 
 	return minDist;
 }
+
+StrArray2D getIds( FdNodeArray2D nodeArray )
+{
+	StrArray2D idArray;
+	QVector<QString> ids;
+	foreach (QVector<FdNode*> ns, nodeArray)
+	{
+		ids.clear();
+		foreach(FdNode* n, ns)	ids.push_back(n->id);
+		idArray.push_back(ids);
+	}
+
+	return idArray;
+}

@@ -15,8 +15,6 @@ FoldManager::~FoldManager()
 	clear();
 }
 
-
-
 void FoldManager::clear()
 {
 	foreach(LyGraph* lm, layerGraphs)
@@ -25,13 +23,25 @@ void FoldManager::clear()
 	layerGraphs.clear();
 }
 
+FdGraph* FoldManager::activeScaffold()
+{
+	if (selectedId >= 0 && selectedId < layerGraphs.size())
+		return layerGraphs[selectedId]->layerGraph;
+	else
+		return NULL;
+}
 
 void FoldManager::setScaffold( FdGraph* fdg )
 {
 	scaffold = fdg;
 }
 
-void FoldManager::fold()
+void FoldManager::setPushAxis( int d )
+{
+	pushAxis = d;
+}
+
+void FoldManager::createLayerGraphs()
 {
 	if (!scaffold) return;
 
@@ -50,21 +60,6 @@ void FoldManager::fold()
 		createLayerGraphs(Vector3(0,0,1));
 	}
 }
-
-
-void FoldManager::setPushAxis( int d )
-{
-	pushAxis = d;
-}
-
-FdGraph* FoldManager::activeScaffold()
-{
-	if (selectedId >= 0 && selectedId < layerGraphs.size())
-		return layerGraphs[selectedId]->layerGraph;
-	else
-		return NULL;
-}
-
 
 void FoldManager::createLayerGraphs(Vector3 pushDirect)
 {
@@ -91,7 +86,7 @@ void FoldManager::createLayerGraphs(Vector3 pushDirect)
 	QMultiMap<double, FdNode*> posNodeMap;
 	foreach (FdNode* n, perpNodes)
 	{
-		posNodeMap.insert(skeleton.getProjectedCoordinate(n->mBox.Center), n);
+		posNodeMap.insert(skeleton.getProjCoordinates(n->mBox.Center), n);
 	}
 
 	// ==STEP 2==: group perp nodes
@@ -150,7 +145,12 @@ void FoldManager::createLayerGraphs(Vector3 pushDirect)
 	
 	// ==STEP 4==: create layer models
 	// use all control panels
-	layerGraphs.push_back(new LyGraph(scaffold, panelGroups, pushDirect));
+	layerGraphs.push_back(new LyGraph(scaffold, getIds(panelGroups), pushDirect));
 	// exclude rod structures
-	layerGraphs.push_back(new LyGraph(scaffold, panelGroups2, pushDirect));
+	layerGraphs.push_back(new LyGraph(scaffold, getIds(panelGroups2), pushDirect));
+}
+
+void FoldManager::fold()
+{
+
 }

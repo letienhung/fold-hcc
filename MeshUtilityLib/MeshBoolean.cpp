@@ -2,8 +2,8 @@
 #include "Numeric.h"
 #include "MeshHelper.h"
 
-//QString MeshBoolean::workPath = "C:/Development/FOLD/MeshUtilityLib/wincork/";
-QString MeshBoolean::workPath = "C:/Projects-Win7/FOLD/MeshUtilityLib/wincork/";
+QString MeshBoolean::workPath = "C:/Development/FOLD/MeshUtilityLib/wincork/";
+//QString MeshBoolean::workPath = "C:/Projects-Win7/FOLD/MeshUtilityLib/wincork/";
 QString MeshBoolean::appName = "wincork";
 QString MeshBoolean::boxName = "box.off";
 

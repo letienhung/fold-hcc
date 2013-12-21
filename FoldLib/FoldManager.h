@@ -27,6 +27,9 @@ public:
 public slots:
 	void setScaffold(FdGraph* fdg);
 	void setPushAxis(int aid);
+	void createLayerGraphs();
+
+
 	void fold();
 };
 

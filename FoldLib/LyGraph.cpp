@@ -2,7 +2,7 @@
 #include "PatchNode.h"
 
 
-LyGraph::LyGraph( FdGraph* scaffold, FdNodeArray2D panelGroups, Vector3 up)
+LyGraph::LyGraph( FdGraph* scaffold, StrArray2D panelGroups, Vector3 up)
 {
 	upV = up;
 
@@ -10,18 +10,22 @@ LyGraph::LyGraph( FdGraph* scaffold, FdNodeArray2D panelGroups, Vector3 up)
 	layerGraph = (FdGraph*)(scaffold->clone());
 	
 	// merge control panels
-	foreach( QVector<FdNode*> panelGroup, panelGroups )
+	foreach( QVector<QString> panelGroup, panelGroups )
 	{
 		FdNode* mf = layerGraph->merge(panelGroup);
+		mf->isCtrlPanel = true;
 		controlPanels.push_back(mf);
 	}
+
+	// create layers
+	createLayers();
 }
 
 
 void LyGraph::createLayers()
 {
 	// cut parts by control panels
-	foreach (FdNode* cn, controlPanels)
+ 	foreach (FdNode* cn, controlPanels)
 	{
 		PatchNode* cutNode = (PatchNode*)cn;
 		Geom::Plane cutPlane = cutNode->mPatch.getPlane();
@@ -33,4 +37,27 @@ void LyGraph::createLayers()
 			layerGraph->split(n, cutPlane, 0.1);
 		}
 	}
+
+	// group parts into layers
+	Geom::Box box = layerGraph->computeAABB().box();
+	int upAId = box.getAxisId(upV);
+	Geom::Segment upSklt = box.getSkeleton(upAId);
+
+	QVector<double> cutPositions;
+	foreach (FdNode* cp, controlPanels)
+	{
+		cutPositions.push_back(upSklt.getProjCoordinates(cp->center()));
+	}
+
+	FdNodeArray2D layerGroups;
+	foreach (FdNode* n, layerGraph->getFdNodes())
+	{
+		if (n->isCtrlPanel) continue;
+
+		double pos = upSklt.getProjCoordinates(n->center());
+
+	}
+
+	// create layers
+
 }

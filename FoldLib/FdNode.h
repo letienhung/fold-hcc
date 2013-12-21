@@ -36,8 +36,9 @@ public:
 	void write(XmlWriter& xw);
 	virtual void writeScaffold(XmlWriter& xw){Q_UNUSED(xw);}
 
-	// aabb
+	// geometry
 	Geom::AABB computeAABB();
+	Vector3 center();
 
 	// relation with pushing direction
 	virtual bool isPerpTo(Vector3 v, double dotThreshold);
@@ -50,6 +51,7 @@ public:
 	QColor mColor;
 	NODE_TYPE mType;
 
+	// tags used for folding
 	bool isCtrlPanel;
 };
 

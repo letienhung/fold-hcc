@@ -9,3 +9,5 @@ double getDistance( FdNode* n1, FdNode* n2 );
 double getDistance( FdNode* n, QVector<FdNode*> nset);
 
 FdNodeArray2D clusterNodes( QVector<FdNode*> nodes, double disThr );
+
+StrArray2D getIds(FdNodeArray2D nodeArray);

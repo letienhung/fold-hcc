@@ -22,11 +22,12 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->g_manager->connect(ui->loadScaffold, SIGNAL(clicked()), SLOT(loadScaffold()));
 
 	// fold
-	plugin->f_manager->connect(ui->pushDirection, SIGNAL(currentIndexChanged(int)), SLOT(setDirection(int)));
+	plugin->f_manager->connect(ui->pushDirection, SIGNAL(currentIndexChanged(int)), SLOT(setPushAxis(int)));
+	plugin->f_manager->connect(ui->createLayers, SIGNAL(clicked()), SLOT(createLayerGraphs()));
 	plugin->f_manager->connect(ui->fold, SIGNAL(clicked()), SLOT(fold()));
-	plugin->connect(ui->showFolded, SIGNAL(stateChanged(int)), SLOT(showFolded(int)));
 
 	// visualization
+	plugin->connect(ui->showFolded, SIGNAL(stateChanged(int)), SLOT(showFolded(int)));
 	plugin->connect(ui->showCuboids, SIGNAL(stateChanged(int)), SLOT(showCuboid(int)));
 	plugin->connect(ui->showScaffold, SIGNAL(stateChanged(int)), SLOT(showScaffold(int)));
 	plugin->connect(ui->showMesh, SIGNAL(stateChanged(int)), SLOT(showMesh(int)));
