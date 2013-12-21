@@ -154,14 +154,16 @@ QVector<Line> BBox::getEdges()
 void BBox::getBoxFaces()
 {
 	QVector<Point> pnts = getBoxCorners();
-	mFaces.resize(6);
+	mFaces.clear();
+	//mFaces.resize(6);
 
 	for (int i = 0; i < 6; i++)	{
 		QVector<Vector3> conners;
 		for (int j = 0; j < 4; j++)	{
 			conners.push_back( pnts[cubeIds[i][j] ] );
 		}
-		mFaces[i] = Geom::Rectangle(conners);
+		//mFaces[i] = Geom::Rectangle(conners);
+		mFaces.push_back(Geom::Rectangle(conners));
 	}
 }
 
@@ -272,7 +274,9 @@ Geom::Rectangle BBox::getSelectedFace()
 int BBox::getParallelFace(Geom::Rectangle &f)
 {
 	for(int i = 0; i < 6; i++)
-		if(mFaces[i].Center != f.Center && mFaces[i].Normal == f.Normal || mFaces[i].Normal == -f.Normal)
+		if(mFaces[i].Center != f.Center 
+		   && mFaces[i].Normal == f.Normal 
+		   || mFaces[i].Normal == -f.Normal)
 			return i;
 	return -1;
 }
@@ -288,12 +292,12 @@ void BBox::deform(double f)
 	if(paral < 0)
 		return;
 
-	if(mFaces[selPlaneID].Center[axisID]>Center[axisID] && sgn < 0){
-		if(fabs(factor) > 2*Extent[axisID])
+	if(mFaces[selPlaneID].Center[axisID]>Center[axisID] 
+	   && fabs(factor) > 2*Extent[axisID]){
 			factor = sgn*2*Extent[axisID];		
 	}
-	else if(mFaces[selPlaneID].Center[axisID]<Center[axisID] && sgn > 0){
-		if(fabs(factor) > 2*Extent[axisID])
+	else if(mFaces[selPlaneID].Center[axisID]<Center[axisID] 
+	        && fabs(factor) > 2*Extent[axisID]){
 			factor = sgn*2*Extent[axisID];	
 	}
     

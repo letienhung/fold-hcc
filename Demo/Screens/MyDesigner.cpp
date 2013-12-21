@@ -870,26 +870,6 @@ void MyDesigner::mousePressEvent( QMouseEvent* e )
 void MyDesigner::mouseReleaseEvent( QMouseEvent* e )
 {
 	QGLViewer::mouseReleaseEvent(e);
-   
-	//if((e->modifiers() & Qt::ControlModifier) && isMousePressed){
-	//	if(selectMode == BOX)
-	//	{
-	//		camera()->convertClickToLine(e->pos(), currMouseOrigin, currMouseDir);
-	//		Point currPos(startMouseOrigin[0], startMouseOrigin[1],startMouseOrigin[2]);
-	//		Vec3d currDir(startMouseDir[0], startMouseDir[1], startMouseDir[2]);
-	//		Point currPnt;
-	//		if(mBox->IntersectRayBox(currPos,currDir,currPnt)){
-	//			Point startPnt = mBox->getSelectedFace().Center;
-	//			//double factor = currPnt[mBox->axisID] - startPnt[mBox->axisID];
-	//			double factor = (currPnt - startPnt).norm() * (currPnt[mBox->axisID] - startPnt[mBox->axisID])/fabs(currPnt[mBox->axisID] - startPnt[mBox->axisID]);
-	//			mBox->deform(factor);
-	//			mBox->getBoxFaces();
-	//		}
-	//		else
- //               this->displayMessage("* Fail to push in the right direction *", 5000);
-	//		 updateGL();
-	//	}
-	//}
 
 	isMousePressed = false;
 
