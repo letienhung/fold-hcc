@@ -169,7 +169,13 @@
       <string>Foldabilizer</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
-      <item row="3" column="2">
+      <item row="2" column="2" colspan="2">
+       <widget class="QListWidget" name="fdLayerList"/>
+      </item>
+      <item row="2" column="1">
+       <widget class="QListWidget" name="layerList"/>
+      </item>
+      <item row="4" column="2">
        <widget class="QLabel" name="label_5">
         <property name="text">
          <string>Target Volume</string>
@@ -179,14 +185,7 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="0" alignment="Qt::AlignRight">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>Direction:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="3">
+      <item row="4" column="3">
        <widget class="QDoubleSpinBox" name="targetV">
         <property name="maximum">
          <double>1.000000000000000</double>
@@ -196,6 +195,16 @@
         </property>
         <property name="value">
          <double>0.200000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QListWidget" name="lyGraphList"/>
+      </item>
+      <item row="0" column="0" alignment="Qt::AlignRight">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Direction:</string>
         </property>
        </widget>
       </item>
@@ -223,20 +232,38 @@
         </item>
        </widget>
       </item>
-      <item row="2" column="2" colspan="2">
-       <widget class="QPushButton" name="fold">
-        <property name="text">
-         <string>Fold</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0" colspan="4">
-       <widget class="QColumnView" name="layersColumnView"/>
-      </item>
       <item row="0" column="2" colspan="2">
        <widget class="QPushButton" name="createLayers">
         <property name="text">
          <string>Create Layers</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" alignment="Qt::AlignHCenter">
+       <widget class="QLabel" name="label_7">
+        <property name="text">
+         <string>LyGraphs</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" alignment="Qt::AlignHCenter">
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>Layers</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2" colspan="2" alignment="Qt::AlignHCenter">
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>Fold Solutions</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1" colspan="3">
+       <widget class="QPushButton" name="fold">
+        <property name="text">
+         <string>Fold</string>
         </property>
        </widget>
       </item>

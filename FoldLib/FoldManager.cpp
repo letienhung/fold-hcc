@@ -5,7 +5,7 @@ FoldManager::FoldManager()
 {
 	scaffold = NULL;
 
-	selectedId = 0;
+	selLyId = -1;
 	pushAxis = 0;
 }
 
@@ -17,23 +17,33 @@ FoldManager::~FoldManager()
 
 void FoldManager::clear()
 {
-	foreach(LyGraph* lm, layerGraphs)
+	foreach(LyGraph* lm, lyGraphs)
 		delete lm;
 
-	layerGraphs.clear();
+	lyGraphs.clear();
+}
+
+LyGraph* FoldManager::getSelectedLyGraph()
+{
+	if (selLyId >= 0 && selLyId < lyGraphs.size())
+		return lyGraphs[selLyId];
+	else
+		return NULL;
 }
 
 FdGraph* FoldManager::activeScaffold()
 {
-	if (selectedId >= 0 && selectedId < layerGraphs.size())
-		return layerGraphs[selectedId]->layerGraph;
-	else
-		return NULL;
+	LyGraph* selLy = getSelectedLyGraph();
+	if (selLy)	return selLy->activeScaffold();
+	else		return scaffold;
 }
 
 void FoldManager::setScaffold( FdGraph* fdg )
 {
 	scaffold = fdg;
+
+	clear();
+	updateLists();
 }
 
 void FoldManager::setPushAxis( int d )
@@ -59,6 +69,9 @@ void FoldManager::createLayerGraphs()
 		createLayerGraphs(Vector3(0,1,0));
 		createLayerGraphs(Vector3(0,0,1));
 	}
+
+	// update ui
+	updateLists();
 }
 
 void FoldManager::createLayerGraphs(Vector3 pushDirect)
@@ -77,7 +90,7 @@ void FoldManager::createLayerGraphs(Vector3 pushDirect)
 	QVector<FdNode*> perpNodes;
 	foreach (FdNode* n, scaffold->getFdNodes())
 	{
-		if (n->isPerpTo(pushDirect, 0.1))	perpNodes.push_back(n);
+		if (n->isPerpTo(pushDirect, perpThr))	perpNodes.push_back(n);
 	}
 
 	// perp positions
@@ -145,12 +158,66 @@ void FoldManager::createLayerGraphs(Vector3 pushDirect)
 	
 	// ==STEP 4==: create layer models
 	// use all control panels
-	layerGraphs.push_back(new LyGraph(scaffold, getIds(panelGroups), pushDirect));
+	QString id = QString::number(lyGraphs.size()) + ":w\\ rod";
+	lyGraphs.push_back(new LyGraph(scaffold, getIds(panelGroups), pushDirect, id));
+
 	// exclude rod structures
-	layerGraphs.push_back(new LyGraph(scaffold, getIds(panelGroups2), pushDirect));
+	if (panelGroups2.size() < panelGroups.size())
+	{
+		QString id = QString::number(lyGraphs.size()) + ":w\\o rod";
+		lyGraphs.push_back(new LyGraph(scaffold, getIds(panelGroups2), pushDirect, id));
+	}
 }
 
 void FoldManager::fold()
 {
 
 }
+
+void FoldManager::selectLyGraph( QString id )
+{
+	// selected lyGraph index
+	selLyId = -1;
+	for (int i = 0; i < lyGraphs.size(); i++)
+	{
+		if (lyGraphs[i]->id == id)
+		{	
+			selLyId = i;
+			break;
+		}
+	}
+
+	// disable selection on layer
+	selectLayer("random");
+
+	// update list
+	updateLists();
+
+	// update scene
+	emit(selectionChanged());
+}
+
+void FoldManager::selectLayer( QString id )
+{
+	LyGraph* lyg = getSelectedLyGraph();
+	if (lyg) lyg->selectLayer(id);
+
+	emit(selectionChanged());
+}
+
+void FoldManager::updateLists()
+{
+	QStringList lyGraphLabels;
+	foreach (LyGraph* ly, lyGraphs)	
+		lyGraphLabels.append(ly->id);
+
+
+	QStringList layerLabels;
+	if (getSelectedLyGraph()) 
+		layerLabels = getSelectedLyGraph()->getLayerLabels();
+
+	emit(lyGraphsChanged(lyGraphLabels));
+	emit(layersChanged(layerLabels));
+}
+
+

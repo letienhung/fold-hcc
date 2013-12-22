@@ -8,7 +8,12 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
     ui->setupUi(this);
 	plugin = fp;
 
+	// connections
+	this->connect(ui->lyGraphList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(selectLyGraph(QListWidgetItem*)));
+	this->connect(ui->layerList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(selectLayer(QListWidgetItem*)));
+
 	// creation and refine
+	this->connect(plugin->g_manager, SIGNAL(scaffoldChanged(FdGraph*)), SLOT(setScaffold(FdGraph*)));
 	plugin->connect(ui->createScaffold, SIGNAL(clicked()), SLOT(resetMesh()));
 	plugin->g_manager->connect(ui->fitMethod, SIGNAL(currentIndexChanged(int)), SLOT(setFitMethod(int)));
 	plugin->g_manager->connect(ui->createScaffold, SIGNAL(clicked()), SLOT(createScaffold()));
@@ -24,6 +29,12 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	// fold
 	plugin->f_manager->connect(ui->pushDirection, SIGNAL(currentIndexChanged(int)), SLOT(setPushAxis(int)));
 	plugin->f_manager->connect(ui->createLayers, SIGNAL(clicked()), SLOT(createLayerGraphs()));
+
+	this->connect(plugin->f_manager, SIGNAL(lyGraphsChanged(QStringList)), SLOT(setLyGraphList(QStringList)));
+	plugin->f_manager->connect(this, SIGNAL(lyGraphSelectionChanged(QString)), SLOT(selectLyGraph(QString)));
+	this->connect(plugin->f_manager, SIGNAL(layersChanged(QStringList)), SLOT(setLayerList(QStringList)));
+	plugin->f_manager->connect(this, SIGNAL(layerSelectionChanged(QString)), SLOT(selectLayer(QString)));
+
 	plugin->f_manager->connect(ui->fold, SIGNAL(clicked()), SLOT(fold()));
 
 	// visualization
@@ -48,4 +59,26 @@ void FdWidget::setScaffold(FdGraph* fdg)
 	QString path = "./";
 	if(fdg) path += fdg->path.section("/", -3, -1);
 	ui->fdPath->setText(path);
+}
+
+void FdWidget::setLyGraphList( QStringList labels )
+{
+	ui->lyGraphList->clear();
+	ui->lyGraphList->addItems(labels);
+}
+
+void FdWidget::setLayerList( QStringList labels )
+{
+	ui->layerList->clear();
+	ui->layerList->addItems(labels);
+}
+
+void FdWidget::selectLyGraph( QListWidgetItem* item )
+{
+	emit(lyGraphSelectionChanged(item->text()));
+}
+
+void FdWidget::selectLayer( QListWidgetItem* item )
+{
+	emit(layerSelectionChanged(item->text()));
 }

@@ -11,11 +11,12 @@ FdPlugin::FdPlugin()
 
 	g_manager = new GraphManager();
 	this->connect(g_manager, SIGNAL(scaffoldChanged(FdGraph*)), SLOT(resetScene()));
-	this->connect(g_manager, SIGNAL(scaffoldModified()), SLOT(resetScene()));
+	this->connect(g_manager, SIGNAL(scaffoldModified()), SLOT(updateScene()));
 	this->connect(g_manager, SIGNAL(message(QString)), SLOT(showStatus(QString)));
 
 	f_manager = new FoldManager();
 	f_manager->connect(g_manager, SIGNAL(scaffoldChanged(FdGraph*)), SLOT(setScaffold(FdGraph*)));
+	this->connect(f_manager, SIGNAL(selectionChanged()), SLOT(updateScene()));
 	
 	drawFolded = false;
 	drawAABB = false;
@@ -36,9 +37,6 @@ void FdPlugin::create()
 
 		// perspective
 		drawArea()->setPerspectiveProjection();
-
-		// connections
-		widget->connect(g_manager, SIGNAL(scaffoldChanged(FdGraph*)), SLOT(setScaffold(FdGraph*)));
 	}
 
 	resetMesh();

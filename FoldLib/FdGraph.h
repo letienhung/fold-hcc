@@ -24,7 +24,6 @@ public:
 	FdNode*			 merge(QVector<QString> nids);
 	QVector<FdNode*> split( FdNode* fn, Geom::Plane& plane, double thr );
 
-
 	// I/O
 	void saveToFile(QString fname);
 	void loadFromFile(QString fname);

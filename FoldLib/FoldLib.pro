@@ -43,7 +43,10 @@ HEADERS += \
     LinearLink.h \
     LyGraph.h \
     FoldManager.h \
-    FdUtility.h
+    FdUtility.h \
+    FdLayer.h \
+    SandwichLayer.h \
+    PizzaLayer.h
 
 SOURCES += \
     PatchNode.cpp \
@@ -56,5 +59,8 @@ SOURCES += \
     LinearLink.cpp \
     LyGraph.cpp \
     FoldManager.cpp \
-    FdUtility.cpp
+    FdUtility.cpp \
+    FdLayer.cpp \
+    SandwichLayer.cpp \
+    PizzaLayer.cpp
 
