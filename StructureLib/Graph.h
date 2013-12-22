@@ -1,4 +1,5 @@
 #pragma once
+
 #include <QVector>
 
 #include "Node.h"

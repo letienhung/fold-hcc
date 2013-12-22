@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Node.h"
-#include <QString>
 
 namespace Structure{
 
@@ -22,6 +21,8 @@ public:
 	QString	id;
 	QString nid1, nid2;
 	Node *node1, *node2;
+
+    PropertyMap properties;
 };
 
 }

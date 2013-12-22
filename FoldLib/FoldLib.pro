@@ -46,7 +46,8 @@ HEADERS += \
     FdUtility.h \
     FdLayer.h \
     SandwichLayer.h \
-    PizzaLayer.h
+    PizzaLayer.h \
+    DepGraph.h
 
 SOURCES += \
     PatchNode.cpp \
@@ -62,5 +63,6 @@ SOURCES += \
     FdUtility.cpp \
     FdLayer.cpp \
     SandwichLayer.cpp \
-    PizzaLayer.cpp
+    PizzaLayer.cpp \
+    DepGraph.cpp
 

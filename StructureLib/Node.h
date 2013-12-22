@@ -1,7 +1,10 @@
 #pragma once
 
 #include <QString>
+#include <QVariant>
+#include <QMap>
 
+typedef QMap< QString, QVariant > PropertyMap;
 
 namespace Structure{
 
@@ -25,6 +28,8 @@ public:
 public:
 	QString	id;
 	bool isSelected;
-};                                 
+
+    PropertyMap properties;
+};
 
 }

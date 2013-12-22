@@ -8,7 +8,7 @@
 
 class FdNode : public Structure::Node
 {
-public:
+public: 
 	enum NODE_TYPE{NONE, ROD, PATCH};
 
 public:
@@ -39,7 +39,7 @@ public:
 	// geometry
 	Geom::AABB computeAABB();
 	Vector3 center();
-
+	 
 	// relation with pushing direction
 	virtual bool isPerpTo(Vector3 v, double dotThreshold);
 
