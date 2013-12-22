@@ -71,7 +71,7 @@ void GraphManager::setMesh( SurfaceMeshModel* mesh )
 
 void GraphManager::changeNodeType()
 {
-	foreach(Structure::Node* n, scaffold->selectedNodes())
+	foreach(Structure::Node* n, scaffold->getSelectedNodes())
 	{
 		// create new node
 		FdNode* old_node = (FdNode*)n;
@@ -90,7 +90,7 @@ void GraphManager::changeNodeType()
 
 void GraphManager::refitNodes()
 {
-	foreach(Structure::Node* n, scaffold->selectedNodes())
+	foreach(Structure::Node* n, scaffold->getSelectedNodes())
 	{
 		FdNode* fn = (FdNode*)n;
 		fn->refit(refitMethod); 
@@ -101,7 +101,7 @@ void GraphManager::refitNodes()
 
 void GraphManager::linkNodes()
 {
-	QVector<Structure::Node*> sn = scaffold->selectedNodes();
+	QVector<Structure::Node*> sn = scaffold->getSelectedNodes();
 	if (sn.size() < 2) return;
 
 	scaffold->addLink(sn[0], sn[1]);

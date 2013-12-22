@@ -158,11 +158,14 @@ void FoldManager::createLayerGraphs(Vector3 pushDirect)
 	
 	// ==STEP 4==: create layer models
 	// use all control panels
-	QString id = QString::number(lyGraphs.size()) + ":w\\ rod";
-	lyGraphs.push_back(new LyGraph(scaffold, getIds(panelGroups), pushDirect, id));
+	QString id = QString::number(lyGraphs.size());
+	if (!panelGroups.isEmpty())
+	{
+		lyGraphs.push_back(new LyGraph(scaffold, getIds(panelGroups), pushDirect, id));
+	}
 
 	// exclude rod structures
-	if (panelGroups2.size() < panelGroups.size())
+	if (!panelGroups2.isEmpty() && panelGroups2.size() < panelGroups.size())
 	{
 		QString id = QString::number(lyGraphs.size()) + ":w\\o rod";
 		lyGraphs.push_back(new LyGraph(scaffold, getIds(panelGroups2), pushDirect, id));
@@ -188,7 +191,7 @@ void FoldManager::selectLyGraph( QString id )
 	}
 
 	// disable selection on layer
-	selectLayer("random");
+	selectLayer("");
 
 	// update list
 	updateLists();

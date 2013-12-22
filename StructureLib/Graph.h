@@ -42,7 +42,7 @@ public:
 	// Selection
 	void drawWithNames();
 	void selectNode(int nid);
-	QVector<Node*> selectedNodes();
+	QVector<Node*> getSelectedNodes();
 
 public:
 	QVector<Node*> nodes;

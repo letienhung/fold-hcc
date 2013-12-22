@@ -174,7 +174,7 @@ void Structure::Graph::selectNode( int nid )
 	}
 }
 
-QVector<Structure::Node*> Structure::Graph::selectedNodes()
+QVector<Structure::Node*> Structure::Graph::getSelectedNodes()
 {
 	QVector<Node*> sn;
 	foreach(Node* n, nodes)
