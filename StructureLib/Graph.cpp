@@ -3,12 +3,12 @@
 
 Structure::Graph::Graph(QString id)
 {
-	this->id = id;
+	this->mID = id;
 }
 
 Structure::Graph::Graph(Graph& other)
 {
-	this->id = other.id;
+	this->mID = other.mID;
 
 	foreach (Node* n, other.nodes)
 		addNode(n->clone());

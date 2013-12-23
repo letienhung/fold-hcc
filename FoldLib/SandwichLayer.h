@@ -5,5 +5,8 @@ class SandwichLayer : public LayerGraph
 {
 public:
     SandwichLayer(QVector<FdNode*> nodes, FdNode* panel1, FdNode* panel2, QString id);
+
+public:
+	FdNode *panel1, *panel2;
 };
 

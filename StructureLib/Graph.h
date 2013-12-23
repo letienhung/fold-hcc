@@ -46,7 +46,7 @@ public:
 	QVector<Node*> getSelectedNodes();
 
 public:
-	QString id;
+	QString mID;
 	QVector<Node*> nodes;
 	QVector<Link*> links;
 };

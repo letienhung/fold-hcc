@@ -8,7 +8,7 @@ DcGraph::DcGraph( FdGraph* scaffold, StrArray2D panelGroups, Vector3 up, QString
 	: FdGraph(*scaffold)
 {
 	upV = up;
-	this->id = id;
+	mID = id;
 
 	// merge control panels
 	foreach( QVector<QString> panelGroup, panelGroups )
@@ -20,7 +20,13 @@ DcGraph::DcGraph( FdGraph* scaffold, StrArray2D panelGroups, Vector3 up, QString
 
 	// create layers
 	createLayers();
-	selLayerId = -1;
+	selId = -1;
+}
+
+DcGraph::~DcGraph()
+{
+	foreach (LayerGraph* l, layers)
+		delete l;
 }
 
 
@@ -102,10 +108,10 @@ void DcGraph::createLayers()
 }
 
 
-LayerGraph* DcGraph::getSelectedLayer()
+LayerGraph* DcGraph::getSelLayer()
 {
-	if (selLayerId >= 0 && selLayerId < layers.size())
-		return layers[selLayerId];
+	if (selId >= 0 && selId < layers.size())
+		return layers[selId];
 	else
 		return NULL;
 }
@@ -113,8 +119,8 @@ LayerGraph* DcGraph::getSelectedLayer()
 
 FdGraph* DcGraph::activeScaffold()
 {
-	LayerGraph* selLayer = getSelectedLayer();
-	if (selLayer) return selLayer;
+	LayerGraph* selLayer = getSelLayer();
+	if (selLayer) return selLayer->activeScaffold();
 	else		  return this;
 }
 
@@ -122,20 +128,27 @@ QStringList DcGraph::getLayerLabels()
 {
 	QStringList labels;
 	foreach(LayerGraph* l, layers)
-		labels.append(l->id);
+		labels.append(l->mID);
 
 	return labels;
 }
 
 void DcGraph::selectLayer( QString id )
 {
-	selLayerId = -1;
+	// select layer named id
+	selId = -1;
 	for (int i = 0; i < layers.size(); i++)
 	{
-		if (layers[i]->id == id)
+		if (layers[i]->mID == id)
 		{
-			selLayerId = i;
+			selId = i;
 			break;
 		}
+	}
+
+	// disable selection on chains
+	if (getSelLayer())
+	{
+		getSelLayer()->selectChain("");
 	}
 }

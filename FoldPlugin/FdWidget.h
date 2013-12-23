@@ -22,16 +22,19 @@ private:
 
 public slots:
 	// from Ui
-	void selectLyGraph(QListWidgetItem* item);
+	void selectDcGraph(QListWidgetItem* item);
 	void selectLayer(QListWidgetItem* item);
+	void selectChain(QListWidgetItem* item);
 
 	// to Ui
 	void setScaffold(FdGraph* fdg);
-	void setLyGraphList(QStringList labels);
+	void setDcGraphList(QStringList labels);
 	void setLayerList(QStringList labels);
+	void setChainList(QStringList labels);
 
 signals:
-	void lyGraphSelectionChanged(QString id);
+	void dcGraphSelectionChanged(QString id);
 	void layerSelectionChanged(QString id);
+	void chainSelectionChanged(QString id);
 };
 

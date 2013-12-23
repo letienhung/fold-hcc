@@ -590,3 +590,13 @@ void Geom::Box::read( QDomNode& node )
 	Axis << toVector3(x) << toVector3(y) << toVector3(z);
 	Extent = toVector3(e);
 }
+
+double Geom::Box::getExtent( int aid )
+{
+	return Extent[aid];
+}
+
+double Geom::Box::getExtent( Vector3 v )
+{
+	return Extent[getAxisId(v)];
+}

@@ -59,6 +59,8 @@ public:
 	int		getAxisId(Vector3 a);
 	int		minAxisId();
 	int		maxAxisId();
+	double	getExtent(int aid);
+	double	getExtent(Vector3 v);
 	Vector3 getFaceCenter(int fid);
 	Vector3 getFaceCenter(int aid, bool positive);
 	Segment getSkeleton(int aid);

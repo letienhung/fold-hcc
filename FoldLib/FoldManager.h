@@ -16,21 +16,24 @@ public:
 	FdGraph* scaffold; 
 	int pushAxis; // X, Y, Z, ALL
 
-	int selLyId;
-	QVector<DcGraph*> lyGraphs;
+	int selId;
+	QVector<DcGraph*> dcGraphs;
 
 public:
-	FdGraph* activeScaffold();
-	DcGraph* getSelectedLyGraph();
-	void updateLists();
 	void createLayerGraphs(Vector3 pushDirect); 
+
+	FdGraph* activeScaffold();
+	DcGraph* getSelDcGraph();
+	QStringList getDcGraphLabels();
+	void updateLists();
 
 public slots:
 	void setScaffold(FdGraph* fdg);
 	void setPushAxis(int aid);
 	void createLayerGraphs();
-	void selectLyGraph(QString id);
+	void selectDcGraph(QString id);
 	void selectLayer(QString id);
+	void selectChain(QString id);
 
 	void fold();
 
@@ -38,5 +41,6 @@ signals:
 	void selectionChanged();
 	void lyGraphsChanged(QStringList labels);
 	void layersChanged(QStringList labels);
+	void chainsChanged(QStringList labels);
 };
 

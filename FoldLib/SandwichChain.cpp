@@ -1,8 +1,13 @@
 #include "SandwichChain.h"
 
-
-SandwichChain::SandwichChain( QVector<FdNode*> nodes, FdNode* panel1, FdNode* panel2, QString id )
-	:SandwichLayer(nodes, panel1, panel2, id)
+SandwichChain::SandwichChain( FdNode* part, FdNode* panel1, FdNode* panel2, QString id )
+	:FdGraph(id)
 {
+	mPart = (FdNode*)part->clone();
+	mPanel1 = (FdNode*)panel1->clone();
+	mPanel2 = (FdNode*)panel2->clone();
 
+	Structure::Graph::addNode(mPart);
+	Structure::Graph::addNode(mPanel1);
+	Structure::Graph::addNode(mPanel2);
 }

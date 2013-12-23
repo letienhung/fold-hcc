@@ -16,11 +16,11 @@
 
 #include "AABB.h"
 #include "MinOBB.h"
-#include "DistSegSeg.h"
-#include "DistSegRect.h"
-#include "DistRectRect.h"
+#include "FdUtility.h"
 
-FdGraph::FdGraph()
+
+FdGraph::FdGraph(QString id /*= ""*/)
+	:Graph(id)
 {
 	showAABB = false;
 	path = "";
@@ -231,69 +231,6 @@ FdNode* FdGraph::addNode( SurfaceMeshModel* mesh, int method )
 
 	return node;
 }
-
-Geom::Segment FdGraph::getDistSegment( FdNode* n1, FdNode* n2 )
-{
-	Geom::Segment ds;
-
-	if (n1->mType == FdNode::ROD)
-	{
-		RodNode* node1 = (RodNode*)n1;
-		Geom::Segment rod1 = node1->mRod;
-
-		// rod-rod
-		if (n2->mType == FdNode::ROD)
-		{
-			RodNode* node2 = (RodNode*)n2;
-			Geom::Segment rod2 = node2->mRod;
-
-			Geom::DistSegSeg dss(rod1, rod2);
-			ds.setFromEnds(dss.mClosestPoint0, dss.mClosestPoint1);
-		}
-		// rod-patch
-		else
-		{
-			PatchNode* node2 = (PatchNode*)n2;
-			Geom::Rectangle rect2 = node2->mPatch;
-
-			Geom::DistSegRect dsr(rod1, rect2);
-			ds.setFromEnds(dsr.mClosestPoint0, dsr.mClosestPoint1);
-		}
-	}
-	
-	else 
-	{
-		PatchNode* node1 = (PatchNode*)n1;
-		Geom::Rectangle rect1 = node1->mPatch;
-
-		// patch-rod
-		if (n2->mType == FdNode::ROD)
-		{
-			RodNode* node2 = (RodNode*)n2;
-			Geom::Segment rod2 = node2->mRod;
-
-			Geom::DistSegRect dsr(rod2, rect1);
-			ds.setFromEnds(dsr.mClosestPoint0, dsr.mClosestPoint1);
-		}
-		// patch-patch
-		else
-		{
-			PatchNode* node2 = (PatchNode*)n2;
-			Geom::Rectangle rect2 = node2->mPatch;
-
-			Geom::DistRectRect drr(rect1, rect2);
-			ds.setFromEnds(drr.mClosestPoint0, drr.mClosestPoint1);
-		}	
-	}
-
-	return ds;
-}
-
-double FdGraph::getDistance( FdNode* n1, FdNode* n2 )
-{
-	return getDistSegment(n1, n2).length();
-}
-
 
 
 QVector<FdNode*> FdGraph::split( FdNode* fn, Geom::Plane& plane, double thr )

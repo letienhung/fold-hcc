@@ -8,13 +8,14 @@ class DcGraph : public FdGraph
 {
 public:
     DcGraph(FdGraph* scaffold, StrArray2D panelGroups, Vector3 up, QString id);
+	~DcGraph();
 
 public:
 	Vector3 upV;
 
 	QVector<FdNode*> controlPanels;
 
-	int selLayerId;
+	int selId;
 	QVector<LayerGraph*> layers;
 
 private:
@@ -24,7 +25,7 @@ private:
 public:
 	// 
 	FdGraph* activeScaffold();
-	LayerGraph* getSelectedLayer();
+	LayerGraph* getSelLayer();
 
 	QStringList getLayerLabels();
 	void selectLayer(QString id);

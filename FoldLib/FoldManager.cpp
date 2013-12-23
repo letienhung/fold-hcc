@@ -5,7 +5,7 @@ FoldManager::FoldManager()
 {
 	scaffold = NULL;
 
-	selLyId = -1;
+	selId = -1;
 	pushAxis = 0;
 }
 
@@ -17,23 +17,23 @@ FoldManager::~FoldManager()
 
 void FoldManager::clear()
 {
-	foreach(DcGraph* lm, lyGraphs)
+	foreach(DcGraph* lm, dcGraphs)
 		delete lm;
 
-	lyGraphs.clear();
+	dcGraphs.clear();
 }
 
-DcGraph* FoldManager::getSelectedLyGraph()
+DcGraph* FoldManager::getSelDcGraph()
 {
-	if (selLyId >= 0 && selLyId < lyGraphs.size())
-		return lyGraphs[selLyId];
+	if (selId >= 0 && selId < dcGraphs.size())
+		return dcGraphs[selId];
 	else
 		return NULL;
 }
 
 FdGraph* FoldManager::activeScaffold()
 {
-	DcGraph* selLy = getSelectedLyGraph();
+	DcGraph* selLy = getSelDcGraph();
 	if (selLy)	return selLy->activeScaffold();
 	else		return scaffold;
 }
@@ -158,17 +158,17 @@ void FoldManager::createLayerGraphs(Vector3 pushDirect)
 	
 	// ==STEP 4==: create layer models
 	// use all control panels
-	QString id = QString::number(lyGraphs.size());
+	QString id = QString::number(dcGraphs.size());
 	if (!panelGroups.isEmpty())
 	{
-		lyGraphs.push_back(new DcGraph(scaffold, getIds(panelGroups), pushDirect, id));
+		dcGraphs.push_back(new DcGraph(scaffold, getIds(panelGroups), pushDirect, id));
 	}
 
 	// exclude rod structures
 	if (!panelGroups2.isEmpty() && panelGroups2.size() < panelGroups.size())
 	{
-		QString id = QString::number(lyGraphs.size()) + ":w\\o rod";
-		lyGraphs.push_back(new DcGraph(scaffold, getIds(panelGroups2), pushDirect, id));
+		QString id = QString::number(dcGraphs.size()) + ":w\\o rod";
+		dcGraphs.push_back(new DcGraph(scaffold, getIds(panelGroups2), pushDirect, id));
 	}
 }
 
@@ -177,20 +177,20 @@ void FoldManager::fold()
 
 }
 
-void FoldManager::selectLyGraph( QString id )
+void FoldManager::selectDcGraph( QString id )
 {
 	// selected lyGraph index
-	selLyId = -1;
-	for (int i = 0; i < lyGraphs.size(); i++)
+	selId = -1;
+	for (int i = 0; i < dcGraphs.size(); i++)
 	{
-		if (lyGraphs[i]->id == id)
+		if (dcGraphs[i]->mID == id)
 		{	
-			selLyId = i;
+			selId = i;
 			break;
 		}
 	}
 
-	// disable selection on layer
+	// disable selection on layer and chains
 	selectLayer("");
 
 	// update list
@@ -202,25 +202,60 @@ void FoldManager::selectLyGraph( QString id )
 
 void FoldManager::selectLayer( QString id )
 {
-	DcGraph* lyg = getSelectedLyGraph();
-	if (lyg) lyg->selectLayer(id);
+	if (getSelDcGraph()) 
+	{
+		getSelDcGraph()->selectLayer(id);
+	}
+
+	updateLists();
 
 	emit(selectionChanged());
 }
 
+
+void FoldManager::selectChain( QString id )
+{ 
+	if (getSelDcGraph())
+	{
+		if (getSelDcGraph()->getSelLayer())
+		{
+			getSelDcGraph()->getSelLayer()->selectChain(id);
+		}
+	}
+
+	emit(selectionChanged());
+}
+
+
 void FoldManager::updateLists()
 {
-	QStringList lyGraphLabels;
-	foreach (DcGraph* ly, lyGraphs)	
-		lyGraphLabels.append(ly->id);
-
-
+	QStringList dcGraphLabels;
 	QStringList layerLabels;
-	if (getSelectedLyGraph()) 
-		layerLabels = getSelectedLyGraph()->getLayerLabels();
+	QStringList chainLables;
 
-	emit(lyGraphsChanged(lyGraphLabels));
+	dcGraphLabels = getDcGraphLabels();
+	if (getSelDcGraph()) 
+	{
+		layerLabels = getSelDcGraph()->getLayerLabels();
+
+		if (getSelDcGraph()->getSelLayer())
+		{
+			chainLables = getSelDcGraph()->getSelLayer()->getChainLabels();
+		}
+	}
+
+	emit(lyGraphsChanged(dcGraphLabels));
 	emit(layersChanged(layerLabels));
+	emit(chainsChanged(chainLables));
+}
+
+QStringList FoldManager::getDcGraphLabels()
+{
+	QStringList labels;
+	foreach (DcGraph* ly, dcGraphs)	
+		labels.push_back(ly->mID);
+
+	return labels;
 }
 
 

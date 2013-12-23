@@ -1,10 +1,14 @@
 #pragma once
 
-#include "SandwichLayer.h"
+#include "FdGraph.h"
 
-class SandwichChain : public SandwichLayer
+class SandwichChain : public FdGraph
 {
 public:
-    SandwichChain(QVector<FdNode*> nodes, FdNode* panel1, FdNode* panel2, QString id);
+    SandwichChain(FdNode* part, FdNode* panel1, FdNode* panel2, QString id);
+
+public:
+	FdNode *mPart;
+	FdNode *mPanel1, *mPanel2;
 };
 

@@ -9,7 +9,7 @@
 class FdGraph : public Structure::Graph
 {
 public:
-    FdGraph();
+	FdGraph(QString id = "");
 	FdGraph(FdGraph& other);
 
 	virtual Graph* clone();
@@ -36,10 +36,6 @@ public:
 	void showCuboids(bool show);
 	void showMeshes(bool show);
 	void showScaffold(bool show);
-
-	// helpers
-	static Geom::Segment getDistSegment(FdNode* n1, FdNode* n2);
-	static double getDistance(FdNode* n1, FdNode* n2);
 	
 public:
 	QString path;

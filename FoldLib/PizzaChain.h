@@ -1,10 +1,14 @@
 #pragma once
 
-#include "PizzaLayer.h"
+#include "Segment.h"
+#include "FdGraph.h"
 
-class PizzaChain : public PizzaLayer
+class PizzaChain : public FdGraph
 {
 public:
-    PizzaChain(QVector<FdNode*> nodes, FdNode* panel, QString id);
-};
+    PizzaChain(FdNode* part, FdNode* panel, QString id);
 
+public:
+	FdNode* mPart;
+	FdNode* mPanel;
+};

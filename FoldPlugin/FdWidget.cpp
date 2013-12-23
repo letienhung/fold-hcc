@@ -9,8 +9,9 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin = fp;
 
 	// connections
-	this->connect(ui->scaffoldList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(selectLyGraph(QListWidgetItem*)));
+	this->connect(ui->scaffoldList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(selectDcGraph(QListWidgetItem*)));
 	this->connect(ui->layerList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(selectLayer(QListWidgetItem*)));
+	this->connect(ui->chainList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(selectChain(QListWidgetItem*)));
 
 	// creation and refine
 	this->connect(plugin->g_manager, SIGNAL(scaffoldChanged(FdGraph*)), SLOT(setScaffold(FdGraph*)));
@@ -30,10 +31,12 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->f_manager->connect(ui->pushDirection, SIGNAL(currentIndexChanged(int)), SLOT(setPushAxis(int)));
 	plugin->f_manager->connect(ui->createLayers, SIGNAL(clicked()), SLOT(createLayerGraphs()));
 
-	this->connect(plugin->f_manager, SIGNAL(lyGraphsChanged(QStringList)), SLOT(setLyGraphList(QStringList)));
-	plugin->f_manager->connect(this, SIGNAL(lyGraphSelectionChanged(QString)), SLOT(selectLyGraph(QString)));
+	this->connect(plugin->f_manager, SIGNAL(lyGraphsChanged(QStringList)), SLOT(setDcGraphList(QStringList)));
 	this->connect(plugin->f_manager, SIGNAL(layersChanged(QStringList)), SLOT(setLayerList(QStringList)));
+	this->connect(plugin->f_manager, SIGNAL(chainsChanged(QStringList)), SLOT(setChainList(QStringList)));
+	plugin->f_manager->connect(this, SIGNAL(dcGraphSelectionChanged(QString)), SLOT(selectDcGraph(QString)));
 	plugin->f_manager->connect(this, SIGNAL(layerSelectionChanged(QString)), SLOT(selectLayer(QString)));
+	plugin->f_manager->connect(this, SIGNAL(chainSelectionChanged(QString)), SLOT(selectChain(QString)));
 
 	plugin->f_manager->connect(ui->fold, SIGNAL(clicked()), SLOT(fold()));
 
@@ -61,7 +64,7 @@ void FdWidget::setScaffold(FdGraph* fdg)
 	ui->fdPath->setText(path);
 }
 
-void FdWidget::setLyGraphList( QStringList labels )
+void FdWidget::setDcGraphList( QStringList labels )
 {
 	ui->scaffoldList->clear();
 	ui->scaffoldList->addItems(labels);
@@ -73,12 +76,23 @@ void FdWidget::setLayerList( QStringList labels )
 	ui->layerList->addItems(labels);
 }
 
-void FdWidget::selectLyGraph( QListWidgetItem* item )
+void FdWidget::setChainList( QStringList labels )
 {
-	emit(lyGraphSelectionChanged(item->text()));
+	ui->chainList->clear();
+	ui->chainList->addItems(labels);
+}
+
+void FdWidget::selectDcGraph( QListWidgetItem* item )
+{
+	emit(dcGraphSelectionChanged(item->text()));
 }
 
 void FdWidget::selectLayer( QListWidgetItem* item )
 {
 	emit(layerSelectionChanged(item->text()));
+}
+
+void FdWidget::selectChain( QListWidgetItem* item )
+{
+	emit(chainSelectionChanged(item->text()));
 }
