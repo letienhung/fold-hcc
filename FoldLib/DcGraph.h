@@ -1,22 +1,21 @@
 #pragma once
+
 #include "FdGraph.h"
 #include "Numeric.h"
-#include "FdLayer.h"
+#include "LayerGraph.h"
 
-class LyGraph
+class DcGraph : public FdGraph
 {
 public:
-    LyGraph(FdGraph* scaffold, StrArray2D panelGroups, Vector3 up, QString id);
+    DcGraph(FdGraph* scaffold, StrArray2D panelGroups, Vector3 up, QString id);
 
 public:
-	FdGraph* layerGraph;
 	Vector3 upV;
-	QString id;
 
 	QVector<FdNode*> controlPanels;
 
 	int selLayerId;
-	QVector<FdLayer*> layers;
+	QVector<LayerGraph*> layers;
 
 private:
 	// layers
@@ -25,7 +24,7 @@ private:
 public:
 	// 
 	FdGraph* activeScaffold();
-	FdLayer* getSelectedLayer();
+	LayerGraph* getSelectedLayer();
 
 	QStringList getLayerLabels();
 	void selectLayer(QString id);

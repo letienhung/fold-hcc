@@ -1,5 +1,5 @@
 #include "FdGraph.h"
-#include "LyGraph.h"
+#include "DcGraph.h"
 #include "Numeric.h"
 #include <QObject>
 
@@ -17,11 +17,11 @@ public:
 	int pushAxis; // X, Y, Z, ALL
 
 	int selLyId;
-	QVector<LyGraph*> lyGraphs;
+	QVector<DcGraph*> lyGraphs;
 
 public:
 	FdGraph* activeScaffold();
-	LyGraph* getSelectedLyGraph();
+	DcGraph* getSelectedLyGraph();
 	void updateLists();
 	void createLayerGraphs(Vector3 pushDirect); 
 

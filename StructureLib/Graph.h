@@ -10,7 +10,7 @@ namespace Structure{
 class Graph
 {
 public:
-    Graph();
+    Graph(QString id = "");
 	Graph(Graph& other);
 	virtual Graph* clone();
 
@@ -46,6 +46,7 @@ public:
 	QVector<Node*> getSelectedNodes();
 
 public:
+	QString id;
 	QVector<Node*> nodes;
 	QVector<Link*> links;
 };

@@ -17,13 +17,13 @@ FoldManager::~FoldManager()
 
 void FoldManager::clear()
 {
-	foreach(LyGraph* lm, lyGraphs)
+	foreach(DcGraph* lm, lyGraphs)
 		delete lm;
 
 	lyGraphs.clear();
 }
 
-LyGraph* FoldManager::getSelectedLyGraph()
+DcGraph* FoldManager::getSelectedLyGraph()
 {
 	if (selLyId >= 0 && selLyId < lyGraphs.size())
 		return lyGraphs[selLyId];
@@ -33,7 +33,7 @@ LyGraph* FoldManager::getSelectedLyGraph()
 
 FdGraph* FoldManager::activeScaffold()
 {
-	LyGraph* selLy = getSelectedLyGraph();
+	DcGraph* selLy = getSelectedLyGraph();
 	if (selLy)	return selLy->activeScaffold();
 	else		return scaffold;
 }
@@ -161,14 +161,14 @@ void FoldManager::createLayerGraphs(Vector3 pushDirect)
 	QString id = QString::number(lyGraphs.size());
 	if (!panelGroups.isEmpty())
 	{
-		lyGraphs.push_back(new LyGraph(scaffold, getIds(panelGroups), pushDirect, id));
+		lyGraphs.push_back(new DcGraph(scaffold, getIds(panelGroups), pushDirect, id));
 	}
 
 	// exclude rod structures
 	if (!panelGroups2.isEmpty() && panelGroups2.size() < panelGroups.size())
 	{
 		QString id = QString::number(lyGraphs.size()) + ":w\\o rod";
-		lyGraphs.push_back(new LyGraph(scaffold, getIds(panelGroups2), pushDirect, id));
+		lyGraphs.push_back(new DcGraph(scaffold, getIds(panelGroups2), pushDirect, id));
 	}
 }
 
@@ -202,7 +202,7 @@ void FoldManager::selectLyGraph( QString id )
 
 void FoldManager::selectLayer( QString id )
 {
-	LyGraph* lyg = getSelectedLyGraph();
+	DcGraph* lyg = getSelectedLyGraph();
 	if (lyg) lyg->selectLayer(id);
 
 	emit(selectionChanged());
@@ -211,7 +211,7 @@ void FoldManager::selectLayer( QString id )
 void FoldManager::updateLists()
 {
 	QStringList lyGraphLabels;
-	foreach (LyGraph* ly, lyGraphs)	
+	foreach (DcGraph* ly, lyGraphs)	
 		lyGraphLabels.append(ly->id);
 
 

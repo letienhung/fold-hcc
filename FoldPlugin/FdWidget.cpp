@@ -9,7 +9,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin = fp;
 
 	// connections
-	this->connect(ui->lyGraphList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(selectLyGraph(QListWidgetItem*)));
+	this->connect(ui->scaffoldList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(selectLyGraph(QListWidgetItem*)));
 	this->connect(ui->layerList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(selectLayer(QListWidgetItem*)));
 
 	// creation and refine
@@ -63,8 +63,8 @@ void FdWidget::setScaffold(FdGraph* fdg)
 
 void FdWidget::setLyGraphList( QStringList labels )
 {
-	ui->lyGraphList->clear();
-	ui->lyGraphList->addItems(labels);
+	ui->scaffoldList->clear();
+	ui->scaffoldList->addItems(labels);
 }
 
 void FdWidget::setLayerList( QStringList labels )

@@ -1,12 +1,15 @@
 #include "Graph.h"
 #include <QtOpenGL/qgl.h>
 
-Structure::Graph::Graph()
+Structure::Graph::Graph(QString id)
 {
+	this->id = id;
 }
 
 Structure::Graph::Graph(Graph& other)
 {
+	this->id = other.id;
+
 	foreach (Node* n, other.nodes)
 		addNode(n->clone());
 

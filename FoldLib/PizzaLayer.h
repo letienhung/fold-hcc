@@ -1,9 +1,9 @@
 #pragma once
-#include "FdLayer.h"
+#include "LayerGraph.h"
 #include "PatchNode.h"
 
 
-class PizzaLayer : public FdLayer
+class PizzaLayer : public LayerGraph
 {
 public:
     PizzaLayer(QVector<FdNode*> nodes, FdNode* panel, QString id);

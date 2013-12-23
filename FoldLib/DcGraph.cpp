@@ -1,21 +1,19 @@
-#include "LyGraph.h"
+#include "DcGraph.h"
 #include "PatchNode.h"
 #include "PizzaLayer.h"
 #include "SandwichLayer.h"
 
 
-LyGraph::LyGraph( FdGraph* scaffold, StrArray2D panelGroups, Vector3 up, QString id)
+DcGraph::DcGraph( FdGraph* scaffold, StrArray2D panelGroups, Vector3 up, QString id)
+	: FdGraph(*scaffold)
 {
 	upV = up;
 	this->id = id;
 
-	// make copy of scaffold
-	layerGraph = (FdGraph*)(scaffold->clone());
-	
 	// merge control panels
 	foreach( QVector<QString> panelGroup, panelGroups )
 	{
-		FdNode* mf = layerGraph->merge(panelGroup);
+		FdNode* mf = merge(panelGroup);
 		mf->isCtrlPanel = true;
 		controlPanels.push_back(mf);
 	}
@@ -26,7 +24,7 @@ LyGraph::LyGraph( FdGraph* scaffold, StrArray2D panelGroups, Vector3 up, QString
 }
 
 
-void LyGraph::createLayers()
+void DcGraph::createLayers()
 {
 	// cut parts by control panels
  	foreach (FdNode* cn, controlPanels)
@@ -34,17 +32,17 @@ void LyGraph::createLayers()
 		PatchNode* cutNode = (PatchNode*)cn;
 		Geom::Plane cutPlane = cutNode->mPatch.getPlane();
 
-		foreach(FdNode* n, layerGraph->getFdNodes())
+		foreach(FdNode* n, getFdNodes())
 		{
 			if (n->isCtrlPanel) continue;
 
-			layerGraph->split(n, cutPlane, 0.1);
+			split(n, cutPlane, 0.1);
 		}
 	}
 	
 	// cut positions along pushing skeleton
 	// append 1.0 to help group parts
-	Geom::Box box = layerGraph->computeAABB().box();
+	Geom::Box box = computeAABB().box();
 	int upAId = box.getAxisId(upV);
 	Geom::Segment upSklt = box.getSkeleton(upAId);
 
@@ -57,7 +55,7 @@ void LyGraph::createLayers()
 
 	// group parts into layers
 	FdNodeArray2D layerGroups(cutPos.size());
-	foreach (FdNode* n, layerGraph->getFdNodes())
+	foreach (FdNode* n, getFdNodes())
 	{
 		if (n->isCtrlPanel) continue;
 
@@ -104,7 +102,7 @@ void LyGraph::createLayers()
 }
 
 
-FdLayer* LyGraph::getSelectedLayer()
+LayerGraph* DcGraph::getSelectedLayer()
 {
 	if (selLayerId >= 0 && selLayerId < layers.size())
 		return layers[selLayerId];
@@ -113,23 +111,23 @@ FdLayer* LyGraph::getSelectedLayer()
 }
 
 
-FdGraph* LyGraph::activeScaffold()
+FdGraph* DcGraph::activeScaffold()
 {
-	FdLayer* selLayer = getSelectedLayer();
-	if (selLayer) return selLayer->layer;
-	else		  return layerGraph;
+	LayerGraph* selLayer = getSelectedLayer();
+	if (selLayer) return selLayer;
+	else		  return this;
 }
 
-QStringList LyGraph::getLayerLabels()
+QStringList DcGraph::getLayerLabels()
 {
 	QStringList labels;
-	foreach(FdLayer* l, layers)
+	foreach(LayerGraph* l, layers)
 		labels.append(l->id);
 
 	return labels;
 }
 
-void LyGraph::selectLayer( QString id )
+void DcGraph::selectLayer( QString id )
 {
 	selLayerId = -1;
 	for (int i = 0; i < layers.size(); i++)

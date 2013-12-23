@@ -1,7 +1,7 @@
 #pragma once
-#include "FdLayer.h"
+#include "LayerGraph.h"
 
-class SandwichLayer : public FdLayer
+class SandwichLayer : public LayerGraph
 {
 public:
     SandwichLayer(QVector<FdNode*> nodes, FdNode* panel1, FdNode* panel2, QString id);

@@ -170,7 +170,7 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
       <item row="2" column="2" colspan="2">
-       <widget class="QListWidget" name="fdLayerList"/>
+       <widget class="QListWidget" name="chainList"/>
       </item>
       <item row="2" column="1">
        <widget class="QListWidget" name="layerList"/>
@@ -199,7 +199,7 @@
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QListWidget" name="lyGraphList"/>
+       <widget class="QListWidget" name="scaffoldList"/>
       </item>
       <item row="0" column="0" alignment="Qt::AlignRight">
        <widget class="QLabel" name="label_6">
@@ -242,7 +242,7 @@
       <item row="1" column="0" alignment="Qt::AlignHCenter">
        <widget class="QLabel" name="label_7">
         <property name="text">
-         <string>LyGraphs</string>
+         <string>Scaffolds</string>
         </property>
        </widget>
       </item>
@@ -256,7 +256,7 @@
       <item row="1" column="2" colspan="2" alignment="Qt::AlignHCenter">
        <widget class="QLabel" name="label_9">
         <property name="text">
-         <string>Fold Solutions</string>
+         <string>Chains</string>
         </property>
        </widget>
       </item>
