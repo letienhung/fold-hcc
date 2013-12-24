@@ -29,6 +29,7 @@ public:
 	double area();
 	Plane getPlane();
 	QVector<Segment> getEdges();
+	QVector<Segment> getPerpEdges(Vector3 v);
 	QVector<Vector2> get2DConners();
 	QVector<Segment2> get2DEdges();
 	Segment2 getProjection2D(Segment s);

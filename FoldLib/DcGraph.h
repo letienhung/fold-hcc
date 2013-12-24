@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FdGraph.h"
+#include "PatchNode.h"
 #include "Numeric.h"
 #include "LayerGraph.h"
 
@@ -12,8 +13,7 @@ public:
 
 public:
 	Vector3 upV;
-
-	QVector<FdNode*> controlPanels;
+	QVector<PatchNode*> controlPanels;
 
 	int selId;
 	QVector<LayerGraph*> layers;
@@ -23,7 +23,6 @@ private:
 	void createLayers();
 
 public:
-	// 
 	FdGraph* activeScaffold();
 	LayerGraph* getSelLayer();
 

@@ -2,32 +2,25 @@
 
 #include <QStringList>
 
-DepGraph::DepGraph()
+PizzaDyGraph::PizzaDyGraph()
 {
 }
 
-DepGraph::DepGraph( DepGraph& other )
+PizzaDyGraph::PizzaDyGraph( PizzaDyGraph& other )
 	:Graph(other)
 {
 
 }
 
-Structure::Graph* DepGraph::clone()
+Structure::Graph* PizzaDyGraph::clone()
 {
-	return new DepGraph(*this);
+	return new PizzaDyGraph(*this);
 }
 
-void DepGraph::addPartAndFolingNodes( QString pid, QStringList fids )
+
+PizzaFNode::PizzaFNode( int hid, FD_DIRECTION d, QString id )
+	:Structure::Node(id)
 {
-
-}
-
-void DepGraph::addHingeLink( QString nid1, QString nid2 )
-{
-	 
-}
-
-void DepGraph::addCollisionLink( QString nid1, QString nid2 )
-{
-
+	hingeId = hid;
+	direct = d;	
 }

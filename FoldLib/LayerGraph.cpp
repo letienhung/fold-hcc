@@ -1,6 +1,6 @@
 #include "LayerGraph.h"
 
-LayerGraph::LayerGraph( QVector<FdNode*> nodes, FdNode* panel1, FdNode* panel2, QString id)
+LayerGraph::LayerGraph( QVector<FdNode*> nodes, PatchNode* panel1, PatchNode* panel2, QString id)
 	:FdGraph(id)
 {
 	// clone nodes

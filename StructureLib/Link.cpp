@@ -3,12 +3,12 @@
 
 Structure::Link::Link( Structure::Node* n1, Structure::Node* n2 )
 {
-	nid1 = n1->id;
-	nid2 = n2->id;
+	nid1 = n1->mID;
+	nid2 = n2->mID;
 	node1 = n1;
 	node2 = n2;
 
-	id = node1->id + ":" + node2->id;
+	id = node1->mID + ":" + node2->mID;
 }
 
 Structure::Link::Link( Link& other )

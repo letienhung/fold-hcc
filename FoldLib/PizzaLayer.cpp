@@ -3,23 +3,30 @@
 #include "PatchNode.h"
 #include "FdUtility.h"
 
-PizzaLayer::PizzaLayer( QVector<FdNode*> nodes, FdNode* panel, QString id )
+PizzaLayer::PizzaLayer( QVector<FdNode*> nodes, PatchNode* panel, QString id )
 	:LayerGraph(nodes, NULL, panel, id)
 {
-	this->panel = (FdNode*) getNode(panel->id);
+	// type
+	mType = LayerGraph::PIZZA;
+
+	// panel
+	mPanel = (PatchNode*)getNode(panel->mID);
 
 	// create chains
-	PatchNode* pp = (PatchNode*)this->panel;
-	double thr = pp->mBox.getExtent(pp->mPatch.Normal) * 2;
-
+	double thr = mPanel->mBox.getExtent(mPanel->mPatch.Normal) * 2;
 	foreach (FdNode* n, getFdNodes())
 	{
 		if (n->isCtrlPanel) continue;
 
-		if (getDistance(n, pp) < thr)
+		if (getDistance(n, mPanel) < thr)
 		{
 			QString cid = QString::number(chains.size());
-			chains.push_back(new PizzaChain(n, this->panel, cid));
+			chains.push_back(new PizzaChain(n, mPanel, cid));
 		}
 	}
+}
+
+void PizzaLayer::buildDepGraph()
+{
+	 
 }

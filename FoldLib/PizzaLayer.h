@@ -4,8 +4,10 @@
 class PizzaLayer : public LayerGraph
 {
 public:
-    PizzaLayer(QVector<FdNode*> nodes, FdNode* panel, QString id);
+    PizzaLayer(QVector<FdNode*> nodes, PatchNode* panel, QString id);
+
+	void buildDepGraph();
 
 public: 
-	FdNode* panel; 
+	PatchNode* mPanel; 
 };

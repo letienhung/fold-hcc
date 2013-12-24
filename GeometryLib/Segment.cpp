@@ -5,7 +5,12 @@
 
 Geom::Segment::Segment( Vector3 p0, Vector3 p1 )
 {
-	setFromEnds(p0, p1);
+	set(p0, p1);
+}
+
+Geom::Segment::Segment(Vector3 c, Vector3 d, double e)
+{
+	set(c, d, e);
 }
 
 
@@ -20,12 +25,21 @@ void Geom::Segment::computeCenterDirectionExtent()
 
 
 
-void Geom::Segment::setFromEnds( Vector3 p0, Vector3 p1 )
+void Geom::Segment::set( Vector3 p0, Vector3 p1 )
 {
 	P0 = p0;
 	P1 = p1;
 
 	computeCenterDirectionExtent();
+}
+
+void Geom::Segment::set( Vector3 c, Vector3 d, double e )
+{
+	Center = c;
+	Direction = d;
+	Extent = e;
+
+	computeEndPoints();
 }
 
 

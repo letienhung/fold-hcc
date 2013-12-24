@@ -193,7 +193,7 @@ void Structure::Graph::replaceNode( Node* old_node, Node* new_node )
 {
 	QVector<Node*> neighbours = getNeighbourNodes(old_node);
 
-	removeNode(old_node->id);
+	removeNode(old_node->mID);
 	addNode(new_node);
 	
 	foreach(Node* n, neighbours)
@@ -203,8 +203,8 @@ void Structure::Graph::replaceNode( Node* old_node, Node* new_node )
 QVector<Structure::Node*> Structure::Graph::getNeighbourNodes( Node* node )
 {
 	QVector<Node*> neighbours;
-	foreach (Link* l, getLinks(node->id))
-		neighbours.push_back(l->getNodeOther(node->id));
+	foreach (Link* l, getLinks(node->mID))
+		neighbours.push_back(l->getNodeOther(node->mID));
 
 	return neighbours;
 }

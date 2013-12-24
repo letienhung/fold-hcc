@@ -1,15 +1,39 @@
 #pragma once
 #include "Graph.h"
+#include "PizzaChain.h"
 
-class DepGraph : public Structure::Graph
+enum FD_DIRECTION{FD_LEFT, FD_RIGHT};
+
+class PizzaDyGraph : public Structure::Graph
 {
 public:
-    DepGraph();
-	DepGraph(DepGraph& other);
+    PizzaDyGraph();
+	PizzaDyGraph(PizzaDyGraph& other);
 	Graph* clone();
 
 public:
-	void addPartAndFolingNodes(QString pid, QStringList fids);
-	void addHingeLink(QString nid1, QString nid2);
-	void addCollisionLink(QString nid1, QString nid2);
+
 };
+
+
+
+class PizzaPNode : public Structure::Node
+{
+public:
+
+	// part info
+	PizzaChain* chain;
+
+};
+
+class PizzaFNode : public Structure::Node
+{
+public:
+	PizzaFNode(int hid, FD_DIRECTION d, QString id);
+
+	// folding info
+	int hingeId;
+	FD_DIRECTION direct;
+	double score;
+};
+

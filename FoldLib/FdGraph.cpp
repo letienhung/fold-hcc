@@ -97,7 +97,7 @@ void FdGraph::saveToFile(QString fname)
 	meshesFolder =  graphDir.path() + "/" + meshesFolder;
 	foreach(FdNode* node, getFdNodes())
 	{
-		MeshHelper::saveOBJ(node->mMesh.data(), meshesFolder + '/' + node->id + ".obj");
+		MeshHelper::saveOBJ(node->mMesh.data(), meshesFolder + '/' + node->mID + ".obj");
 	}
 }
 
@@ -199,7 +199,7 @@ FdNode* FdGraph::merge( QVector<QString> nids )
 	foreach (FdNode* n, ns)
 	{
 		mm.addMesh(n->mMesh.data());
-		removeNode(n->id);
+		removeNode(n->mID);
 	}
 
 	return addNode(mm.getMesh(), 0); 
@@ -227,7 +227,7 @@ FdNode* FdGraph::addNode( SurfaceMeshModel* mesh, int method )
 	else node = new PatchNode(MeshPtr(mesh), box);
 	
 	Graph::addNode(node);
-	node->id = mesh->name;
+	node->mID = mesh->name;
 
 	return node;
 }
@@ -269,11 +269,11 @@ QVector<FdNode*> FdGraph::split( FdNode* fn, Geom::Plane& plane, double thr )
 		node1 = new PatchNode(meshPtr1, box1);
 		node2 = new PatchNode(meshPtr2, box2);
 	}
-	node1->id = fn->id + "_1";
-	node2->id = fn->id + "_2";
+	node1->mID = fn->mID + "_1";
+	node2->mID = fn->mID + "_2";
 
 	// replace nodes
-	removeNode(fn->id);
+	removeNode(fn->mID);
 	Structure::Graph::addNode(node1);
 	Structure::Graph::addNode(node2);
 
@@ -298,4 +298,17 @@ void FdGraph::showMeshes( bool show )
 {
 	foreach(FdNode* n, getFdNodes())
 		n->showMesh = show;
+}
+
+void FdGraph::changeNodeType( FdNode* n )
+{
+	// create new node
+	Structure::Node* new_node;
+	if (n->mType == FdNode::PATCH)
+		new_node =new RodNode(n->mMesh, n->mBox);
+	else
+		new_node = new PatchNode(n->mMesh, n->mBox);
+
+	// replace
+	replaceNode(n, new_node);
 }

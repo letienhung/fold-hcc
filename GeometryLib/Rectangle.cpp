@@ -245,4 +245,15 @@ double Geom::Rectangle::area()
 	return 4 * Extent[0] * Extent[1];
 }
 
+QVector<Geom::Segment> Geom::Rectangle::getPerpEdges(Vector3 v)
+{
+	QVector<Segment> pe;
+	foreach(Segment e, getEdges())
+	{
+		if (isPerp(e.Direction, v))	pe.push_back(e);
+	}
+
+	return pe;
+}
+
 

@@ -121,7 +121,7 @@ bool FdPlugin::postSelection( const QPoint& point )
 		Structure::Node* sn = activeScaffold()->getNode(nidx);
 		if (sn)
 		{
-			showMessage("Selected name = %d, nodeId = %s", nidx, sn->id.toStdString().c_str());
+			showMessage("Selected name = %d, nodeId = %s", nidx, sn->mID.toStdString().c_str());
 			activeScaffold()->selectNode(nidx);
 		}
 		else

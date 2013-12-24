@@ -2,13 +2,16 @@
 
 #include "Segment.h"
 #include "FdGraph.h"
+#include "PatchNode.h"
 
 class PizzaChain : public FdGraph
 {
 public:
-    PizzaChain(FdNode* part, FdNode* panel, QString id);
+    PizzaChain(FdNode* part, PatchNode* panel, QString id);
 
 public:
 	FdNode* mPart;
-	FdNode* mPanel;
+	PatchNode* mPanel;
+
+	QVector<Geom::Segment>  hinges; 
 };

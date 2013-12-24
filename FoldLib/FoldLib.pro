@@ -48,7 +48,6 @@ HEADERS += \
     SandwichLayer.h \
     PizzaLayer.h \
     DepGraph.h \
-    FoldingNode.h \
     PizzaChain.h \
     SandwichChain.h
 
@@ -68,7 +67,6 @@ SOURCES += \
     SandwichLayer.cpp \
     PizzaLayer.cpp \
     DepGraph.cpp \
-    FoldingNode.cpp \
     PizzaChain.cpp \
     SandwichChain.cpp
 

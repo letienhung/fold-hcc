@@ -1,6 +1,8 @@
 #include "FdUtility.h"
+
 #include "RodNode.h"
 #include "PatchNode.h"
+
 #include "DistSegSeg.h"
 #include "DistSegRect.h"
 #include "DistRectRect.h"
@@ -82,7 +84,7 @@ Geom::Segment getDistSegment( FdNode* n1, FdNode* n2 )
 			Geom::Segment rod2 = node2->mRod;
 
 			Geom::DistSegSeg dss(rod1, rod2);
-			ds.setFromEnds(dss.mClosestPoint0, dss.mClosestPoint1);
+			ds.set(dss.mClosestPoint0, dss.mClosestPoint1);
 		}
 		// rod-patch
 		else
@@ -91,7 +93,7 @@ Geom::Segment getDistSegment( FdNode* n1, FdNode* n2 )
 			Geom::Rectangle rect2 = node2->mPatch;
 
 			Geom::DistSegRect dsr(rod1, rect2);
-			ds.setFromEnds(dsr.mClosestPoint0, dsr.mClosestPoint1);
+			ds.set(dsr.mClosestPoint0, dsr.mClosestPoint1);
 		}
 	}
 
@@ -107,7 +109,7 @@ Geom::Segment getDistSegment( FdNode* n1, FdNode* n2 )
 			Geom::Segment rod2 = node2->mRod;
 
 			Geom::DistSegRect dsr(rod2, rect1);
-			ds.setFromEnds(dsr.mClosestPoint0, dsr.mClosestPoint1);
+			ds.set(dsr.mClosestPoint0, dsr.mClosestPoint1);
 		}
 		// patch-patch
 		else
@@ -116,7 +118,7 @@ Geom::Segment getDistSegment( FdNode* n1, FdNode* n2 )
 			Geom::Rectangle rect2 = node2->mPatch;
 
 			Geom::DistRectRect drr(rect1, rect2);
-			ds.setFromEnds(drr.mClosestPoint0, drr.mClosestPoint1);
+			ds.set(drr.mClosestPoint0, drr.mClosestPoint1);
 		}	
 	}
 
@@ -147,9 +149,49 @@ StrArray2D getIds( FdNodeArray2D nodeArray )
 	foreach (QVector<FdNode*> ns, nodeArray)
 	{
 		ids.clear();
-		foreach(FdNode* n, ns)	ids.push_back(n->id);
+		foreach(FdNode* n, ns)	ids.push_back(n->mID);
 		idArray.push_back(ids);
 	}
 
 	return idArray;
+}
+
+QVector<Geom::Segment> detectHinges( FdNode* part, PatchNode* panel )
+{
+	QVector<Geom::Segment> hinges;
+
+	if (part->mType == FdNode::PATCH)
+	{
+		PatchNode* partPatch = (PatchNode*)part;
+		Vector3 panelNormal = panel->mPatch.Normal;
+		QVector<Geom::Segment> perpEdges = partPatch->mPatch.getPerpEdges(panelNormal);
+
+		if (perpEdges.size() != 2)
+		{
+			qDebug() << "Detect hinge between patch and patch failed: patch edges are not aligned.";
+			return hinges;
+		}
+
+		Geom::DistSegRect dsr1(perpEdges[0], panel->mPatch);
+		Geom::DistSegRect dsr2(perpEdges[1], panel->mPatch);
+
+		if (dsr1.get() < dsr2.get())
+			hinges << perpEdges[0];
+		else	
+			hinges << perpEdges[1];
+	}
+	else if (part->mType == FdNode::ROD)
+	{
+		Geom::Segment distSeg = getDistSegment(part, panel);
+		Vector3 p = distSeg.P0;
+		Vector3 v1 = panel->mPatch.Axis[0];
+		Vector3 v2 = panel->mPatch.Axis[1];
+		
+		RodNode* partRod = (RodNode*)part;
+		double e = partRod->mRod.Extent / 4;
+
+		hinges << Geom::Segment(p, v1, e) << Geom::Segment(p, v2, e);
+	}
+
+	return hinges;
 }

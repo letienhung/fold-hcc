@@ -3,17 +3,18 @@
 #include "PatchNode.h"
 #include "FdUtility.h"
 
-SandwichLayer::SandwichLayer( QVector<FdNode*> nodes, FdNode* panel1, FdNode* panel2, QString id )
+SandwichLayer::SandwichLayer( QVector<FdNode*> nodes, PatchNode* panel1, PatchNode* panel2, QString id )
 	:LayerGraph(nodes, panel1, panel2, id)
 {
-	this->panel1 = (FdNode*) getNode(panel1->id);
-	this->panel2 = (FdNode*) getNode(panel2->id);
+	mType = LayerGraph::SANDWICH;
+
+	mPanel1 = (PatchNode*) getNode(panel1->mID);
+	mPanel2 = (PatchNode*) getNode(panel2->mID);
 
 	// create chains
-	PatchNode* pp = (PatchNode*)this->panel1;
-	double thr = pp->mBox.getExtent(pp->mPatch.Normal) * 2;
+	double thr = mPanel1->mBox.getExtent(mPanel1->mPatch.Normal) * 2;
 	QVector<FdNode*> panels;
-	panels << this->panel1 << this->panel2;
+	panels << mPanel1 << mPanel2;
 
 	foreach (FdNode* n, getFdNodes())
 	{
@@ -22,7 +23,7 @@ SandwichLayer::SandwichLayer( QVector<FdNode*> nodes, FdNode* panel1, FdNode* pa
 		if (getDistance(n, panels) < thr)
 		{
 			QString cid = QString::number(chains.size());
-			chains.push_back(new SandwichChain(n, this->panel1, this->panel2, cid));
+			chains.push_back(new SandwichChain(n, mPanel1, mPanel2, cid));
 		}
 	}
 }

@@ -23,6 +23,7 @@ public:
 	// modifier
 	FdNode*			 merge(QVector<QString> nids);
 	QVector<FdNode*> split( FdNode* fn, Geom::Plane& plane, double thr );
+	void			 changeNodeType(FdNode* n);
 
 	// I/O
 	void saveToFile(QString fname);

@@ -85,7 +85,7 @@ void FdNode::write( XmlWriter& xw )
 	xw.writeOpenTag("node");
 	{
 		xw.writeTaggedString("type", QString::number(mType));
-		xw.writeTaggedString("ID", this->id);
+		xw.writeTaggedString("ID", this->mID);
 
 		// box
 		mBox.write(xw);

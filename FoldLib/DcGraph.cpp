@@ -15,7 +15,9 @@ DcGraph::DcGraph( FdGraph* scaffold, StrArray2D panelGroups, Vector3 up, QString
 	{
 		FdNode* mf = merge(panelGroup);
 		mf->isCtrlPanel = true;
-		controlPanels.push_back(mf);
+
+		if (mf->mType != FdNode::PATCH)	changeNodeType(mf);
+		controlPanels.push_back((PatchNode*)mf);
 	}
 
 	// create layers
@@ -33,10 +35,9 @@ DcGraph::~DcGraph()
 void DcGraph::createLayers()
 {
 	// cut parts by control panels
- 	foreach (FdNode* cn, controlPanels)
+ 	foreach (PatchNode* panel, controlPanels)
 	{
-		PatchNode* cutNode = (PatchNode*)cn;
-		Geom::Plane cutPlane = cutNode->mPatch.getPlane();
+		Geom::Plane cutPlane = panel->mPatch.getPlane();
 
 		foreach(FdNode* n, getFdNodes())
 		{

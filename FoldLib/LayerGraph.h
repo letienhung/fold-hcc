@@ -1,11 +1,15 @@
 #pragma once
 
 #include "FdGraph.h"
+#include "PatchNode.h"
 
 class LayerGraph : public FdGraph
 {
 public:
-    LayerGraph(QVector<FdNode*> nodes, FdNode* panel1, FdNode* panel2, QString id);
+	enum LAYER_TYPE{PIZZA, SANDWICH};
+
+public:
+    LayerGraph(QVector<FdNode*> nodes, PatchNode* panel1, PatchNode* panel2, QString id);
 	~LayerGraph();
 
 	FdGraph* getSelChain();
@@ -14,6 +18,7 @@ public:
 	QStringList getChainLabels();
 
 public:
+	LAYER_TYPE mType;
 	int selId;
 	QVector<FdGraph*> chains;
 }; 

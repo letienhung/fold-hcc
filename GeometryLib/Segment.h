@@ -11,9 +11,11 @@ class Segment
 public:
 	// constructor
 	Segment(Vector3 p0 = Vector3(0,0,0), Vector3 p1 = Vector3(1,0,0));
+	Segment(Vector3 c, Vector3 d, double e);
 
 	// setter
-	void setFromEnds(Vector3 p0, Vector3 p1);
+	void set(Vector3 p0, Vector3 p1);
+	void set(Vector3 c, Vector3 d, double e);
 	void computeEndPoints();
 	void computeCenterDirectionExtent();
 

@@ -26,9 +26,8 @@ public:
 	virtual void drawWithName(int name);
 
 public:
-	QString	id;
+	QString	mID;
 	bool isSelected;
-
     PropertyMap properties;
 };
 

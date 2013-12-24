@@ -73,16 +73,7 @@ void GraphManager::changeNodeType()
 {
 	foreach(Structure::Node* n, scaffold->getSelectedNodes())
 	{
-		// create new node
-		FdNode* old_node = (FdNode*)n;
-		Structure::Node* new_node;
-		if (old_node->mType == FdNode::PATCH)
-			new_node =new RodNode(old_node->mMesh, old_node->mBox);
-		else
-			new_node = new PatchNode(old_node->mMesh, old_node->mBox);
-
-		// replace
-		scaffold->replaceNode(old_node, new_node);
+		scaffold->changeNodeType((FdNode*)n);
 	}
 
 	emit(scaffoldModified());

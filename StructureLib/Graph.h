@@ -49,6 +49,7 @@ public:
 	QString mID;
 	QVector<Node*> nodes;
 	QVector<Link*> links;
+	PropertyMap properties;
 };
 
 }

@@ -3,19 +3,19 @@
 
 Structure::Node::Node( QString nid )
 {
-	id = nid;
+	mID = nid;
 	isSelected = false;
 }
 
 Structure::Node::Node(Node &other)
 {
-	id = other.id;
+	mID = other.mID;
 	isSelected = false;
 }
 
 bool Structure::Node::hasId( QString id )
 { 
-	return this->id == id;
+	return this->mID == id;
 }
 
 void Structure::Node::flipSelect()
