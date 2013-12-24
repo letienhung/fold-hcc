@@ -36,6 +36,8 @@ public:
 	DependGraph(DependGraph& other);
 	Graph* clone();
 
+	void addNode(ChainNode* cn);
+	void addNode(FoldingNode* fn);
 	void addFoldingLink(Structure::Node* n1, Structure::Node* n2);
 	void addCollisionLink(Structure::Node* n1, Structure::Node* n2);
 

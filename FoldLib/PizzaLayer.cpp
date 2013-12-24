@@ -49,7 +49,7 @@ void PizzaLayer::buildDepGraph()
 		{
 			// folding nodes
 			QString fnid1 = chain->mID + "_" + QString::number(2*j);
-			FoldingNode* fn1 = new FoldingNode(j, FD_LEFT, fnid1);
+			FoldingNode* fn1 = new FoldingNode(j, FD_RIGHT, fnid1);
 			dy_graph->addNode(fn1);
 
 			QString fnid2 = chain->mID + "_" + QString::number(2*j+1);
@@ -63,5 +63,23 @@ void PizzaLayer::buildDepGraph()
 	}
 
 	// collision links
+	for(int i = 0; i < chains.size(); i++)
+	{
+		PizzaChain* chain = (PizzaChain*)chains[i];
+		QVector<FoldingNode*> fns = dy_graph->getFoldingNodes(chain->mID);
 
+		for (int j = 0; j < chains.size(); j++)
+		{
+			if (i == j) continue;
+
+			PizzaChain* other_chain = (PizzaChain*)chains[j];
+
+			for (int k = 0; k < fns.size(); k++)
+			{
+				FoldingNode* fn = fns[k];
+
+				// chain(fn) vs. other_chain
+			}
+		}
+	}
 }

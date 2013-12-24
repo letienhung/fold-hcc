@@ -45,7 +45,8 @@ HEADERS += \
     DistLineRect.h \
     DistLineSeg.h \
     DistPointRect.h \
-    DistRectRect.h
+    DistRectRect.h \
+    SectorCylinder.h
 
 SOURCES += \
     Segment.cpp \
@@ -71,4 +72,5 @@ SOURCES += \
     DistLineRect.cpp \
     DistLineSeg.cpp \
     DistPointRect.cpp \
-    DistRectRect.cpp
+    DistRectRect.cpp \
+    SectorCylinder.cpp
