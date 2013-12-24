@@ -10,6 +10,7 @@ PizzaChain::PizzaChain( FdNode* part, PatchNode* panel, QString id )
 	// clone parts
 	mPart = (FdNode*)part->clone();
 	mPanel = (PatchNode*)panel->clone();
+	mPanel->isCtrlPanel = true;
 
 	Structure::Graph::addNode(mPart);
 	Structure::Graph::addNode(mPanel);

@@ -95,7 +95,7 @@ void GraphManager::linkNodes()
 	QVector<Structure::Node*> sn = scaffold->getSelectedNodes();
 	if (sn.size() < 2) return;
 
-	scaffold->addLink(sn[0], sn[1]);
+	scaffold->addLink((FdNode*)sn[0], (FdNode*)sn[1]);
 
 	emit(scaffoldModified());
 }

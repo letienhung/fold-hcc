@@ -47,7 +47,7 @@ HEADERS += \
     LayerGraph.h \
     SandwichLayer.h \
     PizzaLayer.h \
-    DepGraph.h \
+    DependGraph.h \
     PizzaChain.h \
     SandwichChain.h
 
@@ -66,7 +66,7 @@ SOURCES += \
     LayerGraph.cpp \
     SandwichLayer.cpp \
     PizzaLayer.cpp \
-    DepGraph.cpp \
+    DependGraph.cpp \
     PizzaChain.cpp \
     SandwichChain.cpp
 

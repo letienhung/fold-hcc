@@ -13,7 +13,7 @@ public:
 	FdGraph(FdGraph& other);
 
 	virtual Graph* clone();
-	virtual void addLink(Structure::Node* n1, Structure::Node* n2);
+	FdLink* addLink(FdNode* n1, FdNode* n2);
 
 public:
 	// accessors

@@ -10,6 +10,8 @@ SandwichLayer::SandwichLayer( QVector<FdNode*> nodes, PatchNode* panel1, PatchNo
 
 	mPanel1 = (PatchNode*) getNode(panel1->mID);
 	mPanel2 = (PatchNode*) getNode(panel2->mID);
+	mPanel1->isCtrlPanel = true;
+	mPanel2->isCtrlPanel = true; 
 
 	// create chains
 	double thr = mPanel1->mBox.getExtent(mPanel1->mPatch.Normal) * 2;
@@ -21,10 +23,7 @@ SandwichLayer::SandwichLayer( QVector<FdNode*> nodes, PatchNode* panel1, PatchNo
 		if (n->isCtrlPanel) continue;
 
 		if (getDistance(n, panels) < thr)
-		{
-			QString cid = QString::number(chains.size());
-			chains.push_back(new SandwichChain(n, mPanel1, mPanel2, cid));
-		}
+			chains.push_back(new SandwichChain(n, mPanel1, mPanel2, n->mID));
 	}
 }
 

@@ -64,8 +64,9 @@ void FdNode::draw()
 		// wireframes
 		if(isSelected)	
 			mBox.drawWireframe(4.0, Qt::yellow);
-		else			
+		else if (!isCtrlPanel)
 			mBox.drawWireframe();
+					
 	}
 }
 

@@ -43,9 +43,12 @@ void Structure::Graph::addLink( Link* link)
 	links.push_back(link);
 }
 
-void Structure::Graph::addLink( Node* n1, Node* n2 )
+Structure::Link* Structure::Graph::addLink( Node* n1, Node* n2 )
 {
-	links.push_back(new Link(n1, n2));
+	Link* link = new Link(n1, n2);
+	links.push_back(link);
+
+	return link;
 }
 
 int Structure::Graph::getNodeIndex( Node* node )

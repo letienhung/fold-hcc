@@ -40,19 +40,19 @@ Structure::Graph* FdGraph::clone()
 }
 
 
-void FdGraph::addLink( Structure::Node* n1, Structure::Node* n2 )
+FdLink* FdGraph::addLink( FdNode* n1, FdNode* n2 )
 {
-	FdNode* fn1 = (FdNode*)n1;
-	FdNode* fn2 = (FdNode*)n2;
-	Geom::Segment dist_seg = getDistSegment(fn1, fn2);
+	Geom::Segment dist_seg = getDistSegment(n1, n2);
 
 	FdLink* new_link;
-	if (fn1->mType == FdNode::PATCH && fn2->mType == FdNode::PATCH)
-		new_link = new LinearLink(fn1, fn2, dist_seg);
+	if (n1->mType == FdNode::PATCH && n2->mType == FdNode::PATCH)
+		new_link = new LinearLink(n1, n2, dist_seg);
 	else
-		new_link = new PointLink(fn1, fn2, dist_seg);
+		new_link = new PointLink(n1, n2, dist_seg);
 
 	Graph::addLink(new_link);
+
+	return new_link;
 }
 
 
