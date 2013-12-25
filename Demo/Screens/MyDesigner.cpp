@@ -33,11 +33,6 @@ MyDesigner::MyDesigner( Ui::DesignWidget * useDesignWidget, QWidget * parent /*=
 {
 	this->designWidget = useDesignWidget;
 
-	//Transformation widget
-	//transWidget->setupUi(this);
-	//rotWidget->setupUi(this);
-	//scaleWidget->setupUi(this);
-
 	selectMode = SELECT_NONE;
 	skyRadius = 1.0;
 	gManager = NULL;

@@ -18,9 +18,6 @@ using namespace SurfaceMesh;
 using namespace qglviewer;
 
 #include "ui_DesignWidget.h"
-//#include "ui_RotationWidget.h"
-//#include "ui_ScaleWidget.h"
-//#include "ui_TranslationWidget.h"
 
 enum ViewMode { CAMERAMODE, SELECTION, MODIFY };
 enum SelectMode { SELECT_NONE, CUBOID, BOX};
