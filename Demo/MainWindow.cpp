@@ -184,6 +184,8 @@ void MainWindow::initQuickView()
 
 	for(int i = 0; i < numViewer; i++)
 		ui.ThumbGrid->addWidget(viewers[i]);
+
+	connect(ui.horizontalScrollBar, SIGNAL(valueChanged(int)), SLOT(loadGraphs()));
 }
 
 void MainWindow::clearLayoutItems(QLayout * layout)
