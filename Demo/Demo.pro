@@ -59,7 +59,8 @@ HEADERS += ./Screens/MyDesigner.h \
     ./resource.h \
     ./MainWindow.h \
     ./Screens/videoplayer/gui_player/VideoToolbar.h \
-    ./Screens/videoplayer/gui_player/VideoWidget.h
+    ./Screens/videoplayer/gui_player/VideoWidget.h\
+	./Screens/UiUtility/QuickMeshViewer.h
 
 SOURCES += ./Screens/MyDesigner.cpp \
     ./Screens/UiUtility/QManualDeformer.cpp\
@@ -69,7 +70,8 @@ SOURCES += ./Screens/MyDesigner.cpp \
     ./Screens/UiUtility/GL/VBO/VBO.cpp \
     ./Screens/UiUtility/GL/Glee.c\
     ./main.cpp \
-    ./MainWindow.cpp
+    ./MainWindow.cpp\
+    ./Screens/UiUtility/QuickMeshViewer.cpp
 	
 DEPENDPATH += .
 MOC_DIR += ./GeneratedFiles/release
@@ -79,5 +81,6 @@ RCC_DIR += ./GeneratedFiles
 
 FORMS += ./Screens/DesignWidget.ui \
     ./Screens/TutorialWidget.ui\
-    ./MainWindow.ui
+    ./MainWindow.ui\
+	./Screens/EvaluateWidget.ui
 RESOURCES += Resources/Resource.qrc

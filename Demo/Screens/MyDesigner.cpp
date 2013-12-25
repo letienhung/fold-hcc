@@ -42,10 +42,7 @@ MyDesigner::MyDesigner( Ui::DesignWidget * useDesignWidget, QWidget * parent /*=
 	//rotWidget->setupUi(this);
 	//scaleWidget->setupUi(this);
 
-	defCtrl = NULL;
-
 	selectMode = SELECT_NONE;
-	transformMode = NONE_MODE;
 	skyRadius = 1.0;
 	gManager = NULL;
 	isMousePressed = false;
@@ -198,120 +195,26 @@ void MyDesigner::draw()
 	// No object to draw
 	if (isEmpty()) return;
 
-	// The main object
-	if(gManager->scaffold){
-		drawObject();
-		gManager->scaffold->draw();
-		/*Geom::AABB aabb = gManager->scaffold->computeAABB();
-		mBox = new BBox(aabb.center(), (aabb.bbmax-aabb.bbmin)*0.5f);
-		mBox->draw();*/
+	if(selectMode == CUBOID && activeScaffold()){
+		designWidget->selectCuboidButton->setChecked(true);
+		activeScaffold()->showCuboids(true);
 	}
 
-	if(selectMode == BOX && gManager->scaffold){
-		Geom::AABB aabb = gManager->scaffold->computeAABB();
+	// The main object
+	if(activeScaffold()){
+		drawObject();
+		activeScaffold()->draw();
+	}
+
+	if(selectMode == BOX && activeScaffold()){
+		Geom::AABB aabb = activeScaffold()->computeAABB();
 		if(mBox == NULL)
 			mBox = new BBox(aabb.center(), (aabb.bbmax-aabb.bbmin)*0.5f);
 		mBox->draw();
 	}
 
-	// Draw debug geometries
-	//activeObject()->drawDebug();
-
-	//if(transformMode == SPLIT_MODE && segPlane.size()){	
-	//	//SimpleDraw::DrawArrow(Vec3d(startMouseOrigin[0],startMouseOrigin[1],startMouseOrigin[2]), 
-	//	//	                  Vec3d((startMouseDir+startMouseOrigin)[0],(startMouseDir+startMouseOrigin)[1],(startMouseDir+startMouseOrigin)[2]), true, true, 0.3f);
-	//	SimpleDraw::DrawSphere(intPnt, 0.01f);
-	//	//SimpleDraw::DrawArrow(intLine.a, intLine.b, true, true, 0.1f);
-	//	SimpleDraw::DrawSquare(segPlane[0], segPlane[1], segPlane[2], segPlane[3],true,1.0f,Vec4d(0.8,0.65,0.2,1));
-	//}
-
 	glEnable(GL_BLEND);
-
 	//drawDebug();
-}
-
-void MyDesigner::drawTool()
-{
-	if(!selection.size()) return;
-
-	double toolScale = 0.4;
-
-	switch(transformMode){
-	case NONE_MODE: break;
-	case TRANSLATE_MODE:        
-		{
-			glPushMatrix();
-			ManipulatedFrame * m = manipulatedFrame();
-			const GLdouble * mat = m->matrix();
-			glMultMatrixd(mat);
-			glColor3f(1,1,0);
-			glRotated(-90,0,0,1);
-			drawAxis(toolScale);
-			SimpleDraw::DrawSolidBox(Vec3d(0),0.1,0.1,0.1, 1,1,0,1);
-			glPopMatrix();
-			break;
-		}
-	case ROTATE_MODE:
-		{
-			glDisable(GL_LIGHTING);
-			glPushMatrix();
-			glMultMatrixd(defCtrl->getFrame()->matrix());
-
-			Circle c(Vec3d(0,0,0), Vec3d(0,0,1),toolScale * 0.75);
-			c.draw(1,Vec4d(1,1,0,1)); c.draw(3,Vec4d(0,0,0,1));
-			glRotated(90,0,1,0);
-			c.draw(1,Vec4d(1,1,0,1)); c.draw(3,Vec4d(0,0,0,1));
-			glRotated(90,1,0,0);
-			c.draw(1,Vec4d(1,1,0,1)); c.draw(3,Vec4d(0,0,0,1));
-			
-			glDisable(GL_DEPTH_TEST);
-			glColor4d(1,1,0,0.1);
-			drawSolidSphere(toolScale* 0.75, 20,20);
-			glEnable(GL_DEPTH_TEST);
-
-			glPopMatrix();
-			glEnable(GL_LIGHTING);
-			break;
-		}
-	case SCALE_MODE:
-		{
-			glPushMatrix();
-			glMultMatrixd(defCtrl->getFrame()->matrix());
-
-			Vec3d delta = scaleDelta;
-
-			toolScale *= 0.25;
-
-			glEnable(GL_LIGHTING);
-			glColor4d(1,1,0,1);
-			if(delta.x() != 1) SimpleDraw::DrawArrowDirected(Vec3d(0), Vec3d(1,0,0),0.2);
-			if(delta.y() != 1) SimpleDraw::DrawArrowDirected(Vec3d(0), Vec3d(0,-1,0),0.2);
-			if(delta.z() != 1) SimpleDraw::DrawArrowDirected(Vec3d(0), Vec3d(0,0,1),0.2);
-			glDisable(GL_LIGHTING);
-
-			delta.x() = abs(delta.x());
-			delta.y() = abs(delta.y());
-			delta.z() = abs(delta.z());
-			glScaled(delta.x(), delta.y(), delta.z());
-
-			Circle c1(Vec3d(toolScale*0.75,-toolScale*0.75,0), Vec3d(0,0,1),toolScale, 4);
-			c1.drawFilled(Vec4d(1,1,0,0.2), 2, Vec4d(0,0,0,1));
-
-			Circle c2(Vec3d(toolScale*0.75,0,toolScale*0.75), Vec3d(0,1,0),toolScale, 4);
-			c2.drawFilled(Vec4d(1,1,0,0.2), 2, Vec4d(0,0,0,1));
-
-			Circle c3(Vec3d(0,-toolScale*0.75,toolScale*0.75), Vec3d(1,0,0),toolScale, 4);
-			c3.drawFilled(Vec4d(1,1,0,0.2), 2, Vec4d(0,0,0,1));
-
-			glPopMatrix();
-			glEnable(GL_LIGHTING);
-			break;
-		}
-	case SPLIT_MODE:
-		{
-			break;
-		}
-	}
 }
 
 void MyDesigner::drawDebug()
@@ -413,14 +316,14 @@ QVector<uint> MyDesigner::fillTrianglesList(FdNode* n)
 
 void MyDesigner::updateVBOs()
 {
-	if(gManager && gManager->scaffold)
+	if(gManager && activeScaffold())
 	{
 		// Create VBO for each segment if needed
-	    QVector<FdNode*> nodes = gManager->scaffold->getFdNodes();
+	    QVector<FdNode*> nodes = activeScaffold()->getFdNodes();
 		for (int i=0;i<nodes.size();i++)
 		{			
 			QSharedPointer<SurfaceMeshModel> seg = nodes[i]->mMesh;
-			QString objId = nodes[i]->id;
+			QString objId = nodes[i]->mID;
 
 			if (VBO::isVBOSupported())// && !vboCollection.contains(objId))
 			{
@@ -459,7 +362,6 @@ void MyDesigner::postDraw()
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
-	drawTool();
 	drawViewChanger();
 	drawVisualHints(); // Revolve Around Point, line when camera rolls, zoom region
 	glPopAttrib();
@@ -542,10 +444,9 @@ void MyDesigner::drawViewChanger()
 
 void MyDesigner::drawOSD()
 {
-	QStringList selectModeTxt, toolModeTxt;
-	selectModeTxt << "Camera" << "Mesh" << "Vertex" << "Edge" 
-		<< "Face" << "Primitive" << "Curve"<<"Box";
-	toolModeTxt << "None" << "Move" << "Rotate" << "Scale"<<"Split";
+	QStringList selectModeTxt;//, toolModeTxt;
+	selectModeTxt << "Camera" << "Cuboid"<<"Box";
+	//toolModeTxt << "None" << "Move" << "Rotate" << "Scale"<<"Split";
 
 	int paddingX = 15, paddingY = 5;
 
@@ -555,32 +456,15 @@ void MyDesigner::drawOSD()
 	#define padY(l) paddingX, paddingY + (l++ * pixelsHigh*2.5) + (pixelsHigh * 3)
 
 	/* Mode text */
-	drawMessage("Select mode: " + selectModeTxt[this->selectMode], padY(lineNum));
+	drawMessage("Select mode: " + selectModeTxt[selectMode], padY(lineNum));
 
-	/*if(!ctrl()) return;
+	if(!gManager) return; //|| !gManager->scaffold
 
-	if(selectMode == CONTROLLER || selectMode == CONTROLLER_ELEMENT)
-	{
-	QString primId = "None";
-	if(ctrl()->getSelectedPrimitive())
-	primId = ctrl()->getSelectedPrimitive()->id;
-	drawMessage("Primitive - " + primId, padY(lineNum), Vec4d(1.0,1.0,0,0.25));
-	}*/
+	if(selectMode == CUBOID){
+		QVector<Structure::Node*> nodes = activeScaffold()->getSelectedNodes();
+		foreach(Structure::Node *n, nodes)
+			drawMessage("Cuboid -" + n->mID, padY(lineNum), Vec4d(0,1.0,0,0.25));
 
-	/*if(selectMode == CONTROLLER_ELEMENT && ctrl()->getSelectedPrimitive())
-	{
-		QString curveId = "None";
-		if(ctrl()->getSelectedPrimitive()->selectedCurveId >= 0)
-			curveId = QString::number(ctrl()->getSelectedPrimitive()->selectedCurveId);
-		drawMessage("Curve - " + curveId, padY(lineNum), Vec4d(0,1.0,0,0.25));
-	}*/
-
-	if(selectMode == BOX)
-		drawMessage("Push AABB", padY(lineNum), Vec4d(0,1.0,0,0.25));
-
-	if(transformMode != NONE_MODE)
-	{
-		drawMessage("Tool: " + toolModeTxt[transformMode], padY(lineNum), Vec4d(1.0,1.0,0,0.25));
 	}
 
 	// View changer title
@@ -640,14 +524,19 @@ void MyDesigner::updateActiveObject()
 	emit(objectUpdated());
 }
 
-GraphManager* MyDesigner::activeObject()
+GraphManager* MyDesigner::activeManager()
 {
 	return gManager;
 }
 
+FdGraph* MyDesigner::activeScaffold()
+{
+	return gManager->scaffold;
+}
+
 bool MyDesigner::isEmpty()
 {
-	return gManager == NULL;
+	return gManager== NULL;//->scaffold 
 }
 
 void MyDesigner::resetView()
@@ -660,7 +549,7 @@ void MyDesigner::resetView()
 void MyDesigner::loadObject()
 {
 	clearButtons();
-	selection.clear();
+	//selection.clear();
 
 	gManager = NULL;
 	mBox = NULL;
@@ -673,16 +562,12 @@ void MyDesigner::loadObject()
 	setManipulatedFrame(activeFrame);
 
 	updateGL();
-	//numEdits = 0;
-
-	// Timing
-	globalTimer->restart();
 }
 
 void MyDesigner::setActiveObject(GraphManager *gm)
 {
 	// Delete the original object
-	if (gManager)
+	if (activeManager()&&activeScaffold())
 		emit(objectDiscarded());
 
 	// Setup the new object
@@ -705,10 +590,10 @@ void MyDesigner::setActiveObject(GraphManager *gm)
 void MyDesigner::newScene()
 {
 	clearButtons();
-	if(gManager)
+	if(activeManager())
 		emit( objectDiscarded());
 
-	selection.clear();
+	//selection.clear();
 	
 	gManager = NULL;
 	setWindowTitle(" ");
@@ -717,30 +602,8 @@ void MyDesigner::newScene()
 
 	//SaveUndo();
 	selectMode = SELECT_NONE;
-    //segPlane.clear();
-	//updateWidget();
+	isMousePressed = false;
 	updateGL();
-}
-
-void MyDesigner::updateWidget()
-{
-	/*if(isSceneEmpty){
-		designWidget->treeWidget->clear();
-		return;
-	}
-	designWidget->treeWidget->clear();
-	int i = 0;
-	foreach(HCCGraph::Link* l, mHccGraph->links)
-	{
-		QTreeWidgetItem *linkItem = new QTreeWidgetItem(designWidget->treeWidget);
-
-		linkItem->setText(0, "Link"+QString::number(i));
-		QTreeWidgetItem *item1 = new QTreeWidgetItem(linkItem);
-		item1->setText(0, l->node1->mID);
-		QTreeWidgetItem *item2 = new QTreeWidgetItem(linkItem);
-		item2->setText(0, l->node2->mID);
-		i++;
-	}*/
 }
 
 void MyDesigner::mousePressEvent( QMouseEvent* e )
@@ -752,45 +615,10 @@ void MyDesigner::mousePressEvent( QMouseEvent* e )
 		this->startMousePos2D = e->pos();
 		camera()->convertClickToLine(e->pos(), startMouseOrigin, startMouseDir);
 
-		if(transformMode == SPLIT_MODE)
-		{
-			/*Line ln(Vec3d(startMouseOrigin[0], startMouseOrigin[1],startMouseOrigin[2]), 
-			Vec3d(startMouseDir[0], startMouseDir[1], startMouseDir[2]), startMouseDir.norm());
-			*/
-			//std::vector<Line> edges = ((Cuboid *)ctrl()->getSelectedPrimitive())->getEdges();
-			//Line intLine;
-			//Vec3d vec;
-			//double minDist = 100000, dist;
-			//foreach(Line l, edges){
-			//	dist = l.distanceToUnbounded(Vec3d((startMouseOrigin+startMouseDir)[0], (startMouseOrigin+startMouseDir)[1],(startMouseOrigin+startMouseDir)[2]));
-			//	if(minDist > dist){
-			//		minDist = dist;
-			//		intLine = l;
-			//	}
-	
-			//	double cos = (dot(Vec3d(startMouseDir[0],startMouseDir[1],startMouseDir[2]),(intLine.b - intLine.a)))/dot((intLine.b - intLine.a),(intLine.b - intLine.a));
-			//	//cos = (cos>0)?cos:1+cos;
-			//	vec = fabs(cos) * (intLine.b - intLine.a);
-			//	//ln.intersectLine(intLine,interPa, interPb);
-			//}
-			/*Point p1, p2;
-			HCCGraph::Node *n = mHccGraph->getNode(ctrl()->getSelectedPrimitive()->id);  
-			n->IntersectRayBox(Point(startMouseOrigin[0],startMouseOrigin[1],startMouseOrigin[2]), 
-			Vec3d(startMouseDir[0],startMouseDir[1],startMouseDir[2]), 
-			intPnt, p1, p2, vec);
-			intLine = Line(p1,p2);
-			std::vector<Vector3> face =  ((Cuboid *)ctrl()->getSelectedPrimitive())->getOrthoFace(intLine);
-			segPlane.clear();
-			foreach(Vector3 p, face)
-			segPlane.push_back(p+vec);
-
-			updateHCC(vec);
-			updateWidget();*/
-		}
-
 		switch(selectMode)
 		{
 		case BOX: this->setCursor(QCursor(QPixmap(":/Resources/push.png"), 0, 32)); break;
+		case CUBOID: this->setCursor(QCursor(QPixmap(":/Resources/push.png"), 0, 32)); break;
 		default: this->setCursor(Qt::ArrowCursor); break;
 		}
 
@@ -806,60 +634,24 @@ void MyDesigner::mousePressEvent( QMouseEvent* e )
 			this->displayMessage("* Please CTRL + SCROLL THE MOUSE to squeeze the box *", 5000);
 		    updateGL();
 		}
+
+		if(selectMode == CUBOID && activeScaffold())
+		{
+
+		}
 	}
 
 	if(!isMousePressed)
 	{
-		if(!defCtrl) return;
-
 		// Set constraints
-		if(transformMode == TRANSLATE_MODE)
-		{
-
-		}
-
-		if(transformMode == ROTATE_MODE)
-		{
-			AxisPlaneConstraint * r = new AxisPlaneConstraint;
-			r->setTranslationConstraintType(AxisPlaneConstraint::FORBIDDEN);
-			defCtrl->getFrame()->setConstraint(r);
-		}
-
-		if(transformMode == SCALE_MODE)
-		{
-			// Forbid everything
-			AxisPlaneConstraint * c = new AxisPlaneConstraint;
-			c->setRotationConstraintType(AxisPlaneConstraint::FORBIDDEN);
-			c->setTranslationConstraintType(AxisPlaneConstraint::FORBIDDEN);
-			defCtrl->getFrame()->setConstraint(c);
-
-			Vec3d o(currMouseOrigin[0],currMouseOrigin[1],currMouseOrigin[2]);
-			Vec3d r(currMouseDir[0],currMouseDir[1],currMouseDir[2]);
-
-			Vec3d px = rayMeshIntersect(o, r, planeX(defCtrl->pos(), skyRadius));
-			Vec3d py = rayMeshIntersect(o, r, planeY(defCtrl->pos(), skyRadius));
-			Vec3d pz = rayMeshIntersect(o, r, planeZ(defCtrl->pos(), skyRadius));
-
-			debugPoints.clear();
-
-			Point p(0,0,0);
-
-			// If we got a hit
-			if(px.x() < DBL_MAX) p = px;
-			if(py.y() < DBL_MAX) p = py;
-			if(pz.z() < DBL_MAX) p = pz;
-
-			startScalePos = p;
-		}
-
 		if(selectMode == BOX)
 		{
 
 		}
 
-		if(transformMode != NONE_MODE && selectMode != SELECT_NONE)
+		if(selectMode == CUBOID)
 		{
-			//SaveUndo();
+
 		}
 	}
 
@@ -873,31 +665,10 @@ void MyDesigner::mouseReleaseEvent( QMouseEvent* e )
 
 	isMousePressed = false;
 
-	if(transformMode == ROTATE_MODE)
-	{
-		//defCtrl->saveOriginal();
-		defCtrl->getFrame()->setOrientation(qglviewer::Quaternion());
-	}
-
-	if(transformMode == TRANSLATE_MODE)
-	{
-		//defCtrl->saveOriginal();
-	}
-
-	if(transformMode == SCALE_MODE)
-	{
-		scaleDelta = Vec3d(1.0);
-	}
-
-	if(transformMode == SPLIT_MODE)
-	{
-
-	}
-
 	// View changer box area
 	double scale = 90;
 	int x = e->pos().x(), y = e->pos().y();
-	if(x > width() - scale && y > height() - scale && gManager->scaffold)
+	if(x > width() - scale && y > height() - scale && gManager)
 	{
 		QPoint p(abs(x - width() + scale), abs(y - height() + scale));
 		Geom::AABB aabb = gManager->scaffold->computeAABB();
@@ -987,118 +758,30 @@ void MyDesigner::mouseMoveEvent( QMouseEvent* e )
 		isMousePressed = true;
 	}
 
-	//if(isMousePressed && mBox->selPlaneID >= 0){//(e->modifiers() & Qt::ControlModifier) && 
-	//	if(selectMode == BOX)
-	//	{
-	//		camera()->convertClickToLine(e->pos(), currMouseOrigin, currMouseDir);
-	//		Point currPos(startMouseOrigin[0], startMouseOrigin[1],startMouseOrigin[2]);
-	//		Vec3d currDir(startMouseDir[0], startMouseDir[1], startMouseDir[2]);
-	//		Point currPnt;
-	//		if(mBox->IntersectRayBox(currPos,currDir,currPnt)){
-	//			Point startPnt = mBox->getSelectedFace().Center;
-	//			//double factor = currPnt[mBox->axisID] - startPnt[mBox->axisID];
-	//			double factor = (currPnt - startPnt).norm() * (currPnt[mBox->axisID] - startPnt[mBox->axisID])/fabs(currPnt[mBox->axisID] - startPnt[mBox->axisID]);
-	//			mBox->deform(factor);
-	//			mBox->getBoxFaces();
-	//		}
-	//		else
- //               this->displayMessage("* Fail to push in the right direction *", 5000);
-	//		 updateGL();
-	//	}
+	//if(isMousePressed && defCtrl && !(e->modifiers() & Qt::ShiftModifier))
+	//{
+	//	Vec3d o(currMouseOrigin[0],currMouseOrigin[1],currMouseOrigin[2]);
+	//	Vec3d r(currMouseDir[0],currMouseDir[1],currMouseDir[2]);
+
+	//	Vec3d px = rayMeshIntersect(o, r, planeX(defCtrl->pos(), skyRadius));
+	//	Vec3d py = rayMeshIntersect(o, r, planeY(defCtrl->pos(), skyRadius));
+	//	Vec3d pz = rayMeshIntersect(o, r, planeZ(defCtrl->pos(), skyRadius));
+
+	//	debugPoints.clear();
+
+	//	Point p(0,0,0);
+
+	//	// If we got a hit
+	//	if(px.x() < DBL_MAX) p = px;
+	//	if(py.y() < DBL_MAX) p = py;
+	//	if(pz.z() < DBL_MAX) p = pz;
+
+	//	// Used later
+	//	Vec3d x = Vec3d(1, 0, 0);
+	//	Vec3d y = Vec3d(0, 1, 0);
+	//	Vec3d z = Vec3d(0, 0, 1);
+
 	//}
-
-	if(isMousePressed && defCtrl && !(e->modifiers() & Qt::ShiftModifier))
-	{
-		Vec3d o(currMouseOrigin[0],currMouseOrigin[1],currMouseOrigin[2]);
-		Vec3d r(currMouseDir[0],currMouseDir[1],currMouseDir[2]);
-
-		Vec3d px = rayMeshIntersect(o, r, planeX(defCtrl->pos(), skyRadius));
-		Vec3d py = rayMeshIntersect(o, r, planeY(defCtrl->pos(), skyRadius));
-		Vec3d pz = rayMeshIntersect(o, r, planeZ(defCtrl->pos(), skyRadius));
-
-		debugPoints.clear();
-
-		Point p(0,0,0);
-
-		// If we got a hit
-		if(px.x() < DBL_MAX) p = px;
-		if(py.y() < DBL_MAX) p = py;
-		if(pz.z() < DBL_MAX) p = pz;
-
-		// Used later
-		Vec3d x = Vec3d(1, 0, 0);
-		Vec3d y = Vec3d(0, 1, 0);
-		Vec3d z = Vec3d(0, 0, 1);
-
-		if(transformMode == SCALE_MODE)
-		{
-			currScalePos = p;
-
-			//Primitive * prim = ctrl()->getSelectedPrimitive(); if(!prim) return;
-		
-			Vec3d delta = (currScalePos - startScalePos);
-
-			delta.x() = abs(delta.x());
-			delta.y() = abs(delta.y());
-			delta.z() = abs(delta.z());
-		
-			// Project to main axes
-			QMultiMap<double,int> proj;
-			proj.insert(dot(delta, x), 0);
-			proj.insert(dot(delta, y), 1);
-			proj.insert(dot(delta, z), 2);
-
-			// Extract sorted values 
-			QVector<double> value;
-			QVector<int> index;		
-			foreach(double key, proj.keys()){
-				foreach(int id, proj.values(key)){
-					value.push_back(key);
-					index.push_back(id);
-				}
-			}
-
-			// Scaling
-			delta = Vec3d(0, 0, 0);
-			if (value[2] > value[1] * 3)
-			{
-				// line
-				delta[index[2]] = value[2];
-			}
-			else if (value[2] < value[0] * 3)
-			{
-				// cube
-				delta[index[0]] = value[0];
-				delta[index[1]] = value[1];
-				delta[index[2]] = value[2];
-			}
-			else 
-			{
-				// plane
-				delta[index[1]] = value[1];
-				delta[index[2]] = value[2];
-			}
-
-			bool isExpand = false;
-			Vec3d start = defCtrl->pos();
-			if((currScalePos - start).norm() > (startScalePos - start).norm())
-				isExpand = true;
-
-			if(isExpand) delta = Vec3d(1.0) + delta;
-			else delta = Vec3d(1.0) - delta;
-
-			//defCtrl->scale(delta);
-
-			scaleDelta = delta;
-
-			updateGL();
-		}
-
-		if(transformMode == TRANSLATE_MODE)
-		{
-			// Should constraint to closest axis line..
-		}
-	}
 
 	double scale = 90;
 	int x = e->pos().x(), y = e->pos().y();
@@ -1135,10 +818,7 @@ void MyDesigner::keyPressEvent( QKeyEvent *e )
 
 	//if(e->key() == Qt::Key_Space)	selectPrimitiveMode();
 	if(e->key() == Qt::Key_C)		selectCameraMode();
-	if(e->key() == Qt::Key_M)		moveMode();
-	if(e->key() == Qt::Key_R)		rotateMode();
-	if(e->key() == Qt::Key_E)		scaleMode();
-	if(e->key() == Qt::Key_A)		pushAABB();
+	if(e->key() == Qt::Key_S)		selectAABBMode();
 
 	updateGL();
 
@@ -1148,7 +828,7 @@ void MyDesigner::keyPressEvent( QKeyEvent *e )
 
 void MyDesigner::saveObject()
 {
-	if(gManager && gManager->scaffold)
+	if(activeManager() && activeScaffold())
 		gManager->saveScaffold();
 }
 
@@ -1168,13 +848,7 @@ void MyDesigner::endUnderMesh()
 
 void MyDesigner::drawWithNames()
 {
-	/*if(activeDeformer) activeDeformer->drawNames();
-	if(activeVoxelDeformer) activeVoxelDeformer->drawNames();
-
-	if(!ctrl()) return;
-
-	if(selectMode == CONTROLLER) ctrl()->drawNames(false);
-	if(selectMode == CONTROLLER_ELEMENT) ctrl()->drawNames(true);*/
+	activeScaffold()->drawWithNames();
 }
 
 void MyDesigner::postSelection( const QPoint& point )
@@ -1183,31 +857,23 @@ void MyDesigner::postSelection( const QPoint& point )
 		return;
 
 	//int selected = selectedName();
+	if (activeScaffold())
+	{
+		int nidx = selectedName();
 
-	//// General selection
-	//if(selected == -1)
-	//	selection.clear();
-	//else
-	//{
-	//	if(selection.contains( selected ))
-	//		selection.remove(selection.indexOf(selected));
-	//	else
-	//	{
-	//		if(selectMode != CONTROLLER_ELEMENT)
-	//		{
-	//			selection.clear();
-	//		    ctrl()->selectPrimitive(-1);
-	//			selection.push_back(selected); // to start from 0
-	//		}
-	//	}
-	//}
+		Structure::Node* sn = activeScaffold()->getNode(nidx);
+		if (sn)
+		{
+			activeScaffold()->selectNode(nidx);
+		}
+	}
 
 	// Selection mode cases
-	switch (selectMode)
-	{
-	case BOX:
-		transformAABB();
-		break;
+	//switch (selectMode)
+	//{
+	//case BOX:
+		//transformAABB();
+	/*	break;*/
 		/*case CONTROLLER:
 		transformPrimitive();
 		break;
@@ -1219,214 +885,48 @@ void MyDesigner::postSelection( const QPoint& point )
 		case EDGE:
 		splitCuboid();
 		break;*/
-	}
+	/*}*/
 
 	updateGL();
 }
-
-void MyDesigner::transformAABB(bool modifySelect)
-{
-	if(modifySelect)
-	{
-		transformMode = NONE_MODE;
-		designWidget->pushButton->setChecked(true);
-		return;
-	}
-
-	if(mBox && mBox->selPlaneID >= 0)
-	{
-		defCtrl = new QManualDeformer(mBox);
-		setManipulatedFrame( defCtrl->getFrame() );
-
-		Vec3d q = mBox->getSelectedFace().Center;
-		manipulatedFrame()->setPosition( Vec(q.x(), q.y(), q.z()) );
-		
-		this->connect(defCtrl, SIGNAL(objectModified()), SLOT(updateActiveObject()));
-	}
-}
-
-void MyDesigner::transformNode(bool modifySelect)
-{
-
-}
-
-/*void MyDesigner::transformPrimitive(bool modifySelect)
-{
-	Controller * c = ctrl();
-
-	if(modifySelect)
-	{
-		int selected = selectedName();
-		c->selectPrimitive(selected);
-		if(selected == -1) 
-		{
-			transformMode = NONE_MODE;
-			designWidget->selectCuboidButton->setChecked(true);
-		}
-		
-		return;
-	}
-
-	if(!selection.isEmpty())
-	{
-		if(c->getSelectedPrimitive())
-		{
-			defCtrl = new QManualDeformer(c);
-			setManipulatedFrame( defCtrl->getFrame() );
-
-			Vec3d q = c->getSelectedPrimitive()->centerPoint();
-			manipulatedFrame()->setPosition( Vec(q.x(), q.y(), q.z()) );
-
-			this->connect(defCtrl, SIGNAL(objectModified()), SLOT(updateActiveObject()));
-		}
-	}
-}
-
-void MyDesigner::transformCurve(bool modifySelect)
-{
-	Controller * c = ctrl();
-	
-	if(!c || !c->getSelectedPrimitive())
-		return;
-
-	if(!selection.isEmpty())
-	{
-		int selected = selectedName();
-
-		if(modifySelect){
-			c->selectPrimitiveCurve(selected);
-			return;
-		}
-	
-		defCtrl = new QManualDeformer(c);
-		setManipulatedFrame( defCtrl->getFrame() );
-
-		Vec3d q = c->getSelectedCurveCenter();
-		manipulatedFrame()->setPosition( Vec(q.x(), q.y(), q.z()) );
-
-		this->connect(defCtrl, SIGNAL(objectModified()), SLOT(updateActiveObject()));
-	}
-}*/
-//
-//void MyDesigner::splitCuboid(bool modifySelect)
-//{
-//	Controller * c = ctrl();
-//
-//	if(!c || !c->getSelectedPrimitive())
-//		return;
-//
-//	if(modifySelect)
-//	{
-//		int selected = selectedName();
-//		c->selectPrimitive(selected);
-//		if(selected == -1) 
-//		{
-//			transformMode = SPLIT_MODE;
-//			designWidget->splitButton->setChecked(true);
-//		}
-//
-//		return;
-//	}
-//}
 
 void MyDesigner::setSelectMode( SelectMode toMode )
 {
 	this->selectMode = toMode;
 }
 
-//Controller * MyDesigner::ctrl()
-//{
-//	if(!activeObject()) return NULL;
-//	return (Controller *) activeObject()->ptr["controller"];
-//}
-//
-//void MyDesigner::selectPrimitiveMode()
-//{
-//	clearButtons();
-//	setManipulatedFrame(activeFrame);
-//
-//	if(activeMesh == NULL) return;
-//
-//	setMouseBinding(Qt::LeftButton, SELECT);
-//	setMouseBinding(Qt::ShiftModifier | Qt::LeftButton, CAMERA, ROTATE);
-//
-//	// clear existing selection of curves
-//	Controller * c = ctrl();
-//	if(c && c->getSelectedPrimitive()) c->getSelectedPrimitive()->selectedCurveId = -1;
-//
-//	// clear selection of primitives
-//	selection.clear();
-//	c->selectPrimitive(-1);
-//
-//	setSelectMode(CONTROLLER);
-//	selectTool();
-//}
 
-//void MyDesigner::selectCurveMode()
-//{
-//	clearButtons();
-//	setManipulatedFrame(activeFrame);
-//
-//	if(activeMesh == NULL) return;
-//
-//	if(ctrl()->getSelectedPrimitive() == NULL)
-//	{
-//		selectMode = CONTROLLER;
-//		selectTool();
-//		displayMessage("Select a part first!");
-//		return;
-//	}
-//
-//	setMouseBinding(Qt::LeftButton, SELECT);
-//	setMouseBinding(Qt::ShiftModifier | Qt::LeftButton, CAMERA, ROTATE);
-//
-//	setSelectMode(CONTROLLER_ELEMENT);
-//	selectTool();
-//	
-//}
-//
-//void MyDesigner::selectStackingMode()
-//{
-//	clearButtons();
-//
-//	if(activeMesh == NULL) return;
-//
-//	//designWidget->selectStackingButton->setChecked(true);
-//
-//	setMouseBinding(Qt::LeftButton, FRAME, ROTATE);
-//	setMouseBinding(Qt::ShiftModifier | Qt::LeftButton, CAMERA, ROTATE);
-//
-//	selection.clear();
-//	ctrl()->selectPrimitive(-1);
-//
-//	selectMode = STACK_DIR_MODE;
-//	transformMode = NONE_MODE;
-//
-//	this->displayMessage("You can now rotate the stacking direction", 1000);
-//
-//	isDrawStacking = true;
-//	//designWidget->showStacking->setChecked(true);
-//
-//	setManipulatedFrame(&stackingDir);
-//}
+void MyDesigner::selectCuboidMode()
+{
+	clearButtons();
+	setManipulatedFrame(activeFrame);
+
+	if(!activeScaffold()) return;
+
+	setMouseBinding(Qt::LeftButton, SELECT);
+	setMouseBinding(Qt::ShiftModifier | Qt::LeftButton, CAMERA, ROTATE);
+
+	setSelectMode(CUBOID);
+	activeScaffold()->showCuboids(true);
+	this->displayMessage("Press shift to move camera");
+	this->displayMessage("Left Click to select a node", 1000);
+	selectTool();
+}
+
 
 void MyDesigner::selectCameraMode()
 {
 	clearButtons();
 	setManipulatedFrame(activeFrame);
 
-	if(gManager == NULL) return;
+	if(!activeManager()) return;
 
 	designWidget->selectCameraButton->setChecked(true);
 	
 	setMouseBinding(Qt::ShiftModifier | Qt::LeftButton, SELECT);
 	setMouseBinding(Qt::LeftButton, CAMERA, ROTATE);
 
-	selection.clear();
-	//ctrl()->selectPrimitive(-1);
-
-	selectMode = SELECT_NONE;
-	transformMode = NONE_MODE;
+	setSelectMode(SELECT_NONE);
 
 	this->displayMessage("Freely move camera", 1000);
 
@@ -1434,23 +934,10 @@ void MyDesigner::selectCameraMode()
 	//designWidget->showStacking->setChecked(isDrawStacking);
 }
 
-void MyDesigner::selectTool()
-{
-	if(gManager == NULL) return;
-
-	if(selectMode == BOX) designWidget->pushButton->setChecked(true);
-	//if(selectMode == CONTROLLER) designWidget->selectCuboidButton->setChecked(true);
-	//if(selectMode == CONTROLLER_ELEMENT) designWidget->selectCurveButton->setChecked(true);
-	transformMode= NONE_MODE;
-	updateGL();
-
-	//designWidget->showStacking->setChecked(isDrawStacking);
-}
-
-void MyDesigner::pushAABB()
+void MyDesigner::selectAABBMode()
 {
 	if(!mBox){
-		this->displayMessage("* Please import an object first *", 5000);
+		this->displayMessage("* Please import an object first *", 1000);
 		return;
 	}
 	clearButtons();
@@ -1459,121 +946,28 @@ void MyDesigner::pushAABB()
 	setMouseBinding(Qt::RightButton, CAMERA, TRANSLATE);*/
 	setMouseBinding(Qt::LeftButton, FRAME, TRANSLATE);
 	setMouseBinding(Qt::RightButton, CAMERA, TRANSLATE);
-	selectMode = BOX;
-	toolMode();
-
-	this->displayMessage("* Left click to select a face to push in *", 5000);
+	setSelectMode(BOX);
+    selectTool();
+	this->displayMessage("Press shift to move camera");
+	this->displayMessage("* Left click to select a face to push in *", 1000);
 }
 
-void MyDesigner::moveMode()
+void MyDesigner::selectTool()
 {
-	clearButtons();
-
-	setMouseBinding(Qt::LeftButton, FRAME, TRANSLATE);
-	setMouseBinding(Qt::RightButton, CAMERA, TRANSLATE);
-	transformMode = TRANSLATE_MODE;
-	toolMode();
-}
-
-void MyDesigner::rotateMode()
-{
-	clearButtons();
-
-	setMouseBinding(Qt::LeftButton, FRAME, ROTATE);
-	setMouseBinding(Qt::ControlModifier | Qt::LeftButton, FRAME, SCREEN_ROTATE);
-
-	transformMode = ROTATE_MODE;
-	toolMode();
-}
-
-void MyDesigner::scaleMode()
-{
-	clearButtons();
-
-	//setMouseBinding(Qt::LeftButton, FRAME, NO_MOUSE_ACTION);
-    setMouseBinding(Qt::LeftButton, FRAME, TRANSLATE);
-	setMouseBinding(Qt::RightButton, CAMERA, TRANSLATE);
-	transformMode = SCALE_MODE;
-	scaleDelta = Vec3d(1.0);
-	toolMode();
-
-	//this->displayMessage("* Please SCROLL THE MOUSE to scale *", 5000);
-}
-
-void MyDesigner::splitingMode()
-{
-	clearButtons();
-	setManipulatedFrame(activeFrame);
-
 	if(gManager == NULL) return;
 
-	if(gManager->scaffold== NULL)
-	{
-		//selectMode = CONTROLLER;
-		selectTool();
-		displayMessage("Select a splitting plane first!");
-		return;
-	}
-
-	setMouseBinding(Qt::LeftButton, SELECT);
-	setMouseBinding(Qt::ShiftModifier | Qt::LeftButton, CAMERA, ROTATE);
-
-	//setSelectMode(EDGE);
-	transformMode = SPLIT_MODE;
-	designWidget->splitButton->setChecked(true);
-	//selectTool();
-	updateGL();
-}
-
-
-void MyDesigner::toolMode()
-{
-	if(selection.empty() && !mBox && !gManager)
-	{
-		this->displayMessage("* Please select a part to transform *");
-
-		transformMode = NONE_MODE;
-		selectMode = SELECT_NONE;
-		
-		setMouseBinding(Qt::LeftButton, CAMERA, ROTATE);
-	}
-	else
-	{
-		setMouseBinding(Qt::ShiftModifier | Qt::LeftButton, CAMERA, ROTATE);
-
-		// Deal with buttons
-		if(transformMode == TRANSLATE_MODE) designWidget->moveButton->setChecked(true);
-		if(transformMode == ROTATE_MODE) designWidget->rotateButton->setChecked(true);
-		if(transformMode == SCALE_MODE) designWidget->scaleButton->setChecked(true);
-		if(transformMode == SPLIT_MODE) designWidget->splitButton->setChecked(true);
-		// Connect to QManualDeformer
-		//if(selectMode == CONTROLLER) transformPrimitive(false);
-		//if(selectMode == CONTROLLER_ELEMENT) transformCurve(false);
-		//if(transformMode == SPLIT_MODE) splitCuboid(false);
-		if(selectMode == BOX){
-			transformAABB(false);
-			designWidget->pushButton->setChecked(true);
-		}
-
-		this->displayMessage("Press shift to move camera");
-
-		if(transformMode == SCALE_MODE)
-			this->displayMessage("Use your mouse wheel to scale a curve", 3000);
-	}
+	if(selectMode == BOX) designWidget->pushButton->setChecked(true);
+	if(selectMode == CUBOID) designWidget->selectCuboidButton->setChecked(true);
 
 	updateGL();
+
+	//designWidget->showStacking->setChecked(isDrawStacking);
 }
 
 void MyDesigner::clearButtons()
 {
 	designWidget->selectCameraButton->setChecked(false);
 	designWidget->selectCuboidButton->setChecked(false);
-	designWidget->moveButton->setChecked(false);
-	designWidget->rotateButton->setChecked(false);
-	designWidget->scaleButton->setChecked(false);
-	designWidget->splitButton->setChecked(false);
-	designWidget->undoButton->setChecked(false);
-	designWidget->redoButton->setChecked(false);
 	designWidget->pushButton->setChecked(false);
 }
 
@@ -1590,11 +984,6 @@ void MyDesigner::dequeueLastMessage()
 		osdMessages.dequeue();
 		updateGL();
 	}
-}
-
-int MyDesigner::editTime()
-{
-	return globalTimer->elapsed();
 }
 
 void MyDesigner::showCuboids(int state)

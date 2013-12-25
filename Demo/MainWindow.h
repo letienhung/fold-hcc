@@ -2,8 +2,7 @@
 
 #include <QtGui/QMainWindow>
 #include "ui_MainWindow.h"
-
-enum SCREENS{ TUTORIAL_SCREEN, DESIGN_SCREEN, EVALUATE_SCREEN };
+#include "Screens/UiUtility/QuickMeshViewer.h"
 
 // Theora player
 #include "Screens/videoplayer/gui_player/VideoWidget.h"
@@ -11,6 +10,7 @@ enum SCREENS{ TUTORIAL_SCREEN, DESIGN_SCREEN, EVALUATE_SCREEN };
 
 #include "ui_DesignWidget.h"
 #include "ui_TutorialWidget.h"
+#include "ui_EvaluateWidget.h"
 
 class TutorialPanel : public QWidget
 {
@@ -55,30 +55,67 @@ public:
 	MainWindow(QWidget *parent = 0, Qt::WFlags flags = 0);
 	~MainWindow();
 
+	//Ui component
 	Ui::DesignWidget * designWidget;
 	TutorialPanel  *tutorPanel;
+	Ui::EvaluateWidget * evalWidget;
 
+	//Quick Mesh Views to visualize multiple results
+	QVector<QuickMeshViewer*> viewers;
+	QuickMeshViewer* activeViewer;
+	int numViewer;
+	int numActiveViewers;
+	//File name of selected configuration
+	QString path;
+	//List of result 
+	QStringList files;
+	QString selectedFile();
+	
+	//Init Ui component
 	void initTutorial();
 	void initDesign();
+	void initEvaluation();
+	void initQuickView();
+
+protected:
+	virtual void showEvent(QShowEvent * event);
 
 public slots:
-	QWidget * getScreen(SCREENS screenIndex);
-	void setScreen( SCREENS screenIndex );
-
+	//Slots for tool bar component
 	void addNewScene();
 	void importObject();
 	void exportObject();
-
+    
+	//Reset layout
 	void clearLayoutItems(QLayout * layout);
+	
+	//Slots for Quick Mesh Viewer 
+	void loadGraphs(QString using_path);
+	void loadGraphs();
+	void showNumViewers(int n);
+	void loadCurrentGraphs();
+	void setActiveViewer(QuickMeshViewer*);
+	void refresh();
 
-	void screenChanged(int newScreenIndex);
+	//void screenChanged(int newScreenIndex);
 
 private:
 	Ui::MainWindow ui;
 
 	//QStringList tasksFileName, tasksFiles;
 	//QMap<QString, double> tasksTarget;
-	//QVector<QLabel *> tasksLabel;
+	//QVector<QLabel *> tasksLabel;r
 	//QMap<QString, QMap<QString, QString> > taskResults;
+};
+
+#include <QThread>
+class LoaderThread : public QThread{
+	Q_OBJECT
+public:
+	LoaderThread(QuickMeshViewer *, QString);
+	QuickMeshViewer * viewer;
+	QString fileName;
+protected:
+	void run();
 };
 

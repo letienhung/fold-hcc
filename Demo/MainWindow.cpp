@@ -27,20 +27,22 @@ MainWindow::MainWindow(QWidget *parent, Qt::WFlags flags)
 {
 	ui.setupUi(this);
 
-	for(int i = 0; i < ui.screens->count(); i++)
-		ui.screens->setTabEnabled(i, true);
+	/*for(int i = 0; i < ui.screens->count(); i++)
+	ui.screens->setTabEnabled(i, true);*/
 	
 	// Create custom widget
 	designWidget = new Ui::DesignWidget();
+	evalWidget = new Ui::EvaluateWidget();
 
 	// Add custom widgets to each screen
 	designWidget->setupUi(ui.designFrame);
+	evalWidget->setupUi(ui.evalFrame);
 
 	initDesign();
-	
+	initEvaluation();
+	initQuickView();
 
 	// Connections
-	connect(ui.screens, SIGNAL(currentChanged(int)), SLOT(screenChanged(int)));
 	connect(ui.actionNewScene, SIGNAL(triggered()), SLOT(addNewScene()));
 	connect(ui.actionImportObject, SIGNAL(triggered()), SLOT(importObject()));
 	connect(ui.actionExportObject, SIGNAL(triggered()), SLOT(exportObject()));
@@ -63,6 +65,7 @@ void MainWindow::addNewScene()
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
 	designer->newScene();
+	initQuickView();
 
 	QApplication::restoreOverrideCursor();
 }
@@ -119,10 +122,10 @@ void MainWindow::initTutorial()
 
 void MainWindow::initDesign()
 {
-	//QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
-	VideoToolbar *vti = new VideoToolbar;
-	ui.designLayout->addWidget(vti);
+	//VideoToolbar *vti = new VideoToolbar;
+	//ui.designFrame->addWidget(vti);
 
 	// Hack: avoid dealing with Unicode here..
 	//ui.checkmarkLabel->hide();
@@ -133,22 +136,9 @@ void MainWindow::initDesign()
 	designWidget->viewerAreaLayout->addWidget(designer);
 
 	// Connect selection buttons
-	designer->connect(designWidget->selectCuboidButton, SIGNAL(clicked()), SLOT(selectPrimitiveMode()));
-	//designer->connect(designWidget->selectCurveButton, SIGNAL(clicked()), SLOT(selectCurveMode()));
-	//designer->connect(designWidget->selectCameraButton, SIGNAL(clicked()), SLOT(selectCameraMode()));
-	//designer->connect(designWidget->selectStackingButton, SIGNAL(clicked()), SLOT(selectStackingMode()));
-
-	// Connect transformation tools buttons
-	designer->connect(designWidget->moveButton, SIGNAL(clicked()), SLOT(moveMode()));
-	designer->connect(designWidget->rotateButton, SIGNAL(clicked()), SLOT(rotateMode()));
-	designer->connect(designWidget->scaleButton, SIGNAL(clicked()), SLOT(scaleMode()));
-	designer->connect(designWidget->splitButton, SIGNAL(clicked()), SLOT(splitingMode()));
-	designer->connect(designWidget->pushButton, SIGNAL(clicked()), SLOT(pushAABB()));
-	
-	// Connect deformers buttons
-	//designer->connect(designWidget->ffdButton, SIGNAL(clicked()), SLOT(setActiveFFDDeformer()));
-	//designer->connect(designWidget->voxelButton, SIGNAL(clicked()), SLOT(setActiveVoxelDeformer()));
-	designer->connect(designWidget->undoButton, SIGNAL(clicked()), SLOT(Undo()));
+	designer->connect(designWidget->selectCuboidButton, SIGNAL(clicked()), SLOT(selectCuboidMode()));
+	designer->connect(designWidget->selectCameraButton, SIGNAL(clicked()), SLOT(selectCameraMode()));
+	designer->connect(designWidget->pushButton, SIGNAL(clicked()), SLOT(selectAABBMode()));
 
 	//int numTasks = tasksFileName.size();
 
@@ -163,23 +153,37 @@ void MainWindow::initDesign()
 	//	ui.tasksLayout->addWidget(tasksLabel[i], 0, i);
 	//}
 
-	//QApplication::restoreOverrideCursor();
+	QApplication::restoreOverrideCursor();
 
 	//loadNextTask();
 
-	ui.screens->setTabEnabled(DESIGN_SCREEN, true);
-	setScreen(DESIGN_SCREEN);
+	//ui.screens->setTabEnabled(DESIGN_SCREEN, true);
+	//setScreen(DESIGN_SCREEN);
 }
 
-QWidget * MainWindow::getScreen( SCREENS screenIndex )
+void MainWindow::initEvaluation()
 {
-	return ui.screens->widget(screenIndex);
+
 }
 
-void MainWindow::setScreen( SCREENS screenIndex )
+void MainWindow::initQuickView()
 {
-	ui.screens->setTabEnabled(screenIndex, true);
-	ui.screens->setCurrentWidget(getScreen(screenIndex));
+	numViewer = 8;
+	if(viewers.size())
+	   viewers.clear();
+	viewers.resize(numViewer);
+	for(int i = 0; i < numViewer; i++){
+		//if(viewers[i]->mGraph)
+			//viewers[i]->clearGraph();
+		viewers[i] = new QuickMeshViewer;
+		connect(viewers[i], SIGNAL(gotFocus(QuickMeshViewer*)), SLOT(setActiveViewer(QuickMeshViewer*)));
+	}
+
+	numActiveViewers = 0;
+	activeViewer = viewers[0];
+
+	for(int i = 0; i < numViewer; i++)
+		ui.ThumbGrid->addWidget(viewers[i]);
 }
 
 void MainWindow::clearLayoutItems(QLayout * layout)
@@ -196,15 +200,115 @@ void MainWindow::clearLayoutItems(QLayout * layout)
 	}
 }
 
-void MainWindow::screenChanged(int newScreenIndex)
+void MainWindow::showEvent( QShowEvent * event )
 {
-	// Stop video in all cases
-	if(v) v->stop();
+	activeViewer->setFocus();
+}
 
-	// Check if we changed to tutorial screen, if so enable video
-	if(newScreenIndex == TUTORIAL_SCREEN)
-	{
-		if(v && v->stopped()) 
-			v->start();
+void MainWindow::showNumViewers( int n )
+{
+	int count = 0, activeCount = 0;
+
+	for(int i = 0; i < numViewer; i++){
+		if(count++ < n)
+		{
+			viewers[i]->isActive = true;
+			viewers[i]->clearGraph();
+			viewers[i]->resetView();
+
+			activeCount++;
+		}
+		else
+			viewers[i]->isActive = false;
 	}
+
+	refresh();
+
+	numActiveViewers = activeCount;
+}
+
+void MainWindow::loadGraphs(QString using_path)
+{
+	path = using_path;
+	
+	// Get list of files
+	QStringList filters;
+	filters << "*.xml";
+	files = QDir(path).entryList(filters);
+
+	int numPages = ceil(double(files.size()) / double(numViewer)) - 1;
+
+	ui.horizontalScrollBar->setRange(0, numPages);
+	ui.horizontalScrollBar->setValue(0);
+
+	if(files.size())
+		loadGraphs();
+	else
+	{
+		showNumViewers(0);
+		refresh();
+	}
+}
+
+void MainWindow::loadGraphs()
+{
+	loadCurrentGraphs();
+}
+
+void MainWindow::refresh()
+{
+	for(int i = 0; i < numViewer; i++)
+		viewers[i]->updateGL();
+}
+
+void MainWindow::loadCurrentGraphs()
+{
+	int index = ui.horizontalScrollBar->value() * numViewer;
+	int curActive = Min(numViewer, files.size() - index);
+
+	showNumViewers(curActive);
+
+	int c = 0;
+
+	for(int i = 0; i < numViewer; i++){
+		viewers[i]->clearGraph();
+		viewers[i]->resetView();		
+	}
+
+	for(int i = 0; i < numViewer; i++){
+
+		if(index + c > files.size() - 1) return;
+
+		QString fileName = path + "\\" + files[index + c];
+
+		new LoaderThread(viewers[i], fileName);
+
+		c++; 
+		if(c > curActive) return;
+
+	}
+}
+
+void MainWindow::setActiveViewer( QuickMeshViewer* v)
+{
+	activeViewer = v;
+}
+
+QString MainWindow::selectedFile()
+{
+	if(activeViewer) return activeViewer->graphFileName();
+	return "";
+}
+
+LoaderThread::LoaderThread(QuickMeshViewer * v, QString file_name)
+{
+	this->viewer = v;
+	this->fileName = file_name;
+	this->start();
+}
+
+void LoaderThread::run()
+{
+	this->viewer->loadGraph(fileName);
+	QThread::exit();
 }

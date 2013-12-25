@@ -9,7 +9,7 @@
 #include "SurfaceMeshNormalsHelper.h"
 #include "SurfaceMeshHelper.h"
 
-#include "UiUtility/QManualDeformer.h"
+#include "UiUtility/BBox.h"
 
 #include "UiUtility/GL/VBO/VBO.h"
 #include "CustomDrawObjects.h"
@@ -26,8 +26,8 @@ using namespace qglviewer;
 #define EPSILON 1.0e-6
 
 enum ViewMode { CAMERAMODE, SELECTION, MODIFY };
-enum SelectMode { SELECT_NONE, MESH, VERTEX, EDGE, FACE, BOX};
-enum TransformMode { NONE_MODE, TRANSLATE_MODE, ROTATE_MODE, SCALE_MODE, SPLIT_MODE};
+enum SelectMode { SELECT_NONE, CUBOID, BOX};
+//enum TransformMode { NONE_MODE, TRANSLATE_MODE, ROTATE_MODE, SCALE_MODE, SPLIT_MODE};
 
 class MyDesigner : public QGLViewer{
 	Q_OBJECT
@@ -67,26 +67,23 @@ public:
 
 	// SELECTION
 	SelectMode selectMode;
-	QVector<int> selection;
 	void setSelectMode(SelectMode toMode);	
 	void postSelection(const QPoint& point);
-
-	// Tool mode
-	TransformMode transformMode;
 
 	// Object in the scene
 	GraphManager* gManager;
 	BBox * mBox;
 	bool isShow;
 	
-	GraphManager* activeObject();
+	GraphManager* activeManager();
+	FdGraph* activeScaffold();
 	bool isEmpty();
 	void setActiveObject(GraphManager* newGm);
 	void newScene();
 
 	// Deformer
 	ManipulatedFrame * activeFrame;
-	QManualDeformer * defCtrl;
+	//QManualDeformer * defCtrl;
 
 	// TEXT ON SCREEN
 	QQueue<QString> osdMessages;
@@ -112,20 +109,11 @@ public:
 
 	QString viewTitle;
 
-	// Data
-	int editTime();
-
 public slots:
 	// Select buttons
+	void selectCuboidMode();
 	void selectCameraMode();
-
-	// Transform buttons
-	void moveMode();
-	void rotateMode();
-	void scaleMode();
-	void drawTool();
-	void splitingMode();
-	void pushAABB();
+	void selectAABBMode();
 
 	void updateActiveObject();
 
@@ -137,7 +125,6 @@ public slots:
 	//Load Graph and Mesh
 	void loadObject();
 	void saveObject();
-	void updateWidget();
 
 	// visualization
 	void showCuboids(int state);
@@ -160,12 +147,11 @@ private:
 	double skyRadius;
 
 	// Setup interactive deformer with manipulatedFrame
-	void transformNode(bool modifySelect = true);
-	void transformAABB(bool modifySelect = true);
+	//void transformNode(bool modifySelect = true);
+	//void transformAABB(bool modifySelect = true);
 	//void splitCuboid(bool modifySelect = true);
 
 	// Set buttons for different mode
-	void toolMode();
 	void selectTool();
 	void clearButtons();
 

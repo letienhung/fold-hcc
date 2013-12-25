@@ -18,10 +18,6 @@ int main(int argc, char *argv[])
 	glf.setSamples(8);
 	QGLFormat::setDefaultFormat(glf);
 
-	// Timing
-	globalTimer = new QTime;
-	globalTimer->start();
-
 	MainWindow w;
 	w.show();
 	return a.exec();
