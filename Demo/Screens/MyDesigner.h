@@ -21,13 +21,9 @@ using namespace qglviewer;
 //#include "ui_RotationWidget.h"
 //#include "ui_ScaleWidget.h"
 //#include "ui_TranslationWidget.h"
-//#include "Screens/FoldemLib/Graph.h"
-
-#define EPSILON 1.0e-6
 
 enum ViewMode { CAMERAMODE, SELECTION, MODIFY };
 enum SelectMode { SELECT_NONE, CUBOID, BOX};
-//enum TransformMode { NONE_MODE, TRANSLATE_MODE, ROTATE_MODE, SCALE_MODE, SPLIT_MODE};
 
 class MyDesigner : public QGLViewer{
 	Q_OBJECT
@@ -145,11 +141,6 @@ private:
 	void drawShadows();
 	void drawViewChanger();
 	double skyRadius;
-
-	// Setup interactive deformer with manipulatedFrame
-	//void transformNode(bool modifySelect = true);
-	//void transformAABB(bool modifySelect = true);
-	//void splitCuboid(bool modifySelect = true);
 
 	// Set buttons for different mode
 	void selectTool();
