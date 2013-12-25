@@ -1,7 +1,5 @@
 #pragma once
 #include "Graph.h"
-#include "PizzaChain.h"
-#include "LayerGraph.h"
 
 enum FD_DIRECTION{FD_LEFT, FD_RIGHT};
 
@@ -32,7 +30,7 @@ public:
 class DependGraph : public Structure::Graph
 {
 public:
-    DependGraph(LayerGraph* ly);
+    DependGraph(QString id = "");
 	DependGraph(DependGraph& other);
 	Graph* clone();
 
@@ -44,8 +42,9 @@ public:
 	ChainNode* getChainNode(QString id);
 	QVector<FoldingNode*> getFoldingNodes(QString id);
 
-public:
-	LayerGraph* layer;
+	QString toGraphvizFormat(QString subcaption, QString caption);
+	void saveAsGraphviz(QString fname, QString subcaption = "", QString caption = "");
+	void saveAsImage(QString fname);
 };
 
 

@@ -56,7 +56,7 @@ bool Geom::Segment::isCollinearWith( Vector3 p )
 	if (d.norm() < ZERO_TOLERANCE_LOW) 
 		return true;
 	else
-		return areCollinear(this->Direction, d);
+		return areCollinear(Direction, d);
 }
 
 bool Geom::Segment::overlaps( const Segment& other )
@@ -122,11 +122,12 @@ int Geom::Segment::whichSide( Vector3 p )
 
 bool Geom::Segment::contains( const Vector3 p )
 {
-	if (!this->isCollinearWith(p))
+	if (!isCollinearWith(p))
 		return false;
 
 	double c = this->getProjCoordinates(p);
-	return c >= -1 && c <= 1;
+	return c > -1 - ZERO_TOLERANCE_LOW 
+		&& c <  1 + ZERO_TOLERANCE_LOW;
 }
 
 bool Geom::Segment::contains( const Segment& other )
@@ -151,4 +152,15 @@ void Geom::Segment::draw(double width, QColor color)
 double Geom::Segment::length()
 {
 	return 2 * Extent;
+}
+
+Vector3 Geom::Segment::getProjection( Vector3 p )
+{
+	double t = getProjCoordinates(p);
+	return getPosition(t);
+}
+
+void Geom::Segment::flip()
+{
+	set(P1, P0);
 }

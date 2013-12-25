@@ -19,10 +19,16 @@ public:
 	void computeEndPoints();
 	void computeCenterDirectionExtent();
 
+	// modifier
+	void flip();
+
 	// coordinates
 	double	getProjCoordinates(Vector3 p);
 	Vector3 getPosition(double coord); 
 	int		whichSide(Vector3 p);
+
+	// projection
+	Vector3 getProjection(Vector3 p);
 
 	// relation with other
 	bool isCollinearWith(Vector3 p);

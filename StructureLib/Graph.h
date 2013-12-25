@@ -28,8 +28,8 @@ public:
 	int		nbNodes();
 	int		nbLinks();
 	bool	isEmpty();
-	int		getNodeIndex(Node* node);
-	int		getLinkIndex(Link* link);
+	int		getNodeIndex(QString nid);
+	int		getLinkIndex(QString nid1, QString nid2);
 	Node*	getNode(int idx);
 	Node*	getNode(QString nid);
 	Link*	getLink(QString nid1, QString nid2);

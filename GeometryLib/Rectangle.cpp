@@ -256,4 +256,12 @@ QVector<Geom::Segment> Geom::Rectangle::getPerpEdges(Vector3 v)
 	return pe;
 }
 
+SurfaceMesh::Vector3 Geom::Rectangle::getPerpAxis( Vector3 v )
+{
+	double dotVAxis0 = fabs(dot(v, Axis[0]));
+	double dotVAxis1 = fabs(dot(v, Axis[1]));
+
+	return (dotVAxis0 < dotVAxis1) ? Axis[0] : Axis[1];
+}
+
 

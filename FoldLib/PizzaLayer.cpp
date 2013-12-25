@@ -1,7 +1,9 @@
 #include "PizzaLayer.h"
 #include "PizzaChain.h"
+#include "RodNode.h"
 #include "PatchNode.h"
 #include "FdUtility.h"
+#include "SectorCylinder.h"
 
 
 PizzaLayer::PizzaLayer( QVector<FdNode*> nodes, PatchNode* panel, QString id )
@@ -24,7 +26,7 @@ PizzaLayer::PizzaLayer( QVector<FdNode*> nodes, PatchNode* panel, QString id )
 			chains.push_back(new PizzaChain(n, mPanel, n->mID));
 	}
 
-	buildDepGraph();
+	//buildDepGraph();
 }
 
 
@@ -35,7 +37,7 @@ PizzaLayer::~PizzaLayer()
 
 void PizzaLayer::buildDepGraph()
 {
-	dy_graph = new DependGraph(this);
+	dy_graph = new DependGraph(mID);
 
 	for(int i = 0; i < chains.size(); i++)
 	{
@@ -68,18 +70,45 @@ void PizzaLayer::buildDepGraph()
 		PizzaChain* chain = (PizzaChain*)chains[i];
 		QVector<FoldingNode*> fns = dy_graph->getFoldingNodes(chain->mID);
 
+		// each other chain
 		for (int j = 0; j < chains.size(); j++)
 		{
 			if (i == j) continue;
 
 			PizzaChain* other_chain = (PizzaChain*)chains[j];
+			FdNode* other_part = other_chain->mPart;
 
+			// each folding
 			for (int k = 0; k < fns.size(); k++)
 			{
 				FoldingNode* fn = fns[k];
+				Geom::SectorCylinder fVolume = chain->getFoldingVolume(fn);
 
 				// chain(fn) vs. other_chain
+				bool collide = false;
+				if (other_part->mType == FdNode::PATCH)
+				{
+					PatchNode* other_patch = (PatchNode*) other_part;
+					if (fVolume.intersects(other_patch->mPatch))
+						collide = true;
+				}
+				else
+				{
+					RodNode* other_rod = (RodNode*) other_rod;
+					if (fVolume.intersects(other_rod->mRod))
+						collide = true;
+				}
+
+				// add collision link
+				if (collide)
+				{
+					ChainNode* other_cn = dy_graph->getChainNode(other_chain->mID);
+					dy_graph->addCollisionLink(fn, other_cn);
+				}
 			}
 		}
 	}
+
+	// output dependency graph
+	dy_graph->saveAsImage("dependency graph");
 }

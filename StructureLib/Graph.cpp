@@ -51,12 +51,12 @@ Structure::Link* Structure::Graph::addLink( Node* n1, Node* n2 )
 	return link;
 }
 
-int Structure::Graph::getNodeIndex( Node* node )
+int Structure::Graph::getNodeIndex( QString nid )
 {
 	int idx = -1;
 	for (int i = 0; i < nodes.size(); i++)	{
-		if (nodes[i] == node) {
-			idx = i;
+		if (nodes[i]->mID == nid) {
+			idx = i; 
 			break;
 		}
 	}
@@ -64,11 +64,11 @@ int Structure::Graph::getNodeIndex( Node* node )
 	return idx;
 }
 
-int Structure::Graph::getLinkIndex( Link* link )
+int Structure::Graph::getLinkIndex( QString nid1, QString nid2 )
 {
 	int idx = -1;
 	for (int i = 0; i < links.size(); i++)	{
-		if (links[i] == link) {
+		if (links[i]->hasNode(nid1) && links[i]->hasNode(nid2)) {
 			idx = i;
 			break;
 		}
@@ -81,7 +81,7 @@ int Structure::Graph::getLinkIndex( Link* link )
 void Structure::Graph::removeNode( QString nid )
 {
 	// node index
-	int idx = getNodeIndex(getNode(nid));
+	int idx = getNodeIndex(nid);
 	if (idx == -1) return;
 
 	// remove incident links
@@ -97,7 +97,7 @@ void Structure::Graph::removeNode( QString nid )
 void Structure::Graph::removeLink( Link* link )
 {
 	// link index
-	int idx = getLinkIndex(link);
+	int idx = getLinkIndex(link->nid1, link->nid2);
 	if (idx == -1) return;
 
 	// deallocate

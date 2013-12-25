@@ -35,6 +35,7 @@ public:
 	Segment2 getProjection2D(Segment s);
 	QVector<Vector3> getConners();
 	QVector<Vector3> getConnersReverse();
+	Vector3 getPerpAxis(Vector3 v);
 
 	// coordinates
 	Vector2 getProjCoordinates(Vector3 p);
