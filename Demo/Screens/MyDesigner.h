@@ -96,9 +96,6 @@ public:
 
 	// Hack
 	Ui::DesignWidget * designWidget;
-	//Ui::RotationWidget *rotWidget;
-	//Ui::ScaleWidget *scaleWidget;
-	//Ui::TranslationWidget *transWidget;
 
 	QString viewTitle;
 
