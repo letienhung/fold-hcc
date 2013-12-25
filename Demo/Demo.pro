@@ -59,7 +59,8 @@ HEADERS += ./Screens/MyDesigner.h \
     ./MainWindow.h \
     ./Screens/videoplayer/gui_player/VideoToolbar.h \
     ./Screens/videoplayer/gui_player/VideoWidget.h\
-	./Screens/UiUtility/QuickMeshViewer.h
+	./Screens/UiUtility/QuickMeshViewer.h\
+	./Screens/MyAnimator.h
 
 SOURCES += ./Screens/MyDesigner.cpp \
     ./Screens/UiUtility/BBox.cpp \
@@ -69,7 +70,8 @@ SOURCES += ./Screens/MyDesigner.cpp \
     ./Screens/UiUtility/GL/Glee.c\
     ./main.cpp \
     ./MainWindow.cpp\
-    ./Screens/UiUtility/QuickMeshViewer.cpp
+    ./Screens/UiUtility/QuickMeshViewer.cpp\
+    ./Screens/MyAnimator.cpp
 	
 DEPENDPATH += .
 MOC_DIR += ./GeneratedFiles/release
