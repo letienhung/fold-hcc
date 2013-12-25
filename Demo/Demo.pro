@@ -54,7 +54,6 @@ HEADERS += ./Screens/MyDesigner.h \
     ./Screens/UiUtility/drawPlane.h \
     ./Screens/UiUtility/drawRoundRect.h \
     ./Screens/UiUtility/sphereDraw.h \
-    ./Screens/UiUtility/QManualDeformer.h \
     ./Screens/UiUtility/BBox.h \
     ./resource.h \
     ./MainWindow.h \
@@ -63,7 +62,6 @@ HEADERS += ./Screens/MyDesigner.h \
 	./Screens/UiUtility/QuickMeshViewer.h
 
 SOURCES += ./Screens/MyDesigner.cpp \
-    ./Screens/UiUtility/QManualDeformer.cpp\
     ./Screens/UiUtility/BBox.cpp \
     ./Screens/UiUtility/Triangle.cpp \
     ./Screens/UiUtility/SimpleDraw.cpp\
