@@ -76,7 +76,6 @@ public:
 
 	// Deformer
 	ManipulatedFrame * activeFrame;
-	//QManualDeformer * defCtrl;
 
 	// TEXT ON SCREEN
 	QQueue<QString> osdMessages;
