@@ -1,5 +1,4 @@
 #include "Circle.h"
-#include "UiUtility/QManualDeformer.h"
 #include "AABB.h"
 
 #include <QApplication>
@@ -18,9 +17,6 @@
 using namespace Geom;
 
 QFontMetrics * fm;
-//std::vector<Vector3> segPlane;
-//Line intLine;
-//Point intPnt;
 // Misc.
 #include "UiUtility/sphereDraw.h"
 #include "UiUtility/drawRoundRect.h"
