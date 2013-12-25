@@ -88,9 +88,7 @@ public:
 	qglviewer::Vec startMouseOrigin, currMouseOrigin;
 	qglviewer::Vec startMouseDir, currMouseDir;
 
-	// For scale tool
-	SurfaceMesh::Vec3d startScalePos, currScalePos;
-	Vec3d scaleDelta; // for visualization
+	// For scale
 	double loadedMeshHalfHight;
 
 	// Hack

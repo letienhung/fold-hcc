@@ -437,7 +437,6 @@ void MyDesigner::drawOSD()
 {
 	QStringList selectModeTxt;//, toolModeTxt;
 	selectModeTxt << "Camera" << "Cuboid"<<"Box";
-	//toolModeTxt << "None" << "Move" << "Rotate" << "Scale"<<"Split";
 
 	int paddingX = 15, paddingY = 5;
 

@@ -190,7 +190,7 @@
          <property name="minimumSize">
           <size>
            <width>150</width>
-           <height>80</height>
+           <height>90</height>
           </size>
          </property>
          <property name="maximumSize">
@@ -202,58 +202,99 @@
          <property name="title">
           <string>Fold</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout_5">
-          <property name="margin">
-           <number>0</number>
+         <widget class="QWidget" name="">
+          <property name="geometry">
+           <rect>
+            <x>1</x>
+            <y>14</y>
+            <width>156</width>
+            <height>71</height>
+           </rect>
           </property>
-          <property name="spacing">
-           <number>0</number>
-          </property>
-          <item row="0" column="0">
-           <widget class="QToolButton" name="pushButton">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>58</width>
-              <height>48</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>58</width>
-              <height>48</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>PushAABB</string>
-            </property>
-            <property name="icon">
-             <iconset resource="../Resources/Resource.qrc">
-              <normaloff>:/Resources/toolIcons/box.png</normaloff>:/Resources/toolIcons/box.png</iconset>
-            </property>
-            <property name="iconSize">
-             <size>
-              <width>24</width>
-              <height>24</height>
-             </size>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="toolButtonStyle">
-             <enum>Qt::ToolButtonTextUnderIcon</enum>
-            </property>
-            <property name="autoRaise">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <item>
+              <spacer name="horizontalSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QToolButton" name="pushButton">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>58</width>
+                 <height>48</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>58</width>
+                 <height>48</height>
+                </size>
+               </property>
+               <property name="text">
+                <string>PushAABB</string>
+               </property>
+               <property name="icon">
+                <iconset resource="../Resources/Resource.qrc">
+                 <normaloff>:/Resources/toolIcons/box.png</normaloff>:/Resources/toolIcons/box.png</iconset>
+               </property>
+               <property name="iconSize">
+                <size>
+                 <width>24</width>
+                 <height>24</height>
+                </size>
+               </property>
+               <property name="checkable">
+                <bool>true</bool>
+               </property>
+               <property name="toolButtonStyle">
+                <enum>Qt::ToolButtonTextUnderIcon</enum>
+               </property>
+               <property name="autoRaise">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string> *Ctrl + Scroll to squeeze Box*</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
         </widget>
        </item>
        <item row="0" column="0">
