@@ -5,12 +5,18 @@ Structure::Node::Node( QString nid )
 {
 	mID = nid;
 	isSelected = false;
+
+	isSplittable = true;
+	isScalable = true;
 }
 
 Structure::Node::Node(Node &other)
 {
 	mID = other.mID;
 	isSelected = false;
+
+	isSplittable = true;
+	isScalable = true;
 }
 
 bool Structure::Node::hasId( QString id )

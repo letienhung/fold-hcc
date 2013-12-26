@@ -21,7 +21,7 @@ FdNode::FdNode( MeshPtr m, Geom::Box &b )
 
 	showCuboids = true;
 	showScaffold = true;
-	showMesh = false;
+	showMesh = true;
 
 	isCtrlPanel = false;
 }

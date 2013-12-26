@@ -14,6 +14,7 @@ class QuickMeshViewer : public QGLViewer{
 	Q_OBJECT
 public:
 	QuickMeshViewer(QWidget * parent = 0);
+	~QuickMeshViewer();
 
 	virtual void init();
 	virtual void resetView();
@@ -23,6 +24,7 @@ public:
 
 	void focusInEvent( QFocusEvent * event );
 	void clearGraph();
+	void setGraph(FdGraph *graph);
 
 	bool isActive;
 	FdGraph *mGraph;

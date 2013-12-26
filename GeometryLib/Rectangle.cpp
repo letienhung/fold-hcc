@@ -66,6 +66,7 @@ Geom::Rectangle& Geom::Rectangle::operator=(const Rectangle &r)
 void Geom::Rectangle::update(QVector<Vector3>& conners)
 {
 	Center = Vector3(0, 0, 0);
+	Normal = Vector3(0, 0, 0);
 	foreach (Vector3 p, conners) Center += p;
 	Center /= 4;
 

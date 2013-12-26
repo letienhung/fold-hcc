@@ -36,6 +36,7 @@ MyDesigner::MyDesigner( Ui::DesignWidget * useDesignWidget, QWidget * parent /*=
 	selectMode = SELECT_NONE;
 	skyRadius = 1.0;
 	gManager = NULL;
+	mBox = NULL;
 	isMousePressed = false;
 	loadedMeshHalfHight = 1.0;
 
@@ -53,9 +54,14 @@ MyDesigner::MyDesigner( Ui::DesignWidget * useDesignWidget, QWidget * parent /*=
 	connect(timerScreenText, SIGNAL(timeout()), SLOT(dequeueLastMessage()));
     connect(camera()->frame(), SIGNAL(manipulated()), SLOT(cameraMoved()));
 
+	//Visualization
 	connect(designWidget->showCuboid, SIGNAL(stateChanged(int)),  SLOT(showCuboids(int)));
 	connect(designWidget->showGraph, SIGNAL(stateChanged(int)),  SLOT(showGraph(int)));
 	connect(designWidget->showModel, SIGNAL(stateChanged(int)), SLOT(showModel(int)));
+
+	//Set cuboid property(Splittable, Scalable)
+	connect(designWidget->allowSplit, SIGNAL(stateChanged(int)),  SLOT(setSplittable(int)));
+	connect(designWidget->allowScale, SIGNAL(stateChanged(int)),  SLOT(setScalable(int)));
 
 	this->setMouseTracking(true);
 
@@ -435,8 +441,9 @@ void MyDesigner::drawViewChanger()
 
 void MyDesigner::drawOSD()
 {
-	QStringList selectModeTxt;//, toolModeTxt;
+	QStringList selectModeTxt, toolModeTxt;
 	selectModeTxt << "Camera" << "Cuboid"<<"Box";
+	toolModeTxt << "Freely move camera" << "Press shift to move camera" << "Press shift to move camera";
 
 	int paddingX = 15, paddingY = 5;
 
@@ -447,6 +454,7 @@ void MyDesigner::drawOSD()
 
 	/* Mode text */
 	drawMessage("Select mode: " + selectModeTxt[selectMode], padY(lineNum));
+	drawMessage(toolModeTxt[selectMode], width()- 100 - fm->width(toolModeTxt[selectMode])*0.5, paddingY + (pixelsHigh * 3), Vec4d(0.5,0.0,0.5,0.25));
 
 	if(!gManager) return; //|| !gManager->scaffold
 
@@ -526,7 +534,7 @@ FdGraph* MyDesigner::activeScaffold()
 
 bool MyDesigner::isEmpty()
 {
-	return gManager== NULL;//->scaffold 
+	return gManager == NULL;//->scaffold 
 }
 
 void MyDesigner::resetView()
@@ -586,6 +594,7 @@ void MyDesigner::newScene()
 	//selection.clear();
 	
 	gManager = NULL;
+	mBox = NULL;
 	setWindowTitle(" ");
 	// Update the object
 	updateActiveObject();
@@ -600,28 +609,29 @@ void MyDesigner::mousePressEvent( QMouseEvent* e )
 {
 	QGLViewer::mousePressEvent(e);
 
-	if((e->button() == Qt::LeftButton))//(e->modifiers() & Qt::ControlModifier) && 
+	switch(selectMode)
+	{
+	case BOX: this->setCursor(QCursor(QPixmap(":/Resources/push.png"), 0, 32)); break;
+	case CUBOID: this->setCursor(QCursor(QPixmap(":/Resources/push.png"), 0, 32)); break;
+	default: this->setCursor(Qt::ArrowCursor); break;
+	}
+
+	if((e->button() == Qt::LeftButton) && !(e->modifiers() & Qt::ShiftModifier)) 
 	{
 		this->startMousePos2D = e->pos();
 		camera()->convertClickToLine(e->pos(), startMouseOrigin, startMouseDir);
-
-		switch(selectMode)
-		{
-		case BOX: this->setCursor(QCursor(QPixmap(":/Resources/push.png"), 0, 32)); break;
-		case CUBOID: this->setCursor(QCursor(QPixmap(":/Resources/push.png"), 0, 32)); break;
-		default: this->setCursor(Qt::ArrowCursor); break;
-		}
 
 		if(selectMode == BOX && mBox)
 		{
 			Point start(startMouseOrigin[0], startMouseOrigin[1],startMouseOrigin[2]);
 			Vec3d dir(startMouseDir[0], startMouseDir[1], startMouseDir[2]);
 			mBox->selectFace(start,dir);
-			if(mBox->axisID < 0){
+			if(mBox->axisID < 0 || mBox->selPlaneID < 0){
 				selectMode = BOX;
 				this->displayMessage("No face has been selected. Left click to select a face to push in");
 			}
-			this->displayMessage("* Please CTRL + SCROLL THE MOUSE to squeeze the box *", 5000);
+			else
+			    this->displayMessage("* Please CTRL + SCROLL THE MOUSE to squeeze the box *", 5000);
 		    updateGL();
 		}
 
@@ -748,31 +758,6 @@ void MyDesigner::mouseMoveEvent( QMouseEvent* e )
 		isMousePressed = true;
 	}
 
-	//if(isMousePressed && defCtrl && !(e->modifiers() & Qt::ShiftModifier))
-	//{
-	//	Vec3d o(currMouseOrigin[0],currMouseOrigin[1],currMouseOrigin[2]);
-	//	Vec3d r(currMouseDir[0],currMouseDir[1],currMouseDir[2]);
-
-	//	Vec3d px = rayMeshIntersect(o, r, planeX(defCtrl->pos(), skyRadius));
-	//	Vec3d py = rayMeshIntersect(o, r, planeY(defCtrl->pos(), skyRadius));
-	//	Vec3d pz = rayMeshIntersect(o, r, planeZ(defCtrl->pos(), skyRadius));
-
-	//	debugPoints.clear();
-
-	//	Point p(0,0,0);
-
-	//	// If we got a hit
-	//	if(px.x() < DBL_MAX) p = px;
-	//	if(py.y() < DBL_MAX) p = py;
-	//	if(pz.z() < DBL_MAX) p = pz;
-
-	//	// Used later
-	//	Vec3d x = Vec3d(1, 0, 0);
-	//	Vec3d y = Vec3d(0, 1, 0);
-	//	Vec3d z = Vec3d(0, 0, 1);
-
-	//}
-
 	double scale = 90;
 	int x = e->pos().x(), y = e->pos().y();
 	if(x > width() - scale && y > height() - scale)
@@ -847,7 +832,7 @@ void MyDesigner::postSelection( const QPoint& point )
 		return;
 
 	//int selected = selectedName();
-	if (activeScaffold())
+	if (selectMode == CUBOID && activeScaffold())
 	{
 		int nidx = selectedName();
 
@@ -857,25 +842,6 @@ void MyDesigner::postSelection( const QPoint& point )
 			activeScaffold()->selectNode(nidx);
 		}
 	}
-
-	// Selection mode cases
-	//switch (selectMode)
-	//{
-	//case BOX:
-		//transformAABB();
-	/*	break;*/
-		/*case CONTROLLER:
-		transformPrimitive();
-		break;
-
-		case CONTROLLER_ELEMENT:
-		transformCurve();
-		break;
-
-		case EDGE:
-		splitCuboid();
-		break;*/
-	/*}*/
 
 	updateGL();
 }
@@ -889,6 +855,10 @@ void MyDesigner::setSelectMode( SelectMode toMode )
 void MyDesigner::selectCuboidMode()
 {
 	clearButtons();
+	if(isEmpty()){
+		this->displayMessage("* Please import an object first *", 1000);
+		return;
+	}
 	setManipulatedFrame(activeFrame);
 
 	if(!activeScaffold()) return;
@@ -898,8 +868,7 @@ void MyDesigner::selectCuboidMode()
 
 	setSelectMode(CUBOID);
 	activeScaffold()->showCuboids(true);
-	this->displayMessage("Press shift to move camera");
-	this->displayMessage("Left Click to select a node", 1000);
+	this->displayMessage("* Left click to select a node *", 5000);
 	selectTool();
 }
 
@@ -915,31 +884,25 @@ void MyDesigner::selectCameraMode()
 	
 	setMouseBinding(Qt::ShiftModifier | Qt::LeftButton, SELECT);
 	setMouseBinding(Qt::LeftButton, CAMERA, ROTATE);
-
+	
 	setSelectMode(SELECT_NONE);
-
-	this->displayMessage("Freely move camera", 1000);
-
-	//isDrawStacking = false;
-	//designWidget->showStacking->setChecked(isDrawStacking);
+	updateGL();
 }
 
 void MyDesigner::selectAABBMode()
 {
-	if(!mBox){
+	clearButtons();
+	if(mBox == NULL){
 		this->displayMessage("* Please import an object first *", 1000);
 		return;
 	}
-	clearButtons();
 
-	/*setMouseBinding(Qt::LeftButton, FRAME, TRANSLATE);
-	setMouseBinding(Qt::RightButton, CAMERA, TRANSLATE);*/
-	setMouseBinding(Qt::LeftButton, FRAME, TRANSLATE);
-	setMouseBinding(Qt::RightButton, CAMERA, TRANSLATE);
+	//setMouseBinding(Qt::RightButton, SELECT);
+	setMouseBinding(Qt::ShiftModifier | Qt::LeftButton, CAMERA, ROTATE);
+
 	setSelectMode(BOX);
     selectTool();
-	this->displayMessage("Press shift to move camera");
-	this->displayMessage("* Left click to select a face to push in *", 1000);
+	this->displayMessage("* Left click to select a face to push in *", 5000);
 }
 
 void MyDesigner::selectTool()
@@ -950,8 +913,6 @@ void MyDesigner::selectTool()
 	if(selectMode == CUBOID) designWidget->selectCuboidButton->setChecked(true);
 
 	updateGL();
-
-	//designWidget->showStacking->setChecked(isDrawStacking);
 }
 
 void MyDesigner::clearButtons()
@@ -992,4 +953,20 @@ void MyDesigner::showModel(int state)
 	gManager->scaffold->showMeshes(state);
 	isShow = (state == Qt::Checked);
 	updateGL();
+}
+
+void MyDesigner::setScalable(int state)
+{
+	bool isScalable = (state == Qt::Checked);
+	QVector <Structure::Node *> selectedNodes = activeScaffold()->getSelectedNodes();
+	foreach(Structure::Node *n, selectedNodes)
+		n->isScalable = isScalable;
+}
+
+void MyDesigner::setSplittable(int state)
+{
+	bool isSplittable = (state == Qt::Checked);
+	QVector <Structure::Node *> selectedNodes = activeScaffold()->getSelectedNodes();
+	foreach(Structure::Node *n, selectedNodes)
+		n->isSplittable = isSplittable;
 }

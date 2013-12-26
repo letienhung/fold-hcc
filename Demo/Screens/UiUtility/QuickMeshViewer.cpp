@@ -12,6 +12,12 @@ QuickMeshViewer::QuickMeshViewer( QWidget * parent /*= 0*/ ) :QGLViewer(parent)
 	connect(this, SIGNAL(graphLoaded()), SLOT(updateGL()));
 }
 
+QuickMeshViewer::~QuickMeshViewer()
+{
+	/*if(mGraph)
+	delete mGraph;*/
+}
+
 void QuickMeshViewer::init()
 {
 	QGLViewer::init();
@@ -44,7 +50,9 @@ void QuickMeshViewer::draw()
 	if(!this->isActive) return;
 
 	glEnable(GL_MULTISAMPLE);
-	mGraph->draw();
+	
+	if(mGraph)
+	  mGraph->draw();
 
 	glEnable(GL_BLEND);
 }
@@ -111,6 +119,14 @@ void QuickMeshViewer::clearGraph()
 {
 	isLoading = true;
 	mGraph = NULL;
+
+	updateGL();
+}
+
+void QuickMeshViewer::setGraph(FdGraph *graph)
+{
+	mGraph = graph;
+	isLoading = false;
 }
 
 void QuickMeshViewer::loadGraph( QString fileName )
@@ -121,6 +137,7 @@ void QuickMeshViewer::loadGraph( QString fileName )
 
 	isActive = true;
 
+	updateGL();
 	emit(graphLoaded());
 }
 

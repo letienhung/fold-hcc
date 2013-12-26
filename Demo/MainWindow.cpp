@@ -7,9 +7,6 @@
 #include <QHostInfo>
 #include <QMessageBox>
 
-#include "Screens/MyDesigner.h"
-
-MyDesigner * designer = NULL;
 QString DEFAULT_FILE_PATH = "..//data";
 
 // Theora player
@@ -56,6 +53,16 @@ MainWindow::~MainWindow()
 {
 	if (designWidget)
 		delete designWidget;
+	/*if (mGManager)
+	delete mGManager;*/
+	//if (activeViewer)
+	//	delete activeViewer;
+	if (viewers.size()){
+		//foreach(QuickMeshViewer *v, viewers){
+		//	delete v;
+		//}
+		viewers.clear();
+	}
 	//if(tutorPanel)
 		//delete tutorPanel;
 }
@@ -65,7 +72,13 @@ void MainWindow::addNewScene()
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
 	designer->newScene();
-	initQuickView();
+	
+	for(int i = 0; i < numViewer; i++){
+		if(viewers[i]->mGraph)
+			viewers[i]->clearGraph();
+	}
+
+	/*mGManager = NULL;*/
 
 	QApplication::restoreOverrideCursor();
 }
@@ -77,6 +90,8 @@ void MainWindow::importObject()
 	designer->loadObject();
 
 	//DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
+
+	//setGraphManager(designer->gManager);
 
 	QApplication::restoreOverrideCursor();
 }
@@ -127,38 +142,19 @@ void MainWindow::initDesign()
 	//VideoToolbar *vti = new VideoToolbar;
 	//ui.designFrame->addWidget(vti);
 
-	// Hack: avoid dealing with Unicode here..
-	//ui.checkmarkLabel->hide();
-
 	// Add viewer
 	clearLayoutItems(designWidget->viewerAreaLayout);
 	designer = new MyDesigner(designWidget);
 	designWidget->viewerAreaLayout->addWidget(designer);
+
+	/*mGManager = designer->gManager;*/
 
 	// Connect selection buttons
 	designer->connect(designWidget->selectCuboidButton, SIGNAL(clicked()), SLOT(selectCuboidMode()));
 	designer->connect(designWidget->selectCameraButton, SIGNAL(clicked()), SLOT(selectCameraMode()));
 	designer->connect(designWidget->pushButton, SIGNAL(clicked()), SLOT(selectAABBMode()));
 
-	//int numTasks = tasksFileName.size();
-
-	//for(int i = 0; i < numTasks; i++)
-	//{
-	//	QString shortName = QFileInfo(tasksFileName.at(i)).baseName();
-	//	tasksLabel.push_back(new QLabel(shortName));
-
-	//	// Mark as unfinished
-	//	tasksLabel[i]->setStyleSheet(taskStyle(0));
-
-	//	ui.tasksLayout->addWidget(tasksLabel[i], 0, i);
-	//}
-
 	QApplication::restoreOverrideCursor();
-
-	//loadNextTask();
-
-	//ui.screens->setTabEnabled(DESIGN_SCREEN, true);
-	//setScreen(DESIGN_SCREEN);
 }
 
 void MainWindow::initEvaluation()
@@ -169,8 +165,10 @@ void MainWindow::initEvaluation()
 void MainWindow::initQuickView()
 {
 	numViewer = 8;
+	
 	if(viewers.size())
 	   viewers.clear();
+	
 	viewers.resize(numViewer);
 	for(int i = 0; i < numViewer; i++){
 		//if(viewers[i]->mGraph)
@@ -227,6 +225,11 @@ void MainWindow::showNumViewers( int n )
 	refresh();
 
 	numActiveViewers = activeCount;
+}
+
+void MainWindow::setFoldManager(FoldManager *fm)
+{
+	mFManager = fm;
 }
 
 void MainWindow::loadGraphs(QString using_path)

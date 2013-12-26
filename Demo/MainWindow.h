@@ -1,8 +1,10 @@
-#pragma once
+﻿#pragma once
 
 #include <QtGui/QMainWindow>
 #include "ui_MainWindow.h"
 #include "Screens/UiUtility/QuickMeshViewer.h"
+#include "Screens/MyDesigner.h"
+#include "FoldManager.h"
 
 // Theora player
 #include "Screens/videoplayer/gui_player/VideoWidget.h"
@@ -60,6 +62,10 @@ public:
 	TutorialPanel  *tutorPanel;
 	Ui::EvaluateWidget * evalWidget;
 
+	MyDesigner  *designer;
+	//GraphManager* mGManager;
+	FoldManager* mFManager;
+
 	//Quick Mesh Views to visualize multiple results
 	QVector<QuickMeshViewer*> viewers;
 	QuickMeshViewer* activeViewer;
@@ -101,6 +107,8 @@ public slots:
 
 private:
 	Ui::MainWindow ui;
+
+	void setFoldManager(FoldManager *fm);
 
 	//QStringList tasksFileName, tasksFiles;
 	//QMap<QString, double> tasksTarget;

@@ -117,6 +117,9 @@ public slots:
 	void showCuboids(int state);
 	void showGraph(int state);
 	void showModel(int state);
+
+	void setScalable(int state);
+	void setSplittable(int state);
 	
 private:
 	// DEBUG:
