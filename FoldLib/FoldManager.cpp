@@ -158,23 +158,27 @@ void FoldManager::createLayerGraphs(Vector3 pushDirect)
 	
 	// ==STEP 4==: create layer models
 	// use all control panels
-	QString id = QString::number(dcGraphs.size());
 	if (!panelGroups.isEmpty())
 	{
+		QString id = "Dc-" + QString::number(dcGraphs.size());
 		dcGraphs.push_back(new DcGraph(scaffold, getIds(panelGroups), pushDirect, id));
 	}
 
 	// exclude rod structures
 	if (!panelGroups2.isEmpty() && panelGroups2.size() < panelGroups.size())
 	{
-		QString id = QString::number(dcGraphs.size()) + ":w\\o rod";
+		QString id = "Dc-" + QString::number(dcGraphs.size());
 		dcGraphs.push_back(new DcGraph(scaffold, getIds(panelGroups2), pushDirect, id));
 	}
 }
 
 void FoldManager::fold()
 {
-
+	LayerGraph* lg = getSelLayer();
+	if (lg)
+	{
+		lg->buildDependGraph();
+	}
 }
 
 void FoldManager::selectDcGraph( QString id )
@@ -215,12 +219,9 @@ void FoldManager::selectLayer( QString id )
 
 void FoldManager::selectChain( QString id )
 { 
-	if (getSelDcGraph())
+	if (getSelLayer())
 	{
-		if (getSelDcGraph()->getSelLayer())
-		{
-			getSelDcGraph()->getSelLayer()->selectChain(id);
-		}
+		getSelLayer()->selectChain(id);
 	}
 
 	emit(selectionChanged());
@@ -238,9 +239,9 @@ void FoldManager::updateLists()
 	{
 		layerLabels = getSelDcGraph()->getLayerLabels();
 
-		if (getSelDcGraph()->getSelLayer())
+		if (getSelLayer())
 		{
-			chainLables = getSelDcGraph()->getSelLayer()->getChainLabels();
+			chainLables = getSelLayer()->getChainLabels();
 		}
 	}
 
@@ -256,6 +257,16 @@ QStringList FoldManager::getDcGraphLabels()
 		labels.push_back(ly->mID);
 
 	return labels;
+}
+
+LayerGraph* FoldManager::getSelLayer()
+{
+	if (getSelDcGraph())
+	{
+		return getSelDcGraph()->getSelLayer();
+	}
+	else
+		return NULL;
 }
 
 

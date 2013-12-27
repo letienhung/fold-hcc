@@ -1,4 +1,5 @@
 #include "UtilityGlobal.h"
+#include <direct.h>
 
 QString qStr( Vector3 v, char sep)
 {
@@ -17,4 +18,18 @@ Vector3 toVector3( QString string )
 		return Vector3();
 	else
 		return Vector3(sl[0].toDouble(), sl[1].toDouble(), sl[2].toDouble());
+}
+
+QString getcwd()
+{
+	char cCurrentPath[FILENAME_MAX];
+
+	if (GetCurrentDir(cCurrentPath, sizeof(cCurrentPath)))
+	{
+		QString cwd(cCurrentPath);
+		cwd.replace("\\", "/");
+		return cwd;
+	}
+	else
+		return QString();
 }

@@ -28,3 +28,12 @@ Vector3 toVector3(QString string);
 typedef QVector< QVector<QString> > StrArray2D;
 
 typedef QMap< QString, QVariant > PropertyMap;
+
+#ifdef Q_OS_WIN
+#include <direct.h>
+#define GetCurrentDir _getcwd
+#else
+#include <unistd.h>
+#define GetCurrentDir getcwd
+#endif
+QString getcwd();

@@ -9,6 +9,7 @@
 #include <QFileInfo>
 #include <QFileDialog>
 
+
 GraphManager::GraphManager()
 {
 	entireMesh = NULL;
@@ -46,8 +47,10 @@ void GraphManager::createScaffold()
 void GraphManager::saveScaffold()
 {
 	if (!scaffold) return;
+
+	QString dir = QFileInfo(scaffold->path).absolutePath();
 	QFileInfo fileInfo(scaffold->path);
-	QString filename = QFileDialog::getSaveFileName(0, tr("Save Scaffold"), "../data", tr("Graph Files (*.xml)"));
+	QString filename = QFileDialog::getSaveFileName(0, tr("Save Scaffold"), dir, tr("Graph Files (*.xml)"));
 	scaffold->saveToFile(filename);
 
 	emit(message("Saved."));
@@ -55,7 +58,8 @@ void GraphManager::saveScaffold()
 
 void GraphManager::loadScaffold()
 {
-	QString filename = QFileDialog::getOpenFileName(0, tr("Load Scaffold"), "../data", tr("Graph Files (*.xml)"));
+	QString dataPath = getcwd() + "/data";
+	QString filename = QFileDialog::getOpenFileName(0, tr("Load Scaffold"), dataPath, tr("Graph Files (*.xml)"));
 	if (filename.isEmpty()) return;
 	scaffold->loadFromFile(filename);
 
@@ -114,5 +118,6 @@ void GraphManager::setRefitMethod( int method )
 {
 	refitMethod = method;
 }
+
 
 

@@ -4,6 +4,13 @@
 #include <QTextStream>
 #include <QColor>
 #include <QDebug>
+#include <QFileInfo>
+#include <QFileDialog>
+#include "UtilityGlobal.h"
+
+
+QString DependGraph::dotPath = "\"" + getcwd() + "/FoldLib/GraphVis/dot.exe" + "\"";
+
 
 DependGraph::DependGraph( QString id )
 	:Graph(id)
@@ -14,6 +21,12 @@ DependGraph::DependGraph( DependGraph& other )
 	:Graph(other)
 {
 }
+
+
+DependGraph::~DependGraph()
+{
+}
+
 
 Structure::Graph* DependGraph::clone()
 {
@@ -67,7 +80,7 @@ QString DependGraph::toGraphvizFormat( QString subcaption, QString caption )
 {
 	QStringList out;
 	out << "graph G{\n";
-	out << "\t" << "node [ fontcolor = black, color = white, style = filled ];" << "\n";
+	out << "\t" << "node [ fontcolor = black, color = white];" << "\n";
 
 	// Place on a grid
 	double size = 50;
@@ -78,7 +91,7 @@ QString DependGraph::toGraphvizFormat( QString subcaption, QString caption )
 	int length = sqrt((double)nodes.size());
 
 	// Write nodes
-	for(int i; i < nodes.size(); i++)
+	for(int i = 0; i < nodes.size(); i++)
 	{
 		Structure::Node* node = nodes[i];
 		bool isChainNode = node->properties["type"] == "chain";
@@ -99,7 +112,7 @@ QString DependGraph::toGraphvizFormat( QString subcaption, QString caption )
 	}
 
 	// Write links
-	for(int i; i < links.size(); i++)
+	for(int i = 0; i < links.size(); i++)
 	{
 		Structure::Link* link = links[i];
 
@@ -128,6 +141,9 @@ void DependGraph::saveAsGraphviz( QString fname, QString subcaption /*= ""*/, QS
 	if (!file.open(QFile::WriteOnly | QFile::Text))	return;
 	QTextStream out(&file);
 
+	//QFileInfo info(file);
+	//workDir = info.absolutePath();
+
 	out << toGraphvizFormat(subcaption, caption); 
 
 	file.flush();
@@ -136,11 +152,12 @@ void DependGraph::saveAsGraphviz( QString fname, QString subcaption /*= ""*/, QS
 
 void DependGraph::saveAsImage( QString fname )
 {
+	// save graphvis
 	saveAsGraphviz(fname);
 
-	// Assuming Graphviz is installed
-	QString command = QString("dot %1 -Tpng > %2").arg(fname+".gv").arg(fname+".png");
-	qDebug() << "Executing: " << command;
+	// convert into png
+	QString command = dotPath + QString(" -Tpng %1.gv > %2.png").arg(fname).arg(fname);
+	qDebug() << "Executing: " << dotPath << command;
 	system(qPrintable(command));
 }
 

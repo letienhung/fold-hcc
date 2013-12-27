@@ -27,6 +27,8 @@ public:
 	QStringList getDcGraphLabels();
 	void updateLists();
 
+	LayerGraph* getSelLayer();
+
 public slots:
 	void setScaffold(FdGraph* fdg);
 	void setPushAxis(int aid);

@@ -23,7 +23,15 @@ SandwichLayer::SandwichLayer( QVector<FdNode*> nodes, PatchNode* panel1, PatchNo
 		if (n->isCtrlPanel) continue;
 
 		if (getDistance(n, panels) < thr)
-			chains.push_back(new SandwichChain(n, mPanel1, mPanel2, n->mID));
+		{
+			QString id = "Ch-" + n->mID;
+			chains.push_back(new SandwichChain(n, mPanel1, mPanel2, id));
+		}
 	}
+}
+
+void SandwichLayer::buildDependGraph()
+{
+
 }
 

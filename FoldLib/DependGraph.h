@@ -1,5 +1,6 @@
 #pragma once
 #include "Graph.h"
+#include <QProcess>
 
 enum FD_DIRECTION{FD_LEFT, FD_RIGHT};
 
@@ -32,6 +33,7 @@ class DependGraph : public Structure::Graph
 public:
     DependGraph(QString id = "");
 	DependGraph(DependGraph& other);
+	~DependGraph();
 	Graph* clone();
 
 	void addNode(ChainNode* cn);
@@ -45,6 +47,9 @@ public:
 	QString toGraphvizFormat(QString subcaption, QString caption);
 	void saveAsGraphviz(QString fname, QString subcaption = "", QString caption = "");
 	void saveAsImage(QString fname);
+
+public:
+	static QString dotPath;
 };
 
 

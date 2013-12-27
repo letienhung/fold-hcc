@@ -2,11 +2,13 @@
 #include "PatchNode.h"
 #include "PizzaLayer.h"
 #include "SandwichLayer.h"
+#include <QFileInfo>
 
 
 DcGraph::DcGraph( FdGraph* scaffold, StrArray2D panelGroups, Vector3 up, QString id)
 	: FdGraph(*scaffold)
 {
+	path = QFileInfo(path).absolutePath();
 	upV = up;
 	mID = id;
 
@@ -84,8 +86,10 @@ void DcGraph::createLayers()
 	QVector<FdNode*> lgroup = layerGroups.front();
 	if (!lgroup.isEmpty())
 	{
-		QString id = QString::number(layers.size()) + ":pizza";
-		layers.push_back(new PizzaLayer(lgroup, controlPanels.front(), id));
+		QString id = "Pz-" + QString::number(layers.size());
+		PizzaLayer* pl = new PizzaLayer(lgroup, controlPanels.front(), id);
+		pl->path = path;
+		layers.push_back(pl);
 	}
 
 	// sandwiches
@@ -94,8 +98,10 @@ void DcGraph::createLayers()
 		lgroup = layerGroups[i];
 		if (!lgroup.isEmpty())
 		{
-			QString id = QString::number(layers.size()) + ":sandwich";
-			layers.push_back(new SandwichLayer(lgroup, controlPanels[i-1], controlPanels[i], id));
+			QString id = "Sw-" + QString::number(layers.size());
+			SandwichLayer* sl = new SandwichLayer(lgroup, controlPanels[i-1], controlPanels[i], id);
+			sl->path = path;
+			layers.push_back(sl);
 		}
 	}
 
@@ -103,8 +109,10 @@ void DcGraph::createLayers()
 	lgroup = layerGroups.last();
 	if (!lgroup.isEmpty())
 	{
-		QString id = QString::number(layers.size()) + ":pizza";
-		layers.push_back(new PizzaLayer(lgroup, controlPanels.last(), id));
+		QString id = "Pz-" + QString::number(layers.size());
+		PizzaLayer* pl = new PizzaLayer(lgroup, controlPanels.last(), id);
+		pl->path = path;
+		layers.push_back(pl);
 	} 
 }
 

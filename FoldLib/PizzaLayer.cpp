@@ -4,6 +4,7 @@
 #include "PatchNode.h"
 #include "FdUtility.h"
 #include "SectorCylinder.h"
+#include <QDir>
 
 
 PizzaLayer::PizzaLayer( QVector<FdNode*> nodes, PatchNode* panel, QString id )
@@ -23,10 +24,11 @@ PizzaLayer::PizzaLayer( QVector<FdNode*> nodes, PatchNode* panel, QString id )
 		if (n->isCtrlPanel) continue;
 
 		if (getDistance(n, mPanel) < thr)
-			chains.push_back(new PizzaChain(n, mPanel, n->mID));
+		{
+			QString id = "Ch-" + n->mID;
+			chains.push_back(new PizzaChain(n, mPanel, id));
+		}
 	}
-
-	//buildDepGraph();
 }
 
 
@@ -35,10 +37,12 @@ PizzaLayer::~PizzaLayer()
 	delete dy_graph;
 }
 
-void PizzaLayer::buildDepGraph()
+void PizzaLayer::buildDependGraph()
 {
-	dy_graph = new DependGraph(mID);
+	// clear
+	dy_graph->clear();
 
+	// nodes and folding links
 	for(int i = 0; i < chains.size(); i++)
 	{
 		PizzaChain* chain = (PizzaChain*)chains[i];
@@ -109,6 +113,7 @@ void PizzaLayer::buildDepGraph()
 		}
 	}
 
-	// output dependency graph
-	dy_graph->saveAsImage("dependency graph");
+	// debug: output dependency graph
+	QString filePath = path + "/" + mID;
+	dy_graph->saveAsImage(filePath);
 }

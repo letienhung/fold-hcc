@@ -2,6 +2,7 @@
 
 #include "FdGraph.h"
 #include "PatchNode.h"
+#include "DependGraph.h"
 
 class LayerGraph : public FdGraph
 {
@@ -17,9 +18,13 @@ public:
 	void selectChain(QString id);
 	QStringList getChainLabels();
 
+	virtual void buildDependGraph() = 0;
+
 public:
 	LAYER_TYPE mType;
 	int selId;
 	QVector<FdGraph*> chains;
+
+	DependGraph* dy_graph;
 }; 
 

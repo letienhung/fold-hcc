@@ -25,12 +25,17 @@ LayerGraph::LayerGraph( QVector<FdNode*> nodes, PatchNode* panel1, PatchNode* pa
 
 	// selected chain
 	selId = -1;
+
+	// dependency graph
+	dy_graph = new DependGraph(mID);
 }
 
 LayerGraph::~LayerGraph()
 {
 	foreach(FdGraph* c, chains)
 		delete c;
+
+	delete dy_graph;
 }
 
 FdGraph* LayerGraph::activeScaffold()

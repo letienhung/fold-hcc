@@ -4,6 +4,7 @@
 
 #include "Graph.h"
 #include <QDebug>
+#include <QProcess>
 
 FdPlugin::FdPlugin()
 {
@@ -88,9 +89,10 @@ void FdPlugin::resetScene()
 	updateScene();
 }
 
+
 void FdPlugin::test()
 {
-
+	qDebug() << getcwd();
 }
 
 
