@@ -609,12 +609,12 @@ void MyDesigner::mousePressEvent( QMouseEvent* e )
 {
 	QGLViewer::mousePressEvent(e);
 
-	switch(selectMode)
+	/*switch(selectMode)
 	{
 	case BOX: this->setCursor(QCursor(QPixmap(":/Resources/push.png"), 0, 32)); break;
 	case CUBOID: this->setCursor(QCursor(QPixmap(":/Resources/push.png"), 0, 32)); break;
 	default: this->setCursor(Qt::ArrowCursor); break;
-	}
+	}*/
 
 	if((e->button() == Qt::LeftButton) && !(e->modifiers() & Qt::ShiftModifier)) 
 	{
@@ -868,6 +868,7 @@ void MyDesigner::selectCuboidMode()
 
 	setSelectMode(CUBOID);
 	activeScaffold()->showCuboids(true);
+	this->setCursor(QCursor(QPixmap(":/Resources/push.png"), 0, 32));
 	this->displayMessage("* Left click to select a node *", 5000);
 	selectTool();
 }
@@ -884,7 +885,8 @@ void MyDesigner::selectCameraMode()
 	
 	setMouseBinding(Qt::ShiftModifier | Qt::LeftButton, SELECT);
 	setMouseBinding(Qt::LeftButton, CAMERA, ROTATE);
-	
+	activeScaffold()->showCuboids(designWidget->showCuboid->isChecked());
+	this->setCursor(QCursor(Qt::ArrowCursor));
 	setSelectMode(SELECT_NONE);
 	updateGL();
 }
@@ -899,7 +901,8 @@ void MyDesigner::selectAABBMode()
 
 	//setMouseBinding(Qt::RightButton, SELECT);
 	setMouseBinding(Qt::ShiftModifier | Qt::LeftButton, CAMERA, ROTATE);
-
+	activeScaffold()->showCuboids(designWidget->showCuboid->isChecked());
+	this->setCursor(QCursor(QPixmap(":/Resources/push.png"), 0, 32));
 	setSelectMode(BOX);
     selectTool();
 	this->displayMessage("* Left click to select a face to push in *", 5000);
