@@ -265,7 +265,7 @@ void MyDesigner::drawObject()
 		glPopAttrib ();
 	} 
 	else{// Fall back
-		gManager->scaffold->draw();
+		activeScaffold()->draw();
 	}
 }
 
@@ -540,7 +540,7 @@ bool MyDesigner::isEmpty()
 void MyDesigner::resetView()
 {
 	setupCamera();
-	camera()->setSceneRadius(gManager->scaffold->computeAABB().radius());
+	camera()->setSceneRadius(activeScaffold()->computeAABB().radius());
 	camera()->showEntireScene();
 }
 
@@ -554,7 +554,7 @@ void MyDesigner::loadObject()
 	gManager = new GraphManager();
 	gManager->loadScaffold();
 	
-	Geom::AABB aabb = gManager->scaffold->computeAABB();
+	Geom::AABB aabb = activeScaffold()->computeAABB();
 	mBox = new BBox(aabb.center(), (aabb.bbmax-aabb.bbmin)*0.5f);
 
 	setManipulatedFrame(activeFrame);
@@ -572,7 +572,7 @@ void MyDesigner::setActiveObject(GraphManager *gm)
 	gManager = gm;
 
 	// Change title of scene
-	setWindowTitle(gManager->scaffold->path);
+	setWindowTitle(activeScaffold()->path);
 
 	// Set camera
 	resetView();
@@ -664,7 +664,7 @@ void MyDesigner::mouseReleaseEvent( QMouseEvent* e )
 	if(x > width() - scale && y > height() - scale && gManager)
 	{
 		QPoint p(abs(x - width() + scale), abs(y - height() + scale));
-		Geom::AABB aabb = gManager->scaffold->computeAABB();
+		Geom::AABB aabb = activeScaffold()->computeAABB();
 
 		double meshHeight = aabb.bbmax.z() - aabb.bbmin.z();
 		double meshLength = aabb.bbmax.y() - aabb.bbmin.y();
@@ -784,9 +784,9 @@ void MyDesigner::keyPressEvent( QKeyEvent *e )
 		this->loadObject();
 	}
 
-	//if(e->key() == Qt::Key_Space)	selectPrimitiveMode();
-	if(e->key() == Qt::Key_C)		selectCameraMode();
-	if(e->key() == Qt::Key_S)		selectAABBMode();
+	if(e->key() == Qt::Key_V)		selectCameraMode();
+	if(e->key() == Qt::Key_C)	selectCuboidMode();
+	if(e->key() == Qt::Key_A)		selectAABBMode();
 
 	updateGL();
 

@@ -56,6 +56,8 @@ public:
 
 	// Object in the scene
 	GraphManager* gManager;
+	int mCurrConfigId;
+	int mCurrGraphId;
 	bool isShow;
 
 	GraphManager* activeManager();
@@ -108,7 +110,7 @@ public:
 	std::vector< std::pair<Vec,Vec> > debugLines;
 	std::vector< PolygonSoup > debugPlanes;
 	void drawDebug();
-	QVector<FdGraph *> mGraphs;
+	QVector<QVector<FdGraph *>> mGraphs;
 
 private:
 	// Draw Scene

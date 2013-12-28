@@ -1,4 +1,5 @@
 #include "Circle.h"
+#include "AABB.h"
 
 #include <QApplication>
 #include <QDesktopWidget>
@@ -38,6 +39,9 @@ MyAnimator::MyAnimator(Ui::EvaluateWidget * useAnimWidget, QWidget * parent /*= 
 
 	isShow = true;
 
+	mCurrConfigId = 0;
+	mCurrGraphId = 0;
+
 	fm = new QFontMetrics(QFont());
 
 	connect(this, SIGNAL(objectInserted()), SLOT(updateGL()));
@@ -45,10 +49,18 @@ MyAnimator::MyAnimator(Ui::EvaluateWidget * useAnimWidget, QWidget * parent /*= 
 	activeFrame = new ManipulatedFrame();
 	setManipulatedFrame(activeFrame);
 
+	VideoToolbar *vti = new VideoToolbar;
+	this->evalWidget->viewerAreaLayout->addWidget(vti);
+
 	// TEXT ON SCREEN
 	timerScreenText = new QTimer(this);
 	connect(timerScreenText, SIGNAL(timeout()), SLOT(dequeueLastMessage()));
 	connect(camera()->frame(), SIGNAL(manipulated()), SLOT(cameraMoved()));
+
+	//Animation
+	connect(vti, SIGNAL(vti->valueChanged(int)), SLOT(toggleplay(int)));
+	connect(this, SIGNAL(setSliderValue(int)), vti, SLOT(vti->sliderChanged(int)));
+	//connect(vti, )
 
 	this->setMouseTracking(true);
 
@@ -240,7 +252,8 @@ void MyAnimator::drawObject()
 		glPopAttrib ();
 	} 
 	else{// Fall back
-		gManager->scaffold->draw();
+		//gManager->scaffold->draw();
+		activeScaffold()->draw();
 	}
 }
 
@@ -481,18 +494,20 @@ GraphManager* MyAnimator::activeManager()
 FdGraph* MyAnimator::activeScaffold()
 {
 	//return gManager->scaffold;
-	return 
+	return mGraphs[mCurrConfigId][mCurrGraphId];
 }
 
 bool MyAnimator::isEmpty()
 {
-	return gManager == NULL;//->scaffold 
+	//return gManager == NULL;//->scaffold 
+	return (mGraphs.size() == 0);
 }
 
 void MyAnimator::resetView()
 {
 	setupCamera();
-	camera()->setSceneRadius(gManager->scaffold->computeAABB().radius());
+	if(isEmpty()) return;
+	camera()->setSceneRadius(activeScaffold()->computeAABB().radius());
 	camera()->showEntireScene();
 }
 
@@ -502,7 +517,8 @@ void MyAnimator::loadConfig(int configId)
 	//gManager = new GraphManager();
 	//gManager->loadScaffold();
     
-
+	if(isEmpty()) return;
+	mCurrConfigId = configId;
 	setManipulatedFrame(activeFrame);
 
 	updateGL();
@@ -518,7 +534,7 @@ void MyAnimator::setActiveObject(GraphManager *gm)
 	gManager = gm;
 
 	// Change title of scene
-	setWindowTitle(gManager->scaffold->path);
+	setWindowTitle(activeScaffold()->path);
 
 	// Set camera
 	resetView();
@@ -533,20 +549,17 @@ void MyAnimator::setActiveObject(GraphManager *gm)
 
 void MyAnimator::newScene()
 {
-	clearButtons();
 	if(activeManager())
 		emit( objectDiscarded());
 
 	//selection.clear();
 
 	gManager = NULL;
-	mBox = NULL;
 	setWindowTitle(" ");
 	// Update the object
 	updateActiveObject();
 
 	//SaveUndo();
-	selectMode = SELECT_NONE;
 	isMousePressed = false;
 	updateGL();
 }
@@ -554,45 +567,6 @@ void MyAnimator::newScene()
 void MyAnimator::mousePressEvent( QMouseEvent* e )
 {
 	QGLViewer::mousePressEvent(e);
-
-	if((e->button() == Qt::LeftButton) && !(e->modifiers() & Qt::ShiftModifier)) 
-	{
-		this->startMousePos2D = e->pos();
-		camera()->convertClickToLine(e->pos(), startMouseOrigin, startMouseDir);
-
-		if(selectMode == BOX && mBox)
-		{
-			Point start(startMouseOrigin[0], startMouseOrigin[1],startMouseOrigin[2]);
-			Vec3d dir(startMouseDir[0], startMouseDir[1], startMouseDir[2]);
-			mBox->selectFace(start,dir);
-			if(mBox->axisID < 0 || mBox->selPlaneID < 0){
-				selectMode = BOX;
-				this->displayMessage("No face has been selected. Left click to select a face to push in");
-			}
-			else
-				this->displayMessage("* Please CTRL + SCROLL THE MOUSE to squeeze the box *", 5000);
-			updateGL();
-		}
-
-		if(selectMode == CUBOID && activeScaffold())
-		{
-
-		}
-	}
-
-	if(!isMousePressed)
-	{
-		// Set constraints
-		if(selectMode == BOX)
-		{
-
-		}
-
-		if(selectMode == CUBOID)
-		{
-
-		}
-	}
 
 	isMousePressed = true;
 }
@@ -610,7 +584,7 @@ void MyAnimator::mouseReleaseEvent( QMouseEvent* e )
 	if(x > width() - scale && y > height() - scale && gManager)
 	{
 		QPoint p(abs(x - width() + scale), abs(y - height() + scale));
-		Geom::AABB aabb = gManager->scaffold->computeAABB();
+		Geom::AABB aabb = activeScaffold()->computeAABB();
 
 		double meshHeight = aabb.bbmax.z() - aabb.bbmin.z();
 		double meshLength = aabb.bbmax.y() - aabb.bbmin.y();
@@ -675,13 +649,6 @@ void MyAnimator::mouseReleaseEvent( QMouseEvent* e )
 			viewTitle = "View";
 		}
 	}
-	else
-	{
-		if( selectMode != SELECT_NONE) //&& activeOffset)
-		{
-			//updateOffset();
-		}
-	}
 
 	updateGL();
 }
@@ -689,13 +656,6 @@ void MyAnimator::mouseReleaseEvent( QMouseEvent* e )
 void MyAnimator::mouseMoveEvent( QMouseEvent* e )
 {
 	QGLViewer::mouseMoveEvent(e);
-	currMousePos2D = e->pos();
-	camera()->convertClickToLine(currMousePos2D, currMouseOrigin, currMouseDir);
-
-	if(e->buttons() & Qt::LeftButton)
-	{
-		isMousePressed = true;
-	}
 
 	double scale = 90;
 	int x = e->pos().x(), y = e->pos().y();
@@ -710,40 +670,15 @@ void MyAnimator::wheelEvent( QWheelEvent* e )
 {
 	QGLViewer::wheelEvent(e);
 
-	if(selectMode == BOX && (e->modifiers() & Qt::ControlModifier))
-	{
-		if(mBox->selPlaneID >= 0){
-			double factor =  0.05 * (e->delta() / 120.0);
-			mBox->deform(factor);
-			mBox->getBoxFaces();
-		}
-		else
-			this->displayMessage("* Fail to push in the right direction *", 5000);
-		updateGL();
-	}		
+	updateGL();
 }
 
 void MyAnimator::keyPressEvent( QKeyEvent *e )
 {
-	if(e->key() == Qt::Key_L)
-	{
-		this->loadObject();
-	}
-
-	//if(e->key() == Qt::Key_Space)	selectPrimitiveMode();
-	if(e->key() == Qt::Key_C)		selectCameraMode();
-	if(e->key() == Qt::Key_S)		selectAABBMode();
-
 	updateGL();
 
 	if(e->key() != Qt::Key_Space) // disable fly mode..
 		QGLViewer::keyPressEvent(e);
-}
-
-void MyAnimator::saveObject()
-{
-	if(activeManager() && activeScaffold())
-		gManager->saveScaffold();
 }
 
 void MyAnimator::beginUnderMesh()
@@ -765,150 +700,31 @@ void MyAnimator::drawWithNames()
 	activeScaffold()->drawWithNames();
 }
 
-void MyAnimator::postSelection( const QPoint& point )
+void MyAnimator::startAnimation()
 {
-	if(currMousePos2D.x() > width() - 90 && currMousePos2D.y() > height() - 90)
-		return;
+	QGLViewer::startAnimation();
 
-	//int selected = selectedName();
-	if (selectMode == CUBOID && activeScaffold())
-	{
-		int nidx = selectedName();
-
-		Structure::Node* sn = activeScaffold()->getNode(nidx);
-		if (sn)
-		{
-			activeScaffold()->selectNode(nidx);
-		}
-	}
-
-	updateGL();
+	vti->ui->playButton->setText(vti->ui->playLabel->text());
 }
 
-void MyAnimator::setSelectMode( SelectMode toMode )
+void MyAnimator::stopAnimation()
 {
-	this->selectMode = toMode;
+	QGLViewer::stopAnimation();
+
+	vti->ui->playButton->setText(vti->ui->pauseLabel->text());
 }
 
-
-void MyAnimator::selectCuboidMode()
+void MyAnimator::animate()
 {
-	clearButtons();
-	if(isEmpty()){
-		this->displayMessage("* Please import an object first *", 1000);
-		return;
-	}
-	setManipulatedFrame(activeFrame);
-
-	if(!activeScaffold()) return;
-
-	setMouseBinding(Qt::LeftButton, SELECT);
-	setMouseBinding(Qt::ShiftModifier | Qt::LeftButton, CAMERA, ROTATE);
-
-	setSelectMode(CUBOID);
-	activeScaffold()->showCuboids(true);
-	this->setCursor(QCursor(QPixmap(":/Resources/push.png"), 0, 32));
-	this->displayMessage("* Left click to select a node *", 5000);
-	selectTool();
-}
-
-
-void MyAnimator::selectCameraMode()
-{
-	clearButtons();
-	setManipulatedFrame(activeFrame);
-
-	if(!activeManager()) return;
-
-	designWidget->selectCameraButton->setChecked(true);
-
-	setMouseBinding(Qt::ShiftModifier | Qt::LeftButton, SELECT);
-	setMouseBinding(Qt::LeftButton, CAMERA, ROTATE);
-	activeScaffold()->showCuboids(designWidget->showCuboid->isChecked());
-	this->setCursor(QCursor(Qt::ArrowCursor));
-	setSelectMode(SELECT_NONE);
-	updateGL();
-}
-
-void MyAnimator::selectAABBMode()
-{
-	clearButtons();
-	if(mBox == NULL){
-		this->displayMessage("* Please import an object first *", 1000);
-		return;
-	}
-
-	//setMouseBinding(Qt::RightButton, SELECT);
-	setMouseBinding(Qt::ShiftModifier | Qt::LeftButton, CAMERA, ROTATE);
-	activeScaffold()->showCuboids(designWidget->showCuboid->isChecked());
-	this->setCursor(QCursor(QPixmap(":/Resources/push.png"), 0, 32));
-	setSelectMode(BOX);
-	selectTool();
-	this->displayMessage("* Left click to select a face to push in *", 5000);
-}
-
-void MyAnimator::selectTool()
-{
-	if(gManager == NULL) return;
-
-	if(selectMode == BOX) designWidget->pushButton->setChecked(true);
-	if(selectMode == CUBOID) designWidget->selectCuboidButton->setChecked(true);
-
-	updateGL();
-}
-
-void MyAnimator::clearButtons()
-{
-	designWidget->selectCameraButton->setChecked(false);
-	designWidget->selectCuboidButton->setChecked(false);
-	designWidget->pushButton->setChecked(false);
-}
-
-void MyAnimator::print( QString message, long age )
-{
-	osdMessages.enqueue(message);
-	timerScreenText->start(age);
-	updateGL();
-}
-
-void MyAnimator::dequeueLastMessage()
-{
-	if(!osdMessages.isEmpty()){
-		osdMessages.dequeue();
+	for(int i = 0; i < mGraphs[mCurrConfigId].size(); i++){
+		mCurrGraphId = i;
 		updateGL();
+		emit setSliderValue(100 * (double(i) / mGraphs[mCurrConfigId].size()));
 	}
 }
 
-void MyAnimator::showCuboids(int state)
+void MyAnimator::toggleplay(int frameId)
 {
-	gManager->scaffold->showCuboids(state);
+	mCurrGraphId = frameId;
 	updateGL();
-}
-void MyAnimator::showGraph(int state)
-{
-	gManager->scaffold->showScaffold(state);
-	updateGL();
-}
-
-void MyAnimator::showModel(int state)
-{
-	gManager->scaffold->showMeshes(state);
-	isShow = (state == Qt::Checked);
-	updateGL();
-}
-
-void MyAnimator::setScalable(int state)
-{
-	bool isScalable = (state == Qt::Checked);
-	QVector <Structure::Node *> selectedNodes = activeScaffold()->getSelectedNodes();
-	foreach(Structure::Node *n, selectedNodes)
-		n->properties["isScalable"] = isScalable;
-}
-
-void MyAnimator::setSplittable(int state)
-{
-	bool isSplittable = (state == Qt::Checked);
-	QVector <Structure::Node *> selectedNodes = activeScaffold()->getSelectedNodes();
-	foreach(Structure::Node *n, selectedNodes)
-		n->properties["isSplittable"] = isSplittable;
 }
