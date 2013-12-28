@@ -4,6 +4,17 @@
 #include "Plane.h"
 #include "Numeric.h"
 
+Geom::SectorCylinder::SectorCylinder()
+{
+	Origin = Vector3(0,0,0);
+	Axis = Vector3(0,0,-1);
+	V1 = Vector3(0,1,0);
+	V2 = Vector3(1,0,0);
+	Height = 1;
+	Radius = 1;
+	Phi = 90;
+}
+
 Geom::SectorCylinder::SectorCylinder( Segment a, Segment r1, Vector3 v2 )
 {
 	Origin = a.P0;
@@ -12,6 +23,7 @@ Geom::SectorCylinder::SectorCylinder( Segment a, Segment r1, Vector3 v2 )
 	V2 = v2.normalized();
 	Height = a.length();
 	Radius = r1.length();
+	Phi = radians2degrees(acos(dot(V1, V2)));
 
 	// make right handed
 	Vector3 crossV1V2 = cross(V1, V2);
@@ -25,39 +37,59 @@ Geom::SectorCylinder::SectorCylinder( Segment a, Segment r1, Vector3 v2 )
 
 bool Geom::SectorCylinder::intersects( Segment& seg )
 {
-	// closest dist seg
 	Segment axisSeg = getAxisSegment();
 	DistSegSeg dss(axisSeg, seg);
-	Vector3 P = dss.mClosestPoint0;
-	double t = axisSeg.getProjCoordinates(P);
 
-	// no intersection: beyond bottom or top
-	if (fabs(t) > 1.0 - ZERO_TOLERANCE_LOW)	
-		return false;
-	// P0, P1 lie on one cross section
-	// compare dist to radius
-	else
-		return (dss.get() <= Radius);
+	return contains(dss.mClosestPoint1);
 }
 
 bool Geom::SectorCylinder::intersects( Rectangle& rect )
 {
-	// closest dist seg
 	Segment axisSeg = getAxisSegment();
 	DistSegRect dsr(axisSeg, rect);
-	Vector3 P = dsr.mClosestPoint0;
-	double t = axisSeg.getProjCoordinates(P);
 
-	// no intersection: beyond bottom or top
-	if (fabs(t) > 1.0 - ZERO_TOLERANCE_LOW)
-		return false;
-	// P0, P1 lie on one cross section
-	// compare dist to radius
-	else
-		return (dsr.get() <= Radius);
+	return contains(dsr.mClosestPoint1);
 }
 
 Geom::Segment Geom::SectorCylinder::getAxisSegment()
 {
 	return Segment(Origin, Origin + Height * Axis);
+}
+
+QStringList Geom::SectorCylinder::toStrList()
+{
+	return QStringList() << "SectorCylinder: "
+	 << "Origin = " + qStr(Origin)
+	 << "Axis = " + qStr(Axis)
+	 << "V1 = " + qStr(V1)
+	 << "V2 = " + qStr(V2)
+	 << "Height = " + QString::number(Height)
+	 << "Radius = " + QString::number(Radius)
+	 << "Phi = " + QString::number(Phi);
+}
+
+// cylindrical coordinates normalized by extents
+Vector3 Geom::SectorCylinder::getCoordinates( Vector3 p )
+{
+	Vector3 O2P = p - Origin;
+	double z = dot(Axis, O2P) / Height;
+
+	Vector3 projP = Origin + z * Height * Axis;	
+	Vector3 projP2P = p - projP;
+	double rho = projP2P.norm() / Radius;
+
+	double angle = acos(dot(V1, projP2P.normalized()));
+	Vector3 crossV1ProjP2P = cross(V1, projP2P);
+	if (dot(crossV1ProjP2P, Axis) < 0) angle *= -1;
+	double phi = radians2degrees(angle) / Phi;
+
+	return Vector3(rho, phi, z);
+}
+
+bool Geom::SectorCylinder::contains( Vector3 p )
+{
+	Vector3 coord = getCoordinates(p);
+	return  coord[0] < 1 + ZERO_TOLERANCE_LOW // rho
+		&& (coord[1] > -ZERO_TOLERANCE_LOW && coord[1] < 1 + ZERO_TOLERANCE_LOW)  // phi
+		&& (coord[2] > -ZERO_TOLERANCE_LOW && coord[2] < 1 + ZERO_TOLERANCE_LOW); // z
 }

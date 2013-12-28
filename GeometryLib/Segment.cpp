@@ -42,6 +42,11 @@ void Geom::Segment::set( Vector3 c, Vector3 d, double e )
 	computeEndPoints();
 }
 
+void Geom::Segment::computeEndPoints()
+{
+	P0 = Center - Extent * Direction;
+	P1 = Center + Extent * Direction;
+}
 
 bool Geom::Segment::isCollinearWith( const Segment& other )
 {
@@ -136,11 +141,6 @@ bool Geom::Segment::contains( const Segment& other )
 		&& this->contains(other.P1);
 }
 
-void Geom::Segment::computeEndPoints()
-{
-	P0 = Center - Extent * Direction;
-	P1 = Center + Extent * Direction;
-}
 
 void Geom::Segment::draw(double width, QColor color)
 {
@@ -163,4 +163,12 @@ Vector3 Geom::Segment::getProjection( Vector3 p )
 void Geom::Segment::flip()
 {
 	set(P1, P0);
+}
+
+QStringList Geom::Segment::toStrList()
+{
+	return QStringList() << "Segment: "
+		<< "P0 = " + qStr(P0)
+		<< "P1 = " + qStr(P1)
+		<< "Direction = " + qStr(Direction);
 }

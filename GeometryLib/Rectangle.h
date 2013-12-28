@@ -3,6 +3,7 @@
 #include "Plane.h"
 #include "Segment.h"
 #include "Segment2.h"
+#include <QStringList>
 
 namespace Geom{
 
@@ -45,6 +46,9 @@ public:
 	// visualization
 	void draw(QColor color = Qt::red);
 	void drawBackFace(QColor color = Qt::red);
+
+	// to string
+	QStringList toStrList();
 
 public:
 	Vector3				Center;

@@ -20,7 +20,8 @@ typedef Eigen::Vector4d Vector4;
 
 typedef QSharedPointer<SurfaceMeshModel> MeshPtr;
 
-QString qStr(Vector3 v, char sep = ' ');
+QString qStr(const Vector2 &v, char sep = ' ');
+QString qStr(const Vector3 &v, char sep = ' ');
 QString qStr(const Vector4 &v, char sep = ' ');
 
 Vector3 toVector3(QString string);

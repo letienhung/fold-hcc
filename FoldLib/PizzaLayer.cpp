@@ -48,17 +48,18 @@ void PizzaLayer::buildDependGraph()
 		PizzaChain* chain = (PizzaChain*)chains[i];
 
 		// chain nodes
-		ChainNode* cn = new ChainNode(i, chain->mID);
+		QString cnid = chain->mID.remove(0, 3);
+		ChainNode* cn = new ChainNode(i, cnid);
 		dy_graph->addNode(cn);
 
 		for (int j = 0; j < chain->hinges.size(); j++)
 		{
 			// folding nodes
-			QString fnid1 = chain->mID + "_" + QString::number(2*j);
+			QString fnid1 = cnid + "_" + QString::number(2*j);
 			FoldingNode* fn1 = new FoldingNode(j, FD_RIGHT, fnid1);
 			dy_graph->addNode(fn1);
 
-			QString fnid2 = chain->mID + "_" + QString::number(2*j+1);
+			QString fnid2 = cnid + "_" + QString::number(2*j+1);
 			FoldingNode* fn2 = new FoldingNode(j, FD_LEFT, fnid2);
 			dy_graph->addNode(fn2);
 
@@ -71,8 +72,17 @@ void PizzaLayer::buildDependGraph()
 	// collision links
 	for(int i = 0; i < chains.size(); i++)
 	{
+
 		PizzaChain* chain = (PizzaChain*)chains[i];
+		qDebug() << "\nChain = " << chain->mID; 
+
 		QVector<FoldingNode*> fns = dy_graph->getFoldingNodes(chain->mID);
+		QVector<Geom::SectorCylinder> fVolumes;
+		foreach( FoldingNode* fn, fns)
+		{
+			fVolumes.push_back(chain->getFoldingVolume(fn));
+			qDebug() << fVolumes.last().toStrList().join(", ");
+		}
 
 		// each other chain
 		for (int j = 0; j < chains.size(); j++)
@@ -81,27 +91,34 @@ void PizzaLayer::buildDependGraph()
 
 			PizzaChain* other_chain = (PizzaChain*)chains[j];
 			FdNode* other_part = other_chain->mPart;
+			qDebug() << "OtherChain = " << other_chain->mID; 
 
 			// each folding
-			for (int k = 0; k < fns.size(); k++)
+			for (int k = 0; k < fVolumes.size(); k++)
 			{
 				FoldingNode* fn = fns[k];
-				Geom::SectorCylinder fVolume = chain->getFoldingVolume(fn);
+				Geom::SectorCylinder& fVol = fVolumes[k];
 
 				// chain(fn) vs. other_chain
 				bool collide = false;
 				if (other_part->mType == FdNode::PATCH)
 				{
 					PatchNode* other_patch = (PatchNode*) other_part;
-					if (fVolume.intersects(other_patch->mPatch))
+					qDebug() << other_patch->mPatch.toStrList().join(", ");
+
+					if (fVol.intersects(other_patch->mPatch))
 						collide = true;
 				}
 				else
 				{
-					RodNode* other_rod = (RodNode*) other_rod;
-					if (fVolume.intersects(other_rod->mRod))
+					RodNode* other_rod = (RodNode*) other_part;
+					qDebug() << other_rod->mRod.toStrList();
+
+					if (fVol.intersects(other_rod->mRod))
 						collide = true;
 				}
+
+				qDebug() << "Collision = " << collide;
 
 				// add collision link
 				if (collide)

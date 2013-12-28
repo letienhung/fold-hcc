@@ -1,7 +1,13 @@
 #include "UtilityGlobal.h"
 #include <direct.h>
 
-QString qStr( Vector3 v, char sep)
+
+QString qStr( const Vector2 &v, char sep /*= ' '*/ )
+{
+	return QString("%1%2%3").arg(v.x()).arg(sep).arg(v.y());
+}
+
+QString qStr( const Vector3 &v, char sep)
 {
 	return QString("%1%2%3%4%5").arg(v.x()).arg(sep).arg(v.y()).arg(sep).arg(v.z());
 }

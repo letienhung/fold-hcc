@@ -265,4 +265,13 @@ SurfaceMesh::Vector3 Geom::Rectangle::getPerpAxis( Vector3 v )
 	return (dotVAxis0 < dotVAxis1) ? Axis[0] : Axis[1];
 }
 
+QStringList Geom::Rectangle::toStrList()
+{
+	return QStringList() << "Rectangle: "
+		<< "Center = " + qStr(Center)
+		<< "Axis[0] = " + qStr(Axis[0])
+		<< "Axis[1] = " + qStr(Axis[1])
+		<< "Extent = " + qStr(Extent);
+}
+
 

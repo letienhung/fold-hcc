@@ -1,6 +1,7 @@
 #pragma once
 
 #include "UtilityGlobal.h"
+#include <QStringList>
 
 namespace Geom{
 
@@ -42,6 +43,9 @@ public:
 
 	// geometry
 	double length();
+
+	// str
+	QStringList toStrList();
 
 public:
 	// end points 

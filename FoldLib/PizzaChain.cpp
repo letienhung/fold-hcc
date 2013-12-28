@@ -17,7 +17,7 @@ PizzaChain::PizzaChain( FdNode* part, PatchNode* panel, QString id )
 	Structure::Graph::addNode(mPanel);
 
 	// detect hinges
-	hinges = detectHinges(part, panel);
+	hinges = detectHinges(mPart, mPanel);
 
 	// r1
 	Geom::Segment axisSeg = hinges[0];

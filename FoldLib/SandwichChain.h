@@ -1,14 +1,20 @@
 #pragma once
 
 #include "FdGraph.h"
+#include "PatchNode.h"
+#include "Rectangle.h"
 
 class SandwichChain : public FdGraph
 {
 public:
-    SandwichChain(FdNode* part, FdNode* panel1, FdNode* panel2, QString id);
+    SandwichChain(FdNode* part, PatchNode* panel1, PatchNode* panel2, QString id);
 
 public:
 	FdNode *mPart;
-	FdNode *mPanel1, *mPanel2;
+	PatchNode *mPanel1, *mPanel2;
+
+	QVector<Geom::Segment> hinges;
+
+
 };
 
