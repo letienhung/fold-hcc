@@ -13,7 +13,8 @@ Structure::Node::Node( QString nid )
 Structure::Node::Node(Node &other)
 {
 	mID = other.mID;
-	isSelected = false;
+	isSelected = other.isSelected;
+	properties = other.properties;
 
 	isSplittable = true;
 	isScalable = true;

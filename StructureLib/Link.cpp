@@ -17,6 +17,7 @@ Structure::Link::Link( Link& other )
 	nid1 = other.nid1;
 	nid2 = other.nid2;
 	id = other.id;
+	properties = other.properties;
 }
 
 Structure::Link* Structure::Link::clone()

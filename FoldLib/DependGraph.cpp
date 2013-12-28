@@ -7,6 +7,42 @@
 #include <QFileInfo>
 #include <QFileDialog>
 #include "UtilityGlobal.h"
+#include <QQueue>
+
+
+ChainNode::ChainNode( int idx, QString id )
+	: Node(id), chainIdx(idx)
+{
+}
+
+ChainNode::ChainNode( ChainNode &other )
+	: Node(other)
+{
+	chainIdx = other.chainIdx;
+}
+
+Structure::Node* ChainNode::clone()
+{
+	return new ChainNode(*this);
+}
+
+FoldingNode::FoldingNode( int hidx, FD_DIRECTION d, QString id )
+	: Node(id), hingeIdx(hidx), direct(d), score(0)
+{
+}
+
+FoldingNode::FoldingNode( FoldingNode &other )
+	: Node(other)
+{
+	hingeIdx = other.hingeIdx;
+	direct = other.direct;
+	score = other.score;
+}
+
+Structure::Node* FoldingNode::clone()
+{
+	return new FoldingNode(*this);
+}
 
 
 QString DependGraph::dotPath = "\"" + getcwd() + "/FoldLib/GraphVis/dot.exe" + "\"";
@@ -147,12 +183,19 @@ QString DependGraph::toGraphvizFormat( QString subcaption, QString caption )
 		Structure::Node* node = nodes[i];
 		bool isChainNode = node->properties["type"] == "chain";
 
+		QString label = node->mID;
+		if (!isChainNode)
+		{
+			FoldingNode* fnode = (FoldingNode*)node;
+			label += "\n" + QString::number(fnode->score);
+		}
+
 		QColor color = isChainNode ? Qt::blue : Qt::green;
 		QString colorHex; colorHex.sprintf("#%02X%02X%02X", color.red(), color.green(), color.blue());
 
 		QString shape = isChainNode ? "rectangle" : "ellipse";
 
-		out << "\t" << QString("%1 [label = \"%2\", color = \"%3\", shape = %4];").arg(i).arg( node->mID ).arg(colorHex).arg(shape) << "\n";
+		out << "\t" << QString("%1 [label = \"%2\", color = \"%3\", shape = %4];").arg(i).arg(label).arg(colorHex).arg(shape) << "\n";
 
 		// Move virtual cursor
 		x += dx;
@@ -174,7 +217,7 @@ QString DependGraph::toGraphvizFormat( QString subcaption, QString caption )
 		QString color = isFolding ?  "black" : "red";
 
 		out << "\t\"" << QString::number(n1idx) << "\" -- \"" << QString::number(n2idx) << "\"" 
-			<< QString(" [color=\"%1\"] ").arg(color) << ";\n";
+			<< QString(" [color=\"%1\"]").arg(color) << ";\n";
 	}
 
 	// Labels
@@ -211,3 +254,85 @@ void DependGraph::saveAsImage( QString fname )
 	qDebug() << "Executing: " << dotPath << command;
 	system(qPrintable(command));
 }
+
+// A chain node is free if one of its folding nodes is collision free
+bool DependGraph::isFreeChainNode( QString cnid )
+{
+	Structure::Node* cnode = getNode(cnid);
+	if (!cnode || cnode->properties["type"] != "chain")
+		return false;
+
+	bool isFree = false;
+	foreach(FoldingNode* fnode, getFoldingNodes(cnode->mID))
+	{
+		if (getCollisionLinks(fnode->mID).isEmpty())
+		{
+			isFree = true;
+			break;
+		}
+	}
+
+	return isFree;
+}
+
+int DependGraph::computeGain( FoldingNode* fnode )
+{
+	int gain = 0;
+
+	// clone the graph
+	DependGraph* g_copy = (DependGraph*)clone();
+
+	// exclude all free chains by themselves
+	foreach(ChainNode* cnode, g_copy->getAllChainNodes())
+	{
+		cnode->properties["removed"] = g_copy->isFreeChainNode(cnode->mID);
+	}
+
+	// propagate 
+	QQueue<ChainNode*> freeChains;
+	ChainNode* cn = g_copy->getChainNode(fnode->mID);
+	cn->properties["removed"] = true;
+	freeChains.enqueue(cn);
+
+	while(!freeChains.isEmpty())
+	{
+		// family: chain node and sibling folding nodes
+		ChainNode* cnode = freeChains.dequeue();
+		QVector<FoldingNode*> fnodes = g_copy->getFoldingNodes(cnode->mID);
+
+		// collision links from family
+		QVector<Structure::Link*> collisionLinks = g_copy->getCollisionLinks(cnode->mID);
+		foreach (FoldingNode* fnode, fnodes)
+		{
+			collisionLinks += g_copy->getCollisionLinks(fnode->mID);
+		}
+
+		// remove collision links
+		gain += collisionLinks.size();
+		foreach (Structure::Link* link, collisionLinks)
+			g_copy->removeLink(link);
+
+		// update free chains 
+		foreach(ChainNode* cn, g_copy->getAllChainNodes())
+		{
+			if (!cn->properties["removed"].toBool() && g_copy->isFreeChainNode(cn->mID))
+			{
+				cn->properties["removed"] = true;
+				freeChains.enqueue(cn);
+			}
+		}
+	}
+
+	delete g_copy;
+
+	return gain;
+}
+
+void DependGraph::computeScores()
+{
+	foreach(FoldingNode* fnode, getAllFoldingNodes())
+	{
+		fnode->score = computeGain(fnode);
+	}
+}
+

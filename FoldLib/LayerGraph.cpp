@@ -82,3 +82,16 @@ FdGraph* LayerGraph::getChain( QString cid )
 
 	return NULL;
 }
+
+void LayerGraph::saveDependGraph()
+{
+	QString filePath = path + "/" + mID;
+	dy_graph->saveAsImage(filePath);
+}
+
+void LayerGraph::fold()
+{
+	buildDependGraph();
+	dy_graph->computeScores();
+	saveDependGraph();
+}

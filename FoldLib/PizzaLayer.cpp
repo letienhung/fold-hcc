@@ -102,8 +102,4 @@ void PizzaLayer::buildDependGraph()
 			}
 		}
 	}
-
-	// output dependency graph
-	QString filePath = path + "/" + mID;
-	dy_graph->saveAsImage(filePath);
 }

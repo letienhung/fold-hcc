@@ -13,14 +13,19 @@ public:
     LayerGraph(QVector<FdNode*> nodes, PatchNode* panel1, PatchNode* panel2, QString id);
 	~LayerGraph();
 
+	// selection
 	FdGraph* getSelChain();
 	FdGraph* activeScaffold();
 	void selectChain(QString id);
 	QStringList getChainLabels();
 
+	// getter
 	FdGraph* getChain(QString cid);
 
+	// fold
 	virtual void buildDependGraph() = 0;
+	void saveDependGraph();
+	void fold();
 
 public:
 	LAYER_TYPE mType;

@@ -15,10 +15,13 @@ Structure::Graph::Graph(Graph& other)
 
 	foreach (Link* l, other.links)	
 	{
-		addLink(l->clone());
-		l->node1 = getNode(l->nid1);
-		l->node2 = getNode(l->nid2);
+		Link* l_copy = l->clone();
+		addLink(l_copy);
+		l_copy->node1 = getNode(l->nid1);
+		l_copy->node2 = getNode(l->nid2);
 	}
+
+	properties = other.properties; 
 }
 
 Structure::Graph* Structure::Graph::clone()
