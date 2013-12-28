@@ -9,7 +9,7 @@
 class PizzaChain : public FdGraph
 {
 public:
-    PizzaChain(FdNode* part, PatchNode* panel, QString id);
+    PizzaChain(FdNode* part, PatchNode* panel);
 
 	Geom::SectorCylinder getFoldingVolume(FoldingNode* fn);
 

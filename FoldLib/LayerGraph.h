@@ -18,6 +18,8 @@ public:
 	void selectChain(QString id);
 	QStringList getChainLabels();
 
+	FdGraph* getChain(QString cid);
+
 	virtual void buildDependGraph() = 0;
 
 public:

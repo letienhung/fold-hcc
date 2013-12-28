@@ -51,3 +51,19 @@ void generateComplementBasis( Vector3& u, Vector3& v, const Vector3& w )
 		v[2] = w[0]*u[1];
 	}
 }
+
+Vector3 perpVector( const Vector3& n )
+{
+	if ((abs(n.y()) >= 0.9 * abs(n.x())) && abs(n.z()) >= 0.9 * abs(n.x())) 
+	{
+		return Vec3d(0.0, -n.z(), n.y());
+	}
+	else if ( abs(n.x()) >= 0.9 * abs(n.y()) && abs(n.z()) >= 0.9 * abs(n.y()) ) 
+	{
+		return Vec3d(-n.z(), 0.0, n.x());
+	}
+	else 
+	{
+		return Vec3d(-n.y(), n.x(), 0.0);
+	}
+}

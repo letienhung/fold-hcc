@@ -2,8 +2,8 @@
 #include "FdUtility.h"
 #include "RodNode.h"
 
-PizzaChain::PizzaChain( FdNode* part, PatchNode* panel, QString id )
-	:FdGraph(id)
+PizzaChain::PizzaChain( FdNode* part, PatchNode* panel )
+	:FdGraph(part->mID)
 {
 	// type
 	properties["type"] = "pizza";
@@ -38,11 +38,10 @@ PizzaChain::PizzaChain( FdNode* part, PatchNode* panel, QString id )
 	// v2
 	foreach (Geom::Segment hinge, hinges)
 	{
-		Vector3 v2 = mPanel->mPatch.getPerpAxis(hinge.Direction);
-		Vector3 crossV1V2 = cross(r1.Direction, v2);
-		if(dot(crossV1V2, axisSeg.Direction) < 0) v2 *= -1;
+		Vector3 crossAxisV1 = cross(axisSeg.Direction, r1.Direction);
+		Vector3 v2 = mPanel->mPatch.getProjectedVector(crossAxisV1);
 
-		v2s.push_back(v2);
+		v2s.push_back(v2.normalized());
 	}
 }
 

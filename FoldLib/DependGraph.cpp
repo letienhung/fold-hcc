@@ -22,11 +22,9 @@ DependGraph::DependGraph( DependGraph& other )
 {
 }
 
-
 DependGraph::~DependGraph()
 {
 }
-
 
 Structure::Graph* DependGraph::clone()
 {
@@ -46,7 +44,6 @@ void DependGraph::addNode( FoldingNode* fn )
 	fn->properties["type"] = "folding";
 }
 
-
 void DependGraph::addFoldingLink( Structure::Node* n1, Structure::Node* n2 )
 {
 	Structure::Link* link =  Graph::addLink(n1, n2);
@@ -59,15 +56,28 @@ void DependGraph::addCollisionLink( Structure::Node* n1, Structure::Node* n2 )
 	link->properties["type"] = "collision";
 }
 
-ChainNode* DependGraph::getChainNode( QString id )
+
+ChainNode* DependGraph::getChainNode( QString fnid )
 {
-	return (ChainNode*)getNode(id);
+	Structure::Link* l = getFoldinglinks(fnid)[0];
+	return (ChainNode*)l->getNodeOther(fnid);
 }
 
-QVector<FoldingNode*> DependGraph::getFoldingNodes( QString id )
+QVector<FoldingNode*> DependGraph::getFoldingNodes( QString cnid )
 {
 	QVector<FoldingNode*> fns;
-	foreach (Structure::Node* n, getNeighbourNodes(getNode(id)))
+	foreach(Structure::Link* l, getFoldinglinks(cnid))
+	{
+		fns.push_back((FoldingNode*) l->getNodeOther(cnid));
+	}
+
+	return fns;
+}
+
+QVector<FoldingNode*> DependGraph::getAllFoldingNodes()
+{
+	QVector<FoldingNode*> fns;
+	foreach(Structure::Node* n, nodes)
 	{
 		if (n->properties["type"].toString() == "folding")
 			fns << (FoldingNode*)n;
@@ -75,6 +85,47 @@ QVector<FoldingNode*> DependGraph::getFoldingNodes( QString id )
 
 	return fns;
 }
+
+QVector<ChainNode*> DependGraph::getAllChainNodes()
+{
+	QVector<ChainNode*> cns;
+	foreach(Structure::Node* n, nodes)
+	{
+		if (n->properties["type"].toString() == "chain")
+			cns << (ChainNode*)n;
+	}
+
+	return cns;
+}
+
+QVector<Structure::Link*> DependGraph::getFoldinglinks( QString nid )
+{
+	QVector<Structure::Link*> flinks;
+	foreach (Structure::Link* l, getLinks(nid))
+	{
+		if (l->properties["type"].toString() == "folding")
+		{
+			flinks.push_back(l);
+		}
+	}
+
+	return flinks;
+}
+
+QVector<Structure::Link*> DependGraph::getCollisionLinks( QString nid )
+{
+	QVector<Structure::Link*> clinks;
+	foreach (Structure::Link* l, getLinks(nid))
+	{
+		if (l->properties["type"].toString() == "collision")
+		{
+			clinks.push_back(l);
+		}
+	}
+
+	return clinks;
+}
+
 
 QString DependGraph::toGraphvizFormat( QString subcaption, QString caption )
 {
@@ -160,4 +211,3 @@ void DependGraph::saveAsImage( QString fname )
 	qDebug() << "Executing: " << dotPath << command;
 	system(qPrintable(command));
 }
-

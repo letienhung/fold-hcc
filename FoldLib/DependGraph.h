@@ -41,8 +41,12 @@ public:
 	void addFoldingLink(Structure::Node* n1, Structure::Node* n2);
 	void addCollisionLink(Structure::Node* n1, Structure::Node* n2);
 
-	ChainNode* getChainNode(QString id);
-	QVector<FoldingNode*> getFoldingNodes(QString id);
+	QVector<FoldingNode*>	getAllFoldingNodes();	// all folding nodes
+	QVector<ChainNode*>		getAllChainNodes();	// all chain nodes
+	QVector<FoldingNode*>	getFoldingNodes(QString cnid); // folding nodes of a chain node
+	ChainNode*				getChainNode(QString fnid); // chain node of a folding node
+	QVector<Structure::Link*> getFoldinglinks(QString nid);
+	QVector<Structure::Link*> getCollisionLinks(QString nid);
 
 	QString toGraphvizFormat(QString subcaption, QString caption);
 	void saveAsGraphviz(QString fname, QString subcaption = "", QString caption = "");

@@ -74,3 +74,11 @@ QStringList LayerGraph::getChainLabels()
 
 	return labels;
 }
+
+FdGraph* LayerGraph::getChain( QString cid )
+{
+	foreach(FdGraph* c, chains)
+		if(c->mID == cid) return c;
+
+	return NULL;
+}

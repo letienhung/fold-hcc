@@ -46,21 +46,7 @@ Geom::Rectangle::Rectangle(const Rectangle &r)
 	Center = r.Center;
 	Axis = r.Axis;
 	Extent = r.Extent;
-
-	Axis[0].normalize(); Axis[1].normalize();
-	Normal = cross(Axis[0], Axis[1]).normalized();
-}
-
-Geom::Rectangle& Geom::Rectangle::operator=(const Rectangle &r)
-{
-	Center = r.Center;
-	Axis = r.Axis;
-	Extent = r.Extent;
-
-	Axis[0].normalize(); Axis[1].normalize();
-	Normal = cross(Axis[0], Axis[1]).normalized();
-
-	return *this;
+	Normal = r.Normal;
 }
 
 void Geom::Rectangle::update(QVector<Vector3>& conners)
@@ -96,20 +82,11 @@ bool Geom::Rectangle::isCoplanarWith( Rectangle& other )
 	return true;
 }
 
-Vector2 Geom::Rectangle::getCoordinates( Vector3 p )
-{
-	Vector3 v = p - Center;
-	double x = dot(v, Axis[0])/Extent[0];
-	double y = dot(v, Axis[1])/Extent[1];
-	
-	return Vector2(x, y);
-}
-
 bool Geom::Rectangle::contains( Vector3 p)
 {
 	if (!this->isCoplanarWith(p)) return false;
 
-	Vector2 coord = this->getCoordinates(p);
+	Vector2 coord = this->getProjCoordinates(p);
 	double threshold = 1 + ZERO_TOLERANCE_LOW;
 
 	return (fabs(coord[0]) < threshold) 
@@ -170,14 +147,14 @@ QVector<Vector2> Geom::Rectangle::get2DConners()
 	return pnts;
 }
 
-SurfaceMesh::Vector2 Geom::Rectangle::getProjCoordinates( Vector3 p )
-{
-	Vector2 coord;
-	p = p - Center;
-	for (int i = 0; i < 2; i++)
-		coord[i] = dot(p, Axis[i]) / Extent[i];
 
-	return coord;
+Vector2 Geom::Rectangle::getProjCoordinates( Vector3 p )
+{
+	Vector3 v = p - Center;
+	double x = dot(v, Axis[0])/Extent[0];
+	double y = dot(v, Axis[1])/Extent[1];
+
+	return Vector2(x, y);
 }
 
 SurfaceMesh::Vector3 Geom::Rectangle::getPosition( const Vector2& c )
@@ -272,6 +249,16 @@ QStringList Geom::Rectangle::toStrList()
 		<< "Axis[0] = " + qStr(Axis[0])
 		<< "Axis[1] = " + qStr(Axis[1])
 		<< "Extent = " + qStr(Extent);
+}
+
+Vector3 Geom::Rectangle::getProjection( Vector3 p )
+{
+	return getPlane().getProjection(p);
+}
+
+SurfaceMesh::Vector3 Geom::Rectangle::getProjectedVector( Vector3 v )
+{
+	return getProjection(Center + v) - Center;
 }
 
 

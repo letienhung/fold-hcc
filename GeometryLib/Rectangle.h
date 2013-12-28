@@ -14,7 +14,6 @@ public:
     Rectangle(QVector<Vector3>& conners);
 	Rectangle(Vector3& c, QVector<Vector3>& a, Vector2& e);
 	Rectangle(const Rectangle &);
-	Rectangle &operator =(const Rectangle &);
 
 	void update(QVector<Vector3>& conners);
 	
@@ -27,21 +26,24 @@ public:
     bool contains(Rectangle& other);
 
 	// geometry
-	double area();
-	Plane getPlane();
-	QVector<Segment> getEdges();
-	QVector<Segment> getPerpEdges(Vector3 v);
-	QVector<Vector2> get2DConners();
-	QVector<Segment2> get2DEdges();
-	Segment2 getProjection2D(Segment s);
-	QVector<Vector3> getConners();
-	QVector<Vector3> getConnersReverse();
+	double  area();
+	Plane   getPlane();
 	Vector3 getPerpAxis(Vector3 v);
+	QVector<Segment>  getEdges();
+	QVector<Segment>  getPerpEdges(Vector3 v);
+	QVector<Vector2>  get2DConners();
+	QVector<Segment2> get2DEdges();
+	QVector<Vector3>  getConners();
+	QVector<Vector3>  getConnersReverse();
+
+	// projection
+	Segment2 getProjection2D(Segment s);
+	Vector3 getProjection(Vector3 p);
+	Vector3 getProjectedVector(Vector3 v);
 
 	// coordinates
 	Vector2 getProjCoordinates(Vector3 p);
 	Vector3 getPosition(const Vector2& c);
-	Vector2 getCoordinates(Vector3 p);
 
 	// visualization
 	void draw(QColor color = Qt::red);

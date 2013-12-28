@@ -172,3 +172,8 @@ QStringList Geom::Segment::toStrList()
 		<< "P1 = " + qStr(P1)
 		<< "Direction = " + qStr(Direction);
 }
+
+void Geom::Segment::translate( Vector3 t )
+{
+	set(P0 + t, P1 + t);
+}
