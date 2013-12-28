@@ -1,5 +1,4 @@
 #include "Circle.h"
-#include "AABB.h"
 
 #include <QApplication>
 #include <QDesktopWidget>
@@ -24,19 +23,16 @@ QFontMetrics * fm;
 #include "UiUtility/drawCube.h"
 #include "UiUtility/SimpleDraw.h"
 
-#include "MyDesigner.h"
+#include "MyAnimator.h"
 
 #include <QTime>
 extern QTime * globalTimer;
 
-MyDesigner::MyDesigner( Ui::DesignWidget * useDesignWidget, QWidget * parent /*= 0*/ ) : QGLViewer(parent)
+MyAnimator::MyAnimator(Ui::EvaluateWidget * useAnimWidget, QWidget * parent /*= 0*/ ) : QGLViewer(parent)
 {
-	this->designWidget = useDesignWidget;
+	this->evalWidget = useAnimWidget;
 
-	selectMode = SELECT_NONE;
 	skyRadius = 1.0;
-	gManager = NULL;
-	mBox = NULL;
 	isMousePressed = false;
 	loadedMeshHalfHight = 1.0;
 
@@ -52,23 +48,14 @@ MyDesigner::MyDesigner( Ui::DesignWidget * useDesignWidget, QWidget * parent /*=
 	// TEXT ON SCREEN
 	timerScreenText = new QTimer(this);
 	connect(timerScreenText, SIGNAL(timeout()), SLOT(dequeueLastMessage()));
-    connect(camera()->frame(), SIGNAL(manipulated()), SLOT(cameraMoved()));
-
-	//Visualization
-	connect(designWidget->showCuboid, SIGNAL(stateChanged(int)),  SLOT(showCuboids(int)));
-	connect(designWidget->showGraph, SIGNAL(stateChanged(int)),  SLOT(showGraph(int)));
-	connect(designWidget->showModel, SIGNAL(stateChanged(int)), SLOT(showModel(int)));
-
-	//Set cuboid property(Splittable, Scalable)
-	connect(designWidget->allowSplit, SIGNAL(stateChanged(int)),  SLOT(setSplittable(int)));
-	connect(designWidget->allowScale, SIGNAL(stateChanged(int)),  SLOT(setScalable(int)));
+	connect(camera()->frame(), SIGNAL(manipulated()), SLOT(cameraMoved()));
 
 	this->setMouseTracking(true);
 
 	viewTitle = "View";
 }
 
-void MyDesigner::init()
+void MyAnimator::init()
 {
 	// Lights
 	setupLights();
@@ -96,13 +83,13 @@ void MyDesigner::init()
 	if (!VBO::isVBOSupported()) std::cout << "VBO is not supported." << std::endl;
 }
 
-void MyDesigner::setupLights()
+void MyAnimator::setupLights()
 {
 	GLfloat lightColor[] = {0.9f, 0.9f, 0.9f, 1.0f};
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
 }
 
-void MyDesigner::setupCamera()
+void MyAnimator::setupCamera()
 {
 	camera()->setSceneRadius(10.0);
 	camera()->showEntireScene();
@@ -111,7 +98,7 @@ void MyDesigner::setupCamera()
 	camera()->lookAt(Vec());
 }
 
-void MyDesigner::cameraMoved()
+void MyAnimator::cameraMoved()
 {
 	if(camera()->type() != Camera::PERSPECTIVE)
 	{
@@ -127,7 +114,7 @@ void MyDesigner::cameraMoved()
 	}
 }
 
-void MyDesigner::preDraw()
+void MyAnimator::preDraw()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -160,10 +147,10 @@ void MyDesigner::preDraw()
 	glClear(GL_DEPTH_BUFFER_BIT);
 }
 
-void MyDesigner::drawShadows()
+void MyAnimator::drawShadows()
 {
 	if(!gManager || camera()->position().z < loadedMeshHalfHight) return;
-	
+
 	// Compute shadow matrix
 	GLfloat floorShadow[4][4];
 	GLfloat groundplane[4];
@@ -184,18 +171,13 @@ void MyDesigner::drawShadows()
 	glEnable(GL_LIGHTING);
 	glEnable(GL_DEPTH_TEST);
 	glPopMatrix();
-	
+
 }
 
-void MyDesigner::draw()
+void MyAnimator::draw()
 {
 	// No object to draw
 	if (isEmpty()) return;
-
-	if(selectMode == CUBOID && activeScaffold()){
-		designWidget->selectCuboidButton->setChecked(true);
-		activeScaffold()->showCuboids(true);
-	}
 
 	// The main object
 	if(activeScaffold()){
@@ -203,25 +185,18 @@ void MyDesigner::draw()
 		activeScaffold()->draw();
 	}
 
-	if(selectMode == BOX && activeScaffold()){
-		Geom::AABB aabb = activeScaffold()->computeAABB();
-		if(mBox == NULL)
-			mBox = new BBox(aabb.center(), (aabb.bbmax-aabb.bbmin)*0.5f);
-		mBox->draw();
-	}
-
 	glEnable(GL_BLEND);
 	//drawDebug();
 }
 
-void MyDesigner::drawDebug()
+void MyAnimator::drawDebug()
 {
 	glDisable(GL_LIGHTING);
-	
+
 	// DEBUG: Draw designer debug
 	glBegin(GL_POINTS);
-		glColor4d(1,0,0,1);
-		foreach(Vec p, debugPoints) glVertex3dv(p);
+	glColor4d(1,0,0,1);
+	foreach(Vec p, debugPoints) glVertex3dv(p);
 	glEnd();
 
 	glBegin(GL_LINES);
@@ -236,7 +211,7 @@ void MyDesigner::drawDebug()
 	glEnable(GL_LIGHTING);
 }
 
-void MyDesigner::drawObject()
+void MyAnimator::drawObject()
 {
 	if (VBO::isVBOSupported())
 	{
@@ -246,12 +221,12 @@ void MyDesigner::drawObject()
 		glEnable (GL_CULL_FACE);
 
 		if(isShow){
-		   drawObjectOutline();
+			drawObjectOutline();
 		}
 		/** Draw front-facing polygons as filled */
 		glPolygonMode (GL_FRONT, GL_FILL);
 		glCullFace (GL_BACK);
-		
+
 		/* Draw solid object */
 		for (QMap<QString, VBO>::iterator i = vboCollection.begin(); i != vboCollection.end(); ++i)
 		{
@@ -269,7 +244,7 @@ void MyDesigner::drawObject()
 	}
 }
 
-void MyDesigner::drawObjectOutline()
+void MyAnimator::drawObjectOutline()
 {
 	/** Draw back-facing polygons as red lines	*/
 	/* Disable lighting for outlining */
@@ -286,12 +261,12 @@ void MyDesigner::drawObjectOutline()
 	glColor3f (0.0f, 0.0f, 0.0f);
 	for (QMap<QString, VBO>::iterator i = vboCollection.begin(); i != vboCollection.end(); ++i)
 		i->render_depth();
-	
+
 	/* GL_LIGHTING_BIT | GL_LINE_BIT | GL_DEPTH_BUFFER_BIT */
 	glPopAttrib ();
 }
 
-QVector<uint> MyDesigner::fillTrianglesList(FdNode* n)
+QVector<uint> MyAnimator::fillTrianglesList(FdNode* n)
 {
 	// get face indices
 	QVector<uint> triangles;
@@ -311,12 +286,12 @@ QVector<uint> MyDesigner::fillTrianglesList(FdNode* n)
 	return triangles;
 }
 
-void MyDesigner::updateVBOs()
+void MyAnimator::updateVBOs()
 {
 	if(gManager && activeScaffold())
 	{
 		// Create VBO for each segment if needed
-	    QVector<FdNode*> nodes = activeScaffold()->getFdNodes();
+		QVector<FdNode*> nodes = activeScaffold()->getFdNodes();
 		for (int i=0;i<nodes.size();i++)
 		{			
 			QSharedPointer<SurfaceMeshModel> seg = nodes[i]->mMesh;
@@ -337,7 +312,7 @@ void MyDesigner::updateVBOs()
 	}
 }
 
-void MyDesigner::postDraw()
+void MyAnimator::postDraw()
 {
 	beginUnderMesh();
 
@@ -366,7 +341,7 @@ void MyDesigner::postDraw()
 	drawOSD();
 }
 
-void MyDesigner::drawViewChanger()
+void MyAnimator::drawViewChanger()
 {
 	int viewport[4];
 	int scissor[4];
@@ -390,7 +365,7 @@ void MyDesigner::drawViewChanger()
 	glColor4d(1,1,0.5,0.75); SimpleDraw::DrawCube(Vec3d(0,0,0),0.75f);
 
 	double scale = 1.0;
-	
+
 	std::vector<bool> hover(7, false);
 
 	int x = currMousePos2D.x(), y = currMousePos2D.y();
@@ -439,32 +414,8 @@ void MyDesigner::drawViewChanger()
 	glViewport(viewport[0],viewport[1],viewport[2],viewport[3]);
 }
 
-void MyDesigner::drawOSD()
+void MyAnimator::drawOSD()
 {
-	QStringList selectModeTxt, toolModeTxt;
-	selectModeTxt << "Camera" << "Cuboid"<<"Box";
-	toolModeTxt << "Freely move camera" << "Press shift to move camera" << "Press shift to move camera";
-
-	int paddingX = 15, paddingY = 5;
-
-	int pixelsHigh = fm->height();
-	int lineNum = 0;
-
-	#define padY(l) paddingX, paddingY + (l++ * pixelsHigh*2.5) + (pixelsHigh * 3)
-
-	/* Mode text */
-	drawMessage("Select mode: " + selectModeTxt[selectMode], padY(lineNum));
-	drawMessage(toolModeTxt[selectMode], width()- 100 - fm->width(toolModeTxt[selectMode])*0.5, paddingY + (pixelsHigh * 3), Vec4d(0.5,0.0,0.5,0.25));
-
-	if(!gManager) return; //|| !gManager->scaffold
-
-	if(selectMode == CUBOID){
-		QVector<Structure::Node*> nodes = activeScaffold()->getSelectedNodes();
-		foreach(Structure::Node *n, nodes)
-			drawMessage("Cuboid -" + n->mID, padY(lineNum), Vec4d(0,1.0,0,0.25));
-
-	}
-
 	// View changer title
 	qglColor(QColor(255,255,180,200));
 	renderText(width() - (90*0.5) - (fm->width(viewTitle)*0.5), height() - (fm->height()*0.3),viewTitle);
@@ -484,7 +435,7 @@ void MyDesigner::drawOSD()
 }
 
 
-void MyDesigner::drawMessage(QString message, int x, int y, Vec4d &backcolor, Vec4d &frontcolor)
+void MyAnimator::drawMessage(QString message, int x, int y, Vec4d &backcolor, Vec4d &frontcolor)
 {
 	int pixelsWide = fm->width(message);
 	int pixelsHigh = fm->height() * 1.5;
@@ -500,7 +451,7 @@ void MyDesigner::drawMessage(QString message, int x, int y, Vec4d &backcolor, Ve
 	drawText( x + margin * 0.5, y - (pixelsHigh * 0.5), message);
 }
 
-void MyDesigner::drawCircleFade(Vec4d &color, double radius)
+void MyAnimator::drawCircleFade(Vec4d &color, double radius)
 {
 	//glDisable(GL_LIGHTING);
 	Circle c(Vec3d(0,0,0), Vec3d(0,0,1), radius);
@@ -515,54 +466,49 @@ void MyDesigner::drawCircleFade(Vec4d &color, double radius)
 	//glEnable(GL_LIGHTING);
 }
 
-void MyDesigner::updateActiveObject()
+void MyAnimator::updateActiveObject()
 {
 	vboCollection.clear();
 
 	emit(objectUpdated());
 }
 
-GraphManager* MyDesigner::activeManager()
+GraphManager* MyAnimator::activeManager()
 {
 	return gManager;
 }
 
-FdGraph* MyDesigner::activeScaffold()
+FdGraph* MyAnimator::activeScaffold()
 {
-	return gManager->scaffold;
+	//return gManager->scaffold;
+	return 
 }
 
-bool MyDesigner::isEmpty()
+bool MyAnimator::isEmpty()
 {
 	return gManager == NULL;//->scaffold 
 }
 
-void MyDesigner::resetView()
+void MyAnimator::resetView()
 {
 	setupCamera();
 	camera()->setSceneRadius(gManager->scaffold->computeAABB().radius());
 	camera()->showEntireScene();
 }
 
-void MyDesigner::loadObject()
+void MyAnimator::loadConfig(int configId)
 {
-	clearButtons();
-	//selection.clear();
-
-	gManager = NULL;
-	mBox = NULL;
-	gManager = new GraphManager();
-	gManager->loadScaffold();
-	
-	Geom::AABB aabb = gManager->scaffold->computeAABB();
-	mBox = new BBox(aabb.center(), (aabb.bbmax-aabb.bbmin)*0.5f);
+	//gManager = NULL;
+	//gManager = new GraphManager();
+	//gManager->loadScaffold();
+    
 
 	setManipulatedFrame(activeFrame);
 
 	updateGL();
 }
 
-void MyDesigner::setActiveObject(GraphManager *gm)
+void MyAnimator::setActiveObject(GraphManager *gm)
 {
 	// Delete the original object
 	if (activeManager()&&activeScaffold())
@@ -585,14 +531,14 @@ void MyDesigner::setActiveObject(GraphManager *gm)
 	emit(objectInserted());
 }
 
-void MyDesigner::newScene()
+void MyAnimator::newScene()
 {
 	clearButtons();
 	if(activeManager())
 		emit( objectDiscarded());
 
 	//selection.clear();
-	
+
 	gManager = NULL;
 	mBox = NULL;
 	setWindowTitle(" ");
@@ -605,7 +551,7 @@ void MyDesigner::newScene()
 	updateGL();
 }
 
-void MyDesigner::mousePressEvent( QMouseEvent* e )
+void MyAnimator::mousePressEvent( QMouseEvent* e )
 {
 	QGLViewer::mousePressEvent(e);
 
@@ -624,8 +570,8 @@ void MyDesigner::mousePressEvent( QMouseEvent* e )
 				this->displayMessage("No face has been selected. Left click to select a face to push in");
 			}
 			else
-			    this->displayMessage("* Please CTRL + SCROLL THE MOUSE to squeeze the box *", 5000);
-		    updateGL();
+				this->displayMessage("* Please CTRL + SCROLL THE MOUSE to squeeze the box *", 5000);
+			updateGL();
 		}
 
 		if(selectMode == CUBOID && activeScaffold())
@@ -652,7 +598,7 @@ void MyDesigner::mousePressEvent( QMouseEvent* e )
 }
 
 
-void MyDesigner::mouseReleaseEvent( QMouseEvent* e )
+void MyAnimator::mouseReleaseEvent( QMouseEvent* e )
 {
 	QGLViewer::mouseReleaseEvent(e);
 
@@ -705,14 +651,14 @@ void MyDesigner::mouseReleaseEvent( QMouseEvent* e )
 			camera()->interpolateTo(f,0.25);camera()->setType(Camera::ORTHOGRAPHIC);
 			viewTitle = "Side";
 		}
-		
+
 		if(backside.contains(p)){
 			qglviewer::Frame f(Vec(0,3*meshWidth,0), qglviewer::Quaternion(Vec(0,0,1),Vec(0,1,0)));
 			f.rotate(qglviewer::Quaternion(Vec(0,0,1), M_PI));
 			camera()->interpolateTo(f,0.25);camera()->setType(Camera::ORTHOGRAPHIC);
 			viewTitle = "Back-side";
 		}
-		 
+
 		if(back.contains(p)){
 			qglviewer::Frame f(Vec(-3*meshLength,0,0), qglviewer::Quaternion(Vec(0,0,-1),Vec(1,0,0)));
 			f.rotate(qglviewer::Quaternion(Vec(0,0,-1), M_PI / 2.0));
@@ -740,7 +686,7 @@ void MyDesigner::mouseReleaseEvent( QMouseEvent* e )
 	updateGL();
 }
 
-void MyDesigner::mouseMoveEvent( QMouseEvent* e )
+void MyAnimator::mouseMoveEvent( QMouseEvent* e )
 {
 	QGLViewer::mouseMoveEvent(e);
 	currMousePos2D = e->pos();
@@ -760,10 +706,10 @@ void MyDesigner::mouseMoveEvent( QMouseEvent* e )
 
 }
 
-void MyDesigner::wheelEvent( QWheelEvent* e )
+void MyAnimator::wheelEvent( QWheelEvent* e )
 {
 	QGLViewer::wheelEvent(e);
- 
+
 	if(selectMode == BOX && (e->modifiers() & Qt::ControlModifier))
 	{
 		if(mBox->selPlaneID >= 0){
@@ -772,12 +718,12 @@ void MyDesigner::wheelEvent( QWheelEvent* e )
 			mBox->getBoxFaces();
 		}
 		else
-	        this->displayMessage("* Fail to push in the right direction *", 5000);
+			this->displayMessage("* Fail to push in the right direction *", 5000);
 		updateGL();
 	}		
 }
 
-void MyDesigner::keyPressEvent( QKeyEvent *e )
+void MyAnimator::keyPressEvent( QKeyEvent *e )
 {
 	if(e->key() == Qt::Key_L)
 	{
@@ -794,13 +740,13 @@ void MyDesigner::keyPressEvent( QKeyEvent *e )
 		QGLViewer::keyPressEvent(e);
 }
 
-void MyDesigner::saveObject()
+void MyAnimator::saveObject()
 {
 	if(activeManager() && activeScaffold())
 		gManager->saveScaffold();
 }
 
-void MyDesigner::beginUnderMesh()
+void MyAnimator::beginUnderMesh()
 {
 	if(isEmpty()) return;
 
@@ -808,18 +754,18 @@ void MyDesigner::beginUnderMesh()
 	glTranslated(0,0, loadedMeshHalfHight);
 }
 
-void MyDesigner::endUnderMesh()
+void MyAnimator::endUnderMesh()
 {
 	if(isEmpty()) return;
 	glPopMatrix();
 }
 
-void MyDesigner::drawWithNames()
+void MyAnimator::drawWithNames()
 {
 	activeScaffold()->drawWithNames();
 }
 
-void MyDesigner::postSelection( const QPoint& point )
+void MyAnimator::postSelection( const QPoint& point )
 {
 	if(currMousePos2D.x() > width() - 90 && currMousePos2D.y() > height() - 90)
 		return;
@@ -839,13 +785,13 @@ void MyDesigner::postSelection( const QPoint& point )
 	updateGL();
 }
 
-void MyDesigner::setSelectMode( SelectMode toMode )
+void MyAnimator::setSelectMode( SelectMode toMode )
 {
 	this->selectMode = toMode;
 }
 
 
-void MyDesigner::selectCuboidMode()
+void MyAnimator::selectCuboidMode()
 {
 	clearButtons();
 	if(isEmpty()){
@@ -867,7 +813,7 @@ void MyDesigner::selectCuboidMode()
 }
 
 
-void MyDesigner::selectCameraMode()
+void MyAnimator::selectCameraMode()
 {
 	clearButtons();
 	setManipulatedFrame(activeFrame);
@@ -875,7 +821,7 @@ void MyDesigner::selectCameraMode()
 	if(!activeManager()) return;
 
 	designWidget->selectCameraButton->setChecked(true);
-	
+
 	setMouseBinding(Qt::ShiftModifier | Qt::LeftButton, SELECT);
 	setMouseBinding(Qt::LeftButton, CAMERA, ROTATE);
 	activeScaffold()->showCuboids(designWidget->showCuboid->isChecked());
@@ -884,7 +830,7 @@ void MyDesigner::selectCameraMode()
 	updateGL();
 }
 
-void MyDesigner::selectAABBMode()
+void MyAnimator::selectAABBMode()
 {
 	clearButtons();
 	if(mBox == NULL){
@@ -897,11 +843,11 @@ void MyDesigner::selectAABBMode()
 	activeScaffold()->showCuboids(designWidget->showCuboid->isChecked());
 	this->setCursor(QCursor(QPixmap(":/Resources/push.png"), 0, 32));
 	setSelectMode(BOX);
-    selectTool();
+	selectTool();
 	this->displayMessage("* Left click to select a face to push in *", 5000);
 }
 
-void MyDesigner::selectTool()
+void MyAnimator::selectTool()
 {
 	if(gManager == NULL) return;
 
@@ -911,21 +857,21 @@ void MyDesigner::selectTool()
 	updateGL();
 }
 
-void MyDesigner::clearButtons()
+void MyAnimator::clearButtons()
 {
 	designWidget->selectCameraButton->setChecked(false);
 	designWidget->selectCuboidButton->setChecked(false);
 	designWidget->pushButton->setChecked(false);
 }
 
-void MyDesigner::print( QString message, long age )
+void MyAnimator::print( QString message, long age )
 {
 	osdMessages.enqueue(message);
 	timerScreenText->start(age);
 	updateGL();
 }
 
-void MyDesigner::dequeueLastMessage()
+void MyAnimator::dequeueLastMessage()
 {
 	if(!osdMessages.isEmpty()){
 		osdMessages.dequeue();
@@ -933,25 +879,25 @@ void MyDesigner::dequeueLastMessage()
 	}
 }
 
-void MyDesigner::showCuboids(int state)
+void MyAnimator::showCuboids(int state)
 {
 	gManager->scaffold->showCuboids(state);
 	updateGL();
 }
-void MyDesigner::showGraph(int state)
+void MyAnimator::showGraph(int state)
 {
 	gManager->scaffold->showScaffold(state);
 	updateGL();
 }
 
-void MyDesigner::showModel(int state)
+void MyAnimator::showModel(int state)
 {
 	gManager->scaffold->showMeshes(state);
 	isShow = (state == Qt::Checked);
 	updateGL();
 }
 
-void MyDesigner::setScalable(int state)
+void MyAnimator::setScalable(int state)
 {
 	bool isScalable = (state == Qt::Checked);
 	QVector <Structure::Node *> selectedNodes = activeScaffold()->getSelectedNodes();
@@ -959,7 +905,7 @@ void MyDesigner::setScalable(int state)
 		n->properties["isScalable"] = isScalable;
 }
 
-void MyDesigner::setSplittable(int state)
+void MyAnimator::setSplittable(int state)
 {
 	bool isSplittable = (state == Qt::Checked);
 	QVector <Structure::Node *> selectedNodes = activeScaffold()->getSelectedNodes();
