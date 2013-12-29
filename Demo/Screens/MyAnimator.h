@@ -9,7 +9,6 @@
 #include "SurfaceMeshNormalsHelper.h"
 #include "SurfaceMeshHelper.h"
 
-#include "UiUtility/BBox.h"
 #include "Screens/videoplayer/gui_player/VideoToolbar.h"
 
 #include "UiUtility/GL/VBO/VBO.h"
@@ -70,16 +69,19 @@ public:
 	ManipulatedFrame * activeFrame;
 
 	// TEXT ON SCREEN
+	QFontMetrics * fm;
 	QQueue<QString> osdMessages;
 	QTimer *timerScreenText;
 
 	// Mouse state
 	bool isMousePressed;
+	QPoint currMousePos2D;
 
 	// For scale
 	double loadedMeshHalfHight;
 
 	VideoToolbar *vti;
+	bool isPlaying;
 
 	// Hack
 	Ui::EvaluateWidget * evalWidget;
@@ -102,7 +104,8 @@ public:
 		void startAnimation();
 		void stopAnimation();
 		void animate();
-		void toggleplay(int frameId);
+		void toggleSlider(int frameId);
+		void togglePlay();
 
 public:
 	// DEBUG:

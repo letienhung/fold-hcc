@@ -13,18 +13,16 @@
 #include <QString>
 
 #include "qglviewer/camera.h"
+#include "MyAnimator.h"
 
 using namespace Geom;
 
-QFontMetrics * fm;
 // Misc.
 #include "UiUtility/sphereDraw.h"
 #include "UiUtility/drawRoundRect.h"
 #include "UiUtility/drawPlane.h"
 #include "UiUtility/drawCube.h"
 #include "UiUtility/SimpleDraw.h"
-
-#include "MyAnimator.h"
 
 #include <QTime>
 extern QTime * globalTimer;
@@ -58,9 +56,10 @@ MyAnimator::MyAnimator(Ui::EvaluateWidget * useAnimWidget, QWidget * parent /*= 
 	connect(camera()->frame(), SIGNAL(manipulated()), SLOT(cameraMoved()));
 
 	//Animation
-	connect(vti, SIGNAL(vti->valueChanged(int)), SLOT(toggleplay(int)));
+	isPlaying = false;
+	connect(vti, SIGNAL(vti->valueChanged(int)), SLOT(toggleSlider(int)));
 	connect(this, SIGNAL(setSliderValue(int)), vti, SLOT(vti->sliderChanged(int)));
-	//connect(vti, )
+	connect(vti->ui->playButton, SIGNAL(clicked()), SLOT(togglePlay()));
 
 	this->setMouseTracking(true);
 
@@ -656,7 +655,7 @@ void MyAnimator::mouseReleaseEvent( QMouseEvent* e )
 void MyAnimator::mouseMoveEvent( QMouseEvent* e )
 {
 	QGLViewer::mouseMoveEvent(e);
-
+	currMousePos2D = e->pos();
 	double scale = 90;
 	int x = e->pos().x(), y = e->pos().y();
 	if(x > width() - scale && y > height() - scale)
@@ -700,18 +699,29 @@ void MyAnimator::drawWithNames()
 	activeScaffold()->drawWithNames();
 }
 
+void MyAnimator::print( QString message, long age )
+{
+	osdMessages.enqueue(message);
+	timerScreenText->start(age);
+	updateGL();
+}
+
+void MyAnimator::dequeueLastMessage()
+{
+	if(!osdMessages.isEmpty()){
+		osdMessages.dequeue();
+		updateGL();
+	}
+}
+
 void MyAnimator::startAnimation()
 {
 	QGLViewer::startAnimation();
-
-	vti->ui->playButton->setText(vti->ui->playLabel->text());
 }
 
 void MyAnimator::stopAnimation()
 {
 	QGLViewer::stopAnimation();
-
-	vti->ui->playButton->setText(vti->ui->pauseLabel->text());
 }
 
 void MyAnimator::animate()
@@ -723,8 +733,29 @@ void MyAnimator::animate()
 	}
 }
 
-void MyAnimator::toggleplay(int frameId)
+void MyAnimator::toggleSlider(int frameId)
 {
 	mCurrGraphId = frameId;
 	updateGL();
+}
+
+void MyAnimator::togglePlay()
+{
+	QString label = vti->ui->playButton->text();
+
+	QString playLabel = vti->ui->playLabel->text();
+	QString pauseLabel = vti->ui->pauseLabel->text();
+
+	if(label != pauseLabel)
+	{
+		vti->ui->playButton->setText(pauseLabel);
+		isPlaying = true;
+		startAnimation();
+	}
+	else
+	{
+		vti->ui->playButton->setText(playLabel);
+		isPlaying = false;
+		stopAnimation();
+	}
 }
