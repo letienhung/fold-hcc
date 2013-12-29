@@ -172,10 +172,15 @@ void FoldManager::createLayerGraphs(Vector3 pushDirect)
 	}
 }
 
-void FoldManager::fold()
+void FoldManager::foldSelLayer()
 {
 	LayerGraph* lg = getSelLayer();
 	if (lg) lg->fold();
+}
+
+void FoldManager::fold()
+{
+	
 }
 
 void FoldManager::selectDcGraph( QString id )
@@ -265,5 +270,3 @@ LayerGraph* FoldManager::getSelLayer()
 	else
 		return NULL;
 }
-
-

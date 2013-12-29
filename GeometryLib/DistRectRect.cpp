@@ -1,5 +1,6 @@
 #include "DistRectRect.h"
 #include "DistSegRect.h"
+#include "Numeric.h"
 
 Geom::DistRectRect::DistRectRect( Rectangle& rect0, Rectangle& rect1 )
 {
@@ -12,7 +13,7 @@ Geom::DistRectRect::DistRectRect( Rectangle& rect0, Rectangle& rect1 )
 void Geom::DistRectRect::compute()
 {
 	// Compare edges of rectangle0 to the interior of rectangle1.
-	double sqrDist = std::numeric_limits<double>::max(), sqrDistTmp;
+	double sqrDist = maxDouble(), sqrDistTmp;
 	Segment edge;
 	int i0, i1;
 	for (i1 = 0; i1 < 2; ++i1)

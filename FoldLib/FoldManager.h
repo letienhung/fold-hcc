@@ -38,6 +38,7 @@ public slots:
 	void selectChain(QString id);
 
 	void fold();
+	void foldSelLayer();
 
 signals:
 	void selectionChanged();

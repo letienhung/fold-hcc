@@ -92,7 +92,6 @@ void FdPlugin::resetScene()
 
 void FdPlugin::test()
 {
-	qDebug() << getcwd();
 }
 
 

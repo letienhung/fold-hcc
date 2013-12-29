@@ -6,6 +6,7 @@
 #include "DistSegSeg.h"
 #include "DistSegRect.h"
 #include "DistRectRect.h"
+#include "Numeric.h"
 
 FdNodeArray2D clusterNodes( QVector<FdNode*> nodes, double disThr )
 {
@@ -132,7 +133,7 @@ double getDistance( FdNode* n1, FdNode* n2 )
 
 double getDistance( FdNode* n, QVector<FdNode*> nset )
 {
-	double minDist = std::numeric_limits<double>::max();
+	double minDist = maxDouble();
 	foreach (FdNode* to, nset)
 	{
 		double dist = getDistance(n, to);

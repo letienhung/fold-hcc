@@ -83,15 +83,50 @@ FdGraph* LayerGraph::getChain( QString cid )
 	return NULL;
 }
 
-void LayerGraph::saveDependGraph()
-{
-	QString filePath = path + "/" + mID;
-	dy_graph->saveAsImage(filePath);
-}
-
 void LayerGraph::fold()
 {
+	// output is a sequence
+	QVector<QString> chainSequence;
+	QVector<FoldingNode*> fnSequence;
+
+	// build up dependency graph
 	buildDependGraph();
-	dy_graph->computeScores();
-	saveDependGraph();
+
+	// set up tags
+	foreach(Structure::Node* node, dy_graph->nodes)
+	{
+		node->properties["visited"] = false;
+	}
+
+	// fold chain one by one
+	for (int i = 0; i < chains.size(); i++)
+	{
+		// update scores for each folding node
+		dy_graph->computeScores();
+
+		// output dependency graph
+		QString filePath = path + "/" + mID + "_" + QString::number(i);
+		dy_graph->saveAsImage(filePath);
+
+		// get best folding node
+		FoldingNode* best_fn = dy_graph->getBestFoldingNode();
+		ChainNode* best_cn = dy_graph->getChainNode(best_fn->mID);
+		chainSequence << best_cn->mID;
+		fnSequence << best_fn;
+
+		// exclude family nodes
+		foreach(Structure::Node* n, dy_graph->getFamilyNodes(best_fn->mID))
+		{
+			n->properties["visited"] = true;
+		}
+
+		// remove collision links incident to the family
+		foreach(Structure::Link* clink, dy_graph->getFamilyCollisionLinks(best_cn->mID))
+		{
+			dy_graph->removeLink(clink);
+		}
+	}
+
+	// folding sequence
+	qDebug() << "Folding sequence: " <<QStringList(chainSequence.toList());
 }

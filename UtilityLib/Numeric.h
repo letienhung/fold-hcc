@@ -83,3 +83,6 @@ double invSqrt (double value);
 void generateComplementBasis (Vector3& u, Vector3& v, const Vector3& w);
 
 Vector3 perpVector(const Vector3& n); 
+
+double minDouble();
+double maxDouble();

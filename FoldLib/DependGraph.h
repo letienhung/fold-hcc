@@ -44,18 +44,26 @@ public:
 	void addFoldingLink(Structure::Node* n1, Structure::Node* n2);
 	void addCollisionLink(Structure::Node* n1, Structure::Node* n2);
 
+	// verifier
+	bool verifyNodeType(QString nid, QString type);
+
 	// getters
+	QVector<FoldingNode*>	getSiblingFoldingNodes(QString fnid);
 	QVector<FoldingNode*>	getAllFoldingNodes();	// all folding nodes
 	QVector<FoldingNode*>	getFoldingNodes(QString cnid); // folding nodes of a chain node
 	QVector<ChainNode*>		getAllChainNodes();	// all chain nodes
 	ChainNode*				getChainNode(QString fnid); // chain node of a folding node
 	QVector<Structure::Link*> getFoldinglinks(QString nid);
 	QVector<Structure::Link*> getCollisionLinks(QString nid);
+	QVector<Structure::Node*> getFamilyNodes(QString nid);
+	QVector<Structure::Link*> getFamilyCollisionLinks(QString nid);
 
-	// gain of each folding node
+	// fold
 	int computeGain(FoldingNode* fnode);
+	int computeCost(FoldingNode* fnode);
 	void computeScores();
 	bool isFreeChainNode(QString cnid);
+    FoldingNode* getBestFoldingNode();
 
 	// visualize
 	QString toGraphvizFormat(QString subcaption, QString caption);

@@ -67,3 +67,13 @@ Vector3 perpVector( const Vector3& n )
 		return Vec3d(-n.y(), n.x(), 0.0);
 	}
 }
+
+double maxDouble()
+{
+	return std::numeric_limits<double>::max();
+}
+
+double minDouble()
+{
+	return - maxDouble();
+}

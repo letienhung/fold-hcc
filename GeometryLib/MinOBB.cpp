@@ -42,7 +42,7 @@ void Geom::MinOBB::compute( QVector<Vector3> &points )
  
     int hullQuantity = kHull.getNumSimplices();
     QVector<int> hullIndices = kHull.getIndices();
-    Real volume, minVolume = std::numeric_limits<double>::max();
+    Real volume, minVolume = maxDouble();
 
     // Create the unique set of hull vertices to minimize the time spent
     // projecting vertices onto planes of the hull faces.

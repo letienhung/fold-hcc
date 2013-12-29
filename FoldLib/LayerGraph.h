@@ -23,9 +23,8 @@ public:
 	FdGraph* getChain(QString cid);
 
 	// fold
+	virtual void fold();
 	virtual void buildDependGraph() = 0;
-	void saveDependGraph();
-	void fold();
 
 public:
 	LAYER_TYPE mType;

@@ -64,7 +64,7 @@ void Geom::DistLineRect::compute()
 	// rectangle or (2) the line and rectangle are parallel.  Regardless, the
 	// closest point on the rectangle is on an edge of the rectangle.  Compare
 	// the line to all four edges of the rectangle.
-	double sqrDist = std::numeric_limits<double>::max();
+	double sqrDist = maxDouble();
 	Vector3 scaledDir[2] =
 	{
 		mRectangle->Extent[0]*mRectangle->Axis[0],

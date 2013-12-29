@@ -43,7 +43,7 @@ private:
 		m_rot[2].x() = r.z(); m_rot[2].y()=u.z(); m_rot[2].z()=f.z();
 
 		// now build the bounding box extents in the rotated frame
-		double max_dbl = std::numeric_limits<double>::max(), min_dbl = std::numeric_limits<double>::min();
+		double max_dbl = maxDouble(), min_dbl = -maxDouble();
 		Vec3d minim(max_dbl, max_dbl, max_dbl);
 		Vec3d maxim(min_dbl, min_dbl, min_dbl);
 

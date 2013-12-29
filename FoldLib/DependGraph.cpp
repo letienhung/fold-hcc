@@ -8,6 +8,7 @@
 #include <QFileDialog>
 #include "UtilityGlobal.h"
 #include <QQueue>
+#include "Numeric.h"
 
 
 ChainNode::ChainNode( int idx, QString id )
@@ -93,8 +94,17 @@ void DependGraph::addCollisionLink( Structure::Node* n1, Structure::Node* n2 )
 }
 
 
+bool DependGraph::verifyNodeType( QString nid, QString type )
+{
+	Structure::Node* node = getNode(nid);
+	return (node && node->properties["type"] == type);
+}
+
+
 ChainNode* DependGraph::getChainNode( QString fnid )
 {
+	if (!verifyNodeType(fnid, "folding")) return NULL;
+
 	Structure::Link* l = getFoldinglinks(fnid)[0];
 	return (ChainNode*)l->getNodeOther(fnid);
 }
@@ -102,6 +112,8 @@ ChainNode* DependGraph::getChainNode( QString fnid )
 QVector<FoldingNode*> DependGraph::getFoldingNodes( QString cnid )
 {
 	QVector<FoldingNode*> fns;
+	if (!verifyNodeType(cnid, "chain")) return fns;
+
 	foreach(Structure::Link* l, getFoldinglinks(cnid))
 	{
 		fns.push_back((FoldingNode*) l->getNodeOther(cnid));
@@ -109,6 +121,16 @@ QVector<FoldingNode*> DependGraph::getFoldingNodes( QString cnid )
 
 	return fns;
 }
+
+
+QVector<FoldingNode*> DependGraph::getSiblingFoldingNodes( QString fnid )
+{
+	if (verifyNodeType(fnid, "chain")) 
+		return getFoldingNodes(getChainNode(fnid)->mID);
+	else
+		return QVector<FoldingNode*>();
+}
+
 
 QVector<FoldingNode*> DependGraph::getAllFoldingNodes()
 {
@@ -275,6 +297,14 @@ bool DependGraph::isFreeChainNode( QString cnid )
 	return isFree;
 }
 
+
+int DependGraph::computeCost( FoldingNode* fnode )
+{
+	QVector<Structure::Link*> clinks = getCollisionLinks(fnode->mID);
+
+	return clinks.size() * 10;
+}
+
 int DependGraph::computeGain( FoldingNode* fnode )
 {
 	int gain = 0;
@@ -285,39 +315,32 @@ int DependGraph::computeGain( FoldingNode* fnode )
 	// exclude all free chains by themselves
 	foreach(ChainNode* cnode, g_copy->getAllChainNodes())
 	{
-		cnode->properties["removed"] = g_copy->isFreeChainNode(cnode->mID);
+		cnode->properties["visited"] = g_copy->isFreeChainNode(cnode->mID);
 	}
 
 	// propagate 
 	QQueue<ChainNode*> freeChains;
 	ChainNode* cn = g_copy->getChainNode(fnode->mID);
-	cn->properties["removed"] = true;
+	cn->properties["visited"] = true;
 	freeChains.enqueue(cn);
 
 	while(!freeChains.isEmpty())
 	{
-		// family: chain node and sibling folding nodes
 		ChainNode* cnode = freeChains.dequeue();
-		QVector<FoldingNode*> fnodes = g_copy->getFoldingNodes(cnode->mID);
-
-		// collision links from family
-		QVector<Structure::Link*> collisionLinks = g_copy->getCollisionLinks(cnode->mID);
-		foreach (FoldingNode* fnode, fnodes)
-		{
-			collisionLinks += g_copy->getCollisionLinks(fnode->mID);
-		}
 
 		// remove collision links
-		gain += collisionLinks.size();
-		foreach (Structure::Link* link, collisionLinks)
+		foreach (Structure::Link* link, g_copy->getFamilyCollisionLinks(cnode->mID))
+		{
 			g_copy->removeLink(link);
+			gain ++;
+		}
 
 		// update free chains 
 		foreach(ChainNode* cn, g_copy->getAllChainNodes())
 		{
-			if (!cn->properties["removed"].toBool() && g_copy->isFreeChainNode(cn->mID))
+			if (!cn->properties["visited"].toBool() && g_copy->isFreeChainNode(cn->mID))
 			{
-				cn->properties["removed"] = true;
+				cn->properties["visited"] = true;
 				freeChains.enqueue(cn);
 			}
 		}
@@ -332,7 +355,55 @@ void DependGraph::computeScores()
 {
 	foreach(FoldingNode* fnode, getAllFoldingNodes())
 	{
-		fnode->score = computeGain(fnode);
+		double gain = computeGain(fnode);
+		double cost = computeCost(fnode);
+
+		fnode->score = gain - cost;
 	}
+}
+
+FoldingNode* DependGraph::getBestFoldingNode()
+{
+	FoldingNode* best_fn = NULL;
+	double best_score = -maxDouble();
+	foreach (FoldingNode* fn, getAllFoldingNodes())
+	{
+		if (!fn->properties["visited"].toBool())
+		{
+			if (fn->score > best_score)
+			{
+				best_score = fn->score;
+				best_fn = fn;
+			}
+		}
+	}
+
+	return best_fn;
+}
+
+QVector<Structure::Node*> DependGraph::getFamilyNodes( QString nid )
+{
+	QVector<Structure::Node*> family;
+
+	Structure::Node* node = getNode(nid);
+	ChainNode* cnode = (node->properties["type"] == "chain") ? 
+						(ChainNode*)node : getChainNode(nid);
+
+	family << cnode;
+	foreach(FoldingNode* fn, getFoldingNodes(cnode->mID))
+		family << fn;
+
+	return family;
+}
+
+QVector<Structure::Link*> DependGraph::getFamilyCollisionLinks( QString nid )
+{
+	QVector<Structure::Link*> clinks;
+	foreach(Structure::Node* node, getFamilyNodes(nid))
+	{
+		clinks += getCollisionLinks(node->mID);
+	}
+
+	return clinks;
 }
 

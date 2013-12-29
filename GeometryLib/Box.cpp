@@ -355,7 +355,7 @@ double Geom::Box::calcFrontierWidth( int fid, const QVector<Vector3>& pnts, bool
 	int axisID = fid / 3;
 	bool isNeg = fid % 3;
 
-	double maxWidth = std::numeric_limits<double>::min();
+	double maxWidth = -maxDouble();
 	foreach(Vector3 p, pnts)
 	{
 		// off from face
