@@ -29,9 +29,5 @@ public:
 	QString	mID;
 	bool isSelected;
     PropertyMap properties;
-
-	bool isSplittable;
-	bool isScalable;
 };
-
 }

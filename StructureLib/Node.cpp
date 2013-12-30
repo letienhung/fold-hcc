@@ -6,8 +6,8 @@ Structure::Node::Node( QString nid )
 	mID = nid;
 	isSelected = false;
 
-	isSplittable = true;
-	isScalable = true;
+	properties["isSplittable"] = true;
+	properties["isScalable"] = true;
 }
 
 Structure::Node::Node(Node &other)
@@ -16,8 +16,8 @@ Structure::Node::Node(Node &other)
 	isSelected = other.isSelected;
 	properties = other.properties;
 
-	isSplittable = true;
-	isScalable = true;
+	properties["isSplittable"] = true;
+	properties["isScalable"] = true;
 }
 
 bool Structure::Node::hasId( QString id )
