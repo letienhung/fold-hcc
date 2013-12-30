@@ -30,10 +30,15 @@ Structure::Graph* Structure::Graph::clone()
 }
 
 
+void Structure::Graph::clearLinks()
+{
+	links.clear();
+}
+
 void Structure::Graph::clear()
 {
 	nodes.clear();
-	links.clear();
+	clearLinks();
 }
 
 void Structure::Graph::addNode(Node* node)

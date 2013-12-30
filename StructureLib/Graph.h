@@ -23,6 +23,7 @@ public:
 	void replaceNode(Node* old_node, Node* new_node);
 	void removeLink(Link* link);
 	void clear();
+	void clearLinks();
 
 	// Accessors
 	int		nbNodes();

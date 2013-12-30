@@ -88,8 +88,6 @@ void LayerGraph::fold()
 	buildDependGraph();
 	computeChainSequence();
 
-	return;
-
 	for (int i = 0; i < chainSequence.size(); i++)
 	{
 		ChainGraph* chain = getChain(chainSequence[i]);

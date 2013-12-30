@@ -9,13 +9,13 @@
 class FdLink : public Structure::Link
 {
 public:
-    FdLink(FdNode* n1, FdNode* n2, Hinge* h);
+    FdLink(FdNode* n1, FdNode* n2, Hinge* h = NULL);
 	FdLink(FdLink& other);
 	~FdLink();
 
 	Link* clone();
 
-	void fix();
+	bool fix();
 	void draw();
 
 public:

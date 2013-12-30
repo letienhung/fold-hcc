@@ -36,11 +36,13 @@ void FdLink::draw()
 {
 }
 
-void FdLink::fix()
+bool FdLink::fix()
 {
-	if (hinge) hinge->fix();
+	if (hinge) 
+		return hinge->fix();
 
 	// to avoid infinity loop
 	node1->properties["fixed"] = true;
 	node2->properties["fixed"] = true;
+	return true;
 }

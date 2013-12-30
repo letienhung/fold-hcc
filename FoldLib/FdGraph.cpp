@@ -322,7 +322,7 @@ void FdGraph::restoreConfiguration()
 		foreach(Structure::Link* l, getLinks(anode->mID))
 		{
 			FdLink* fl = (FdLink*)l;
-			if (fl->hinge.fix()) 
+			if (fl->fix()) 
 			{
 				Structure::Node* other_node = l->getNodeOther(anode->mID);
 				activeNodes.enqueue((FdNode*)other_node);
