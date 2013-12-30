@@ -30,6 +30,7 @@ public:
 	QVector<Geom::Rectangle> mFaces;
 	QVector<Vector3> Axis;
 	Vector3 Extent;
+	Vector3 origExt;
 
 	// Selected plane and axis
 	bool isSelected;

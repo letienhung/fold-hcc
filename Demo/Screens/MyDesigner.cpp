@@ -18,9 +18,6 @@ using namespace Geom;
 
 QFontMetrics * fm;
 // Misc.
-//#include "UiUtility/sphereDraw.h"
-//#include "UiUtility/drawRoundRect.h"
-//#include "UiUtility/drawPlane.h"
 #include "UiUtility/SimpleDraw.h"
 
 #include "MyDesigner.h"
@@ -40,6 +37,7 @@ MyDesigner::MyDesigner( Ui::DesignWidget * useDesignWidget, QWidget * parent /*=
 	loadedMeshHalfHight = 1.0;
 
 	isShow = true;
+	scalePercent = 0.0;
 
 	fm = new QFontMetrics(QFont());
 
@@ -206,6 +204,7 @@ void MyDesigner::draw()
 		Geom::AABB aabb = activeScaffold()->computeAABB();
 		if(mBox == NULL){
 			mBox = new BBox(aabb.center(), (aabb.bbmax-aabb.bbmin)*0.5f);
+			scalePercent = 0.0;
 		}
 		mBox->draw();
 	}
@@ -556,6 +555,7 @@ void MyDesigner::loadObject()
 	
 	Geom::AABB aabb = activeScaffold()->computeAABB();
 	mBox = new BBox(aabb.center(), (aabb.bbmax-aabb.bbmin)*0.5f);
+	scalePercent = 0.0;
 
 	setManipulatedFrame(activeFrame);
 
@@ -768,6 +768,11 @@ void MyDesigner::wheelEvent( QWheelEvent* e )
 	{
 		if(mBox->selPlaneID >= 0){
 			double factor =  0.05 * (e->delta() / 120.0);
+			scalePercent += factor;
+			if(fabs(scalePercent) > 1){
+				scalePercent -= factor;
+				factor = 0.0;
+			}
 			mBox->deform(factor);
 			mBox->getBoxFaces();
 		}

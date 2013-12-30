@@ -18,10 +18,6 @@
 using namespace Geom;
 
 // Misc.
-//#include "UiUtility/sphereDraw.h"
-//#include "UiUtility/drawRoundRect.h"
-//#include "UiUtility/drawPlane.h"
-//#include "UiUtility/drawCube.h"
 #include "UiUtility/SimpleDraw.h"
 
 #include <QTime>

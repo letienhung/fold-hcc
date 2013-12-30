@@ -19,6 +19,7 @@ BBox::BBox(const Point& c, const QVector<Vector3>& axis, const Vector3& ext)
 	Center = c;
 	Axis = axis;
 	Extent = ext;
+	origExt = Extent;
 	
 	isSelected = false;
 	getBoxFaces();
@@ -31,6 +32,7 @@ BBox::BBox(const BBox &b)
 	Center = b.Center;
 	Axis = b.Axis;
 	Extent = b.Extent;
+    origExt = Extent;
 
 	isSelected = b.isSelected;
 	getBoxFaces();
@@ -43,6 +45,8 @@ BBox &BBox::operator =(const BBox &b)
 	Center = b.Center;
 	Axis = b.Axis;
 	Extent = b.Extent;
+	origExt = Extent;
+
 	isSelected = b.isSelected;
 	getBoxFaces();
 	selPlaneID = b.selPlaneID;
@@ -60,6 +64,8 @@ BBox::BBox(const Point& c, const Vector3& ext)
     axis[2] = Vector3(0.0f,0.0f,1.0f);
 	Axis = axis;
 	Extent = ext;
+	origExt = Extent;
+
 	isSelected = false;
 	getBoxFaces();
 	selPlaneID = -1;
@@ -160,7 +166,7 @@ void BBox::getBoxFaces()
 	for (int i = 0; i < 6; i++)	{
 		QVector<Vector3> conners;
 		for (int j = 0; j < 4; j++)	{
-			conners.push_back( pnts[cubeIds[i][j] ] );
+			conners.push_back( pnts[cubeIds[i][j]] );
 		}
 		//mFaces[i] = Geom::Rectangle(conners);
 		mFaces.push_back(Geom::Rectangle(conners));
@@ -287,20 +293,32 @@ void BBox::deform(double f)
 		return;
 	double sgn = f/fabs(f);
 	//double factor = (fabs(f) > 2*Extent[axisID])?(sgn*(fabs(f) - 2*Extent[axisID])):f;
-	double factor = f * 2 * Extent[axisID];
+	double factor = f * 2 * origExt[axisID];
 	int paral = getParallelFace(mFaces[selPlaneID]);
+	
 	if(paral < 0)
 		return;
 
-	if(mFaces[selPlaneID].Center[axisID]>Center[axisID] 
-	   && fabs(factor) > 2*Extent[axisID]){
-			factor = sgn*2*Extent[axisID];		
+	/*if(mFaces[selPlaneID].Center[axisID]>Center[axisID] 
+	&& fabs(factor) > 2*Extent[axisID]){
+	factor = sgn*2*Extent[axisID];		
 	}
 	else if(mFaces[selPlaneID].Center[axisID]<Center[axisID] 
-	        && fabs(factor) > 2*Extent[axisID]){
-			factor = sgn*2*Extent[axisID];	
+	&& fabs(factor) > 2*Extent[axisID]){
+	factor = sgn*2*Extent[axisID];	
 	}
-    
+	else if(mFaces[selPlaneID].Center[axisID] == Center[axisID] 
+	&& preSgn < 0 && preCenter[axisID] > mFaces[selPlaneID].Center[axisID]){
+	factor = 0.0; 
+	}
+	else if(mFaces[selPlaneID].Center[axisID] == Center[axisID] 
+	&& preSgn > 0 && preCenter[axisID] < mFaces[selPlaneID].Center[axisID]){
+	factor = 0.0; 
+	}
+
+	preSgn = sgn;
+	preCenter = Center;*/
+
 	QVector<Point> newConners = mFaces[selPlaneID].getConners();
 	for(int i = 0; i < newConners.size(); i++){
 		newConners[i][axisID] += factor;///(2*Extent[axisID]);
