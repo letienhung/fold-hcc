@@ -37,7 +37,10 @@ public:
 	void showCuboids(bool show);
 	void showMeshes(bool show);
 	void showScaffold(bool show);
-	
+
+	// configuration
+	void restoreConfiguration();
+
 public:
 	QString path;
 	bool showAABB;

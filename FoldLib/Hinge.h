@@ -18,13 +18,14 @@
 class Hinge
 {
 public:
+	Hinge();
 	Hinge(FdNode* n1, FdNode* n2, Vector3 c, Vector3 x, Vector3 y, Vector3 z, double extent);
 
 	FdNode	*node1, *node2;
 
 	Vector3	Origin;						// contact point
 	Vector3	hX, hY, hZ;					// axis and dihedral directions
-	double zExtent;
+	double  zExtent;					// for visualization
 
 	double	angle, maxAngle;			// angle <v1, v2> in radians
 	Geom::Frame	zxFrame, zyFrame;		// dihedral frames

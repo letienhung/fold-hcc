@@ -10,18 +10,21 @@
 #include "Numeric.h"
 
 
-FdLink::FdLink( FdNode* n1, FdNode* n2)
+FdLink::FdLink( FdNode* n1, FdNode* n2, Hinge* h)
 	: Link(n1, n2)
 {
+	hinge = h;
 }
 
 FdLink::FdLink( FdLink& other )
 	:Link(other)
 {
+	// to do: clone hinge
 }
 
 FdLink::~FdLink()
 {
+	delete hinge;
 }
 
 Structure::Link* FdLink::clone()
@@ -31,4 +34,13 @@ Structure::Link* FdLink::clone()
 
 void FdLink::draw()
 {
+}
+
+void FdLink::fix()
+{
+	if (hinge) hinge->fix();
+
+	// to avoid infinity loop
+	node1->properties["fixed"] = true;
+	node2->properties["fixed"] = true;
 }

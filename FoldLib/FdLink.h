@@ -9,17 +9,17 @@
 class FdLink : public Structure::Link
 {
 public:
-    FdLink(FdNode* n1, FdNode* n2);
+    FdLink(FdNode* n1, FdNode* n2, Hinge* h);
 	FdLink(FdLink& other);
 	~FdLink();
 
-	virtual Link* clone();
+	Link* clone();
 
-	void detectHinges();
-	void detectHinges(PatchNode* base, PatchNode* branch);
-	void detectHinges(RodNode* rnode, PatchNode* pnode);
+	void fix();
+	void draw();
 
-	virtual void draw();
+public:
+	Hinge* hinge;
 };
 
 

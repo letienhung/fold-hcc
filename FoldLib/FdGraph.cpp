@@ -303,3 +303,30 @@ void FdGraph::changeNodeType( FdNode* n )
 	// replace
 	replaceNode(n, new_node);
 }
+
+
+void FdGraph::restoreConfiguration()
+{
+	QQueue<FdNode*> activeNodes;
+	foreach(FdNode* fn, getFdNodes())
+	{
+		if (fn->properties["fixed"].toBool())
+		{
+			activeNodes.enqueue(fn);
+		}
+	}
+
+	while (!activeNodes.isEmpty())
+	{
+		FdNode* anode = activeNodes.dequeue();
+		foreach(Structure::Link* l, getLinks(anode->mID))
+		{
+			FdLink* fl = (FdLink*)l;
+			if (fl->hinge.fix()) 
+			{
+				Structure::Node* other_node = l->getNodeOther(anode->mID);
+				activeNodes.enqueue((FdNode*)other_node);
+			}
+		}
+	}
+}
