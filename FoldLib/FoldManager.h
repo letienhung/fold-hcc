@@ -19,6 +19,9 @@ public:
 	int selId;
 	QVector<DcGraph*> dcGraphs;
 
+	// folding results
+	QVector< QVector<FdGraph*> > results;
+
 public:
 	void createLayerGraphs(Vector3 pushDirect); 
 
@@ -29,9 +32,18 @@ public:
 
 	LayerGraph* getSelLayer();
 
-public slots:
+// MAIN UI ACCESS
+public slots:	
+	// 1. set up shape to be folded (once)
 	void setScaffold(FdGraph* fdg);
-	void setPushAxis(int aid);
+	// 2. after user selected folding direction (once per axis)
+	// \aid = 0(X), 1(Y), 2(Z)
+	void foldAlongAxis(int aid);
+	// 3. invoke when a folding percentage is picked (multiple times)
+	// \pc \in (0, 1]
+	void generateFdKeyFrames(double pc);
+
+public slots:
 	void createLayerGraphs();
 	void selectDcGraph(QString id);
 	void selectLayer(QString id);

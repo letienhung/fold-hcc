@@ -46,7 +46,7 @@ void FoldManager::setScaffold( FdGraph* fdg )
 	updateLists();
 }
 
-void FoldManager::setPushAxis( int d )
+void FoldManager::foldAlongAxis( int d )
 {
 	pushAxis = d;
 }
@@ -269,4 +269,9 @@ LayerGraph* FoldManager::getSelLayer()
 	}
 	else
 		return NULL;
+}
+
+void FoldManager::generateFdKeyFrames( double pc )
+{
+
 }
