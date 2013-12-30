@@ -25,6 +25,7 @@ class MyAnimator : public QGLViewer{
 public:
 	MyAnimator(Ui::EvaluateWidget * useAnimWidget, QWidget * parent = 0);
 	~MyAnimator(){}
+	void addSlider();
 
 	//Draw 
 	void init();

@@ -18,10 +18,10 @@
 using namespace Geom;
 
 // Misc.
-#include "UiUtility/sphereDraw.h"
-#include "UiUtility/drawRoundRect.h"
-#include "UiUtility/drawPlane.h"
-#include "UiUtility/drawCube.h"
+//#include "UiUtility/sphereDraw.h"
+//#include "UiUtility/drawRoundRect.h"
+//#include "UiUtility/drawPlane.h"
+//#include "UiUtility/drawCube.h"
 #include "UiUtility/SimpleDraw.h"
 
 #include <QTime>
@@ -47,23 +47,26 @@ MyAnimator::MyAnimator(Ui::EvaluateWidget * useAnimWidget, QWidget * parent /*= 
 	activeFrame = new ManipulatedFrame();
 	setManipulatedFrame(activeFrame);
 
-	VideoToolbar *vti = new VideoToolbar;
-	this->evalWidget->viewerAreaLayout->addWidget(vti);
-
 	// TEXT ON SCREEN
 	timerScreenText = new QTimer(this);
 	connect(timerScreenText, SIGNAL(timeout()), SLOT(dequeueLastMessage()));
 	connect(camera()->frame(), SIGNAL(manipulated()), SLOT(cameraMoved()));
+
+	this->setMouseTracking(true);
+
+	viewTitle = "View";
+}
+
+void MyAnimator::addSlider()
+{
+	VideoToolbar *vti = new VideoToolbar;
+	this->evalWidget->viewerAreaLayout->addWidget(vti);
 
 	//Animation
 	isPlaying = false;
 	connect(vti, SIGNAL(vti->valueChanged(int)), SLOT(toggleSlider(int)));
 	connect(this, SIGNAL(setSliderValue(int)), vti, SLOT(vti->sliderChanged(int)));
 	connect(vti->ui->playButton, SIGNAL(clicked()), SLOT(togglePlay()));
-
-	this->setMouseTracking(true);
-
-	viewTitle = "View";
 }
 
 void MyAnimator::init()
@@ -146,7 +149,7 @@ void MyAnimator::preDraw()
 	setBackgroundColor(QColor(208,212,240));
 
 	// Draw fancy effects:
-	drawSolidSphere(skyRadius,30,30, true, true); // Sky dome
+	SimpleDraw::drawSolidSphere(skyRadius,30,30, true, true); // Sky dome
 
 	beginUnderMesh();
 	double floorOpacity = 0.25; 
@@ -165,9 +168,9 @@ void MyAnimator::drawShadows()
 	// Compute shadow matrix
 	GLfloat floorShadow[4][4];
 	GLfloat groundplane[4];
-	findPlane(groundplane, Vec3d(0,0,0), Vec3d(-1,0,0), Vec3d(-1,-1,0));
+	SimpleDraw::findPlane(groundplane, Vec3d(0,0,0), Vec3d(-1,0,0), Vec3d(-1,-1,0));
 	GLfloat lightpos[4] = {0.0,0.0,8,1};
-	shadowMatrix(floorShadow,groundplane, lightpos);
+	SimpleDraw::shadowMatrix(floorShadow,groundplane, lightpos);
 
 	glScaled(1.1,1.1,0);
 	glPushMatrix();
@@ -456,7 +459,7 @@ void MyAnimator::drawMessage(QString message, int x, int y, Vec4d &backcolor, Ve
 
 	this->startScreenCoordinatesSystem();
 	glEnable(GL_BLEND);
-	drawRoundRect(x, y,pixelsWide + margin, pixelsHigh * 1.5, backcolor, 5);
+	SimpleDraw::drawRoundRect(x, y,pixelsWide + margin, pixelsHigh * 1.5, backcolor, 5);
 	this->stopScreenCoordinatesSystem();
 
 	glColor4d(frontcolor[0],frontcolor[1],frontcolor[2],frontcolor[3]);
@@ -726,6 +729,7 @@ void MyAnimator::stopAnimation()
 
 void MyAnimator::animate()
 {
+	if(isEmpty()) return;
 	for(int i = 0; i < mGraphs[mCurrConfigId].size(); i++){
 		mCurrGraphId = i;
 		updateGL();

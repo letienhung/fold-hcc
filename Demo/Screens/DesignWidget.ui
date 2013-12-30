@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>901</width>
+    <width>907</width>
     <height>648</height>
    </rect>
   </property>
@@ -190,7 +190,7 @@
          <property name="minimumSize">
           <size>
            <width>150</width>
-           <height>90</height>
+           <height>130</height>
           </size>
          </property>
          <property name="maximumSize">
@@ -202,13 +202,13 @@
          <property name="title">
           <string>Fold</string>
          </property>
-         <widget class="QWidget" name="">
+         <widget class="QWidget" name="layoutWidget">
           <property name="geometry">
            <rect>
             <x>1</x>
             <y>14</y>
-            <width>156</width>
-            <height>71</height>
+            <width>152</width>
+            <height>112</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -290,6 +290,67 @@
             <widget class="QLabel" name="label">
              <property name="text">
               <string> *Ctrl + Scroll to squeeze Box*</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="FoldButton">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>140</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>145</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="layoutDirection">
+              <enum>Qt::LeftToRight</enum>
+             </property>
+             <property name="autoFillBackground">
+              <bool>false</bool>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">QPushButton{
+	background:qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 #b6d14c, stop:1 #83a01c);
+	color: white;
+	border: 1px solid #97B134;
+	font-family: 'Open Sans', sans-serif;
+	font-size: 16px;
+    border-radius: 5px;
+}
+
+QPushButton:hover{
+    background:qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 #bbda4c, stop:1 #83a01d);
+}
+
+QPushButton:pressed{
+   background:qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 #83a01c, stop:1 #b6d14c);
+}</string>
+             </property>
+             <property name="text">
+              <string>Foldabilization!</string>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>16</width>
+               <height>16</height>
+              </size>
+             </property>
+             <property name="autoDefault">
+              <bool>false</bool>
              </property>
             </widget>
            </item>

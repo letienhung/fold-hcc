@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1404</width>
+    <width>1530</width>
     <height>881</height>
    </rect>
   </property>
@@ -64,7 +64,7 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>466</width>
+            <width>635</width>
             <height>650</height>
            </size>
           </property>
@@ -74,8 +74,6 @@
           <property name="frameShadow">
            <enum>QFrame::Raised</enum>
           </property>
-          <zorder>quickView</zorder>
-          <zorder></zorder>
          </widget>
         </item>
        </layout>

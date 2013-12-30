@@ -18,10 +18,9 @@ using namespace Geom;
 
 QFontMetrics * fm;
 // Misc.
-#include "UiUtility/sphereDraw.h"
-#include "UiUtility/drawRoundRect.h"
-#include "UiUtility/drawPlane.h"
-#include "UiUtility/drawCube.h"
+//#include "UiUtility/sphereDraw.h"
+//#include "UiUtility/drawRoundRect.h"
+//#include "UiUtility/drawPlane.h"
 #include "UiUtility/SimpleDraw.h"
 
 #include "MyDesigner.h"
@@ -148,7 +147,7 @@ void MyDesigner::preDraw()
 	setBackgroundColor(QColor(208,212,240));
 
 	// Draw fancy effects:
-	drawSolidSphere(skyRadius,30,30, true, true); // Sky dome
+	SimpleDraw::drawSolidSphere(skyRadius,30,30, true, true); // Sky dome
 
 	beginUnderMesh();
 	double floorOpacity = 0.25; 
@@ -167,9 +166,9 @@ void MyDesigner::drawShadows()
 	// Compute shadow matrix
 	GLfloat floorShadow[4][4];
 	GLfloat groundplane[4];
-	findPlane(groundplane, Vec3d(0,0,0), Vec3d(-1,0,0), Vec3d(-1,-1,0));
+	SimpleDraw::findPlane(groundplane, Vec3d(0,0,0), Vec3d(-1,0,0), Vec3d(-1,-1,0));
 	GLfloat lightpos[4] = {0.0,0.0,8,1};
-	shadowMatrix(floorShadow,groundplane, lightpos);
+	SimpleDraw::shadowMatrix(floorShadow,groundplane, lightpos);
 
 	glScaled(1.1,1.1,0);
 	glPushMatrix();
@@ -205,8 +204,9 @@ void MyDesigner::draw()
 
 	if(selectMode == BOX && activeScaffold()){
 		Geom::AABB aabb = activeScaffold()->computeAABB();
-		if(mBox == NULL)
+		if(mBox == NULL){
 			mBox = new BBox(aabb.center(), (aabb.bbmax-aabb.bbmin)*0.5f);
+		}
 		mBox->draw();
 	}
 
@@ -493,7 +493,7 @@ void MyDesigner::drawMessage(QString message, int x, int y, Vec4d &backcolor, Ve
 
 	this->startScreenCoordinatesSystem();
 	glEnable(GL_BLEND);
-	drawRoundRect(x, y,pixelsWide + margin, pixelsHigh * 1.5, backcolor, 5);
+	SimpleDraw::drawRoundRect(x, y,pixelsWide + margin, pixelsHigh * 1.5, backcolor, 5);
 	this->stopScreenCoordinatesSystem();
 
 	glColor4d(frontcolor[0],frontcolor[1],frontcolor[2],frontcolor[3]);

@@ -43,8 +43,8 @@ MainWindow::MainWindow(QWidget *parent, Qt::WFlags flags)
 	connect(ui.actionNewScene, SIGNAL(triggered()), SLOT(addNewScene()));
 	connect(ui.actionImportObject, SIGNAL(triggered()), SLOT(importObject()));
 	connect(ui.actionExportObject, SIGNAL(triggered()), SLOT(exportObject()));
-	//nextButtonTutorial(); // to test Designer
-	//nextButtonEvaluate(); // test Send data
+
+	connect(designWidget->FoldButton, SIGNAL(clicked()),SLOT(fold()));
 
 	//initTutorial();
 }
@@ -159,7 +159,15 @@ void MainWindow::initDesign()
 
 void MainWindow::initEvaluation()
 {
+	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
+	// Add viewer
+	clearLayoutItems(evalWidget->viewerAreaLayout);
+	animator = new MyAnimator(evalWidget);
+	evalWidget->viewerAreaLayout->addWidget(animator );
+	animator->addSlider();
+
+	QApplication::restoreOverrideCursor();
 }
 
 void MainWindow::initQuickView()
@@ -303,6 +311,11 @@ QString MainWindow::selectedFile()
 {
 	if(activeViewer) return activeViewer->graphFileName();
 	return "";
+}
+
+void MainWindow::fold()
+{
+
 }
 
 LoaderThread::LoaderThread(QuickMeshViewer * v, QString file_name)

@@ -1,10 +1,36 @@
-#pragma once
+﻿#pragma once
+
+#include "UtilityGlobal.h"
 
 #include "SurfaceMeshHelper.h"
 #include <vector>
+#include <math.h>
+#include "Numeric.h"
 #define StdVector std::vector
 
+typedef struct
+{
+	float x;
+	float y;
+
+} Vect2f;
+
+#define roundf(x) (floor(x+0.5f))
+
 using namespace SurfaceMesh;
+
+static int CubeIds[6][4] = 
+{
+	1, 2, 6, 5,
+	0, 4, 7, 3,
+	4, 5, 6, 7,
+	0, 3, 2, 1,
+	0, 1, 5, 4,
+	2, 3, 7, 6
+};
+
+enum {X, Y, Z, W};
+enum {A, B, C, D};
 
 class SimpleDraw
 {
@@ -12,8 +38,8 @@ public:
 
 	// POINTS
 	static void IdentifyPoint(const Vec3d& p, float r = 1.0, float g = 0.2f, float b = 0.2f, float pointSize = 10.0);
-        static void IdentifyPoint2(Vec3d &p);
-        static void IdentifyPoints(const StdVector<Vec3d > & points, Vec4d &c = Vec4d(1,0,0,1), float pointSize = 10.0 );
+    static void IdentifyPoint2(Vec3d &p);
+    static void IdentifyPoints(const StdVector<Vec3d > & points, Vec4d &c = Vec4d(1,0,0,1), float pointSize = 10.0 );
 	static void IdentifyConnectedPoints(StdVector<Vec3d> & points, float r = 0.4f, float g = 1.0, float b = 0.2f);
 	static void IdentifyConnectedPoints2(StdVector<Vec3d> & points, float r = 0.4f, float g = 1.0, float b = 0.2f );
 
@@ -62,5 +88,16 @@ public:
 	// Misc.
 	static void drawCornerAxis(const double * cameraOrientation);
 
+	static void drawRoundRect(int x, int y, int width, int height, Vec4d &color = Vec4d(0,0,0,0.5),int radius = 25, int resolution = 64);
+
+	static void fghCircleTable(double **sint,double **cost, const int n);
+
+	static void drawSolidSphere(double radius, int slices, int stacks, bool half = false, bool magical = false);
+
 	static QVector<Vec4d> RandomColors(int count);
+	
+	/* Find the plane equation given 3 points. */
+	static void findPlane(float plane[4], Vec3d &v0, Vec3d &v1, Vec3d &v2);
+	static void shadowMatrix(float shadowMat[4][4], float groundplane[4], float lightpos[4]);
+
 };

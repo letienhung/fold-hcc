@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <QQueue>
 #include <QStack>
@@ -42,8 +42,6 @@ public:
 	void endUnderMesh();
 	void drawOSD();
 
-	//void animate();
-
 	// VBOS
 	QMap<QString, VBO> vboCollection;
 	void updateVBOs();
@@ -66,6 +64,7 @@ public:
 	// Object in the scene
 	GraphManager* gManager;
 	BBox * mBox;
+    double scalePercent;
 	bool isShow;
 	
 	GraphManager* activeManager();

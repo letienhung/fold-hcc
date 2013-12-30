@@ -4,6 +4,7 @@
 #include "ui_MainWindow.h"
 #include "Screens/UiUtility/QuickMeshViewer.h"
 #include "Screens/MyDesigner.h"
+#include "Screens/MyAnimator.h"
 #include "FoldManager.h"
 
 // Theora player
@@ -63,6 +64,7 @@ public:
 	Ui::EvaluateWidget * evalWidget;
 
 	MyDesigner  *designer;
+	MyAnimator *animator;
 	//GraphManager* mGManager;
 	FoldManager* mFManager;
 
@@ -103,17 +105,16 @@ public slots:
 	void setActiveViewer(QuickMeshViewer*);
 	void refresh();
 
-	//void screenChanged(int newScreenIndex);
+	void fold();
 
 private:
 	Ui::MainWindow ui;
 
 	void setFoldManager(FoldManager *fm);
 
-	//QStringList tasksFileName, tasksFiles;
-	//QMap<QString, double> tasksTarget;
-	//QVector<QLabel *> tasksLabel;r
-	//QMap<QString, QMap<QString, QString> > taskResults;
+signals:
+	void selectConfig(int);
+
 };
 
 #include <QThread>

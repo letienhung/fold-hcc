@@ -50,11 +50,10 @@ win32:LIBS += -L"./Screens/project/GUI/Viewer/libQGLViewer/QGLViewer/lib" \
     -l./Screens/videoplayer/theoraplayer
 
 HEADERS += ./Screens/MyDesigner.h \
-    ./Screens/UiUtility/drawCube.h \
-    ./Screens/UiUtility/drawPlane.h \
-    ./Screens/UiUtility/drawRoundRect.h \
-    ./Screens/UiUtility/sphereDraw.h \
     ./Screens/UiUtility/BBox.h \
+    ./Screens/UiUtility/SimpleDraw.h\
+	./Screens/UiUtility/GL/VBO/VBO.h\
+    ./Screens/UiUtility/GL/Glee.h\
     ./resource.h \
     ./MainWindow.h \
     ./Screens/videoplayer/gui_player/VideoToolbar.h \
@@ -64,7 +63,6 @@ HEADERS += ./Screens/MyDesigner.h \
 
 SOURCES += ./Screens/MyDesigner.cpp \
     ./Screens/UiUtility/BBox.cpp \
-    ./Screens/UiUtility/Triangle.cpp \
     ./Screens/UiUtility/SimpleDraw.cpp\
     ./Screens/UiUtility/GL/VBO/VBO.cpp \
     ./Screens/UiUtility/GL/Glee.c\

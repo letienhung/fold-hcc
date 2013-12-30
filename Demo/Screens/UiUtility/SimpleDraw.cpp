@@ -1009,3 +1009,407 @@ void SimpleDraw::DrawCircles( const StdVector<Vec3d>& centers, const StdVector<d
 	for(int i = 0; i < (int) centers.size(); i++)
 		DrawCircle(centers[i], radius[i], c, normal, lineWidth);
 }
+
+void SimpleDraw::findPlane(float plane[4], Vec3d &v0, Vec3d &v1, Vec3d &v2)
+{
+	GLfloat vec0[3], vec1[3];
+
+	/* Need 2 vectors to find cross product. */
+	vec0[X] = v1[X] - v0[X];
+	vec0[Y] = v1[Y] - v0[Y];
+	vec0[Z] = v1[Z] - v0[Z];
+
+	vec1[X] = v2[X] - v0[X];
+	vec1[Y] = v2[Y] - v0[Y];
+	vec1[Z] = v2[Z] - v0[Z];
+
+	/* find cross product to get A, B, and C of plane equation */
+	plane[A] = vec0[Y] * vec1[Z] - vec0[Z] * vec1[Y];
+	plane[B] = -(vec0[X] * vec1[Z] - vec0[Z] * vec1[X]);
+	plane[C] = vec0[X] * vec1[Y] - vec0[Y] * vec1[X];
+
+	plane[D] = -(plane[A] * v0[X] + plane[B] * v0[Y] + plane[C] * v0[Z]);
+}
+
+void SimpleDraw::shadowMatrix(float shadowMat[4][4], float groundplane[4], float lightpos[4])
+{
+	GLfloat dot;
+	/* Find dot product between light position vector and ground plane normal. */
+	dot = groundplane[X] * lightpos[X] + groundplane[Y] * lightpos[Y] +
+		groundplane[Z] * lightpos[Z] + groundplane[W] * lightpos[W];
+
+	shadowMat[0][0] = dot - lightpos[X] * groundplane[X];
+	shadowMat[1][0] = 0.f - lightpos[X] * groundplane[Y];
+	shadowMat[2][0] = 0.f - lightpos[X] * groundplane[Z];
+	shadowMat[3][0] = 0.f - lightpos[X] * groundplane[W];
+
+	shadowMat[X][1] = 0.f - lightpos[Y] * groundplane[X];
+	shadowMat[1][1] = dot - lightpos[Y] * groundplane[Y];
+	shadowMat[2][1] = 0.f - lightpos[Y] * groundplane[Z];
+	shadowMat[3][1] = 0.f - lightpos[Y] * groundplane[W];
+
+	shadowMat[X][2] = 0.f - lightpos[Z] * groundplane[X];
+	shadowMat[1][2] = 0.f - lightpos[Z] * groundplane[Y];
+	shadowMat[2][2] = dot - lightpos[Z] * groundplane[Z];
+	shadowMat[3][2] = 0.f - lightpos[Z] * groundplane[W];
+
+	shadowMat[X][3] = 0.f - lightpos[W] * groundplane[X];
+	shadowMat[1][3] = 0.f - lightpos[W] * groundplane[Y];
+	shadowMat[2][3] = 0.f - lightpos[W] * groundplane[Z];
+	shadowMat[3][3] = dot - lightpos[W] * groundplane[W];
+}
+
+void SimpleDraw::drawRoundRect(int x,int y,int width,int height, Vec4d &color,int radius,int resolution)
+{
+	float step = ( 2.0f * M_PI ) / resolution,
+		angle = 0.0f,
+		x_offset,
+		y_offset;
+
+	int i = 0;
+
+	unsigned int index = 0,
+		segment_count = ( int )( resolution / 4 );
+
+	Vect2f *top_left     = ( Vect2f * ) malloc( segment_count * sizeof( Vect2f ) ), 
+		*bottom_left       = ( Vect2f * ) malloc( segment_count * sizeof( Vect2f ) ),
+		*top_right         = ( Vect2f * ) malloc( segment_count * sizeof( Vect2f ) ),
+		*bottom_right      = ( Vect2f * ) malloc( segment_count * sizeof( Vect2f ) ),
+		bottom_left_corner = { x + radius, y - height + radius }; 
+
+	while( i != segment_count )
+	{
+		x_offset = cosf( angle );
+		y_offset = sinf( angle );
+
+		top_left[ index ].x = bottom_left_corner.x - 
+			( x_offset * radius );
+		top_left[ index ].y = ( height - ( radius * 2.0f ) ) + 
+			bottom_left_corner.y - 
+			( y_offset * radius );
+
+		top_right[ index ].x = ( width - ( radius * 2.0f ) ) + 
+			bottom_left_corner.x + 
+			( x_offset * radius );
+		top_right[ index ].y = ( height - ( radius * 2.0f ) ) + 
+			bottom_left_corner.y -
+			( y_offset * radius );
+
+		bottom_right[ index ].x = ( width - ( radius * 2.0f ) ) +
+			bottom_left_corner.x + 
+			( x_offset * radius );
+		bottom_right[ index ].y = bottom_left_corner.y + 
+			( y_offset * radius );
+
+		bottom_left[ index ].x = bottom_left_corner.x - 
+			( x_offset * radius );
+		bottom_left[ index ].y = bottom_left_corner.y +
+			( y_offset * radius );
+
+		top_left[ index ].x = roundf( top_left[ index ].x );
+		top_left[ index ].y = roundf( top_left[ index ].y );
+
+		top_right[ index ].x = roundf( top_right[ index ].x );
+		top_right[ index ].y = roundf( top_right[ index ].y );
+
+		bottom_right[ index ].x = roundf( bottom_right[ index ].x );
+		bottom_right[ index ].y = roundf( bottom_right[ index ].y );
+
+		bottom_left[ index ].x = roundf( bottom_left[ index ].x );
+		bottom_left[ index ].y = roundf( bottom_left[ index ].y );
+
+		angle -= step;
+
+		++index;
+		++i;
+	}
+
+	glBegin( GL_TRIANGLE_STRIP );
+	{
+		// Top
+		{
+			i = 0;
+			while( i != segment_count )
+			{
+
+				glColor4d(color[0],color[1],color[2],color[3]);
+				glVertex2i( top_left[ i ].x,
+					top_left[ i ].y );
+
+				glColor4d(color[0],color[1],color[2],color[3]);
+				glVertex2i( top_right[ i ].x,
+					top_right[ i ].y );
+
+				++i;
+			}
+		}
+
+		// In order to stop and restart the strip.
+		glColor4d(color[0],color[1],color[2],color[3]);
+		glVertex2i( top_right[ 0 ].x,
+			top_right[ 0 ].y );
+
+		glColor4d(color[0],color[1],color[2],color[3]);
+		glVertex2i( top_right[ 0 ].x,
+			top_right[ 0 ].y );
+
+		// Center
+		{
+
+			glColor4d(color[0],color[1],color[2],color[3]);
+			glVertex2i( top_right[ 0 ].x,
+				top_right[ 0 ].y );
+
+			glColor4d(color[0],color[1],color[2],color[3]);
+			glVertex2i( top_left[ 0 ].x,
+				top_left[ 0 ].y );
+
+			glColor4d(color[0],color[1],color[2],color[3]);
+			glVertex2i( bottom_right[ 0 ].x,
+				bottom_right[ 0 ].y );
+
+			glColor4d(color[0],color[1],color[2],color[3]);
+			glVertex2i( bottom_left[ 0 ].x,
+				bottom_left[ 0 ].y );
+		}
+
+		// Bottom
+		i = 0;
+		while( i != segment_count )
+		{
+			glColor4d(color[0],color[1],color[2],color[3]);
+			glVertex2i( bottom_right[ i ].x,
+				bottom_right[ i ].y );    
+
+			glColor4d(color[0],color[1],color[2],color[3]);
+			glVertex2i( bottom_left[ i ].x,
+				bottom_left[ i ].y );                                    
+
+			++i;
+		}    
+	}
+	glEnd();
+
+	glBegin( GL_LINE_STRIP );
+	glColor4d(color[0],color[1],color[2],color[3]);
+	// Border
+	{
+		i = ( segment_count - 1 );
+		while( i > -1 )
+		{    
+			glVertex2i( top_left[ i ].x,
+				top_left[ i ].y );
+
+			--i;
+		}
+
+		i = 0;
+		while( i != segment_count )
+		{    
+			glVertex2i( bottom_left[ i ].x,
+				bottom_left[ i ].y );
+
+			++i;
+		}
+
+		i = ( segment_count - 1 );
+		while( i > -1 )
+		{    
+			glVertex2i( bottom_right[ i ].x,
+				bottom_right[ i ].y );
+
+			--i;
+		}
+
+		i = 0;
+		while( i != segment_count )
+		{    
+			glVertex2i( top_right[ i ].x,
+				top_right[ i ].y );
+
+			++i;
+		}
+
+		// Close the border.
+		glVertex2i( top_left[ ( segment_count - 1 ) ].x,
+			top_left[ ( segment_count - 1 ) ].y );
+	}
+	glEnd();
+
+	glBegin( GL_LINES );
+	glColor4f( 0.0f, 0.5f, 1.0f, 1.0f );
+	// Separator
+	{
+		// Top bar
+		glVertex2i( top_right[ 0 ].x,
+			top_right[ 0 ].y );
+
+		glVertex2i( top_left[ 0 ].x,
+			top_left[ 0 ].y );    
+
+
+		// Bottom bar
+		glVertex2i( bottom_left[ 0 ].x,
+			bottom_left[ 0 ].y );    
+
+		glVertex2i( bottom_right[ 0 ].x,
+			bottom_right[ 0 ].y );    
+	}
+	glEnd();
+
+	free( top_left );
+	free( bottom_left );
+	free( top_right );
+	free( bottom_right );
+}
+
+void SimpleDraw::fghCircleTable(double **sint,double **cost, const int n)
+{
+    int i;
+
+    /* Table size, the sign of n flips the circle direction */
+
+    const int size = abs(n);
+
+    /* Determine the angle between samples */
+
+    const double angle = 2*M_PI/(double)( ( n == 0 ) ? 1 : n );
+
+    /* Allocate memory for n samples, plus duplicate of first entry at the end */
+
+    *sint = (double *) calloc(sizeof(double), size+1);
+    *cost = (double *) calloc(sizeof(double), size+1);
+
+    /* Bail out if memory allocation fails, fgError never returns */
+
+    if (!(*sint) || !(*cost))
+    {
+        free(*sint);
+        free(*cost);
+    }
+
+    /* Compute cos and sin around the circle */
+
+    (*sint)[0] = 0.0;
+    (*cost)[0] = 1.0;
+
+    for (i=1; i<size; i++)
+    {
+        (*sint)[i] = sin(angle*i);
+        (*cost)[i] = cos(angle*i);
+    }
+
+    /* Last sample is duplicate of the first */
+
+    (*sint)[size] = (*sint)[0];
+    (*cost)[size] = (*cost)[0];
+}
+
+/*
+ * Draws a solid sphere
+ */
+void SimpleDraw::drawSolidSphere(double radius, int slices, int stacks, bool half, bool magical)
+{
+    int i,j;
+
+    /* Adjust z and radius as stacks are drawn. */
+    double z0,z1;
+    double r0,r1;
+
+    /* Pre-computed circle */
+    double *sint1,*cost1;
+    double *sint2,*cost2;
+
+    fghCircleTable(&sint1,&cost1,-slices);
+    fghCircleTable(&sint2,&cost2,stacks*2);
+
+    /* The top stack is covered with a triangle fan */
+
+    z0 = 1.0;
+    z1 = cost2[(stacks>0)?1:0];
+    r0 = 0.0;
+    r1 = sint2[(stacks>0)?1:0];
+
+	if(magical) {
+		glDisable(GL_LIGHTING);
+		glColor4d(1,1,1,1);
+
+		glCullFace(GL_FRONT);
+		glEnable(GL_CULL_FACE);
+	}
+
+	glShadeModel(GL_SMOOTH);
+
+    glBegin(GL_TRIANGLE_FAN);
+
+        glNormal3d(0,0,1);
+        glVertex3d(0,0,radius);
+
+        for (j=slices; j>=0; j--)
+        {
+            glNormal3d(cost1[j]*r1,        sint1[j]*r1,        z1       );
+            glVertex3d(cost1[j]*r1*radius, sint1[j]*r1*radius, z1*radius);
+        }
+
+    glEnd();
+
+	double s = 2.0;
+
+    /* Cover each stack with a quad strip, except the top and bottom stacks */
+    for( i=1; i<stacks-1; i++ )
+    {
+        z0 = z1; z1 = cost2[i+1];
+        r0 = r1; r1 = sint2[i+1];
+
+		if(half && i >= stacks / 2) break;
+
+        glBegin(GL_QUAD_STRIP);
+
+            for(j=0; j<=slices; j++)
+            {
+				if(half && magical) {glColor4d(1,1,1, Min(1,s * (1 - (double(i+1) / (double(stacks) / 2.0)))));}
+                glNormal3d(cost1[j]*r1,        sint1[j]*r1,        z1       );
+                glVertex3d(cost1[j]*r1*radius, sint1[j]*r1*radius, z1*radius);
+
+
+				if(half && magical) {glColor4d(1,1,1, Min(1,s * (1 - (double(i) / (double(stacks) / 2.0)))));}
+                glNormal3d(cost1[j]*r0,        sint1[j]*r0,        z0       );
+                glVertex3d(cost1[j]*r0*radius, sint1[j]*r0*radius, z0*radius);
+            }
+
+        glEnd();
+    }
+
+    /* The bottom stack is covered with a triangle fan */
+    z0 = z1;
+    r0 = r1;
+
+    glBegin(GL_TRIANGLE_FAN);
+
+        glNormal3d(0,0,-1);
+        glVertex3d(0,0,-radius);
+
+        for (j=0; j<=slices; j++)
+        {
+			if(half) break;
+
+            glNormal3d(cost1[j]*r0,        sint1[j]*r0,        z0       );
+            glVertex3d(cost1[j]*r0*radius, sint1[j]*r0*radius, z0*radius);
+        }
+
+    glEnd();
+
+	if(magical)
+	{
+		glCullFace(GL_BACK);
+		glDisable(GL_CULL_FACE);
+		glEnable(GL_LIGHTING);
+	}
+
+    /* Release sin and cos tables */
+
+    free(sint1);
+    free(cost1);
+    free(sint2);
+    free(cost2);
+}
