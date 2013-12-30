@@ -101,7 +101,7 @@ bool Hinge::fix()
 		free_node->mBox.setFrame( free_nf ); 
 		// step 2: snap two nodes
 		Vector3 hc_free = free_node->mBox.getPosition(free_hr.c_box);
-		free_node->translate(this->Origin - hc_free);
+		//free_node->translate(this->Origin - hc_free);
 		free_node->properties["fixed"] = true;
 
 		this->highlighted = true;

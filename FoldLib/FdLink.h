@@ -9,7 +9,7 @@
 class FdLink : public Structure::Link
 {
 public:
-    FdLink(FdNode* n1, FdNode* n2, bool detect = true);
+    FdLink(FdNode* n1, FdNode* n2);
 	FdLink(FdLink& other);
 	~FdLink();
 
@@ -20,9 +20,6 @@ public:
 	void detectHinges(RodNode* rnode, PatchNode* pnode);
 
 	virtual void draw();
-
-public:
-	QVector<Hinge> hinges;
 };
 
 

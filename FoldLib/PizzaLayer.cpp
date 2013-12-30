@@ -50,19 +50,22 @@ void PizzaLayer::buildDependGraph()
 		ChainNode* cn = new ChainNode(i, chain->mID);
 		dy_graph->addNode(cn);
 
-		// folding nodes:
-		// a chain can be folded into two directions
-		QString fnid1 = chain->mID + "_0";
-		FoldingNode* fn1 = new FoldingNode(FD_RIGHT, fnid1);
-		dy_graph->addNode(fn1);
 
-		QString fnid2 = chain->mID + "_1";
-		FoldingNode* fn2 = new FoldingNode(FD_LEFT, fnid2);
-		dy_graph->addNode(fn2);
+		for (int j = 0; j < chain->hingeSegs.size(); j++)
+		{
+			// folding nodes
+			QString fnid1 = chain->mID + "_" + QString::number(2*j);
+			FoldingNode* fn1 = new FoldingNode(j, FD_RIGHT, fnid1);
+			dy_graph->addNode(fn1);
 
-		// folding links
-		dy_graph->addFoldingLink(cn, fn1);
-		dy_graph->addFoldingLink(cn, fn2);
+			QString fnid2 = chain->mID + "_" + QString::number(2*j+1);
+			FoldingNode* fn2 = new FoldingNode(j, FD_LEFT, fnid2);
+			dy_graph->addNode(fn2);
+
+			// folding links
+			dy_graph->addFoldingLink(cn, fn1);
+			dy_graph->addFoldingLink(cn, fn2);
+		}
 
 	}
 

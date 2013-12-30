@@ -7,17 +7,16 @@ PizzaChain::PizzaChain( FdNode* part, PatchNode* panel )
 	// type
 	properties["type"] = "pizza";
 
-	// nbRods
 	nbRods = 1;
 }
 
 Geom::SectorCylinder PizzaChain::getFoldingVolume( FoldingNode* fn )
 {
-	Hinge& hinge = (fn->direct == FD_RIGHT) ? 
-					mLink1->hinges[0] : mLink1->hinges[1];
+	Geom::Segment axisSeg = hingeSegs[fn->hingeIdx];
+	Vector3 rightV = rightVs[fn->hingeIdx];
+	if (fn->direct == FD_LEFT) rightV *= -1;
 
-	return Geom::SectorCylinder(hinge.Origin, 
-		hinge.hX, hinge.hY, hinge.hZ, hinge.zExtent, mLength);
+	return Geom::SectorCylinder(axisSeg, upSeg, rightV);
 }
 
 void PizzaChain::fold( FoldingNode* fn )

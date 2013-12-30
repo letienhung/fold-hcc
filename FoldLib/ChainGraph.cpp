@@ -12,28 +12,40 @@ ChainGraph::ChainGraph( FdNode* part, PatchNode* panel1, PatchNode* panel2 /*= N
 	mPanel1 = (PatchNode*)panel1->clone();
 	mPanel1->isCtrlPanel = true;
 	Graph::addNode(mPanel1);
-	mLink1 = FdGraph::addLink(part, panel1);
 
 	if (panel2)
 	{
 		mPanel2 = (PatchNode*)panel2->clone();
 		mPanel2->isCtrlPanel = true;
 		Graph::addNode(mPanel2);
-		mLink2 = FdGraph::addLink(part, panel2);
 	}
 
-	// chain length
+	// detect hinges
+	hingeSegs = detectHingeSegments(mPart, mPanel1);
+
+	// upSeg
+	Geom::Segment axisSeg = hingeSegs[0];
+	Vector3 origin = axisSeg.P0;
 	if (mPart->mType == FdNode::PATCH)
 	{
-		PatchNode* part_patch = (PatchNode*)mPart;
-		Geom::Rectangle &patch = part_patch->mPatch;
-		Vector3 hingeAxis = mLink1->hinges[0].hZ;
-		mLength = patch.Extent[patch.getPerpAxisId(hingeAxis)];
+		PatchNode* partPatch = (PatchNode*)mPart;
+		QVector<Geom::Segment> edges = partPatch->mPatch.getPerpEdges(axisSeg.Direction);
+		upSeg = edges[0].contains(origin) ? edges[0] : edges[1];
 	}
 	else
 	{
-		RodNode* part_rod = (RodNode*)mPart;
-		mLength = part_rod->mRod.length();
+		RodNode* partRod = (RodNode*)mPart;
+		upSeg = partRod->mRod;
+	}
+	if (upSeg.getProjCoordinates(origin) > 0) upSeg.flip();
+
+	// righV
+	foreach (Geom::Segment hinge, hingeSegs)
+	{
+		Vector3 crossAxisV1 = cross(axisSeg.Direction, upSeg.Direction);
+		Vector3 rV = mPanel1->mPatch.getProjectedVector(crossAxisV1);
+
+		rightVs.push_back(rV.normalized());
 	}
 }
 

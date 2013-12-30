@@ -14,8 +14,9 @@ public:
 public:
 	FdNode		*mPart;
 	PatchNode	*mPanel1, *mPanel2;
-	FdLink		*mLink1, *mLink2;
 
-	double mLength;
+	QVector<Geom::Segment> hingeSegs;
+	Geom::Segment upSeg; // perp segment on part
+	QVector<Vector3> rightVs; // perp direction on panel to the right
 	int nbRods;
 };

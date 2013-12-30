@@ -2,8 +2,6 @@
 #include "SegMeshLoader.h"
 #include "RodNode.h"
 #include "PatchNode.h"
-#include "PointLink.h"
-#include "LinearLink.h"
 #include "FdGraph.h"
 
 #include <QFileInfo>

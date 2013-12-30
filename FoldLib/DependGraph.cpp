@@ -27,8 +27,8 @@ Structure::Node* ChainNode::clone()
 	return new ChainNode(*this);
 }
 
-FoldingNode::FoldingNode(FD_DIRECTION d, QString id )
-	: Node(id), direct(d), score(0)
+FoldingNode::FoldingNode(int hIdx, FD_DIRECTION d, QString id )
+	: Node(id), hingeIdx(hIdx), direct(d), score(0)
 {
 }
 
@@ -272,7 +272,7 @@ void DependGraph::saveAsImage( QString fname )
 
 	// convert into png
 	QString command = dotPath + QString(" -Tpng %1.gv > %2.png").arg(fname).arg(fname);
-	qDebug() << "Executing: " << dotPath << command;
+	qDebug() << "Executing: "  << command;
 	system(qPrintable(command));
 }
 

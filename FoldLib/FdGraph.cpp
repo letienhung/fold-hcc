@@ -11,8 +11,6 @@
 #include "RodNode.h"
 #include "PatchNode.h"
 #include "FdLink.h"
-#include "LinearLink.h"
-#include "PointLink.h"
 
 #include "AABB.h"
 #include "MinOBB.h"
@@ -42,14 +40,7 @@ Structure::Graph* FdGraph::clone()
 
 FdLink* FdGraph::addLink( FdNode* n1, FdNode* n2 )
 {
-	Geom::Segment dist_seg = getDistSegment(n1, n2);
-
-	FdLink* new_link;
-	if (n1->mType == FdNode::PATCH && n2->mType == FdNode::PATCH)
-		new_link = new LinearLink(n1, n2, dist_seg);
-	else
-		new_link = new PointLink(n1, n2, dist_seg);
-
+	FdLink* new_link = new FdLink(n1, n2);
 	Graph::addLink(new_link);
 
 	return new_link;
