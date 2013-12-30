@@ -18,12 +18,11 @@ public:
 class FoldingNode : public Structure::Node
 {
 public:
-	FoldingNode(int hidx, FD_DIRECTION d, QString id);
+	FoldingNode(FD_DIRECTION d, QString id);
 	FoldingNode(FoldingNode &other);
 	Node* clone();
 
 	// hinge info
-	int hingeIdx;
 	FD_DIRECTION direct;
 
 	// score

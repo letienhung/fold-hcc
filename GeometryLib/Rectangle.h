@@ -24,10 +24,13 @@ public:
 	bool contains(Vector3 p);
 	bool contains(Segment s);
     bool contains(Rectangle& other);
+	bool containsOneEdge(Rectangle& other);
 
 	// geometry
 	double  area();
 	Plane   getPlane();
+	int		getAxisId(Vector3 v);
+	int		getPerpAxisId(Vector3 v);
 	Vector3 getPerpAxis(Vector3 v);
 	QVector<Segment>  getEdges();
 	QVector<Segment>  getPerpEdges(Vector3 v);

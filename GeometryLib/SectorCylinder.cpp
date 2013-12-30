@@ -35,6 +35,16 @@ Geom::SectorCylinder::SectorCylinder( Segment a, Segment r1, Vector3 v2 )
 	}
 }
 
+Geom::SectorCylinder::SectorCylinder(Vector3 o, Vector3 x, Vector3 y, Vector3 z, double h, double r)
+{
+	Origin = o;
+	V1 = x;
+	V2 = y;
+	Axis = z;
+	Height = h;
+	Radius = r;
+}
+
 bool Geom::SectorCylinder::intersects( Segment& seg )
 {
 	Segment axisSeg = getAxisSegment();

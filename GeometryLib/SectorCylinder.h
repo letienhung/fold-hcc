@@ -11,6 +11,7 @@ class SectorCylinder
 public:
 	SectorCylinder();
     SectorCylinder(Segment a, Segment r1, Vector3 v2);
+	SectorCylinder(Vector3 o, Vector3 x, Vector3 y, Vector3 z, double h, double r);
 
 	Geom::Segment getAxisSegment();
 	Vector3 getCoordinates(Vector3 p);

@@ -39,8 +39,6 @@ HEADERS += \
     FdGraph.h \
     FdLink.h \
     FdNode.h \
-    PointLink.h \
-    LinearLink.h \
     DcGraph.h \
     FoldManager.h \
     FdUtility.h \
@@ -49,7 +47,9 @@ HEADERS += \
     PizzaLayer.h \
     DependGraph.h \
     PizzaChain.h \
-    SandwichChain.h
+    SandwichChain.h \
+    ChainGraph.h \
+    Hinge.h
 
 SOURCES += \
     PatchNode.cpp \
@@ -58,8 +58,6 @@ SOURCES += \
     FdGraph.cpp \
     FdLink.cpp \
     FdNode.cpp \
-    PointLink.cpp \
-    LinearLink.cpp \
     DcGraph.cpp \
     FoldManager.cpp \
     FdUtility.cpp \
@@ -68,5 +66,7 @@ SOURCES += \
     PizzaLayer.cpp \
     DependGraph.cpp \
     PizzaChain.cpp \
-    SandwichChain.cpp
+    SandwichChain.cpp \
+    ChainGraph.cpp \
+    Hinge.cpp
 

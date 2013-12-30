@@ -1,23 +1,14 @@
 #pragma once
 
-#include "Segment.h"
-#include "FdGraph.h"
-#include "PatchNode.h"
+#include "ChainGraph.h"
 #include "SectorCylinder.h"
-#include "DependGraph.h"
 
-class PizzaChain : public FdGraph
+class PizzaChain : public ChainGraph
 {
 public:
     PizzaChain(FdNode* part, PatchNode* panel);
 
 	Geom::SectorCylinder getFoldingVolume(FoldingNode* fn);
 
-public:
-	FdNode* mPart;
-	PatchNode* mPanel;
-
-	QVector<Geom::Segment> hinges;
-	Geom::Segment r1; // perp seg on part
-	QVector<Vector3> v2s; // perp direction on panel to the right
+	void fold(FoldingNode* fn);
 };

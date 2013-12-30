@@ -106,6 +106,15 @@ bool Geom::Rectangle::contains( Rectangle& other )
 	return true;
 }
 
+bool Geom::Rectangle::containsOneEdge( Rectangle& other )
+{
+	foreach (Segment e, other.getEdges())
+		if (contains(e)) return true;
+
+	return false;
+}
+
+
 Geom::Plane Geom::Rectangle::getPlane()
 {
 	return Plane(this->Center, this->Normal);
@@ -236,10 +245,7 @@ QVector<Geom::Segment> Geom::Rectangle::getPerpEdges(Vector3 v)
 
 SurfaceMesh::Vector3 Geom::Rectangle::getPerpAxis( Vector3 v )
 {
-	double dotVAxis0 = fabs(dot(v, Axis[0]));
-	double dotVAxis1 = fabs(dot(v, Axis[1]));
-
-	return (dotVAxis0 < dotVAxis1) ? Axis[0] : Axis[1];
+	return Axis[getPerpAxisId(v)];
 }
 
 QStringList Geom::Rectangle::toStrList()
@@ -259,6 +265,23 @@ Vector3 Geom::Rectangle::getProjection( Vector3 p )
 SurfaceMesh::Vector3 Geom::Rectangle::getProjectedVector( Vector3 v )
 {
 	return getProjection(Center + v) - Center;
+}
+
+int Geom::Rectangle::getAxisId( Vector3 v )
+{
+	double dotVAxis0 = fabs(dot(v, Axis[0]));
+	double dotVAxis1 = fabs(dot(v, Axis[1]));
+
+	return (dotVAxis0 > dotVAxis1) ? 0 : 1;
+}
+
+
+int Geom::Rectangle::getPerpAxisId( Vector3 v )
+{
+	double dotVAxis0 = fabs(dot(v, Axis[0]));
+	double dotVAxis1 = fabs(dot(v, Axis[1]));
+
+	return (dotVAxis0 > dotVAxis1) ? 1 : 0;
 }
 
 

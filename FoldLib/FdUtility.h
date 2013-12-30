@@ -12,5 +12,3 @@ double getDistance( FdNode* n, QVector<FdNode*> nset);
 FdNodeArray2D clusterNodes( QVector<FdNode*> nodes, double disThr );
 
 StrArray2D getIds(FdNodeArray2D nodeArray);
-
-QVector<Geom::Segment> detectHinges(FdNode* part, PatchNode* panel);

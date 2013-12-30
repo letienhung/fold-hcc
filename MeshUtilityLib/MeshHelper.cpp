@@ -70,3 +70,10 @@ void MeshHelper::deformMeshByBoxes( SurfaceMeshModel* mesh, Geom::Box& fromBox, 
 {
 	decodeMeshInBox(mesh, toBox, encodeMeshInBox(mesh, fromBox));
 }
+
+SurfaceMeshModel* MeshHelper::cloneMesh( SurfaceMeshModel* other )
+{
+	SurfaceMeshModel* mesh = new SurfaceMeshModel();
+	 
+	return mesh;
+}

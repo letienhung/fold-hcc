@@ -32,7 +32,7 @@ LayerGraph::LayerGraph( QVector<FdNode*> nodes, PatchNode* panel1, PatchNode* pa
 
 LayerGraph::~LayerGraph()
 {
-	foreach(FdGraph* c, chains)
+	foreach(ChainGraph* c, chains)
 		delete c;
 
 	delete dy_graph;
@@ -45,7 +45,7 @@ FdGraph* LayerGraph::activeScaffold()
 	else		   return this;
 }
 
-FdGraph* LayerGraph::getSelChain()
+ChainGraph* LayerGraph::getSelChain()
 {
 	if (selId >= 0 && selId < chains.size())
 		return chains[selId];
@@ -75,9 +75,9 @@ QStringList LayerGraph::getChainLabels()
 	return labels;
 }
 
-FdGraph* LayerGraph::getChain( QString cid )
+ChainGraph* LayerGraph::getChain( QString cid )
 {
-	foreach(FdGraph* c, chains)
+	foreach(ChainGraph* c, chains)
 		if(c->mID == cid) return c;
 
 	return NULL;
@@ -85,12 +85,20 @@ FdGraph* LayerGraph::getChain( QString cid )
 
 void LayerGraph::fold()
 {
-	// output is a sequence
-	QVector<QString> chainSequence;
-	QVector<FoldingNode*> fnSequence;
-
-	// build up dependency graph
 	buildDependGraph();
+	computeChainSequence();
+
+	for (int i = 0; i < chainSequence.size(); i++)
+	{
+		ChainGraph* chain = getChain(chainSequence[i]);
+		chain->fold(fnSequence[i]);
+	}
+}
+
+void LayerGraph::computeChainSequence()
+{
+	chainSequence.clear();
+	fnSequence.clear();
 
 	// set up tags
 	foreach(Structure::Node* node, dy_graph->nodes)
@@ -128,5 +136,5 @@ void LayerGraph::fold()
 	}
 
 	// folding sequence
-	qDebug() << "Folding sequence: " <<QStringList(chainSequence.toList());
+	qDebug() << "Chain sequence: " << QStringList(chainSequence.toList());
 }

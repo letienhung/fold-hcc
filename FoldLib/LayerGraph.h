@@ -1,8 +1,6 @@
 #pragma once
 
-#include "FdGraph.h"
-#include "PatchNode.h"
-#include "DependGraph.h"
+#include "ChainGraph.h"
 
 class LayerGraph : public FdGraph
 {
@@ -14,23 +12,26 @@ public:
 	~LayerGraph();
 
 	// selection
-	FdGraph* getSelChain();
+	ChainGraph* getSelChain();
 	FdGraph* activeScaffold();
 	void selectChain(QString id);
 	QStringList getChainLabels();
 
 	// getter
-	FdGraph* getChain(QString cid);
+	ChainGraph* getChain(QString cid);
 
 	// fold
 	virtual void fold();
 	virtual void buildDependGraph() = 0;
+	void computeChainSequence();
 
 public:
 	LAYER_TYPE mType;
 	int selId;
-	QVector<FdGraph*> chains;
+	QVector<ChainGraph*> chains;
 
 	DependGraph* dy_graph;
+	QVector<QString> chainSequence;
+	QVector<FoldingNode*> fnSequence;
 }; 
 
