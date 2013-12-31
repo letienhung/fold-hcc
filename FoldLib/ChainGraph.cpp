@@ -6,46 +6,48 @@ ChainGraph::ChainGraph( FdNode* part, PatchNode* panel1, PatchNode* panel2 /*= N
 	: FdGraph(part->mID)
 {
 	// clone parts
-	mPart = (FdNode*)part->clone();
-	Structure::Graph::addNode(mPart);
+	mParts << (FdNode*)part->clone();
+	Structure::Graph::addNode(mParts[0]);
 
-	mPanel1 = (PatchNode*)panel1->clone();
-	mPanel1->isCtrlPanel = true;
-	Graph::addNode(mPanel1);
+	mPanels << (PatchNode*)panel1->clone();
+	mPanels[0]->isCtrlPanel = true;
+	Graph::addNode(mPanels[0]);
 
 	if (panel2)
 	{
-		mPanel2 = (PatchNode*)panel2->clone();
-		mPanel2->isCtrlPanel = true;
-		Graph::addNode(mPanel2);
+		mPanels << (PatchNode*)panel2->clone();
+		mPanels[1]->isCtrlPanel = true;
+		Graph::addNode(mPanels[1]);
 	}
 
 	// detect hinges
-	hingeSegs = detectHingeSegments(mPart, mPanel1);
+	rootJointSegs = detectHingeSegments(mParts[0], mPanels[0]);
 
 	// upSeg
-	Geom::Segment axisSeg = hingeSegs[0];
+	Geom::Segment axisSeg = rootJointSegs[0];
 	Vector3 origin = axisSeg.P0;
-	if (mPart->mType == FdNode::PATCH)
+	if (mParts[0]->mType == FdNode::PATCH)
 	{
-		PatchNode* partPatch = (PatchNode*)mPart;
+		PatchNode* partPatch = (PatchNode*)mParts[0];
 		QVector<Geom::Segment> edges = partPatch->mPatch.getPerpEdges(axisSeg.Direction);
-		upSeg = edges[0].contains(origin) ? edges[0] : edges[1];
+		chainUpSeg = edges[0].contains(origin) ? edges[0] : edges[1];
 	}
 	else
 	{
-		RodNode* partRod = (RodNode*)mPart;
-		upSeg = partRod->mRod;
+		RodNode* partRod = (RodNode*)mParts[0];
+		chainUpSeg = partRod->mRod;
 	}
-	if (upSeg.getProjCoordinates(origin) > 0) upSeg.flip();
+	if (chainUpSeg.getProjCoordinates(origin) > 0) chainUpSeg.flip();
 
 	// righV
-	foreach (Geom::Segment hinge, hingeSegs)
+	foreach (Geom::Segment hinge, rootJointSegs)
 	{
-		Vector3 crossAxisV1 = cross(axisSeg.Direction, upSeg.Direction);
-		Vector3 rV = mPanel1->mPatch.getProjectedVector(crossAxisV1);
+		Vector3 crossAxisV1 = cross(axisSeg.Direction, chainUpSeg.Direction);
+		Vector3 rV = mPanels[0]->mPatch.getProjectedVector(crossAxisV1);
 
-		rightVs.push_back(rV.normalized());
+		rootRightVs.push_back(rV.normalized());
 	}
+
+	// initial 
 }
 

@@ -2,8 +2,6 @@
 #include "Graph.h"
 #include <QProcess>
 
-enum FD_DIRECTION{FD_LEFT, FD_RIGHT};
-
 class ChainNode : public Structure::Node
 {
 public:
@@ -18,13 +16,12 @@ public:
 class FoldingNode : public Structure::Node
 {
 public:
-	FoldingNode(int hIdx, FD_DIRECTION d, QString id);
+	FoldingNode(int hIdx, QString id);
 	FoldingNode(FoldingNode &other);
 	Node* clone();
 
 	// hinge info
 	int hingeIdx;
-	FD_DIRECTION direct;
 
 	// score
 	double score;

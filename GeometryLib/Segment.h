@@ -23,6 +23,7 @@ public:
 	// modifier
 	void flip();
 	void translate(Vector3 t);
+	Segment translated(Vector3 t);
 
 	// coordinates
 	double	getProjCoordinates(Vector3 p);

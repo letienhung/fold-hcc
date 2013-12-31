@@ -54,8 +54,6 @@ public:
 	void setState(int s);
 
 	// visualization
-	bool highlighted;
-	double scale;
 	void draw();
 
 private:

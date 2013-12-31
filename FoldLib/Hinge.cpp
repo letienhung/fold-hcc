@@ -33,10 +33,6 @@ Hinge::Hinge( FdNode* n1, FdNode* n2, Point o, Vec3d x, Vector3 y, Vector3 z, do
 	// create node records in dihedral frames
 	node1_record = createNodeRecord(node1_frame, zxFrame);
 	node2_record = createNodeRecord(node2_frame, zyFrame);
-
-	// hinge scale
-	this->scale = 0.1;
-	this->highlighted = false;
 }
 
 
@@ -96,7 +92,6 @@ bool Hinge::fix()
 	// fix the free node if it is truly free
 	if (free_node->properties["fixed"].toBool())
 	{
-		this->highlighted = false;
 		return false; 
 	}
 	else
@@ -115,7 +110,6 @@ bool Hinge::fix()
 		free_node->deformMesh();
 		free_node->createScaffold();
 
-		this->highlighted = true;
 		return true;
 	}
 }
@@ -165,16 +159,9 @@ void Hinge::updateDihedralVectors( bool hXFixed )
 
 void Hinge::draw()
 {
-	FrameSoup fs(this->scale);
-	fs.addFrame( this->hX, this->hY, this->hZ, this->Origin);
+	FrameSoup fs(zExtent);
+	fs.addFrame( hX, hY, hZ, Origin);
 	fs.draw();
-
-	if (highlighted)
-	{
-		PointSoup ps(16.0);
-		ps.addPoint(Origin, Qt::red);
-		ps.draw();
-	}
 }
 
 void Hinge::setState( int s )

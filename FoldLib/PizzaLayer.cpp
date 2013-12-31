@@ -51,15 +51,15 @@ void PizzaLayer::buildDependGraph()
 		dy_graph->addNode(cn);
 
 
-		for (int j = 0; j < chain->hingeSegs.size(); j++)
+		for (int j = 0; j < chain->rootJointSegs.size(); j++)
 		{
 			// folding nodes
 			QString fnid1 = chain->mID + "_" + QString::number(2*j);
-			FoldingNode* fn1 = new FoldingNode(j, FD_RIGHT, fnid1);
+			FoldingNode* fn1 = new FoldingNode(2*j, fnid1);
 			dy_graph->addNode(fn1);
 
 			QString fnid2 = chain->mID + "_" + QString::number(2*j+1);
-			FoldingNode* fn2 = new FoldingNode(j, FD_LEFT, fnid2);
+			FoldingNode* fn2 = new FoldingNode(2*j+1, fnid2);
 			dy_graph->addNode(fn2);
 
 			// folding links
@@ -82,7 +82,7 @@ void PizzaLayer::buildDependGraph()
 			if (cn == other_cn) continue;
 
 			PizzaChain* other_chain = (PizzaChain*) getChain(other_cn->mID);
-			FdNode* other_part = other_chain->mPart;
+			FdNode* other_part = other_chain->mParts[0];
 
 			bool collide = false;
 			if (other_part->mType == FdNode::PATCH)

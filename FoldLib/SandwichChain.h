@@ -9,6 +9,7 @@ public:
     SandwichChain(FdNode* part, PatchNode* panel1, PatchNode* panel2);
 
 	Geom::Rectangle2 getFoldingArea(FoldingNode* fn);
+	void sortParts();
 
 	void fold(FoldingNode* fn);
 };

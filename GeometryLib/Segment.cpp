@@ -177,3 +177,8 @@ void Geom::Segment::translate( Vector3 t )
 {
 	set(P0 + t, P1 + t);
 }
+
+Geom::Segment Geom::Segment::translated( Vector3 t )
+{
+	return Segment(P0 + t, P1 + t);
+}

@@ -234,7 +234,7 @@ QVector<FdNode*> FdGraph::split( FdNode* fn, Geom::Plane& plane, double thr )
 	Vector3 cutCoord = fn->mBox.getCoordinates(cutPoint);
 	double cp = cutCoord[aid];
 
-	// no cut
+	// no cut: cut point is too close to the end
 	if (cp + 1 < thr || 1 - cp < thr)	return splitted;
 
 	// split box
@@ -322,6 +322,8 @@ void FdGraph::restoreConfiguration()
 		foreach(Structure::Link* l, getLinks(anode->mID))
 		{
 			FdLink* fl = (FdLink*)l;
+			if (!fl->properties["active"].toBool()) continue;
+
 			if (fl->fix()) 
 			{
 				Structure::Node* other_node = l->getNodeOther(anode->mID);

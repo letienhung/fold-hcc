@@ -27,15 +27,14 @@ Structure::Node* ChainNode::clone()
 	return new ChainNode(*this);
 }
 
-FoldingNode::FoldingNode(int hIdx, FD_DIRECTION d, QString id )
-	: Node(id), hingeIdx(hIdx), direct(d), score(0)
+FoldingNode::FoldingNode(int hIdx, QString id )
+	: Node(id), hingeIdx(hIdx), score(0)
 {
 }
 
 FoldingNode::FoldingNode( FoldingNode &other )
 	: Node(other)
 {
-	direct = other.direct;
 	score = other.score;
 }
 
