@@ -36,8 +36,8 @@ MainWindow::MainWindow(QWidget *parent, Qt::WFlags flags)
 	evalWidget->setupUi(ui.evalFrame);
 
 	initDesign();
-	initEvaluation();
 	initQuickView();
+	initEvaluation();
 
 	// Connections
 	connect(ui.actionNewScene, SIGNAL(triggered()), SLOT(addNewScene()));
@@ -78,7 +78,8 @@ void MainWindow::addNewScene()
 			viewers[i]->clearGraph();
 	}
 
-	/*mGManager = NULL;*/
+	mFManager = NULL;
+	mFManager = new FoldManager;
 
 	QApplication::restoreOverrideCursor();
 }
@@ -91,7 +92,8 @@ void MainWindow::importObject()
 
 	//DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
 
-	//setGraphManager(designer->gManager);
+	setFoldManager(designer->fManager);
+	animator->setActiveObject(designer->fManager);
 
 	QApplication::restoreOverrideCursor();
 }
@@ -166,6 +168,7 @@ void MainWindow::initEvaluation()
 	animator = new MyAnimator(evalWidget);
 	evalWidget->viewerAreaLayout->addWidget(animator );
 	animator->addSlider();
+	animator->setActiveObject(designer->fManager);
 
 	QApplication::restoreOverrideCursor();
 }

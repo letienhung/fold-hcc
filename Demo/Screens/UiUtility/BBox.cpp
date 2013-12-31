@@ -219,9 +219,7 @@ bool BBox::IntersectRayBox(Point &start, Vec3d &startDir, Point &intPnt)
 	}
 	// Ray intersects all 3 slabs. Return point (q) and intersection t value (tmin)
 	intPnt = getPosition(p + d * tmin);
-	/*if(isFaceContainPnt(intPnt)){
-	return true;
-	}*/
+
 	if(contain(intPnt))
 		return true;
 	return false;
@@ -289,49 +287,43 @@ int BBox::getParallelFace(Geom::Rectangle &f)
 
 void BBox::deform(double f)
 {
+	double sgn = 0.0;
+	if(f == 0.0)
+		return;
+	else
+		sgn = f/fabs(f);
+
 	if(axisID < 0 || axisID > 2)
 		return;
-	double sgn = f/fabs(f);
-	//double factor = (fabs(f) > 2*Extent[axisID])?(sgn*(fabs(f) - 2*Extent[axisID])):f;
+
 	double factor = f * 2 * origExt[axisID];
-	int paral = getParallelFace(mFaces[selPlaneID]);
+
+	double preCenterAxis = mFaces[selPlaneID].Center[axisID];
 	
-	if(paral < 0)
-		return;
-
-	/*if(mFaces[selPlaneID].Center[axisID]>Center[axisID] 
-	&& fabs(factor) > 2*Extent[axisID]){
-	factor = sgn*2*Extent[axisID];		
+    if(preCenterAxis > Center[axisID]){ 
+		if(sgn < 0){
+			double h = Extent[axisID] - fabs(factor);
+			Extent[axisID] -= fabs(factor)/2; 
+			double delta = Extent[axisID] - h;
+			Center[axisID] += sgn*delta;
+		}
+		else{
+            Extent[axisID] += fabs(factor)/2; 
+			Center[axisID] += factor/2;
+		}
 	}
-	else if(mFaces[selPlaneID].Center[axisID]<Center[axisID] 
-	&& fabs(factor) > 2*Extent[axisID]){
-	factor = sgn*2*Extent[axisID];	
+	else if(preCenterAxis < Center[axisID]){ 
+		if(sgn > 0){
+			double h = Extent[axisID] - fabs(factor);
+			Extent[axisID] -= fabs(factor)/2; 
+			double delta = Extent[axisID] - h;
+			Center[axisID] += sgn*delta;
+		}
+		else{
+			Extent[axisID] += fabs(factor)/2; 
+			Center[axisID] += factor/2;
+		}
 	}
-	else if(mFaces[selPlaneID].Center[axisID] == Center[axisID] 
-	&& preSgn < 0 && preCenter[axisID] > mFaces[selPlaneID].Center[axisID]){
-	factor = 0.0; 
-	}
-	else if(mFaces[selPlaneID].Center[axisID] == Center[axisID] 
-	&& preSgn > 0 && preCenter[axisID] < mFaces[selPlaneID].Center[axisID]){
-	factor = 0.0; 
-	}
-
-	preSgn = sgn;
-	preCenter = Center;*/
-
-	QVector<Point> newConners = mFaces[selPlaneID].getConners();
-	for(int i = 0; i < newConners.size(); i++){
-		newConners[i][axisID] += factor;///(2*Extent[axisID]);
-	}
-
-	mFaces[selPlaneID].update(newConners);
-	Center = (mFaces[selPlaneID].Center + mFaces[paral].Center)/2;
-    Extent[axisID] = (mFaces[selPlaneID].Center - mFaces[paral].Center).norm()/2; 
-	//Center[axisID] += factor/(2*Extent[axisID]);
-	/*selPlane[0][axisID] += factor;
-	selPlane[1][axisID] += factor; 
-	selPlane[2][axisID] += factor;
-	selPlane[3][axisID] += factor; */
 }
 
 void BBox::draw()

@@ -5,7 +5,7 @@
 
 #include "qglviewer/qglviewer.h"
 #include "qglviewer/ManipulatedFrame.h"
-#include "GraphManager.h"
+#include "FoldManager.h"
 #include "SurfaceMeshNormalsHelper.h"
 #include "SurfaceMeshHelper.h"
 
@@ -55,15 +55,15 @@ public:
 	void keyPressEvent(QKeyEvent *e);
 
 	// Object in the scene
-	GraphManager* gManager;
+	FoldManager* fManager;
 	int mCurrConfigId;
 	int mCurrGraphId;
 	bool isShow;
 
-	GraphManager* activeManager();
+	FoldManager* activeManager();
 	FdGraph* activeScaffold();
 	bool isEmpty();
-	void setActiveObject(GraphManager* newGm);
+	void setActiveObject(FoldManager* newFm);
 	void newScene();
 
 	// Deformer

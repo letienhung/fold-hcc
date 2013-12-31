@@ -159,7 +159,7 @@ void MyAnimator::preDraw()
 
 void MyAnimator::drawShadows()
 {
-	if(!gManager || camera()->position().z < loadedMeshHalfHight) return;
+	if(!activeManager() || camera()->position().z < loadedMeshHalfHight) return;
 
 	// Compute shadow matrix
 	GLfloat floorShadow[4][4];
@@ -299,7 +299,7 @@ QVector<uint> MyAnimator::fillTrianglesList(FdNode* n)
 
 void MyAnimator::updateVBOs()
 {
-	if(gManager && activeScaffold())
+	if(activeManager() && activeScaffold())
 	{
 		// Create VBO for each segment if needed
 		QVector<FdNode*> nodes = activeScaffold()->getFdNodes();
@@ -484,21 +484,21 @@ void MyAnimator::updateActiveObject()
 	emit(objectUpdated());
 }
 
-GraphManager* MyAnimator::activeManager()
+FoldManager* MyAnimator::activeManager()
 {
-	return gManager;
+	return fManager;
 }
 
 FdGraph* MyAnimator::activeScaffold()
 {
 	//return gManager->scaffold;
-	return mGraphs[mCurrConfigId][mCurrGraphId];
+	return activeManager()->results[mCurrConfigId][mCurrGraphId];
 }
 
 bool MyAnimator::isEmpty()
 {
 	//return gManager == NULL;//->scaffold 
-	return (mGraphs.size() == 0);
+	return (activeManager()->results.size() == 0);
 }
 
 void MyAnimator::resetView()
@@ -522,17 +522,17 @@ void MyAnimator::loadConfig(int configId)
 	updateGL();
 }
 
-void MyAnimator::setActiveObject(GraphManager *gm)
+void MyAnimator::setActiveObject(FoldManager *fm)
 {
 	// Delete the original object
-	if (activeManager()&&activeScaffold())
-		emit(objectDiscarded());
+	//if (activeManager()&&activeScaffold())
+		//emit(objectDiscarded());
 
 	// Setup the new object
-	gManager = gm;
+	fManager = fm;
 
 	// Change title of scene
-	setWindowTitle(activeScaffold()->path);
+	//setWindowTitle(activeScaffold()->path);
 
 	// Set camera
 	resetView();
@@ -552,7 +552,7 @@ void MyAnimator::newScene()
 
 	//selection.clear();
 
-	gManager = NULL;
+	fManager = NULL;
 	setWindowTitle(" ");
 	// Update the object
 	updateActiveObject();
@@ -579,7 +579,7 @@ void MyAnimator::mouseReleaseEvent( QMouseEvent* e )
 	// View changer box area
 	double scale = 90;
 	int x = e->pos().x(), y = e->pos().y();
-	if(x > width() - scale && y > height() - scale && gManager)
+	if(x > width() - scale && y > height() - scale && activeManager())
 	{
 		QPoint p(abs(x - width() + scale), abs(y - height() + scale));
 		Geom::AABB aabb = activeScaffold()->computeAABB();
@@ -726,10 +726,10 @@ void MyAnimator::stopAnimation()
 void MyAnimator::animate()
 {
 	if(isEmpty()) return;
-	for(int i = 0; i < mGraphs[mCurrConfigId].size(); i++){
+	for(int i = 0; i < activeManager()->results[mCurrConfigId].size(); i++){
 		mCurrGraphId = i;
 		updateGL();
-		emit setSliderValue(100 * (double(i) / mGraphs[mCurrConfigId].size()));
+		emit setSliderValue(100 * (double(i) / activeManager()->results[mCurrConfigId].size()));
 	}
 }
 

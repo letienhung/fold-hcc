@@ -6,6 +6,7 @@
 #include "qglviewer/qglviewer.h"
 #include "qglviewer/ManipulatedFrame.h"
 #include "GraphManager.h"
+#include "FoldManager.h"
 #include "SurfaceMeshNormalsHelper.h"
 #include "SurfaceMeshHelper.h"
 
@@ -63,6 +64,8 @@ public:
 
 	// Object in the scene
 	GraphManager* gManager;
+	// To communicate with the MainWindow and MyAnimation
+	FoldManager* fManager;
 	BBox * mBox;
     double scalePercent;
 	bool isShow;

@@ -32,6 +32,7 @@ MyDesigner::MyDesigner( Ui::DesignWidget * useDesignWidget, QWidget * parent /*=
 	selectMode = SELECT_NONE;
 	skyRadius = 1.0;
 	gManager = NULL;
+	fManager = new FoldManager;
 	mBox = NULL;
 	isMousePressed = false;
 	loadedMeshHalfHight = 1.0;
@@ -552,7 +553,9 @@ void MyDesigner::loadObject()
 	mBox = NULL;
 	gManager = new GraphManager();
 	gManager->loadScaffold();
-	
+
+	// Pass the active scaffold to FoldManager
+	fManager->setScaffold(activeScaffold());
 	Geom::AABB aabb = activeScaffold()->computeAABB();
 	mBox = new BBox(aabb.center(), (aabb.bbmax-aabb.bbmin)*0.5f);
 	scalePercent = 0.0;
@@ -621,10 +624,14 @@ void MyDesigner::mousePressEvent( QMouseEvent* e )
 			mBox->selectFace(start,dir);
 			if(mBox->axisID < 0 || mBox->selPlaneID < 0){
 				selectMode = BOX;
-				this->displayMessage("No face has been selected. Left click to select a face to push in");
+				this->displayMessage("* No face has been selected. LEFT CLICK to select a face to push in. *");
 			}
-			else
-			    this->displayMessage("* Please CTRL + SCROLL THE MOUSE to squeeze the box *", 5000);
+			else{
+				this->displayMessage("* Setting up fold handle. Please wait!!! *", 5000);
+				fManager->foldAlongAxis(mBox->axisID);
+			    this->displayMessage("* Done!!! Please CTRL + SCROLL THE MOUSE to squeeze the box. *", 5000);
+				scalePercent = 0.0;
+			}
 		    updateGL();
 		}
 
@@ -769,12 +776,13 @@ void MyDesigner::wheelEvent( QWheelEvent* e )
 		if(mBox->selPlaneID >= 0){
 			double factor =  0.05 * (e->delta() / 120.0);
 			scalePercent += factor;
-			if(fabs(scalePercent) > 1){
+			if(fabs(scalePercent) >= 1){
 				scalePercent -= factor;
 				factor = 0.0;
 			}
 			mBox->deform(factor);
 			mBox->getBoxFaces();
+			fManager->generateFdKeyFrames(1.0 - fabs(scalePercent));
 		}
 		else
 	        this->displayMessage("* Fail to push in the right direction *", 5000);
@@ -790,7 +798,7 @@ void MyDesigner::keyPressEvent( QKeyEvent *e )
 	}
 
 	if(e->key() == Qt::Key_V)		selectCameraMode();
-	if(e->key() == Qt::Key_C)	selectCuboidMode();
+	if(e->key() == Qt::Key_C)	    selectCuboidMode();
 	if(e->key() == Qt::Key_A)		selectAABBMode();
 
 	updateGL();
