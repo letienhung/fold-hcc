@@ -1,3 +1,5 @@
+#pragma once
+
 #include "FdGraph.h"
 #include "DcGraph.h"
 #include "Numeric.h"
