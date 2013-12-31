@@ -26,7 +26,7 @@ Geom::Rectangle2 SandwichChain::getFoldingArea(FoldingNode* fn)
 		<< panel_rect.getProjCoordinates(seg.P1) 
 		<< panel_rect.getProjCoordinates(seg.P0);
 
-	return Geom::Rectangle2(conners);  
+	return Geom::Rectangle2(conners);
 }
 
 void SandwichChain::fold( FoldingNode* fn )

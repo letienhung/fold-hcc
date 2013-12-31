@@ -9,12 +9,11 @@ public:
 	RodNode(RodNode& other);
 	~RodNode();
 
-	virtual Node* clone();
+	Node* clone();
 
 public:
 	void draw();
-	void createRod();
-	void refit(int method);
+	void createScaffold();
 
 	bool isPerpTo(Vector3 v, double dotThreshold);
 

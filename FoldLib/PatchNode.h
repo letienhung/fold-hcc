@@ -11,12 +11,9 @@ public:
 	virtual Node* clone();
 
 public:
-	void createPatch();
 
-	// virtual functions
-	void refit(int method);
+	void createScaffold();
 	bool isPerpTo(Vector3 v, double dotThreshold);
-	FdNode* split(Geom::Plane& plane);
 	void draw();
 
 public:

@@ -14,6 +14,7 @@ FdNode::FdNode( MeshPtr m, Geom::Box &b )
 
 	origBox = b;
 	mBox = b;
+	encodeMesh();
 
 	mColor = qRandomColor(); 
 	mColor.setAlphaF(0.5);
@@ -32,11 +33,13 @@ FdNode::FdNode(FdNode& other)
 	mMesh = other.mMesh;
 	origBox = other.origBox;
 	mBox = other.mBox;
+	meshCoords = other.meshCoords;
+
 	mColor = other.mColor;
 	mType = other.mType;
 
 	showCuboids = true;
-	showScaffold = true;
+	showScaffold = true; 
 	showMesh = false;
 
 	isCtrlPanel = false;
@@ -73,7 +76,6 @@ void FdNode::draw()
 void FdNode::encodeMesh()
 {
 	meshCoords = MeshHelper::encodeMeshInBox(mMesh.data(), origBox);
-	
 }
 
 void FdNode::deformMesh()
@@ -90,9 +92,6 @@ void FdNode::write( XmlWriter& xw )
 
 		// box
 		mBox.write(xw);
-
-		// scaffold
-		writeScaffold(xw);
 	}
 	xw.writeCloseTag("node");
 }
@@ -118,7 +117,10 @@ void FdNode::refit( int method )
 
 	// encode mesh
 	origBox = mBox;
+
+
 	encodeMesh();
+	createScaffold();
 }
 
 Geom::AABB FdNode::computeAABB()
@@ -132,12 +134,6 @@ void FdNode::drawWithName( int name )
 	mBox.draw();
 	glPopName();
 }
-
-Structure::Node* FdNode::clone()
-{
-	return new FdNode(*this);
-}
-
 
 bool FdNode::isPerpTo( Vector3 v, double dotThreshold )
 {

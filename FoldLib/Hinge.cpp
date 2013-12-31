@@ -72,11 +72,13 @@ bool Hinge::fix()
 	FdNode *fixed_node, *free_node;
 	HingeRecord fixed_hr, free_hr;
 	NodeRecord free_nr;
-	if (node1->properties["fixed"].toBool())	{
+	if (node1->properties["fixed"].toBool())
+	{
 		fixed_node = node1; free_node = node2;
 		fixed_hr = hinge_record1; free_hr = hinge_record2;
 		free_nr = node2_record;
-	}else{
+	}else
+	{
 		fixed_node = node2; free_node = node1;
 		fixed_hr = hinge_record2; free_hr = hinge_record1;
 		free_nr = node1_record;
@@ -103,10 +105,15 @@ bool Hinge::fix()
 		Geom::Frame free_dhf = (node1->properties["fixed"].toBool())? zyFrame : zxFrame;
 		Geom::Frame free_nf = this->recoverNodeFrame(free_nr, free_dhf);
 		free_node->mBox.setFrame( free_nf ); 
+
 		// step 2: snap two nodes
 		Vector3 hc_free = free_node->mBox.getPosition(free_hr.c_box);
 		free_node->mBox.translate(Origin - hc_free);
 		free_node->properties["fixed"] = true;
+
+		// step 3: update scaffold and mesh
+		free_node->deformMesh();
+		free_node->createScaffold();
 
 		this->highlighted = true;
 		return true;

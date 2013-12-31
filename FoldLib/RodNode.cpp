@@ -6,7 +6,7 @@ RodNode::RodNode(MeshPtr m, Geom::Box &b)
 	: FdNode(m, b)
 {
 	mType = FdNode::ROD;
-	createRod();
+	createScaffold();
 
 	mRodColor = mColor.lighter();
 	mRodColor.setAlpha(255);
@@ -25,7 +25,7 @@ RodNode::~RodNode()
 }
 
 
-void RodNode::createRod()
+void RodNode::createScaffold()
 {
 	int aid = mBox.maxAxisId();
 	mRod = mBox.getSkeleton(aid);
@@ -40,14 +40,6 @@ void RodNode::draw()
 	}
 
 	FdNode::draw();
-}
-
-void RodNode::refit( int method )
-{
-	FdNode::refit(method);
-
-	// update rod
-	createRod();
 }
 
 bool RodNode::isPerpTo( Vector3 v, double dotThreshold )

@@ -7,7 +7,7 @@ PatchNode::PatchNode(MeshPtr m, Geom::Box &b)
 	: FdNode(m, b)
 {
 	mType = FdNode::PATCH;
-	createPatch();
+	createScaffold();
 
 	mPatchColor = mColor.lighter();
 	mPatchColor.setAlpha(255);
@@ -27,7 +27,7 @@ PatchNode::~PatchNode()
 }
 
 
-void PatchNode::createPatch()
+void PatchNode::createScaffold()
 {
 	int aid = mBox.minAxisId();
 	mPatch = mBox.getPatch(aid, 0);
@@ -47,14 +47,6 @@ void PatchNode::draw()
 	}
 
 	FdNode::draw();
-}
-
-void PatchNode::refit(int method)
-{
-	FdNode::refit(method);
-
-	// update patch
-	createPatch();
 }
 
 bool PatchNode::isPerpTo( Vector3 v, double dotThreshold )

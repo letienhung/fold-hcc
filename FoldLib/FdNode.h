@@ -16,7 +16,7 @@ public:
 	FdNode(FdNode& other);
 	~FdNode();
 
-	virtual Node* clone();
+	virtual Node* clone() = 0;
 
 	// visualization
 	bool showCuboids;
@@ -25,18 +25,18 @@ public:
 	void draw();
 	void drawWithName(int name);
 
-	// deformation
+	// mesh
 	void encodeMesh();
 	void deformMesh();
 
 	// fit cuboid
-	virtual void refit(int method);
+	void refit(int method);
 
 	// I/O
 	void write(XmlWriter& xw);
-	virtual void writeScaffold(XmlWriter& xw){Q_UNUSED(xw);}
 
 	// geometry
+	virtual void createScaffold() = 0;
 	Geom::AABB computeAABB();
 	Vector3 center();
 	 

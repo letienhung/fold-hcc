@@ -1,5 +1,6 @@
 #include "PizzaChain.h"
 #include "Hinge.h"
+#include "Numeric.h"
 
 PizzaChain::PizzaChain( FdNode* part, PatchNode* panel )
 	:ChainGraph(part, panel)
@@ -21,7 +22,7 @@ Geom::SectorCylinder PizzaChain::getFoldingVolume( FoldingNode* fn )
 
 void PizzaChain::fold( FoldingNode* fn )
 {
-	// clear links
+	// clear links 
 	clearLinks();
 
 	// create new links
