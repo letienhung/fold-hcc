@@ -31,6 +31,7 @@ public:
 	bool drawScaffold;
 	bool drawMesh;
 	bool drawFolded;
+	bool drawKeyframe;
 
 public:
     FdPlugin();
@@ -48,6 +49,7 @@ public slots:
 	void showScaffold(int state);
 	void showMesh(int state);
 	void showFolded(int state);
+	void showKeyframes(int state);
 
 	// scene and message
 	void updateScene();

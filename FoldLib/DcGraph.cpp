@@ -83,37 +83,25 @@ void DcGraph::createLayers()
 	layers.clear();
 
 	// first layer is pizza
-	QVector<FdNode*> lgroup = layerGroups.front();
-	if (!lgroup.isEmpty())
-	{
-		QString id = "Pz-" + QString::number(layers.size());
-		PizzaLayer* pl = new PizzaLayer(lgroup, controlPanels.front(), id);
-		pl->path = path;
-		layers.push_back(pl);
-	}
+	QString id_first = "Pz-" + QString::number(layers.size());
+	PizzaLayer* pl_first = new PizzaLayer(layerGroups.front(), controlPanels.front(), id_first);
+	pl_first->path = path;
+	layers.push_back(pl_first);
 
 	// sandwiches
 	for (int i = 1; i < layerGroups.size()-1; i++)
 	{
-		lgroup = layerGroups[i];
-		if (!lgroup.isEmpty())
-		{
-			QString id = "Sw-" + QString::number(layers.size());
-			SandwichLayer* sl = new SandwichLayer(lgroup, controlPanels[i-1], controlPanels[i], id);
-			sl->path = path;
-			layers.push_back(sl);
-		}
+		QString id = "Sw-" + QString::number(layers.size());
+		SandwichLayer* sl = new SandwichLayer(layerGroups[i], controlPanels[i-1], controlPanels[i], id);
+		sl->path = path;
+		layers.push_back(sl);
 	}
 
 	// first layer is pizza
-	lgroup = layerGroups.last();
-	if (!lgroup.isEmpty())
-	{
-		QString id = "Pz-" + QString::number(layers.size());
-		PizzaLayer* pl = new PizzaLayer(lgroup, controlPanels.last(), id);
-		pl->path = path;
-		layers.push_back(pl);
-	} 
+	QString id_last = "Pz-" + QString::number(layers.size());
+	PizzaLayer* pl_last = new PizzaLayer(layerGroups.last(), controlPanels.last(), id_last);
+	pl_last->path = path;
+	layers.push_back(pl_last);
 }
 
 
@@ -160,4 +148,103 @@ void DcGraph::selectLayer( QString id )
 	{
 		getSelLayer()->selectChain("");
 	}
+}
+
+FdGraph* DcGraph::getKeyFrame( double t )
+{
+	// evenly distribute the time among layers
+	double step = 1.0 / layers.size();
+	QVector<double> layerStarts;
+	for (int i = 0; i < layers.size(); i++)
+		layerStarts << i * step;
+	layerStarts << 1.0;
+
+	// get folded nodes of each layer
+	// the folding base is the first control panel
+	QVector< QVector<Structure::Node*> > knodes;
+	for (int i = 0; i < layers.size(); i++)
+	{
+		double start = layerStarts[i];
+		double end = layerStarts[i+1];
+
+		if (t < start)
+			knodes << layers[i]->getKeyFrameNodes(0);
+
+		if (t >= start && t < end)
+		{
+			double t_layer = (t - start) / step;
+			knodes << layers[i]->getKeyFrameNodes(t_layer);
+		}
+
+		if (t >= end)
+			knodes << layers[i]->getKeyFrameNodes(1);
+	}
+
+	// compute offset of each control panel
+	// and remove redundant control panels
+	QVector<Vector3> panelDeltas;
+	for (int i = 0; i < controlPanels.size(); i++)
+	{
+		QString panel_id = controlPanels[i]->mID;
+		
+		// copy1 in layer[i]
+		FdNode* panelCopy1;
+		int idx1;
+		QVector<Structure::Node*> &lnodes1 = knodes[i];
+		for(int j = 0; j < lnodes1.size(); j++)
+		{
+			if (lnodes1[j]->hasId(panel_id))
+			{
+				panelCopy1 = (FdNode*)lnodes1[j];
+				idx1 = j;
+			}
+		}
+
+		// copy2 in layer[i+1]
+		FdNode* panelCopy2;
+		int idx2;
+		QVector<Structure::Node*> &lnodes2 = knodes[i+1];
+		for(int j = 0; j < lnodes2.size(); j++)
+		{
+			if (lnodes2[j]->hasId(panel_id))
+			{
+				panelCopy2 = (FdNode*)lnodes2[j];
+				idx2 = j;
+			}
+		}
+
+
+		// delta
+		panelDeltas << panelCopy1->center() - panelCopy2->center();
+
+		// remove copy2
+		lnodes2.remove(idx2);
+	}
+
+	// shift layers and add nodes into scaffold
+	FdGraph *key_graph = new FdGraph();
+	Vector3 offset(0, 0, 0);
+	for (int i = 1; i < knodes.size(); i++)
+	{
+		offset += panelDeltas[i-1];
+
+		QVector<Structure::Node*> &lnodes = knodes[i];
+		for (int j = 0; j < lnodes.size(); j++)
+		{
+			FdNode* n = (FdNode*)lnodes[j];
+			n->mBox.translate(offset);
+			n->deformMesh();
+			n->createScaffold();
+
+			key_graph->Structure::Graph::addNode(n);
+		}
+	}
+
+	return key_graph;
+}
+
+void DcGraph::fold()
+{
+	foreach(LayerGraph* layer, layers)
+		layer->fold();
 }

@@ -44,21 +44,26 @@ Geom::SectorCylinder PizzaChain::getFoldingVolume( FoldingNode* fn )
 	return Geom::SectorCylinder(axisSeg, chainUpSeg, rightV);
 }
 
-void PizzaChain::fold( FoldingNode* fn )
+void PizzaChain::prepareFolding( FoldingNode* fn )
 {
 	// activate corresponding hinges
 	foreach(FdLink* l, hingeLinks[0])
 		l->properties["active"] = false;
+
+	activeLinks.clear();
 	FdLink* activeLink = hingeLinks[0][fn->hingeIdx];
 	activeLink->properties["active"] = true;
-	
+	activeLinks.push_back(activeLink);
+}
+
+void PizzaChain::fold( double t )
+{
 	// set up fixed and free nodes
 	mPanels[0]->properties["fixed"] = true;
 	mParts[0]->properties["fixed"] = false;
 
 	// hinge angle
-	//activeLink->hinge->setState(Hinge::FOLDED);
-	activeLink->hinge->angle = degrees2radians(45);
+	activeLinks[0]->hinge->setAngleByTime(t);
 
 	// apply folding
 	restoreConfiguration();

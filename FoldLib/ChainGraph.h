@@ -9,8 +9,10 @@ class ChainGraph : public FdGraph
 public:
     ChainGraph(FdNode* part, PatchNode* panel1, PatchNode* panel2 = NULL);
 	
+	virtual void prepareFolding(FoldingNode* fn) = 0;
+	virtual void fold(double t) = 0;
 
-	virtual void fold(FoldingNode* fn) = 0;
+	virtual QVector<Structure::Node*> getKeyframeNodes(double t, bool withPanels);
 
 public:
 	QVector<PatchNode*>		mPanels;		// two control panels
@@ -27,4 +29,7 @@ public:
 	//		2nd dimension: hinge pairs [2*i, 2*i+1] for each jointSeg[i]
 	int nbRods;
 	QVector< QVector<FdLink*> > hingeLinks;
+
+	bool isReady;
+	QVector<FdLink*> activeLinks;
 };

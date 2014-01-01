@@ -7,6 +7,8 @@ FoldManager::FoldManager()
 
 	selId = -1;
 	pushAxis = 0;
+
+	keyIndx = -1;
 }
 
 
@@ -178,10 +180,12 @@ void FoldManager::foldSelLayer()
 	if (lg) lg->fold();
 }
 
+
 void FoldManager::fold()
 {
-	
+	dcGraphs[0]->fold();
 }
+
 
 void FoldManager::selectDcGraph( QString id )
 {
@@ -271,7 +275,41 @@ LayerGraph* FoldManager::getSelLayer()
 		return NULL;
 }
 
-void FoldManager::generateFdKeyFrames( double pc )
+void FoldManager::generateFdKeyFrames()
 {
+	if (dcGraphs.isEmpty()) return;
 
+	// clear
+	results.clear();
+	
+	// generate key frames
+	int nbFrames = 100;
+	QVector<FdGraph*> dc_results;
+	DcGraph* dc_graph = dcGraphs[0];
+	double step = 1.0 / nbFrames;
+	for (int i = 0; i <= nbFrames; i++)
+	{
+		dc_results << dc_graph->getKeyFrame(i * step);
+	}
+
+	results << dc_results;
+
+	emit(resultsGenerated(dc_results.size()));
+}
+
+void FoldManager::selectKeyframe( int idx )
+{
+	keyIndx = idx;
+
+	emit(selectionChanged());
+}
+
+FdGraph* FoldManager::getKeyframe()
+{
+	if (!results.isEmpty() && keyIndx >= 0 && keyIndx < results[0].size())
+	{
+		return results[0][keyIndx];
+	}
+	
+	return NULL;
 }

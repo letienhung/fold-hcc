@@ -25,16 +25,19 @@ public slots:
 	void selectDcGraph(QListWidgetItem* item);
 	void selectLayer(QListWidgetItem* item);
 	void selectChain(QListWidgetItem* item);
+	void selectKeyframe(QListWidgetItem* item);
 
 	// to Ui
 	void setScaffold(FdGraph* fdg);
 	void setDcGraphList(QStringList labels);
 	void setLayerList(QStringList labels);
 	void setChainList(QStringList labels);
+	void setKeyframeList(int N);
 
 signals:
 	void dcGraphSelectionChanged(QString id);
 	void layerSelectionChanged(QString id);
 	void chainSelectionChanged(QString id);
+	void keyframeSelectionChanged(int idx);
 };
 

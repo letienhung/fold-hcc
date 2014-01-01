@@ -12,6 +12,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	this->connect(ui->scaffoldList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(selectDcGraph(QListWidgetItem*)));
 	this->connect(ui->layerList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(selectLayer(QListWidgetItem*)));
 	this->connect(ui->chainList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(selectChain(QListWidgetItem*)));
+	this->connect(ui->keyframeList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(selectKeyFrame(QListWidgetItem*)));
 
 	// creation and refine
 	this->connect(plugin->g_manager, SIGNAL(scaffoldChanged(FdGraph*)), SLOT(setScaffold(FdGraph*)));
@@ -37,11 +38,14 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->f_manager->connect(this, SIGNAL(dcGraphSelectionChanged(QString)), SLOT(selectDcGraph(QString)));
 	plugin->f_manager->connect(this, SIGNAL(layerSelectionChanged(QString)), SLOT(selectLayer(QString)));
 	plugin->f_manager->connect(this, SIGNAL(chainSelectionChanged(QString)), SLOT(selectChain(QString)));
+	plugin->f_manager->connect(this, SIGNAL(keyframeSelectionChanged(int)), SLOT(selectKeyframe(int)));
 
 	plugin->f_manager->connect(ui->foldLayer, SIGNAL(clicked()), SLOT(foldSelLayer()));
 	plugin->f_manager->connect(ui->fold, SIGNAL(clicked()), SLOT(fold()));
+	plugin->f_manager->connect(ui->generateKeyframes, SIGNAL(clicked()), SLOT(generateFdKeyFrames()));
 
 	// visualization
+	plugin->connect(ui->showKeyframe, SIGNAL(stateChanged(int)), SLOT(showKeyframe(int)));
 	plugin->connect(ui->showFolded, SIGNAL(stateChanged(int)), SLOT(showFolded(int)));
 	plugin->connect(ui->showCuboids, SIGNAL(stateChanged(int)), SLOT(showCuboid(int)));
 	plugin->connect(ui->showScaffold, SIGNAL(stateChanged(int)), SLOT(showScaffold(int)));
@@ -96,4 +100,20 @@ void FdWidget::selectLayer( QListWidgetItem* item )
 void FdWidget::selectChain( QListWidgetItem* item )
 {
 	emit(chainSelectionChanged(item->text()));
+}
+
+void FdWidget::setKeyframeList( int N )
+{
+	ui->keyframeList->clear();
+	QStringList labels;
+	for (int i = 0; i < N; i++)
+		labels << QString::number(i);
+
+	ui->keyframeList->addItems(labels);
+}
+
+void FdWidget::selectKeyframe( QListWidgetItem* item )
+{
+	int idx = item->text().toInt();
+	emit(keyframeSelectionChanged(idx));
 }

@@ -18,9 +18,15 @@ public:
 	int selId;
 	QVector<LayerGraph*> layers;
 
-private:
+public:
 	// layers
 	void createLayers();
+
+	// fold
+	void fold();
+
+	// key frame
+	FdGraph* getKeyFrame(double t);
 
 public:
 	FdGraph* activeScaffold();

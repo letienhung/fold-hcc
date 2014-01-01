@@ -36,6 +36,7 @@ SandwichChain::SandwichChain( FdNode* part, PatchNode* panel1, PatchNode* panel2
 	}
 
 	hingeLinks << links;
+	links.clear();
 
 	// create hinge links between two rods in the chain
 	nbRods = 2;
@@ -62,7 +63,6 @@ SandwichChain::SandwichChain( FdNode* part, PatchNode* panel1, PatchNode* panel2
 			FdLink* linkR = new FdLink(part1, part2, hingeR);
 			FdLink* linkL = new FdLink(part1, part2, hingeL);
 
-			links.clear();
 			links << linkR << linkL;
 
 			Graph::addLink(linkR);
@@ -70,7 +70,45 @@ SandwichChain::SandwichChain( FdNode* part, PatchNode* panel1, PatchNode* panel2
 		}
 
 		hingeLinks << links;
+		links.clear();
 	}
+
+	// create hinge links between mPanels[1] and mParts[1]
+	for (int i = 0; i < rootJointSegs.size(); i++)
+	{
+		Geom::Segment jseg = rootJointSegs[i].translated(chainUpSeg.P1 - chainUpSeg.P0);
+		Vector3 upV = chainUpSeg.Direction;
+		Vector3 rV = rootRightVs[i];
+		Vector3 axisV = jseg.Direction;
+		Hinge* hingeR = new Hinge(mParts.last(), mPanels[1], 
+			jseg.P1, -upV,  rV, -axisV, jseg.length());
+		Hinge* hingeL = new Hinge(mParts.last(), mPanels[1], 
+			jseg.P0, -upV, -rV, axisV, jseg.length());
+
+		FdLink* linkR = new FdLink(mParts.last(), mPanels[1], hingeR);
+		FdLink* linkL = new FdLink(mParts.last(), mPanels[1], hingeL);
+		links.clear();
+		links << linkR << linkL;
+
+		Graph::addLink(linkR);
+		Graph::addLink(linkL);
+	}
+
+	hingeLinks << links;
+}
+
+void SandwichChain::sortParts()
+{
+	QMap<double, FdNode*> distPartMap;
+
+	Geom::Plane panel_plane = mPanels[0]->mPatch.getPlane();
+	foreach(FdNode* n, mParts)
+	{
+		double dist = panel_plane.signedDistanceTo(n->center());
+		distPartMap[fabs(dist)] = n;
+	}
+
+	mParts = distPartMap.values().toVector();
 }
 
 Geom::Rectangle2 SandwichChain::getFoldingArea(FoldingNode* fn)
@@ -95,8 +133,10 @@ Geom::Rectangle2 SandwichChain::getFoldingArea(FoldingNode* fn)
 	return Geom::Rectangle2(conners);
 }
 
-void SandwichChain::fold( FoldingNode* fn )
+void SandwichChain::prepareFolding( FoldingNode* fn )
 {
+	activeLinks.clear();
+
 	int hidx_m = fn->hingeIdx;
 	int hidx_v = (hidx_m % 2) ? hidx_m - 1 : hidx_m + 1;
 	for (int i = 0; i < hingeLinks.size(); i++)
@@ -108,33 +148,23 @@ void SandwichChain::fold( FoldingNode* fn )
 		int hidx = (i % 2) ? hidx_v : hidx_m;
 		FdLink* activeLink = hingeLinks[i][hidx];
 		activeLink->properties["active"] = true;
-
-		// hinge angle
-		//activeLink->hinge->setState(Hinge::FOLDED);
-		activeLink->hinge->angle = degrees2radians(45);
+		activeLinks << activeLink;
 	}
+}
 
-	// fix panels but free parts
-	foreach (FdNode* part, mParts)
-		part->properties["fixed"] = false;
 
+
+void SandwichChain::fold( double t )
+{
+	// fix panels[0] but free all others
 	mPanels[0]->properties["fixed"] = true;
-	mPanels[1]->properties["fixed"] = true;
+	foreach (Structure::Node* n, nodes)
+		n->properties["fixed"] = false;
+
+	// hinge angle
+	foreach(FdLink* alink, activeLinks)
+		alink->hinge->setAngleByTime(t);
 
 	// apply folding
 	restoreConfiguration();
-}
-
-void SandwichChain::sortParts()
-{
-	QMap<double, FdNode*> distPartMap;
-
-	Geom::Plane panel_plane = mPanels[0]->mPatch.getPlane();
-	foreach(FdNode* n, mParts)
-	{
-		double dist = panel_plane.signedDistanceTo(n->center());
-		distPartMap[fabs(dist)] = n;
-	}
-
-	mParts = distPartMap.values().toVector();
 }

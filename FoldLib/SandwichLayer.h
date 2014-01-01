@@ -8,6 +8,8 @@ public:
 
 	void buildDependGraph();
 
+	QVector<Structure::Node*> getKeyFrameNodes(double t);
+
 public:
 	PatchNode *mPanel1, *mPanel2;
 };

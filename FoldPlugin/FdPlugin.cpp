@@ -19,6 +19,7 @@ FdPlugin::FdPlugin()
 	f_manager->connect(g_manager, SIGNAL(scaffoldChanged(FdGraph*)), SLOT(setScaffold(FdGraph*)));
 	this->connect(f_manager, SIGNAL(selectionChanged()), SLOT(updateScene()));
 	
+	drawKeyframe = false;
 	drawFolded = false;
 	drawAABB = false;
 	drawCuboid = true;
@@ -97,6 +98,8 @@ void FdPlugin::test()
 
 FdGraph* FdPlugin::activeScaffold()
 {
+	if (drawKeyframe) return f_manager->getKeyframe();
+
 	return (drawFolded ? f_manager->activeScaffold() : g_manager->scaffold);
 }
 
@@ -160,6 +163,12 @@ void FdPlugin::showScaffold( int state )
 void FdPlugin::showMesh( int state )
 {
 	drawMesh = (state == Qt::Checked);
+	updateScene();
+}
+
+void FdPlugin::showKeyframes( int state )
+{
+	drawKeyframe = (state == Qt::Checked);
 	updateScene();
 }
 

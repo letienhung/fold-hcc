@@ -22,6 +22,7 @@ public:
 	QVector<DcGraph*> dcGraphs;
 
 	// folding results
+	int keyIndx;
 	QVector< QVector<FdGraph*> > results;
 
 public:
@@ -43,21 +44,24 @@ public slots:
 	void foldAlongAxis(int aid);
 	// 3. invoke when a folding percentage is picked (multiple times)
 	// \pc \in (0, 1]
-	void generateFdKeyFrames(double pc);
+	void generateFdKeyFrames();
 
 public slots:
 	void createLayerGraphs();
 	void selectDcGraph(QString id);
 	void selectLayer(QString id);
 	void selectChain(QString id);
+	void selectKeyframe(int idx);
 
-	void fold();
 	void foldSelLayer();
+	void fold();
+	FdGraph* getKeyframe();
 
 signals:
 	void selectionChanged();
 	void lyGraphsChanged(QStringList labels);
 	void layersChanged(QStringList labels);
 	void chainsChanged(QStringList labels);
+	void resultsGenerated(int N);
 };
 

@@ -25,6 +25,9 @@ public:
 	virtual void buildDependGraph() = 0;
 	void computeChainSequence();
 
+	// key frames
+	virtual QVector<Structure::Node*> getKeyFrameNodes(double t) = 0;
+
 public:
 	LAYER_TYPE mType;
 	int selId;

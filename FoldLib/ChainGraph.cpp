@@ -49,5 +49,25 @@ ChainGraph::ChainGraph( FdNode* part, PatchNode* panel1, PatchNode* panel2 /*= N
 	}
 
 	// initial 
+	isReady = false;
+}
+
+QVector<Structure::Node*> ChainGraph::getKeyframeNodes( double t, bool withPanels )
+{
+	// apply fold
+	fold(t);
+
+	// clone nodes
+	QVector<Structure::Node*> knodes;
+	if (withPanels)
+	{
+		foreach(PatchNode* n, mPanels)
+			knodes << n->clone();
+	}
+
+	foreach(FdNode* n, mParts)
+		knodes << n->clone();
+
+	return knodes;
 }
 

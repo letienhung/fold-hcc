@@ -26,6 +26,66 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="2" column="0" colspan="2">
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>Visualization</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="showCuboids">
+        <property name="text">
+         <string>Cuboids</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="showScaffold">
+        <property name="text">
+         <string>Scaffold</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QCheckBox" name="showMesh">
+        <property name="text">
+         <string>Mesh</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="3">
+       <widget class="QCheckBox" name="showAABB">
+        <property name="text">
+         <string>AABB</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="showFolded">
+        <property name="text">
+         <string>Show Folded</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QCheckBox" name="showKeyframe">
+        <property name="text">
+         <string>Show Keyframe</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
    <item row="1" column="0" colspan="2">
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
@@ -143,59 +203,6 @@
      </layout>
     </widget>
    </item>
-   <item row="2" column="0" colspan="2">
-    <widget class="QGroupBox" name="groupBox_2">
-     <property name="title">
-      <string>Visualization</string>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_3">
-      <item row="2" column="0">
-       <widget class="QCheckBox" name="showCuboids">
-        <property name="text">
-         <string>Cuboids</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QCheckBox" name="showScaffold">
-        <property name="text">
-         <string>Scaffold</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="2">
-       <widget class="QCheckBox" name="showMesh">
-        <property name="text">
-         <string>Mesh</string>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="3">
-       <widget class="QCheckBox" name="showAABB">
-        <property name="text">
-         <string>AABB</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QCheckBox" name="showFolded">
-        <property name="text">
-         <string>Show Folded</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
    <item row="11" column="0" colspan="2">
     <spacer name="verticalSpacer">
      <property name="orientation">
@@ -222,13 +229,6 @@
       <string>Foldabilizer</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
-      <item row="0" column="2" colspan="2">
-       <widget class="QPushButton" name="createLayers">
-        <property name="text">
-         <string>Create Layers</string>
-        </property>
-       </widget>
-      </item>
       <item row="2" column="1">
        <widget class="QListWidget" name="layerList"/>
       </item>
@@ -239,20 +239,37 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="2" colspan="2">
-       <widget class="QListWidget" name="chainList"/>
+      <item row="2" column="0">
+       <widget class="QListWidget" name="scaffoldList"/>
       </item>
-      <item row="5" column="2">
-       <widget class="QLabel" name="label_5">
+      <item row="0" column="0" alignment="Qt::AlignRight">
+       <widget class="QLabel" name="label_6">
         <property name="text">
-         <string>Target Volume</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         <string>Direction:</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="3">
+      <item row="1" column="1" alignment="Qt::AlignHCenter">
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>Layers</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2" colspan="2" alignment="Qt::AlignHCenter">
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>Chains</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="4">
+       <widget class="QListWidget" name="keyframeList"/>
+      </item>
+      <item row="2" column="3">
+       <widget class="QListWidget" name="chainList"/>
+      </item>
+      <item row="6" column="4">
        <widget class="QDoubleSpinBox" name="targetV">
         <property name="maximum">
          <double>1.000000000000000</double>
@@ -265,13 +282,13 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QListWidget" name="scaffoldList"/>
-      </item>
-      <item row="0" column="0" alignment="Qt::AlignRight">
-       <widget class="QLabel" name="label_6">
+      <item row="6" column="3">
+       <widget class="QLabel" name="label_5">
         <property name="text">
-         <string>Direction:</string>
+         <string>Target Volume</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
         </property>
        </widget>
       </item>
@@ -299,31 +316,38 @@
         </item>
        </widget>
       </item>
-      <item row="1" column="1" alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="label_8">
-        <property name="text">
-         <string>Layers</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2" colspan="2" alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="label_9">
-        <property name="text">
-         <string>Chains</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1" colspan="3">
+      <item row="4" column="3" colspan="2">
        <widget class="QPushButton" name="fold">
         <property name="text">
          <string>Fold</string>
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
+      <item row="4" column="0" colspan="2">
        <widget class="QPushButton" name="foldLayer">
         <property name="text">
          <string>Fold Layer</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="4" alignment="Qt::AlignHCenter">
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>Keyframes</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3" colspan="2">
+       <widget class="QPushButton" name="createLayers">
+        <property name="text">
+         <string>Create Layers</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="3" colspan="2">
+       <widget class="QPushButton" name="generateKeyframes">
+        <property name="text">
+         <string>Generate Keyframes</string>
         </property>
        </widget>
       </item>

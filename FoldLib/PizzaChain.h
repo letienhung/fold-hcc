@@ -10,5 +10,6 @@ public:
 
 	Geom::SectorCylinder getFoldingVolume(FoldingNode* fn);
 
-	void fold(FoldingNode* fn);
+	void prepareFolding(FoldingNode* fn);
+	void fold(double t);
 };
