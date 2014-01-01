@@ -783,6 +783,7 @@ void MyDesigner::wheelEvent( QWheelEvent* e )
 			mBox->deform(factor);
 			mBox->getBoxFaces();
 			fManager->generateFdKeyFrames(1.0 - fabs(scalePercent));
+			emit(resultsGenerated());
 		}
 		else
 	        this->displayMessage("* Fail to push in the right direction *", 5000);

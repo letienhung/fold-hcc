@@ -195,6 +195,7 @@ void MainWindow::initQuickView()
 		ui.ThumbGrid->addWidget(viewers[i]);
 
 	connect(ui.horizontalScrollBar, SIGNAL(valueChanged(int)), SLOT(loadGraphs()));
+	connect(designer, SIGNAL(designer->resultsGenerated()), SLOT(reloadGraphs()));
 }
 
 void MainWindow::clearLayoutItems(QLayout * layout)
@@ -243,6 +244,23 @@ void MainWindow::setFoldManager(FoldManager *fm)
 	mFManager = fm;
 }
 
+void MainWindow::reloadGraphs()
+{
+	int n = mFManager->results.size();
+	int numPages = ceil(double(n) / double(numViewer)) - 1;
+
+	ui.horizontalScrollBar->setRange(0, numPages);
+	ui.horizontalScrollBar->setValue(0);
+
+	if(n)
+		loadGraphs();
+	else
+	{
+		showNumViewers(0);
+		refresh();
+	}
+}
+
 void MainWindow::loadGraphs(QString using_path)
 {
 	path = using_path;
@@ -279,8 +297,9 @@ void MainWindow::refresh()
 
 void MainWindow::loadCurrentGraphs()
 {
+	int n = mFManager->results.size();
 	int index = ui.horizontalScrollBar->value() * numViewer;
-	int curActive = Min(numViewer, files.size() - index);
+	int curActive = Min(numViewer, n - index);
 
 	showNumViewers(curActive);
 
@@ -293,11 +312,11 @@ void MainWindow::loadCurrentGraphs()
 
 	for(int i = 0; i < numViewer; i++){
 
-		if(index + c > files.size() - 1) return;
+		if(index + c > n - 1) return;
 
-		QString fileName = path + "\\" + files[index + c];
-
-		new LoaderThread(viewers[i], fileName);
+		//QString fileName = path + "\\" + files[index + c];
+		int size = mFManager->results[index+c].size();
+		new LoaderThread(viewers[i], mFManager->results[index+c][size-1]);
 
 		c++; 
 		if(c > curActive) return;
@@ -328,8 +347,18 @@ LoaderThread::LoaderThread(QuickMeshViewer * v, QString file_name)
 	this->start();
 }
 
+LoaderThread::LoaderThread(QuickMeshViewer * v, FdGraph *fdGr)
+{
+	this->viewer = v;
+	this->mGraph = fdGr;
+	this->start();
+}
+
 void LoaderThread::run()
 {
-	this->viewer->loadGraph(fileName);
+	if(!mGraph)
+		this->viewer->setGraph(mGraph);
+	else if(fileName != "")
+	   this->viewer->loadGraph(fileName);
 	QThread::exit();
 }

@@ -98,6 +98,7 @@ public slots:
 	void clearLayoutItems(QLayout * layout);
 	
 	//Slots for Quick Mesh Viewer 
+	void reloadGraphs();
 	void loadGraphs(QString using_path);
 	void loadGraphs();
 	void showNumViewers(int n);
@@ -122,8 +123,10 @@ class LoaderThread : public QThread{
 	Q_OBJECT
 public:
 	LoaderThread(QuickMeshViewer *, QString);
+	LoaderThread(QuickMeshViewer *, FdGraph *);
 	QuickMeshViewer * viewer;
 	QString fileName;
+	FdGraph *mGraph;
 protected:
 	void run();
 };
