@@ -12,7 +12,8 @@ public:
 	virtual void prepareFolding(FoldingNode* fn) = 0;
 	virtual void fold(double t) = 0;
 
-	virtual QVector<Structure::Node*> getKeyframeNodes(double t, bool withPanels);
+	QVector<Structure::Node*> getKeyframeParts(double t);
+	QVector<Structure::Node*> getKeyFramePanels(double t);
 
 public:
 	QVector<PatchNode*>		mPanels;		// two control panels

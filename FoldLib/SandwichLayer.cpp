@@ -90,9 +90,3 @@ void SandwichLayer::buildDependGraph()
 		}
 	}
 }
-
-QVector<Structure::Node*> SandwichLayer::getKeyFrameNodes( double t )
-{
-	QVector<Structure::Node*> knodes;
-	return knodes;
-}

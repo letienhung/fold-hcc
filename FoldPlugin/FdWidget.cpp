@@ -12,7 +12,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	this->connect(ui->scaffoldList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(selectDcGraph(QListWidgetItem*)));
 	this->connect(ui->layerList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(selectLayer(QListWidgetItem*)));
 	this->connect(ui->chainList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(selectChain(QListWidgetItem*)));
-	this->connect(ui->keyframeList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(selectKeyFrame(QListWidgetItem*)));
+	this->connect(ui->keyframeList, SIGNAL(itemSelectionChanged()), SLOT(selectKeyframe()));
 
 	// creation and refine
 	this->connect(plugin->g_manager, SIGNAL(scaffoldChanged(FdGraph*)), SLOT(setScaffold(FdGraph*)));
@@ -35,6 +35,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	this->connect(plugin->f_manager, SIGNAL(lyGraphsChanged(QStringList)), SLOT(setDcGraphList(QStringList)));
 	this->connect(plugin->f_manager, SIGNAL(layersChanged(QStringList)), SLOT(setLayerList(QStringList)));
 	this->connect(plugin->f_manager, SIGNAL(chainsChanged(QStringList)), SLOT(setChainList(QStringList)));
+	this->connect(plugin->f_manager, SIGNAL(resultsGenerated(int)), SLOT(setKeyframeList(int)));
 	plugin->f_manager->connect(this, SIGNAL(dcGraphSelectionChanged(QString)), SLOT(selectDcGraph(QString)));
 	plugin->f_manager->connect(this, SIGNAL(layerSelectionChanged(QString)), SLOT(selectLayer(QString)));
 	plugin->f_manager->connect(this, SIGNAL(chainSelectionChanged(QString)), SLOT(selectChain(QString)));
@@ -112,8 +113,13 @@ void FdWidget::setKeyframeList( int N )
 	ui->keyframeList->addItems(labels);
 }
 
-void FdWidget::selectKeyframe( QListWidgetItem* item )
+void FdWidget::selectKeyframe()
 {
-	int idx = item->text().toInt();
-	emit(keyframeSelectionChanged(idx));
+	QList<QListWidgetItem *> selItems = ui->keyframeList->selectedItems();
+
+	if (!selItems.isEmpty())
+	{
+		int idx = selItems.front()->text().toInt();
+		emit(keyframeSelectionChanged(idx));
+	}
 }

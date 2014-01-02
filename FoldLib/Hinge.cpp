@@ -197,6 +197,6 @@ Vector3 Hinge::getDihedralDirec( FdNode* n )
 
 void Hinge::setAngleByTime( double t )
 {
-	angle = maxAngle * t;
+	angle = maxAngle * (1 - t);
 }
 

@@ -49,7 +49,7 @@ public slots:
 	void showScaffold(int state);
 	void showMesh(int state);
 	void showFolded(int state);
-	void showKeyframes(int state);
+	void showKeyframe(int state);
 
 	// scene and message
 	void updateScene();

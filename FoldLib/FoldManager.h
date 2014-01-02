@@ -42,19 +42,20 @@ public slots:
 	// 2. after user selected folding direction (once per axis)
 	// \aid = 0(X), 1(Y), 2(Z)
 	void foldAlongAxis(int aid);
+	void createLayerGraphs();
+	void fold();
+
 	// 3. invoke when a folding percentage is picked (multiple times)
 	// \pc \in (0, 1]
 	void generateFdKeyFrames();
 
 public slots:
-	void createLayerGraphs();
 	void selectDcGraph(QString id);
 	void selectLayer(QString id);
 	void selectChain(QString id);
 	void selectKeyframe(int idx);
 
 	void foldSelLayer();
-	void fold();
 	FdGraph* getKeyframe();
 
 signals:

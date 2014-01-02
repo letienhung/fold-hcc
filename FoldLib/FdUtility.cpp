@@ -196,3 +196,21 @@ QVector<Geom::Segment> detectHingeSegments( FdNode* part, PatchNode* panel )
 
 	return hinges;
 }
+
+double getLocalTime( double globalT, double localStart, double localEnd )
+{
+	if (globalT < localStart) return 0;
+	else if(globalT >= localStart && globalT < localEnd)
+		return (globalT - localStart) / (localEnd - localStart);
+	else return 1;
+}
+
+QVector<double> getEvenDivision( int n, double start /*= 0*/, double end /*= 1*/ )
+{
+	QVector<double> cp;
+	double step = (end - start) / n;
+	for (int i = 0; i <= n; i++)
+		cp << i * step;
+
+	return cp;
+}

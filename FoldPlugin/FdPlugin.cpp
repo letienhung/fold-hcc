@@ -166,7 +166,7 @@ void FdPlugin::showMesh( int state )
 	updateScene();
 }
 
-void FdPlugin::showKeyframes( int state )
+void FdPlugin::showKeyframe( int state )
 {
 	drawKeyframe = (state == Qt::Checked);
 	updateScene();

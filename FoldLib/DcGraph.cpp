@@ -3,6 +3,7 @@
 #include "PizzaLayer.h"
 #include "SandwichLayer.h"
 #include <QFileInfo>
+#include "FdUtility.h"
 
 
 DcGraph::DcGraph( FdGraph* scaffold, StrArray2D panelGroups, Vector3 up, QString id)
@@ -97,7 +98,7 @@ void DcGraph::createLayers()
 		layers.push_back(sl);
 	}
 
-	// first layer is pizza
+	// last layer is pizza
 	QString id_last = "Pz-" + QString::number(layers.size());
 	PizzaLayer* pl_last = new PizzaLayer(layerGroups.last(), controlPanels.last(), id_last);
 	pl_last->path = path;
@@ -153,31 +154,15 @@ void DcGraph::selectLayer( QString id )
 FdGraph* DcGraph::getKeyFrame( double t )
 {
 	// evenly distribute the time among layers
-	double step = 1.0 / layers.size();
-	QVector<double> layerStarts;
-	for (int i = 0; i < layers.size(); i++)
-		layerStarts << i * step;
-	layerStarts << 1.0;
+	QVector<double> layerStarts = getEvenDivision(layers.size());
 
 	// get folded nodes of each layer
 	// the folding base is the first control panel
 	QVector< QVector<Structure::Node*> > knodes;
 	for (int i = 0; i < layers.size(); i++)
 	{
-		double start = layerStarts[i];
-		double end = layerStarts[i+1];
-
-		if (t < start)
-			knodes << layers[i]->getKeyFrameNodes(0);
-
-		if (t >= start && t < end)
-		{
-			double t_layer = (t - start) / step;
-			knodes << layers[i]->getKeyFrameNodes(t_layer);
-		}
-
-		if (t >= end)
-			knodes << layers[i]->getKeyFrameNodes(1);
+		double lt = getLocalTime(t, layerStarts[i], layerStarts[i+1]);
+		knodes << layers[i]->getKeyFrameNodes(lt);
 	}
 
 	// compute offset of each control panel
@@ -188,8 +173,8 @@ FdGraph* DcGraph::getKeyFrame( double t )
 		QString panel_id = controlPanels[i]->mID;
 		
 		// copy1 in layer[i]
-		FdNode* panelCopy1;
-		int idx1;
+		FdNode* panelCopy1 = NULL;
+		int idx1 = -1;
 		QVector<Structure::Node*> &lnodes1 = knodes[i];
 		for(int j = 0; j < lnodes1.size(); j++)
 		{
@@ -201,8 +186,8 @@ FdGraph* DcGraph::getKeyFrame( double t )
 		}
 
 		// copy2 in layer[i+1]
-		FdNode* panelCopy2;
-		int idx2;
+		FdNode* panelCopy2 = NULL;
+		int idx2 = -1;
 		QVector<Structure::Node*> &lnodes2 = knodes[i+1];
 		for(int j = 0; j < lnodes2.size(); j++)
 		{
@@ -212,21 +197,25 @@ FdGraph* DcGraph::getKeyFrame( double t )
 				idx2 = j;
 			}
 		}
-
-
+		 
 		// delta
-		panelDeltas << panelCopy1->center() - panelCopy2->center();
+		Vector3 delta(0, 0, 0);
+		if (panelCopy1 && panelCopy2) 
+			delta = panelCopy1->center() - panelCopy2->center();
+		panelDeltas << delta;
 
 		// remove copy2
-		lnodes2.remove(idx2);
+		if (idx2 >= 0 && idx2 < lnodes2.size())
+			lnodes2.remove(idx2);
 	}
 
 	// shift layers and add nodes into scaffold
 	FdGraph *key_graph = new FdGraph();
 	Vector3 offset(0, 0, 0);
-	for (int i = 1; i < knodes.size(); i++)
+	for (int i = 0; i < knodes.size(); i++)
 	{
-		offset += panelDeltas[i-1];
+		// keep the first layer but shift others
+		if (i > 0) offset += panelDeltas[i-1];
 
 		QVector<Structure::Node*> &lnodes = knodes[i];
 		for (int j = 0; j < lnodes.size(); j++)

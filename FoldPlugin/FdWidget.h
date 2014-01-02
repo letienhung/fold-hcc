@@ -25,7 +25,7 @@ public slots:
 	void selectDcGraph(QListWidgetItem* item);
 	void selectLayer(QListWidgetItem* item);
 	void selectChain(QListWidgetItem* item);
-	void selectKeyframe(QListWidgetItem* item);
+	void selectKeyframe();
 
 	// to Ui
 	void setScaffold(FdGraph* fdg);

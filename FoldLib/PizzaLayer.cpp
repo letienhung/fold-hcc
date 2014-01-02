@@ -105,34 +105,3 @@ void PizzaLayer::buildDependGraph()
 		}
 	}
 }
-
-QVector<Structure::Node*> PizzaLayer::getKeyFrameNodes( double t )
-{
-	QVector<Structure::Node*> knodes;
-
-	// evenly distribute time among pizza chains
-	double step = 1.0 / chains.size();
-	QVector<double> chainStarts;
-	for (int i = 0; i < chains.size(); i++)
-		chainStarts << i * step;
-	chainStarts << 1.0;
-
-	// chain parts
-	for (int i = 0; i < chains.size(); i++)
-	{
-		double start = chainStarts[i];
-		double end = chainStarts[i+1];
-
-		if (t >= start && t < end)
-		{
-			double t_chain = (t - start) / step;
-			if (i == 0)
-				knodes += chains[i]->getKeyframeNodes(t_chain, true);
-			else
-				knodes += chains[i]->getKeyframeNodes(t_chain, false);
-		}
-	}
-
-	return knodes;
-}
-
