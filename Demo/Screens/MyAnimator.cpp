@@ -34,7 +34,7 @@ MyAnimator::MyAnimator(Ui::EvaluateWidget * useAnimWidget, QWidget * parent /*= 
 	isShow = true;
 
 	mCurrConfigId = 0;
-	mCurrGraphId = 0;
+	mCurrFrameId = 0;
 
 	fm = new QFontMetrics(QFont());
 
@@ -191,6 +191,8 @@ void MyAnimator::draw()
 
 	// The main object
 	if(activeScaffold()){
+		Geom::AABB aabb = activeScaffold()->computeAABB();
+	    loadedMeshHalfHight = (aabb.bbmax.z() - aabb.bbmin.z()) * -0.01;
 		drawObject();
 		activeScaffold()->draw();
 	}
@@ -427,9 +429,16 @@ void MyAnimator::drawViewChanger()
 
 void MyAnimator::drawOSD()
 {
+	int paddingX = 15, paddingY = 5;
+
+	int pixelsHigh = fm->height();
+
+	/* Configuration text */
+	drawMessage("Configuration #" + QString::number(mCurrConfigId), paddingX, paddingY + (pixelsHigh * 3), Vec4d(0.5,0.5,0.0,0.25));
+			
 	// View changer title
 	qglColor(QColor(255,255,180,200));
-	renderText(width() - (90*0.5) - (fm->width(viewTitle)*0.5), height() - (fm->height()*0.3),viewTitle);
+	renderText(width() - (90*0.5) - (fm->width(viewTitle)*0.5), height() - (fm->height()*0.3), viewTitle);
 
 	// Textual log messages
 	for(int i = 0; i < osdMessages.size(); i++){
@@ -492,7 +501,7 @@ FoldManager* MyAnimator::activeManager()
 FdGraph* MyAnimator::activeScaffold()
 {
 	//return gManager->scaffold;
-	return activeManager()->results[mCurrConfigId][mCurrGraphId];
+	return activeManager()->results[mCurrConfigId][mCurrFrameId];
 }
 
 bool MyAnimator::isEmpty()
@@ -530,9 +539,6 @@ void MyAnimator::setActiveObject(FoldManager *fm)
 
 	// Setup the new object
 	fManager = fm;
-
-	// Change title of scene
-	//setWindowTitle(activeScaffold()->path);
 
 	// Set camera
 	resetView();
@@ -727,7 +733,7 @@ void MyAnimator::animate()
 {
 	if(isEmpty()) return;
 	for(int i = 0; i < activeManager()->results[mCurrConfigId].size(); i++){
-		mCurrGraphId = i;
+		mCurrFrameId = i;
 		updateGL();
 		emit setSliderValue(100 * (double(i) / activeManager()->results[mCurrConfigId].size()));
 	}
@@ -735,7 +741,7 @@ void MyAnimator::animate()
 
 void MyAnimator::toggleSlider(int frameId)
 {
-	mCurrGraphId = frameId;
+	mCurrFrameId = frameId;
 	updateGL();
 }
 

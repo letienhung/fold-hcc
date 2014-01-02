@@ -57,7 +57,7 @@ public:
 	// Object in the scene
 	FoldManager* fManager;
 	int mCurrConfigId;
-	int mCurrGraphId;
+	int mCurrFrameId;
 	bool isShow;
 
 	FoldManager* activeManager();

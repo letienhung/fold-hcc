@@ -152,7 +152,10 @@ void MyDesigner::preDraw()
 	double floorOpacity = 0.25; 
 	if(camera()->position().z < loadedMeshHalfHight) floorOpacity = 0.05;
 	drawCircleFade(Vec4d(0,0,0,floorOpacity), 4); // Floor
-	drawShadows();
+	
+	if(designWidget->showModel->isChecked())
+		drawShadows();
+
 	endUnderMesh();
 
 	glClear(GL_DEPTH_BUFFER_BIT);
@@ -191,13 +194,14 @@ void MyDesigner::draw()
 	if (isEmpty()) return;
 
 	if(selectMode == CUBOID && activeScaffold()){
-		designWidget->selectCuboidButton->setChecked(true);
+		//designWidget->selectCuboidButton->setChecked(true);
 		activeScaffold()->showCuboids(true);
 	}
 
 	// The main object
 	if(activeScaffold()){
-		drawObject();
+		if(designWidget->showModel->isChecked())
+			drawObject();
 		activeScaffold()->draw();
 	}
 
@@ -560,6 +564,8 @@ void MyDesigner::loadObject()
 	mBox = new BBox(aabb.center(), (aabb.bbmax-aabb.bbmin)*0.5f);
 	scalePercent = 0.0;
 
+	loadedMeshHalfHight = (aabb.bbmax.z() - aabb.bbmin.z()) * -0.01;
+
 	setManipulatedFrame(activeFrame);
 
 	updateGL();
@@ -590,21 +596,28 @@ void MyDesigner::setActiveObject(GraphManager *gm)
 
 void MyDesigner::newScene()
 {
+	setSelectMode(SELECT_NONE);
+	this->setCursor(QCursor(Qt::ArrowCursor));
+	selectCameraMode();
 	clearButtons();
+	
 	if(activeManager())
 		emit( objectDiscarded());
 
-	//selection.clear();
-	
+	designWidget->showModel->setChecked(true);
+	designWidget->showCuboid->setChecked(true);
+	designWidget->showGraph->setChecked(true);
+	designWidget->allowScale->setChecked(true);
+	designWidget->allowSplit->setChecked(true);
+
 	gManager = NULL;
 	mBox = NULL;
 	setWindowTitle(" ");
 	// Update the object
 	updateActiveObject();
 
-	//SaveUndo();
-	selectMode = SELECT_NONE;
 	isMousePressed = false;
+
 	updateGL();
 }
 
@@ -782,8 +795,8 @@ void MyDesigner::wheelEvent( QWheelEvent* e )
 			}
 			mBox->deform(factor);
 			mBox->getBoxFaces();
-			fManager->generateFdKeyFrames(1.0 - fabs(scalePercent));
-			emit(resultsGenerated());
+			//fManager->generateFdKeyFrames(1.0 - fabs(scalePercent));
+			//emit(resultsGenerated());
 		}
 		else
 	        this->displayMessage("* Fail to push in the right direction *", 5000);
@@ -830,6 +843,8 @@ void MyDesigner::endUnderMesh()
 
 void MyDesigner::drawWithNames()
 {
+	if(isEmpty())
+		return;
 	activeScaffold()->drawWithNames();
 }
 
@@ -890,7 +905,7 @@ void MyDesigner::selectCameraMode()
 
 	designWidget->selectCameraButton->setChecked(true);
 	
-	setMouseBinding(Qt::ShiftModifier | Qt::LeftButton, SELECT);
+	//setMouseBinding(Qt::ShiftModifier | Qt::LeftButton, SELECT);
 	setMouseBinding(Qt::LeftButton, CAMERA, ROTATE);
 	activeScaffold()->showCuboids(designWidget->showCuboid->isChecked());
 	this->setCursor(QCursor(Qt::ArrowCursor));
