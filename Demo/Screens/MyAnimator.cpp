@@ -518,7 +518,7 @@ void MyAnimator::resetView()
 	camera()->showEntireScene();
 }
 
-void MyAnimator::loadConfig(int configId)
+void MyAnimator::loadResult(int configId)
 {
 	//gManager = NULL;
 	//gManager = new GraphManager();

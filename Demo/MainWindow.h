@@ -73,6 +73,10 @@ public:
 	QuickMeshViewer* activeViewer;
 	int numViewer;
 	int numActiveViewers;
+	// The index of selected result to be visualized in animation
+	int selectedId;
+	// Curent base index of slider
+	int index;
 	//File name of selected configuration
 	QString path;
 	//List of result 
@@ -114,7 +118,7 @@ private:
 	void setFoldManager(FoldManager *fm);
 
 signals:
-	void selectConfig(int);
+	void selectResult(int);
 
 };
 

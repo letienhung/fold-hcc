@@ -29,6 +29,7 @@ public:
 	bool isActive;
 	FdGraph *mGraph;
 	bool isLoading;
+	int mIdx;
 
 	QString graphFileName() { return mGraph->path; }
 

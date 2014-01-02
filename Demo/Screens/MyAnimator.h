@@ -98,7 +98,7 @@ public:
 		void cameraMoved();
 
 		//Load Configuration
-		void loadConfig(int configId);
+		void loadResult(int configId);
 		//void saveObject();
 
 		//Animation

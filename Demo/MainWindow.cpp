@@ -36,8 +36,8 @@ MainWindow::MainWindow(QWidget *parent, Qt::WFlags flags)
 	evalWidget->setupUi(ui.evalFrame);
 
 	initDesign();
-	initQuickView();
 	initEvaluation();
+	initQuickView();
 
 	// Connections
 	connect(ui.actionNewScene, SIGNAL(triggered()), SLOT(addNewScene()));
@@ -176,6 +176,8 @@ void MainWindow::initEvaluation()
 void MainWindow::initQuickView()
 {
 	numViewer = 8;
+	selectedId = 0;
+	index = 0;
 	
 	if(viewers.size())
 	   viewers.clear();
@@ -194,8 +196,11 @@ void MainWindow::initQuickView()
 	for(int i = 0; i < numViewer; i++)
 		ui.ThumbGrid->addWidget(viewers[i]);
 
+	emit(selectResult(selectedId));
+
 	connect(ui.horizontalScrollBar, SIGNAL(valueChanged(int)), SLOT(loadGraphs()));
 	connect(designer, SIGNAL(designer->resultsGenerated()), SLOT(reloadGraphs()));
+	connect(this, SIGNAL(selectResult(int)), animator, SLOT(loadResult(int)));
 }
 
 void MainWindow::clearLayoutItems(QLayout * layout)
@@ -298,7 +303,7 @@ void MainWindow::refresh()
 void MainWindow::loadCurrentGraphs()
 {
 	int n = mFManager->results.size();
-	int index = ui.horizontalScrollBar->value() * numViewer;
+	index = ui.horizontalScrollBar->value() * numViewer;
 	int curActive = Min(numViewer, n - index);
 
 	showNumViewers(curActive);
@@ -317,7 +322,7 @@ void MainWindow::loadCurrentGraphs()
 		//QString fileName = path + "\\" + files[index + c];
 		int size = mFManager->results[index+c].size();
 		new LoaderThread(viewers[i], mFManager->results[index+c][size-1]);
-
+		viewers[i]->mIdx = index+c;
 		c++; 
 		if(c > curActive) return;
 
@@ -327,6 +332,8 @@ void MainWindow::loadCurrentGraphs()
 void MainWindow::setActiveViewer( QuickMeshViewer* v)
 {
 	activeViewer = v;
+	selectedId = activeViewer->mIdx;
+	emit(selectResult(selectedId));
 }
 
 QString MainWindow::selectedFile()
