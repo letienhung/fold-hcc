@@ -332,3 +332,26 @@ void FdGraph::restoreConfiguration()
 		}
 	}
 }
+
+void FdGraph::normalizeGraph(double f)
+{
+	Geom::AABB aabb = this->computeAABB();
+	Vector3 offset = aabb.center();
+
+	QVector<FdNode *> nodes = this->getFdNodes();
+	foreach(FdNode* n, nodes){
+		n->mBox.scaleAsPart(f, offset);
+		n->deformMesh();
+		n->createScaffold();
+	}
+}
+
+void FdGraph::translateGraph(Vector3 offset)
+{
+	QVector<FdNode *> nodes = this->getFdNodes();
+	foreach(FdNode* n, nodes){
+		n->mBox.translate(offset);
+		n->deformMesh();
+		n->createScaffold();
+	}
+}

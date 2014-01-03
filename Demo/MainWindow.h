@@ -101,8 +101,9 @@ public slots:
 	//Reset layout
 	void clearLayoutItems(QLayout * layout);
 	
-	//Slots for Quick Mesh Viewer 
-	void reloadGraphs();
+	//Slots for Quick Mesh Viewer
+	// Slot to be connected to the signal resultsGenerated in FoldManager
+	void reloadGraphs(int nFrame);
 	void loadGraphs(QString using_path);
 	void loadGraphs();
 	void showNumViewers(int n);

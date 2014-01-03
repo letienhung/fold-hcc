@@ -38,6 +38,7 @@ MyDesigner::MyDesigner( Ui::DesignWidget * useDesignWidget, QWidget * parent /*=
 	loadedMeshHalfHight = 1.0;
 
 	isShow = true;
+	isLoaded = false;
 	scalePercent = 0.0;
 
 	fm = new QFontMetrics(QFont());
@@ -544,14 +545,22 @@ bool MyDesigner::isEmpty()
 void MyDesigner::resetView()
 {
 	setupCamera();
-	camera()->setSceneRadius(activeScaffold()->computeAABB().radius());
+	Geom::AABB aabb = activeScaffold()->computeAABB();
+
+	//camera()->setSceneRadius(activeScaffold()->computeAABB().radius());
+	Vec minbound(aabb.bbmin.x(), aabb.bbmin.y(), aabb.bbmin.z());
+	Vec maxbound(aabb.bbmax.x(), aabb.bbmax.y(), aabb.bbmax.z());
+
+	camera()->fitBoundingBox( minbound, maxbound);
+	camera()->setSceneRadius((maxbound - minbound).norm() * 0.5);
+	camera()->setSceneCenter((minbound + maxbound) * 0.5);
 	camera()->showEntireScene();
 }
 
 void MyDesigner::loadObject()
 {
 	clearButtons();
-	//selection.clear();
+	isLoaded = true;
 
 	gManager = NULL;
 	mBox = NULL;
@@ -561,10 +570,30 @@ void MyDesigner::loadObject()
 	// Pass the active scaffold to FoldManager
 	fManager->setScaffold(activeScaffold());
 	Geom::AABB aabb = activeScaffold()->computeAABB();
+
+    if(aabb.radius()>skyRadius*0.1){
+		activeScaffold()->normalizeGraph(aabb.radius()/skyRadius*10);
+	    aabb = activeScaffold()->computeAABB();
+	}
+
+	double z = (aabb.bbmax.z() - aabb.bbmin.z())*0.5f;
+
+	if(aabb.center() != Vector3(0,0,z)){
+		Vector3 offset = Vector3(0,0,z) - aabb.center();
+		activeScaffold()->translateGraph(offset);
+	}
+
+	aabb = activeScaffold()->computeAABB();
 	mBox = new BBox(aabb.center(), (aabb.bbmax-aabb.bbmin)*0.5f);
 	scalePercent = 0.0;
 
 	loadedMeshHalfHight = (aabb.bbmax.z() - aabb.bbmin.z()) * -0.01;
+
+	// Set camera
+	resetView();
+
+	// Update the object
+	updateActiveObject();
 
 	setManipulatedFrame(activeFrame);
 
@@ -612,11 +641,12 @@ void MyDesigner::newScene()
 
 	gManager = NULL;
 	mBox = NULL;
-	setWindowTitle(" ");
+	
 	// Update the object
 	updateActiveObject();
 
 	isMousePressed = false;
+	isLoaded = false;
 
 	updateGL();
 }
@@ -795,7 +825,11 @@ void MyDesigner::wheelEvent( QWheelEvent* e )
 			}
 			mBox->deform(factor);
 			mBox->getBoxFaces();
-			//fManager->generateFdKeyFrames(1.0 - fabs(scalePercent));
+		
+			fManager->createLayerGraphs();
+			fManager->fold();
+			fManager->generateFdKeyFrames();
+
 			//emit(resultsGenerated());
 		}
 		else

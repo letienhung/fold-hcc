@@ -75,6 +75,7 @@ public:
 	bool isEmpty();
 	void setActiveObject(GraphManager* newGm);
 	void newScene();
+	bool isLoaded;
 
 	// Deformer
 	ManipulatedFrame * activeFrame;
@@ -146,5 +147,5 @@ signals:
 	void objectInserted();
 	void objectDiscarded();
 	void objectUpdated();
-	void resultsGenerated();
+	//void resultsGenerated();
 };

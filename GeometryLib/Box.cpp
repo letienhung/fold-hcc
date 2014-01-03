@@ -343,8 +343,8 @@ int Geom::Box::getFaceId( Vector3 n )
 
 int Geom::Box::getAxisId( Vector3 a )
 {
-	for (int i = 0; i < 3; i++)	
-		if (areCollinear(a, Axis[i])) return i;
+	for (int i = 0; i < 3; i++)
+		 if (areCollinear(a, Axis[i])) return i;
 
 	return -1;
 }
@@ -617,4 +617,18 @@ double Geom::Box::getExtent( int aid )
 double Geom::Box::getExtent( Vector3 v )
 {
 	return Extent[getAxisId(v)];
+}
+
+void Geom::Box::scaleAsPart(double f, Vector3 c)
+{
+	QVector<Point> conners = getConnerPoints();
+	Vector3 centre = Vector3(0.0,0.0,0.0);
+	foreach(Point p, conners){
+		p -= c;
+		p /= f;
+		p += c;
+		centre += p;
+	}
+	this->Center = centre/8;
+	this->Extent /= f;
 }

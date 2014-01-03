@@ -36,12 +36,14 @@ public:
 	Vector3 getPosition(Vector3 coord);
 	Vector3 getPosition(int aid, double c);
 
-	// transform
+	// transform 
 	void translate(Vector3 t);
 	void scale(double s);
 	void scale(Vector3 s);
 	void scale(int axisID, double s);
 	Box  scaled(double s);
+
+	void scaleAsPart(double f, Vector3 c);
 
 	// split
 	bool split(int aid, double cp, Box& box1, Box& box2);

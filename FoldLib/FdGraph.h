@@ -24,6 +24,8 @@ public:
 	FdNode*			 merge(QVector<QString> nids);
 	QVector<FdNode*> split( FdNode* fn, Geom::Plane& plane, double thr );
 	void			 changeNodeType(FdNode* n);
+	void             normalizeGraph(double f);
+	void             translateGraph(Vector3 offset);
 
 	// I/O
 	void saveToFile(QString fname);

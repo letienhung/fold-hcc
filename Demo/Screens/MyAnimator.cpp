@@ -514,7 +514,15 @@ void MyAnimator::resetView()
 {
 	setupCamera();
 	if(isEmpty()) return;
-	camera()->setSceneRadius(activeScaffold()->computeAABB().radius());
+	Geom::AABB aabb = activeScaffold()->computeAABB();
+
+	//camera()->setSceneRadius(activeScaffold()->computeAABB().radius());
+	Vec minbound(aabb.bbmin.x(), aabb.bbmin.y(), aabb.bbmin.z());
+	Vec maxbound(aabb.bbmax.x(), aabb.bbmax.y(), aabb.bbmax.z());
+
+	camera()->fitBoundingBox( minbound, maxbound);
+	camera()->setSceneRadius((maxbound - minbound).norm() * 0.4);
+	camera()->setSceneCenter((minbound + maxbound) * 0.5);
 	camera()->showEntireScene();
 }
 
@@ -526,6 +534,13 @@ void MyAnimator::loadResult(int configId)
     
 	if(isEmpty()) return;
 	mCurrConfigId = configId;
+
+	// Set camera
+	resetView();
+
+	// Update the object
+	updateActiveObject();
+
 	setManipulatedFrame(activeFrame);
 
 	updateGL();

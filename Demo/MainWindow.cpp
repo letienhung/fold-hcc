@@ -35,6 +35,8 @@ MainWindow::MainWindow(QWidget *parent, Qt::WFlags flags)
 	designWidget->setupUi(ui.designFrame);
 	evalWidget->setupUi(ui.evalFrame);
 
+	mFManager = new FoldManager();
+
 	initDesign();
 	initEvaluation();
 	initQuickView();
@@ -94,6 +96,8 @@ void MainWindow::importObject()
 
 	setFoldManager(designer->fManager);
 	animator->setActiveObject(designer->fManager);
+
+
 
 	QApplication::restoreOverrideCursor();
 }
@@ -196,10 +200,8 @@ void MainWindow::initQuickView()
 	for(int i = 0; i < numViewer; i++)
 		ui.ThumbGrid->addWidget(viewers[i]);
 
-	emit(selectResult(selectedId));
-
 	connect(ui.horizontalScrollBar, SIGNAL(valueChanged(int)), SLOT(loadGraphs()));
-	connect(designer, SIGNAL(designer->resultsGenerated()), SLOT(reloadGraphs()));
+	connect(mFManager, SIGNAL(resultsGenerated(int)), SLOT(reloadGraphs(int)));
 	connect(this, SIGNAL(selectResult(int)), animator, SLOT(loadResult(int)));
 }
 
@@ -249,8 +251,10 @@ void MainWindow::setFoldManager(FoldManager *fm)
 	mFManager = fm;
 }
 
-void MainWindow::reloadGraphs()
+void MainWindow::reloadGraphs(int nFrame)
 {
+	if(nFrame == 0)
+		return;
 	int n = mFManager->results.size();
 	int numPages = ceil(double(n) / double(numViewer)) - 1;
 
