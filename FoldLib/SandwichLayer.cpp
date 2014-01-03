@@ -90,3 +90,24 @@ void SandwichLayer::buildDependGraph()
 		}
 	}
 }
+
+
+QVector<Structure::Node*> SandwichLayer::getKeyFrameNodes( double t )
+{
+	QVector<Structure::Node*> knodes;
+
+	// chain parts
+	// fold all chains simultaneously
+	for (int i = 0; i < chains.size(); i++)
+		knodes += chains[i]->getKeyframeParts(t);
+
+	// control panels
+	if (chains.isEmpty())
+		// empty layer: panel is the only part
+		knodes += nodes.front()->clone(); 
+	else
+		// layer with chains: get panels from first chain
+		knodes += chains.front()->getKeyFramePanels(t);
+
+	return knodes;
+}

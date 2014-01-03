@@ -7,6 +7,7 @@ public:
     SandwichLayer(QVector<FdNode*> nodes, PatchNode* panel1, PatchNode* panel2, QString id);
 
 	void buildDependGraph();
+	QVector<Structure::Node*> getKeyFrameNodes( double t );
 
 public:
 	PatchNode *mPanel1, *mPanel2;

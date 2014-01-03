@@ -26,7 +26,7 @@ public:
 	void computeChainSequence();
 
 	// key frames
-	QVector<Structure::Node*> getKeyFrameNodes(double t);
+	virtual QVector<Structure::Node*> getKeyFrameNodes(double t) = 0;
 
 public:
 	LAYER_TYPE mType;

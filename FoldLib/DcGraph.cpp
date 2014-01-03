@@ -154,7 +154,30 @@ void DcGraph::selectLayer( QString id )
 FdGraph* DcGraph::getKeyFrame( double t )
 {
 	// evenly distribute the time among layers
-	QVector<double> layerStarts = getEvenDivision(layers.size());
+	// if the end layer is empty, assign zero time interval to it
+	bool empty_front = (layers.front()->nbNodes() == 1);
+	bool empty_back = (layers.back()->nbNodes() == 1);
+	QVector<double> layerStarts;
+	if (empty_front && empty_back)
+	{
+		layerStarts = getEvenDivision(layers.size() - 2);
+		layerStarts.insert(layerStarts.begin(), 0);
+		layerStarts.append(1);
+	}
+	else if (empty_front)
+	{
+		layerStarts = getEvenDivision(layers.size() - 1);
+		layerStarts.insert(layerStarts.begin(), 0);
+	}
+	else if (empty_back)
+	{
+		layerStarts = getEvenDivision(layers.size() - 1);
+		layerStarts.append(1);
+	}
+	else
+	{
+		layerStarts = getEvenDivision(layers.size());
+	}
 
 	// get folded nodes of each layer
 	// the folding base is the first control panel

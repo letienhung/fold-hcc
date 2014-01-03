@@ -157,9 +157,9 @@ void SandwichChain::prepareFolding( FoldingNode* fn )
 void SandwichChain::fold( double t )
 {
 	// fix panels[0] but free all others
-	mPanels[0]->properties["fixed"] = true;
 	foreach (Structure::Node* n, nodes)
 		n->properties["fixed"] = false;
+	mPanels[0]->properties["fixed"] = true;
 
 	// hinge angle
 	foreach(FdLink* alink, activeLinks)
