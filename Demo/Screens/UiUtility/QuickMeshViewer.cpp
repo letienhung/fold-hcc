@@ -1,6 +1,8 @@
 #include "QuickMeshViewer.h"
 #include <QFileInfo>
 
+#include "AABB.h"
+
 QuickMeshViewer::QuickMeshViewer( QWidget * parent /*= 0*/ ) :QGLViewer(parent)
 {
 	this->setMaximumSize(200,200);
@@ -51,8 +53,13 @@ void QuickMeshViewer::draw()
 
 	glEnable(GL_MULTISAMPLE);
 	
-	if(mGraph)
-	  mGraph->draw();
+	if(mGraph){
+		// Temporarily set
+		mGraph->showCuboids(true);
+		mGraph->showScaffold(true);
+		mGraph->showMeshes(false);
+		mGraph->draw();
+	}
 
 	glEnable(GL_BLEND);
 }
@@ -117,16 +124,26 @@ void QuickMeshViewer::focusInEvent( QFocusEvent * event )
 
 void QuickMeshViewer::clearGraph()
 {
-	isLoading = true;
 	mGraph = NULL;
-
+	isActive = false;
+	isLoading = false;
 	updateGL();
 }
 
 void QuickMeshViewer::setGraph(FdGraph *graph)
 {
+	isLoading = true;
 	mGraph = graph;
 	isLoading = false;
+	isActive = true;
+
+	Geom::AABB aabb = graph->computeAABB();
+	Vec center(aabb.center().x(), aabb.center().y(), aabb.center().z());
+	setSceneRadius((aabb.bbmax - aabb.bbmin).norm()*0.5f);
+    setSceneCenter(center);
+
+	updateGL();
+	emit(graphLoaded());
 }
 
 void QuickMeshViewer::loadGraph( QString fileName )

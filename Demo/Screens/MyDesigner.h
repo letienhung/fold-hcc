@@ -147,5 +147,5 @@ signals:
 	void objectInserted();
 	void objectDiscarded();
 	void objectUpdated();
-	//void resultsGenerated();
+	void resultsGenerated();
 };

@@ -74,13 +74,14 @@ void MainWindow::addNewScene()
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
 	designer->newScene();
+	animator->newScene();
 	
 	for(int i = 0; i < numViewer; i++){
 		if(viewers[i]->mGraph)
 			viewers[i]->clearGraph();
 	}
 
-	mFManager = NULL;
+	//mFManager = NULL;
 	mFManager = new FoldManager;
 
 	QApplication::restoreOverrideCursor();
@@ -94,10 +95,8 @@ void MainWindow::importObject()
 
 	//DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
 
-	setFoldManager(designer->fManager);
+	this->setFoldManager(designer->fManager);
 	animator->setActiveObject(designer->fManager);
-
-
 
 	QApplication::restoreOverrideCursor();
 }
@@ -201,7 +200,8 @@ void MainWindow::initQuickView()
 		ui.ThumbGrid->addWidget(viewers[i]);
 
 	connect(ui.horizontalScrollBar, SIGNAL(valueChanged(int)), SLOT(loadGraphs()));
-	connect(mFManager, SIGNAL(resultsGenerated(int)), SLOT(reloadGraphs(int)));
+	//connect(mFManager, SIGNAL(resultsGenerated(int)), SLOT(reloadGraphs(int)));
+	connect(designer, SIGNAL(resultsGenerated()), SLOT(reloadGraphs()));
 	connect(this, SIGNAL(selectResult(int)), animator, SLOT(loadResult(int)));
 }
 
@@ -251,10 +251,8 @@ void MainWindow::setFoldManager(FoldManager *fm)
 	mFManager = fm;
 }
 
-void MainWindow::reloadGraphs(int nFrame)
+void MainWindow::reloadGraphs()
 {
-	if(nFrame == 0)
-		return;
 	int n = mFManager->results.size();
 	int numPages = ceil(double(n) / double(numViewer)) - 1;
 
@@ -329,7 +327,6 @@ void MainWindow::loadCurrentGraphs()
 		viewers[i]->mIdx = index+c;
 		c++; 
 		if(c > curActive) return;
-
 	}
 }
 
@@ -367,7 +364,7 @@ LoaderThread::LoaderThread(QuickMeshViewer * v, FdGraph *fdGr)
 
 void LoaderThread::run()
 {
-	if(!mGraph)
+	if(mGraph)
 		this->viewer->setGraph(mGraph);
 	else if(fileName != "")
 	   this->viewer->loadGraph(fileName);

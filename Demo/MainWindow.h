@@ -103,7 +103,7 @@ public slots:
 	
 	//Slots for Quick Mesh Viewer
 	// Slot to be connected to the signal resultsGenerated in FoldManager
-	void reloadGraphs(int nFrame);
+	void reloadGraphs();
 	void loadGraphs(QString using_path);
 	void loadGraphs();
 	void showNumViewers(int n);

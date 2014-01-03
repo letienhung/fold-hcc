@@ -648,6 +648,9 @@ void MyDesigner::newScene()
 	isMousePressed = false;
 	isLoaded = false;
 
+	fManager = NULL;
+	fManager = new FoldManager;
+
 	updateGL();
 }
 
@@ -830,7 +833,7 @@ void MyDesigner::wheelEvent( QWheelEvent* e )
 			fManager->fold();
 			fManager->generateFdKeyFrames();
 
-			//emit(resultsGenerated());
+		    emit(resultsGenerated());
 		}
 		else
 	        this->displayMessage("* Fail to push in the right direction *", 5000);

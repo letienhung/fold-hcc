@@ -33,7 +33,7 @@ MyAnimator::MyAnimator(Ui::EvaluateWidget * useAnimWidget, QWidget * parent /*= 
 
 	isShow = true;
 
-	mCurrConfigId = 0;
+	mCurrConfigId = -1;
 	mCurrFrameId = 0;
 
 	fm = new QFontMetrics(QFont());
@@ -187,13 +187,15 @@ void MyAnimator::drawShadows()
 void MyAnimator::draw()
 {
 	// No object to draw
-	if (isEmpty()) return;
+	if (isEmpty() || mCurrConfigId < 0) return;
 
 	// The main object
 	if(activeScaffold()){
-		Geom::AABB aabb = activeScaffold()->computeAABB();
-	    loadedMeshHalfHight = (aabb.bbmax.z() - aabb.bbmin.z()) * -0.01;
-		drawObject();
+		//Temporarily set
+		activeScaffold()->showCuboids(true);
+		activeScaffold()->showScaffold(true);
+		activeScaffold()->showMeshes(false);
+		//drawObject();
 		activeScaffold()->draw();
 	}
 
@@ -531,9 +533,18 @@ void MyAnimator::loadResult(int configId)
 	//gManager = NULL;
 	//gManager = new GraphManager();
 	//gManager->loadScaffold();
-    
 	if(isEmpty()) return;
+
+	if(configId < 0 || configId > fManager->results.size()){
+		mCurrConfigId = -1;
+		updateGL();
+		return;
+	}
+
 	mCurrConfigId = configId;
+
+	Geom::AABB aabb = activeScaffold()->computeAABB();
+	loadedMeshHalfHight = (aabb.bbmax.z() - aabb.bbmin.z()) * -0.01;
 
 	// Set camera
 	resetView();
@@ -561,6 +572,8 @@ void MyAnimator::setActiveObject(FoldManager *fm)
 	// Update the object
 	updateActiveObject();
 
+	updateGL();
+
 	//SaveUndo();
 
 	emit(objectInserted());
@@ -571,15 +584,19 @@ void MyAnimator::newScene()
 	if(activeManager())
 		emit( objectDiscarded());
 
-	//selection.clear();
-
-	fManager = NULL;
+	//fManager = NULL;
 	setWindowTitle(" ");
 	// Update the object
 	updateActiveObject();
 
 	//SaveUndo();
 	isMousePressed = false;
+	mCurrConfigId = -1;
+	mCurrFrameId = 0;
+
+	//fManager = NULL;
+	fManager = new FoldManager;
+
 	updateGL();
 }
 

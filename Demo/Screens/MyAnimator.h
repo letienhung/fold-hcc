@@ -2,6 +2,7 @@
 
 #include <QQueue>
 #include <QStack>
+#include <QMessageBox>
 
 #include "qglviewer/qglviewer.h"
 #include "qglviewer/ManipulatedFrame.h"
