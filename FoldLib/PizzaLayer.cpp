@@ -134,10 +134,12 @@ QVector<Structure::Node*> PizzaLayer::getKeyFrameNodes( double t )
 	QVector<double> chainStarts = getEvenDivision(chains.size());
 
 	// chain parts
+	// fold in sequence
 	for (int i = 0; i < chains.size(); i++)
 	{
 		double lt = getLocalTime(t, chainStarts[i], chainStarts[i+1]);
-		knodes += chains[i]->getKeyframeParts(lt);
+		ChainGraph* chain = getChain(chainSequence[i]);
+		knodes += chain->getKeyframeParts(lt);
 	}
 
 	// control panels

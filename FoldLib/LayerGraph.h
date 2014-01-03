@@ -21,7 +21,7 @@ public:
 	ChainGraph* getChain(QString cid);
 
 	// fold
-	virtual void fold();
+	void fold();
 	virtual void buildDependGraph() = 0;
 	void computeChainSequence();
 
