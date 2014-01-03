@@ -107,7 +107,8 @@ public:
 		void stopAnimation();
 		void animate();
 		void toggleSlider(int frameId);
-		void togglePlay();
+		void toggleAnimation();
+		void teminate();
 
 public:
 	// DEBUG:
@@ -130,4 +131,5 @@ signals:
 	void objectDiscarded();
 	void objectUpdated();
 	void setSliderValue(int);
+	void timeout();
 };

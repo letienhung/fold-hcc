@@ -55,14 +55,15 @@ MyAnimator::MyAnimator(Ui::EvaluateWidget * useAnimWidget, QWidget * parent /*= 
 
 void MyAnimator::addSlider()
 {
-	VideoToolbar *vti = new VideoToolbar;
+	vti = new VideoToolbar;
 	this->evalWidget->viewerAreaLayout->addWidget(vti);
 
 	//Animation
 	isPlaying = false;
-	connect(vti, SIGNAL(vti->valueChanged(int)), SLOT(toggleSlider(int)));
-	connect(this, SIGNAL(setSliderValue(int)), vti, SLOT(vti->sliderChanged(int)));
-	connect(vti->ui->playButton, SIGNAL(clicked()), SLOT(togglePlay()));
+	connect(vti->ui->slider, SIGNAL(valueChanged(int)), SLOT(toggleSlider(int)));
+	connect(this, SIGNAL(setSliderValue(int)), vti->ui->slider, SLOT(setValue(int)));
+	connect(vti->ui->playButton, SIGNAL(clicked()), SLOT(toggleAnimation()));
+	//connect(this, SIGNAL(timeout), this, SLOT(teminate()));
 }
 
 void MyAnimator::init()
@@ -753,11 +754,17 @@ void MyAnimator::dequeueLastMessage()
 
 void MyAnimator::startAnimation()
 {
+    QString pauseLabel = vti->ui->pauseLabel->text();
+	vti->ui->playButton->setText(pauseLabel);
+	isPlaying = true;
 	QGLViewer::startAnimation();
 }
 
 void MyAnimator::stopAnimation()
 {
+	QString playLabel = vti->ui->playLabel->text();
+	vti->ui->playButton->setText(playLabel);
+	isPlaying = false;
 	QGLViewer::stopAnimation();
 }
 
@@ -767,17 +774,23 @@ void MyAnimator::animate()
 	for(int i = 0; i < activeManager()->results[mCurrConfigId].size(); i++){
 		mCurrFrameId = i;
 		updateGL();
-		emit setSliderValue(100 * (double(i) / activeManager()->results[mCurrConfigId].size()));
+		//emit(setSliderValue(100 * (double(mCurrFrameId) / activeManager()->results[mCurrConfigId].size()))); 
+		emit(setSliderValue(mCurrFrameId));
 	}
 }
 
 void MyAnimator::toggleSlider(int frameId)
 {
-	mCurrFrameId = frameId;
+	mCurrFrameId = frameId ;
 	updateGL();
+	if(mCurrFrameId == activeManager()->results[mCurrConfigId].size() - 1){
+		isPlaying = false;
+		stopAnimation();
+		//emit(timeout());
+	}
 }
 
-void MyAnimator::togglePlay()
+void MyAnimator::toggleAnimation()
 {
 	QString label = vti->ui->playButton->text();
 
@@ -786,14 +799,19 @@ void MyAnimator::togglePlay()
 
 	if(label != pauseLabel)
 	{
-		vti->ui->playButton->setText(pauseLabel);
-		isPlaying = true;
 		startAnimation();
 	}
 	else
 	{
-		vti->ui->playButton->setText(playLabel);
-		isPlaying = false;
 		stopAnimation();
 	}
+	QGLViewer::toggleAnimation();
+}
+
+void MyAnimator::teminate()
+{
+	mCurrFrameId = activeManager()->results[mCurrConfigId].size() - 1;
+	isPlaying = false;
+	stopAnimation();
+	updateGL();
 }
