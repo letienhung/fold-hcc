@@ -229,7 +229,7 @@ QVector<FdNode*> FdGraph::split( FdNode* fn, Geom::Plane& plane, double thr )
 	QVector<FdNode*> splitted;
 
 	// cut point along skeleton
-	int aid = fn->mBox.getAxisId(plane.Normal);
+	int aid = fn->mBox.getClosestAxisId(plane.Normal);
 	Vector3 cutPoint = plane.getProjection(fn->mBox.Center);
 	Vector3 cutCoord = fn->mBox.getCoordinates(cutPoint);
 	double cp = cutCoord[aid];

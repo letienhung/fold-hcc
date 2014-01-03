@@ -350,6 +350,24 @@ int Geom::Box::getAxisId( Vector3 a )
 }
 
 
+int Geom::Box::getClosestAxisId( Vector3 a )
+{
+	double maxDot = minDouble();
+	int aid = 0;
+	for (int i = 0; i < 3; i++)
+	{
+		double dotProd = fabs(dot(Axis[i], a));
+		if (dotProd > maxDot)
+		{
+			maxDot = dotProd;
+			aid = i;
+		}
+	}
+
+	return aid;
+}
+
+
 double Geom::Box::calcFrontierWidth( int fid, const QVector<Vector3>& pnts, bool two_side /*= false*/ )
 {
 	int axisID = fid / 3;

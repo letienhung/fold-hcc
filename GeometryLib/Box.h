@@ -57,6 +57,7 @@ public:
 	int		getFaceId(Vector3 n);
 	int		getFaceId(int aid, bool positive);
 	int		getAxisId(Vector3 a);
+	int		getClosestAxisId(Vector3 a);
 	int		minAxisId();
 	int		maxAxisId();
 	double	getExtent(int aid);
