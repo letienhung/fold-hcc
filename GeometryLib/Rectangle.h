@@ -4,6 +4,7 @@
 #include "Segment.h"
 #include "Segment2.h"
 #include <QStringList>
+#include "Rectangle2.h"
 
 namespace Geom{
 
@@ -15,8 +16,6 @@ public:
 	Rectangle(Vector3& c, QVector<Vector3>& a, Vector2& e);
 	Rectangle(const Rectangle &);
 
-	void update(QVector<Vector3>& conners);
-	
 	// relations
 	bool isCoplanarWith(Vector3 p);
 	bool isCoplanarWith(Segment s);
@@ -32,6 +31,7 @@ public:
 	int		getAxisId(Vector3 v);
 	int		getPerpAxisId(Vector3 v);
 	Vector3 getPerpAxis(Vector3 v);
+	Rectangle getRectangle(Rectangle2 &rect2);
 	QVector<Segment>  getEdges();
 	QVector<Segment>  getPerpEdges(Vector3 v);
 	QVector<Vector2>  get2DConners();

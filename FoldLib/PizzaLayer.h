@@ -4,7 +4,7 @@
 class PizzaLayer : public LayerGraph
 {
 public:
-    PizzaLayer(QVector<FdNode*> nodes, PatchNode* panel, QString id);
+    PizzaLayer(QVector<FdNode*> nodes, PatchNode* panel, QString id, Geom::Box &bBox);
 	~PizzaLayer();
 
 	void buildDependGraph();

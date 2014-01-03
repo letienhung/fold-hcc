@@ -83,24 +83,27 @@ void DcGraph::createLayers()
 	// clear layers
 	layers.clear();
 
+	// barrier box
+	Geom::Box bBox = box.scaled(1.01);
+
 	// first layer is pizza
 	QString id_first = "Pz-" + QString::number(layers.size());
-	PizzaLayer* pl_first = new PizzaLayer(layerGroups.front(), controlPanels.front(), id_first);
+	PizzaLayer* pl_first = new PizzaLayer(layerGroups.front(), controlPanels.front(), id_first, bBox);
 	pl_first->path = path;
-	layers.push_back(pl_first);
+	layers.push_back(pl_first); 
 
 	// sandwiches
 	for (int i = 1; i < layerGroups.size()-1; i++)
 	{
 		QString id = "Sw-" + QString::number(layers.size());
-		SandwichLayer* sl = new SandwichLayer(layerGroups[i], controlPanels[i-1], controlPanels[i], id);
+		SandwichLayer* sl = new SandwichLayer(layerGroups[i], controlPanels[i-1], controlPanels[i], id, bBox);
 		sl->path = path;
 		layers.push_back(sl);
 	}
 
 	// last layer is pizza
 	QString id_last = "Pz-" + QString::number(layers.size());
-	PizzaLayer* pl_last = new PizzaLayer(layerGroups.last(), controlPanels.last(), id_last);
+	PizzaLayer* pl_last = new PizzaLayer(layerGroups.last(), controlPanels.last(), id_last, bBox);
 	pl_last->path = path;
 	layers.push_back(pl_last);
 }

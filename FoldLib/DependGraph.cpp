@@ -11,8 +11,8 @@
 #include "Numeric.h"
 
 
-ChainNode::ChainNode( int idx, QString id )
-	: Node(id), chainIdx(idx)
+ChainNode::ChainNode( int cIdx, QString id )
+	: Node(id), chainIdx(cIdx)
 {
 }
 
@@ -26,6 +26,8 @@ Structure::Node* ChainNode::clone()
 {
 	return new ChainNode(*this);
 }
+
+//////////////////////////////////////////////////////////////////////////
 
 FoldingNode::FoldingNode(int hIdx, QString id )
 	: Node(id), hingeIdx(hIdx), score(0)
@@ -43,6 +45,25 @@ Structure::Node* FoldingNode::clone()
 	return new FoldingNode(*this);
 }
 
+//////////////////////////////////////////////////////////////////////////
+
+BarrierNode::BarrierNode(int fIdx)
+	:Node(QString("Barrier_%1").arg(fIdx)), faceIdx(fIdx)
+{
+}
+
+BarrierNode::BarrierNode( BarrierNode &other )
+	:Node(other)
+{
+	faceIdx = other.faceIdx;
+}
+
+Structure::Node* BarrierNode::clone()
+{
+	return new BarrierNode(*this);
+}
+
+//////////////////////////////////////////////////////////////////////////
 
 QString DependGraph::dotPath = "\"" + getcwd() + "/FoldLib/GraphVis/dot.exe" + "\"";
 
@@ -77,6 +98,12 @@ void DependGraph::addNode( FoldingNode* fn )
 {
 	Graph::addNode(fn);
 	fn->properties["type"] = "folding";
+}
+
+void DependGraph::addNode( BarrierNode* bn )
+{
+	Graph::addNode(bn);
+	bn->properties["type"] = "barrier";
 }
 
 void DependGraph::addFoldingLink( Structure::Node* n1, Structure::Node* n2 )
@@ -121,7 +148,7 @@ QVector<FoldingNode*> DependGraph::getFoldingNodes( QString cnid )
 }
 
 
-QVector<FoldingNode*> DependGraph::getSiblingFoldingNodes( QString fnid )
+QVector<FoldingNode*> DependGraph::getSiblings( QString fnid )
 {
 	if (verifyNodeType(fnid, "chain")) 
 		return getFoldingNodes(getChainNode(fnid)->mID);
@@ -153,6 +180,20 @@ QVector<ChainNode*> DependGraph::getAllChainNodes()
 
 	return cns;
 }
+
+
+QVector<BarrierNode*> DependGraph::getAllBarrierNodes()
+{
+	QVector<BarrierNode*> bns;
+	foreach(Structure::Node* n, nodes)
+	{
+		if (n->properties["type"].toString() == "barrier")
+			bns << (BarrierNode*)n;
+	}
+
+	return bns;
+}
+
 
 QVector<Structure::Link*> DependGraph::getFoldinglinks( QString nid )
 {
@@ -201,19 +242,27 @@ QString DependGraph::toGraphvizFormat( QString subcaption, QString caption )
 	for(int i = 0; i < nodes.size(); i++)
 	{
 		Structure::Node* node = nodes[i];
-		bool isChainNode = node->properties["type"] == "chain";
+		QString type = node->properties["type"].toString();
 
+		// label
 		QString label = node->mID;
-		if (!isChainNode)
+		if (type == "folding")
 		{
 			FoldingNode* fnode = (FoldingNode*)node;
 			label += "\n" + QString::number(fnode->score);
 		}
 
-		QColor color = isChainNode ? Qt::blue : Qt::green;
-		QString colorHex; colorHex.sprintf("#%02X%02X%02X", color.red(), color.green(), color.blue());
+		// shape
+		QString shape = "rectangle";
+		if (type == "folding") shape = "ellipse";
 
-		QString shape = isChainNode ? "rectangle" : "ellipse";
+		// color
+		QString colorHex; 
+		QColor color = QColor(0, 0, 255, 127);
+		if (type == "folding") color = QColor(0, 255, 0, 127);
+		if (type == "barrier") color = QColor(255, 165, 0, 127);
+		colorHex.sprintf("#%02X%02X%02X", color.red(), color.green(), color.blue());
+
 
 		out << "\t" << QString("%1 [label = \"%2\", color = \"%3\", shape = %4];").arg(i).arg(label).arg(colorHex).arg(shape) << "\n";
 
@@ -229,12 +278,13 @@ QString DependGraph::toGraphvizFormat( QString subcaption, QString caption )
 	for(int i = 0; i < links.size(); i++)
 	{
 		Structure::Link* link = links[i];
+		QString type = link->properties["type"].toString();
 
 		int n1idx = getNodeIndex(link->nid1);
 		int n2idx = getNodeIndex(link->nid2);
 
-		bool isFolding = link->properties["type"] == "folding";
-		QString color = isFolding ?  "black" : "red";
+		QString color = "black";
+		if (type == "collision") color = "red";
 
 		out << "\t\"" << QString::number(n1idx) << "\" -- \"" << QString::number(n2idx) << "\"" 
 			<< QString(" [color=\"%1\"]").arg(color) << ";\n";
@@ -254,9 +304,6 @@ void DependGraph::saveAsGraphviz( QString fname, QString subcaption /*= ""*/, QS
 	QFile file(fname + ".gv");
 	if (!file.open(QFile::WriteOnly | QFile::Text))	return;
 	QTextStream out(&file);
-
-	//QFileInfo info(file);
-	//workDir = info.absolutePath();
 
 	out << toGraphvizFormat(subcaption, caption); 
 
@@ -403,5 +450,22 @@ QVector<Structure::Link*> DependGraph::getFamilyCollisionLinks( QString nid )
 	}
 
 	return clinks;
+}
+
+BarrierNode* DependGraph::getBarrierNode( int fIdx )
+{
+	foreach(Structure::Node* n, nodes)
+	{
+		if (n->properties["type"].toString() == "barrier")
+		{
+			BarrierNode* bn = (BarrierNode*)n;
+			if (bn->faceIdx == fIdx)
+			{
+				return bn;
+			}
+		}
+	}
+
+	return NULL;
 }
 

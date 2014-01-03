@@ -8,7 +8,7 @@ public:
 	enum LAYER_TYPE{PIZZA, SANDWICH};
 
 public:
-    LayerGraph(QVector<FdNode*> nodes, PatchNode* panel1, PatchNode* panel2, QString id);
+    LayerGraph(QVector<FdNode*> nodes, PatchNode* panel1, PatchNode* panel2, QString id, Geom::Box &bBox);
 	~LayerGraph();
 
 	// selection
@@ -36,5 +36,7 @@ public:
 	DependGraph* dy_graph;
 	QVector<QString> chainSequence;
 	QVector<FoldingNode*> fnSequence;
+
+	Geom::Box barrierBox;
 }; 
 

@@ -1,8 +1,8 @@
 #include "LayerGraph.h"
 #include "FdUtility.h"
 
-LayerGraph::LayerGraph( QVector<FdNode*> nodes, PatchNode* panel1, PatchNode* panel2, QString id)
-	:FdGraph(id)
+LayerGraph::LayerGraph( QVector<FdNode*> nodes, PatchNode* panel1, PatchNode* panel2, QString id, Geom::Box &bBox)
+	:FdGraph(id), barrierBox(bBox)
 {
 	// clone nodes
 	foreach (FdNode* n, nodes)
@@ -135,6 +135,9 @@ void LayerGraph::computeChainSequence()
 			dy_graph->removeLink(clink);
 		}
 	}
+
+	QString filePath = path + "/" + mID + "_" + QString::number(chains.size());
+	dy_graph->saveAsImage(filePath);
 
 	// folding sequence
 	qDebug() << "Chain sequence: " << QStringList(chainSequence.toList());

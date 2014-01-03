@@ -49,24 +49,6 @@ Geom::Rectangle::Rectangle(const Rectangle &r)
 	Normal = r.Normal;
 }
 
-void Geom::Rectangle::update(QVector<Vector3>& conners)
-{
-	Center = Vector3(0, 0, 0);
-	Normal = Vector3(0, 0, 0);
-	foreach (Vector3 p, conners) Center += p;
-	Center /= 4;
-
-	Vector3 e0 = conners[1] - conners[0];
-	Vector3 e1 = conners[3] - conners[0];
-
-	Axis.push_back(e0.normalized());
-	Axis.push_back(e1.normalized());
-
-	Extent = Vector2(e0.norm()/2, e1.norm()/2);
-
-	Normal = cross(e0, e1).normalized();
-}
-
 
 bool Geom::Rectangle::isCoplanarWith( Vector3 p )
 {
@@ -282,6 +264,15 @@ int Geom::Rectangle::getPerpAxisId( Vector3 v )
 	double dotVAxis1 = fabs(dot(v, Axis[1]));
 
 	return (dotVAxis0 > dotVAxis1) ? 1 : 0;
+}
+
+Geom::Rectangle Geom::Rectangle::getRectangle( Rectangle2 &rect2 )
+{
+	QVector<Vector3> conners;
+	foreach(Vector2 p2, rect2.getConners()) 
+		conners << getPosition(p2);
+
+	return Rectangle(conners);
 }
 
 

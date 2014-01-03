@@ -7,8 +7,8 @@
 #include <QDir>
 
 
-PizzaLayer::PizzaLayer( QVector<FdNode*> nodes, PatchNode* panel, QString id )
-	:LayerGraph(nodes, NULL, panel, id)
+PizzaLayer::PizzaLayer( QVector<FdNode*> nodes, PatchNode* panel, QString id, Geom::Box &bBox )
+	:LayerGraph(nodes, NULL, panel, id, bBox)
 {
 	// type
 	mType = LayerGraph::PIZZA;
@@ -41,7 +41,10 @@ void PizzaLayer::buildDependGraph()
 	// clear
 	dy_graph->clear();
 
-	// nodes and folding links
+	// empty pizzaLayer
+	if (nodes.size() == 1) return;
+
+	// chain nodes and folding links
 	for(int i = 0; i < chains.size(); i++)
 	{
 		PizzaChain* chain = (PizzaChain*)chains[i];
@@ -66,17 +69,34 @@ void PizzaLayer::buildDependGraph()
 			dy_graph->addFoldingLink(cn, fn1);
 			dy_graph->addFoldingLink(cn, fn2);
 		}
+	}
 
+	// barrier nodes
+	QVector<Geom::Rectangle> barriers = barrierBox.getFaceRectangles();
+	Vector3 pNormal = mPanel->mPatch.Normal;
+	for (int i = 0; i < Geom::Box::NB_FACES; i++)
+	{
+		double dotProd = fabs(dot(pNormal, barriers[i].Normal));
+		if (dotProd > 0.5)  continue;
+		dy_graph->addNode(new BarrierNode(i));
 	}
 
 	// collision links
-	// between folding nodes and other chain nodes
-	foreach(FoldingNode* fn, dy_graph->getAllFoldingNodes())
+	foreach (FoldingNode* fn, dy_graph->getAllFoldingNodes())
 	{
 		ChainNode* cn = dy_graph->getChainNode(fn->mID);
 		PizzaChain* chain = (PizzaChain*) getChain(cn->mID);
 		Geom::SectorCylinder fVolume = chain->getFoldingVolume(fn);
 
+		// with barriers 
+		foreach (BarrierNode* bn, dy_graph->getAllBarrierNodes())
+		{
+			if (fVolume.intersects(barriers[bn->faceIdx]))
+				dy_graph->addCollisionLink(fn, bn);
+		}
+
+
+		// with other chain nodes
 		foreach(ChainNode* other_cn, dy_graph->getAllChainNodes())
 		{
 			if (cn == other_cn) continue;

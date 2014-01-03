@@ -1,11 +1,10 @@
 #pragma once
 #include "Graph.h"
-#include <QProcess>
 
 class ChainNode : public Structure::Node
 {
 public:
-	ChainNode(int idx, QString id);
+	ChainNode(int cIdx, QString id);
 	ChainNode(ChainNode &other);
 	Node* clone();
 
@@ -27,6 +26,17 @@ public:
 	double score;
 };
 
+class BarrierNode : public Structure::Node
+{
+public:
+	BarrierNode(int fIdx);
+	BarrierNode(BarrierNode &other);
+	Node* clone();
+
+	// barrier is a face of the bounding box
+	int faceIdx;
+};
+
 class DependGraph : public Structure::Graph
 {
 public:
@@ -38,6 +48,7 @@ public:
 	// modifier
 	void addNode(ChainNode* cn);
 	void addNode(FoldingNode* fn);
+	void addNode(BarrierNode* bn);
 	void addFoldingLink(Structure::Node* n1, Structure::Node* n2);
 	void addCollisionLink(Structure::Node* n1, Structure::Node* n2);
 
@@ -45,14 +56,16 @@ public:
 	bool verifyNodeType(QString nid, QString type);
 
 	// getters
-	QVector<FoldingNode*>	getSiblingFoldingNodes(QString fnid);
-	QVector<FoldingNode*>	getAllFoldingNodes();	// all folding nodes
-	QVector<FoldingNode*>	getFoldingNodes(QString cnid); // folding nodes of a chain node
-	QVector<ChainNode*>		getAllChainNodes();	// all chain nodes
-	ChainNode*				getChainNode(QString fnid); // chain node of a folding node
+	ChainNode*		getChainNode(QString fnid);		// chain node of a folding node
+	BarrierNode*	getBarrierNode(int fIdx);		// barrier node with face index
+	QVector<ChainNode*>		getAllChainNodes();		
+	QVector<FoldingNode*>	getAllFoldingNodes();	
+	QVector<BarrierNode*>	getAllBarrierNodes();
+	QVector<FoldingNode*>	getSiblings(QString fnid);		// siblings of folding node
+	QVector<FoldingNode*>	getFoldingNodes(QString cnid);	// folding nodes of a chain node
+	QVector<Structure::Node*> getFamilyNodes(QString nid);
 	QVector<Structure::Link*> getFoldinglinks(QString nid);
 	QVector<Structure::Link*> getCollisionLinks(QString nid);
-	QVector<Structure::Node*> getFamilyNodes(QString nid);
 	QVector<Structure::Link*> getFamilyCollisionLinks(QString nid);
 
 	// fold

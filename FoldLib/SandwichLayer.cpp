@@ -4,8 +4,8 @@
 #include "FdUtility.h"
 #include "IntrRect2Rect2.h"
 
-SandwichLayer::SandwichLayer( QVector<FdNode*> nodes, PatchNode* panel1, PatchNode* panel2, QString id )
-	:LayerGraph(nodes, panel1, panel2, id)
+SandwichLayer::SandwichLayer( QVector<FdNode*> nodes, PatchNode* panel1, PatchNode* panel2, QString id, Geom::Box &bBox )
+	:LayerGraph(nodes, panel1, panel2, id, bBox)
 {
 	mType = LayerGraph::SANDWICH;
 
@@ -61,9 +61,17 @@ void SandwichLayer::buildDependGraph()
 		}
 	}
 
+	// barrier nodes
+	QVector<Geom::Rectangle> barriers = barrierBox.getFaceRectangles();
+	Vector3 pNormal = mPanel1->mPatch.Normal;
+	for (int i = 0; i < Geom::Box::NB_FACES; i++)
+	{
+		if (fabs(dot(pNormal, barriers[i].Normal)) > 0.5)
+			continue;
+		dy_graph->addNode(new BarrierNode(i));
+	}
 
 	// collision links
-	// between two folding nodes
 	QVector<FoldingNode*> fns = dy_graph->getAllFoldingNodes();
 	for (int i = 0; i < fns.size(); i++)
 	{
@@ -72,12 +80,25 @@ void SandwichLayer::buildDependGraph()
 		SandwichChain* chain = (SandwichChain*) getChain(cn->mID);
 		Geom::Rectangle2 fArea = chain->getFoldingArea(fn);
 
+		// with barriers
+		QVector<Vector3> fConners = mPanel1->mPatch.getRectangle(fArea).getConners();
+		foreach (BarrierNode* bn, dy_graph->getAllBarrierNodes())
+		{
+			Geom::Plane bplane = barriers[bn->faceIdx].getPlane();
+			if (!bplane.onSameSide(fConners))
+			{
+				dy_graph->addCollisionLink(fn, bn);
+			}
+		}
+
+		// with other folding nodes
 		for (int j = i+1; j < fns.size(); j++)
 		{
 			FoldingNode* other_fn = fns[j];
-
 			ChainNode* other_cn = dy_graph->getChainNode(other_fn->mID);
-			if (cn == other_cn) continue; // skip siblings
+
+			// skip siblings
+			if (cn == other_cn) continue; 
 
 			SandwichChain* other_chain = (SandwichChain*) getChain(other_cn->mID);
 			Geom::Rectangle2 other_fArea = other_chain->getFoldingArea(other_fn);
