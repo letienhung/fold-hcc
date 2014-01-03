@@ -80,5 +80,6 @@ RCC_DIR += ./GeneratedFiles
 FORMS += ./Screens/DesignWidget.ui \
     ./Screens/TutorialWidget.ui\
     ./MainWindow.ui\
-	./Screens/EvaluateWidget.ui
+	./Screens/EvaluateWidget.ui\
+	./Screens/videoplayer/gui_player/VideoToolbar.ui
 RESOURCES += Resources/Resource.qrc
