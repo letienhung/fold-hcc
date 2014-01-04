@@ -618,7 +618,7 @@ void MyAnimator::mouseReleaseEvent( QMouseEvent* e )
 	// View changer box area
 	double scale = 90;
 	int x = e->pos().x(), y = e->pos().y();
-	if(x > width() - scale && y > height() - scale && activeManager())
+	if(x > width() - scale && y > height() - scale && mCurrConfigId >= 0)
 	{
 		QPoint p(abs(x - width() + scale), abs(y - height() + scale));
 		Geom::AABB aabb = activeScaffold()->computeAABB();
