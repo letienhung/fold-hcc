@@ -5,7 +5,7 @@
 
 QuickMeshViewer::QuickMeshViewer( QWidget * parent /*= 0*/ ) :QGLViewer(parent)
 {
-	this->setMaximumSize(200,200);
+	this->setMaximumSize(300,200);
 
 	this->isActive = false;
 	this->isLoading = false;
