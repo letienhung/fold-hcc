@@ -40,14 +40,15 @@ INCLUDEPATH += ./GeneratedFiles \
     ./Screens/videoplayer \
     ./Screens/videoplayer/theoraplayer/include/theoraplayer
 
-win32:LIBS += -L"./Screens/project/GUI/Viewer/libQGLViewer/QGLViewer/lib" \
-    -lopengl32 \
-    -lglu32 \
-    -lQGLViewer2 \
+win32:LIBS += -lopengl32 \
+    -lglu32\
     -l./Screens/videoplayer/ogg \
     -l./Screens/videoplayer/vorbis \
     -l./Screens/videoplayer/theora \
     -l./Screens/videoplayer/theoraplayer
+    #-L"./Screens/project/GUI/Viewer/libQGLViewer/QGLViewer/lib" \
+    #-lQGLViewer2 \
+
 
 HEADERS += ./Screens/MyDesigner.h \
     ./Screens/UiUtility/BBox.h \

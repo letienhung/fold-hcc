@@ -572,7 +572,7 @@ void MyDesigner::loadObject()
 	Geom::AABB aabb = activeScaffold()->computeAABB();
 
     if(aabb.radius()>skyRadius*0.1){
-		activeScaffold()->normalizeGraph(aabb.radius()/skyRadius*10);
+		activeScaffold()->normalize(aabb.radius()/skyRadius*10);
 	    aabb = activeScaffold()->computeAABB();
 	}
 
@@ -580,7 +580,7 @@ void MyDesigner::loadObject()
 
 	if(aabb.center() != Vector3(0,0,z)){
 		Vector3 offset = Vector3(0,0,z) - aabb.center();
-		activeScaffold()->translateGraph(offset);
+		activeScaffold()->translate(offset);
 	}
 
 	aabb = activeScaffold()->computeAABB();
