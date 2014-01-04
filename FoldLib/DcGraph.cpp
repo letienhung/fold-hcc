@@ -25,7 +25,7 @@ DcGraph::DcGraph( FdGraph* scaffold, StrArray2D panelGroups, Vector3 up, QString
 
 	// create layers
 	splitPartsByPanels();
-	//createLayers();
+	createLayers();
 
 	selId = -1;
 }
