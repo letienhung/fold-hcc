@@ -6,5 +6,4 @@ SUBDIRS += \
     GeometryLib \
     UtilityLib \
     StructureLib \
-    MeshUtilityLib\
-	Demo
+    MeshUtilityLib

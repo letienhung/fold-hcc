@@ -275,4 +275,9 @@ Geom::Rectangle Geom::Rectangle::getRectangle( Rectangle2 &rect2 )
 	return Rectangle(conners);
 }
 
+double Geom::Rectangle::radius()
+{
+	return sqrt(Extent[0] * Extent[0] + Extent[1] * Extent[1]);
+}
+
 

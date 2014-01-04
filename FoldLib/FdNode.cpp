@@ -55,6 +55,7 @@ void FdNode::draw()
 {
 	if (showMesh)
 	{
+		deformMesh();
 		QuickMeshDraw::drawMeshSolid(mMesh.data());
 		QuickMeshDraw::drawMeshWireFrame(mMesh.data());
 	}

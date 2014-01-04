@@ -214,3 +214,26 @@ QVector<double> getEvenDivision( int n, double start /*= 0*/, double end /*= 1*/
 
 	return cp;
 }
+
+bool onPlane( FdNode* n, Geom::Plane& plane )
+{
+	if (n->mType == FdNode::PATCH)
+	{
+		PatchNode* pn = (PatchNode*)n;
+		double dist = fabs(plane.signedDistanceTo(pn->mPatch.Center));
+		double dotProd = fabs(dot(pn->mPatch.Normal, plane.Normal));
+
+		double thr = pn->mPatch.radius() / 10;
+		return (dist < thr && dotProd > 0.9);
+	}
+	else
+	{
+		RodNode* rn = (RodNode*)n;
+		double dist = fabs(plane.signedDistanceTo(rn->mRod.Center));
+		double dotProd = fabs(dot(rn->mRod.Direction, plane.Normal));
+
+		double thr = rn->mRod.length() / 10;
+		return (dist < thr && dotProd < 0.1);
+	}
+}
+

@@ -85,7 +85,7 @@ void FoldManager::createLayerGraphs(Vector3 pushDirect)
 	// threshold
 	double perpThr = 0.1;
 	double layerHeightThr = 0.05;
-	double clusterDistThr = aabb.radius() * 0.2;
+	double clusterDistThr = aabb.radius() * 0.1;
 	double areaThr = box.getPatch(pushAId, 0).area() * 0.2;
 
 	// ==STEP 1==: nodes perp to pushing direction

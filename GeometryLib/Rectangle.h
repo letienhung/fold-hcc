@@ -27,6 +27,7 @@ public:
 
 	// geometry
 	double  area();
+	double	radius();
 	Plane   getPlane();
 	int		getAxisId(Vector3 v);
 	int		getPerpAxisId(Vector3 v);

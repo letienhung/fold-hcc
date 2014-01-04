@@ -106,8 +106,7 @@ bool Hinge::fix()
 		free_node->mBox.translate(Origin - hc_free);
 		free_node->properties["fixed"] = true;
 
-		// step 3: update scaffold and mesh
-		free_node->deformMesh();
+		// step 3: update scaffold
 		free_node->createScaffold();
 
 		return true;

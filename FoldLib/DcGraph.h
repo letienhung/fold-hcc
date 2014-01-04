@@ -21,6 +21,7 @@ public:
 public:
 	// layers
 	void createLayers();
+	QVector<FdNode*> mergeCoplanarParts(QVector<FdNode*> ns, PatchNode* panel);
 
 	// fold
 	void fold();

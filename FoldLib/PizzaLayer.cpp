@@ -30,7 +30,6 @@ PizzaLayer::PizzaLayer( QVector<FdNode*> nodes, PatchNode* panel, QString id, Ge
 	}
 }
 
-
 PizzaLayer::~PizzaLayer()
 {
 	delete dy_graph;
@@ -52,7 +51,6 @@ void PizzaLayer::buildDependGraph()
 		// chain nodes
 		ChainNode* cn = new ChainNode(i, chain->mID);
 		dy_graph->addNode(cn);
-
 
 		for (int j = 0; j < chain->rootJointSegs.size(); j++)
 		{
@@ -94,7 +92,6 @@ void PizzaLayer::buildDependGraph()
 			if (fVolume.intersects(barriers[bn->faceIdx]))
 				dy_graph->addCollisionLink(fn, bn);
 		}
-
 
 		// with other chain nodes
 		foreach(ChainNode* other_cn, dy_graph->getAllChainNodes())

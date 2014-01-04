@@ -17,3 +17,5 @@ QVector<Geom::Segment> detectHingeSegments(FdNode* part, PatchNode* panel);
 
 double getLocalTime(double globalT, double localStart, double localEnd);
 QVector<double> getEvenDivision(int n, double start = 0, double end = 1);
+
+bool onPlane( FdNode* n, Geom::Plane& plane );

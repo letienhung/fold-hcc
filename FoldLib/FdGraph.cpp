@@ -246,6 +246,8 @@ QVector<FdNode*> FdGraph::split( FdNode* fn, Geom::Plane& plane, double thr )
 	Geom::Box cbox2 = box2; cbox2.Extent *= 1.001;
 	SurfaceMeshModel* mesh1 = MeshBoolean::cork(fn->mMesh.data(), cbox2, MeshBoolean::DIFF);
 	SurfaceMeshModel* mesh2 = MeshBoolean::cork(fn->mMesh.data(), cbox1, MeshBoolean::DIFF);
+	mesh1->name = fn->mID + "_1";
+	mesh2->name = fn->mID + "_2";
 
 	// create new nodes
 	FdNode *node1, *node2;
@@ -260,8 +262,8 @@ QVector<FdNode*> FdGraph::split( FdNode* fn, Geom::Plane& plane, double thr )
 		node1 = new PatchNode(meshPtr1, box1);
 		node2 = new PatchNode(meshPtr2, box2);
 	}
-	node1->mID = fn->mID + "_1";
-	node2->mID = fn->mID + "_2";
+	node1->mID = mesh1->name; 
+	node2->mID = mesh2->name; 
 
 	// replace nodes
 	removeNode(fn->mID);
@@ -333,24 +335,24 @@ void FdGraph::restoreConfiguration()
 	}
 }
 
-void FdGraph::normalizeGraph(double f)
+void FdGraph::normalize(double f)
 {
-	Geom::AABB aabb = this->computeAABB();
+	Geom::AABB aabb = computeAABB();
 	Vector3 offset = aabb.center();
 
-	QVector<FdNode *> nodes = this->getFdNodes();
-	foreach(FdNode* n, nodes){
+	foreach(FdNode* n, getFdNodes())
+	{
 		n->mBox.scaleAsPart(f, offset);
 		n->deformMesh();
 		n->createScaffold();
 	}
 }
 
-void FdGraph::translateGraph(Vector3 offset)
+void FdGraph::translate(Vector3 v)
 {
-	QVector<FdNode *> nodes = this->getFdNodes();
-	foreach(FdNode* n, nodes){
-		n->mBox.translate(offset);
+	foreach(FdNode* n, getFdNodes())
+	{
+		n->mBox.translate(v);
 		n->deformMesh();
 		n->createScaffold();
 	}
