@@ -53,7 +53,7 @@ void FoldManager::foldAlongAxis( int d )
 	pushAxis = d;
 }
 
-void FoldManager::createLayerGraphs()
+void FoldManager::createDcGraphs()
 {
 	if (!scaffold) return;
 
@@ -63,20 +63,20 @@ void FoldManager::createLayerGraphs()
 	{
 		Vector3 direct(0, 0, 0);
 		direct[pushAxis] = 1;;
-		createLayerGraphs(direct);
+		createDcGraphs(direct);
 	}
 	else
 	{
-		createLayerGraphs(Vector3(1,0,0));
-		createLayerGraphs(Vector3(0,1,0));
-		createLayerGraphs(Vector3(0,0,1));
+		createDcGraphs(Vector3(1,0,0));
+		createDcGraphs(Vector3(0,1,0));
+		createDcGraphs(Vector3(0,0,1));
 	}
 
 	// update ui
 	updateLists();
 }
 
-void FoldManager::createLayerGraphs(Vector3 pushDirect)
+void FoldManager::createDcGraphs(Vector3 pushDirect)
 {
 	Geom::AABB aabb = scaffold->computeAABB();
 	Geom::Box box = aabb.box();

@@ -114,8 +114,8 @@ void LayerGraph::computeChainSequence()
 		dy_graph->computeScores();
 
 		// output dependency graph
-		QString filePath = path + "/" + mID + "_" + QString::number(i);
-		dy_graph->saveAsImage(filePath);
+		//QString filePath = path + "/" + mID + "_" + QString::number(i);
+		//dy_graph->saveAsImage(filePath);
 
 		// get best folding node
 		FoldingNode* best_fn = dy_graph->getBestFoldingNode();
@@ -136,8 +136,8 @@ void LayerGraph::computeChainSequence()
 		}
 	}
 
-	QString filePath = path + "/" + mID + "_" + QString::number(chains.size());
-	dy_graph->saveAsImage(filePath);
+	//QString filePath = path + "/" + mID + "_" + QString::number(chains.size());
+	//dy_graph->saveAsImage(filePath);
 
 	// folding sequence
 	qDebug() << "Chain sequence: " << QStringList(chainSequence.toList());

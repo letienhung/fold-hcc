@@ -20,6 +20,7 @@ public:
 
 public:
 	// layers
+	void splitPartsByPanels();
 	void createLayers();
 	QVector<FdNode*> mergeCoplanarParts(QVector<FdNode*> ns, PatchNode* panel);
 

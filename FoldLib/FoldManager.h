@@ -26,7 +26,7 @@ public:
 	QVector< QVector<FdGraph*> > results;
 
 public:
-	void createLayerGraphs(Vector3 pushDirect); 
+	void createDcGraphs(Vector3 pushDirect); 
 
 	FdGraph* activeScaffold();
 	DcGraph* getSelDcGraph();
@@ -42,7 +42,7 @@ public slots:
 	// 2. after user selected folding direction (once per axis)
 	// \aid = 0(X), 1(Y), 2(Z)
 	void foldAlongAxis(int aid);
-	void createLayerGraphs();
+	void createDcGraphs();
 	void fold();
 
 	// 3. invoke when a folding percentage is picked (multiple times)

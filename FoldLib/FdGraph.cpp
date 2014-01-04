@@ -189,6 +189,7 @@ FdNode* FdGraph::merge( QVector<QString> nids )
 	MeshMerger mm;
 	foreach (FdNode* n, ns)
 	{
+		n->deformMesh();
 		mm.addMesh(n->mMesh.data());
 		removeNode(n->mID);
 	}

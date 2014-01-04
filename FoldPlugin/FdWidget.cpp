@@ -30,7 +30,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 
 	// fold
 	plugin->f_manager->connect(ui->pushDirection, SIGNAL(currentIndexChanged(int)), SLOT(foldAlongAxis(int)));
-	plugin->f_manager->connect(ui->createLayers, SIGNAL(clicked()), SLOT(createLayerGraphs()));
+	plugin->f_manager->connect(ui->createLayers, SIGNAL(clicked()), SLOT(createDcGraphs()));
 
 	this->connect(plugin->f_manager, SIGNAL(lyGraphsChanged(QStringList)), SLOT(setDcGraphList(QStringList)));
 	this->connect(plugin->f_manager, SIGNAL(layersChanged(QStringList)), SLOT(setLayerList(QStringList)));
