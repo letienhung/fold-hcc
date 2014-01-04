@@ -18,11 +18,12 @@ public:
 public:
 	// accessors
 	QVector<FdNode*> getFdNodes();
-	FdNode* addNode(SurfaceMeshModel* mesh, int method);
+	FdNode* addNode(SurfaceMeshModel* mesh, int method = -1);
 
 	// modifier
 	FdNode*			 merge(QVector<QString> nids);
-	QVector<FdNode*> split( FdNode* fn, Geom::Plane& plane, double thr );
+	QVector<FdNode*> split(FdNode* fn, Geom::Plane& plane);
+	QVector<FdNode*> split(FdNode* fn, Geom::Plane& plane1, Geom::Plane& plane2);
 	void			 changeNodeType(FdNode* n);
 	void             normalize(double f);
 	void             translate(Vector3 v);

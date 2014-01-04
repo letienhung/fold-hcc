@@ -1,6 +1,7 @@
 #pragma once
 
 #include "UtilityGlobal.h"
+#include "Segment.h"
 
 namespace Geom{
 
@@ -13,6 +14,7 @@ public:
 	Plane(Vector3 c, Vector3 n);
 
 	double	signedDistanceTo(Vector3 p);
+	double	distanceTo(Vector3 p);
 
 	int		whichSide(Vector3 p);
 	bool	onSameSide( QVector<Vector3>& pnts );
@@ -20,6 +22,13 @@ public:
 	bool	contains(Line line);
 
 	Vector3 getProjection(Vector3 p);
+
+	bool intersects(Segment seg);
+	Vector3 getIntersection(Segment seg);
+
+	Plane opposite();
+
+	void translate(Vector3 t);
 
 public:
 	Vector3 Constant, Normal;

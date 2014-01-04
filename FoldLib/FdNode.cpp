@@ -6,6 +6,8 @@
 #include "QuickMeshDraw.h"
 #include "MeshHelper.h"
 #include "MeshBoolean.h"
+#include "RodNode.h"
+#include "PatchNode.h"
 
 FdNode::FdNode( MeshPtr m, Geom::Box &b )
 	: Node(m->name)
@@ -146,4 +148,42 @@ bool FdNode::isPerpTo( Vector3 v, double dotThreshold )
 SurfaceMesh::Vector3 FdNode::center()
 {
 	return mBox.Center;
+}
+
+// clone half node on the positive side of the chopper plane
+FdNode* FdNode::cloneChopped( Geom::Plane chopper )
+{
+	// cut point along skeleton
+	int aid = mBox.getClosestAxisId(chopper.Normal);
+	Geom::Segment sklt = mBox.getSkeleton(aid);
+	if (!chopper.intersects(sklt)) return NULL;
+
+	// chop box
+	Vector3 cutPoint = chopper.getIntersection(sklt);
+	Vector3 endPoint = (chopper.signedDistanceTo(sklt.P0) > 0) ?
+						sklt.P0 : sklt.P1;
+	Geom::Box box = mBox;
+	box.Center = (cutPoint + endPoint) * 0.5;
+	box.Extent[aid] = (cutPoint - endPoint).norm() * 0.5;
+	
+	// chop mesh
+	// Geom::Box chopBox = box;
+	// chopBox.Extent *= 1.001;
+	// SurfaceMeshModel* mesh = MeshBoolean::cork(mMesh.data(), chopBox, MeshBoolean::ISCT);
+
+	// create new nodes
+	FdNode *choppedNode;
+	if (mType == FdNode::ROD)
+		choppedNode = new RodNode(mMesh, box);
+	else
+		choppedNode = new PatchNode(mMesh, box);
+	choppedNode->meshCoords = meshCoords;
+
+	return choppedNode;
+}
+
+void FdNode::setStringId( QString id )
+{
+	mID = id;
+	mMesh->name = id;
 }

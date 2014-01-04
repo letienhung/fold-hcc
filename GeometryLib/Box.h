@@ -81,7 +81,7 @@ public:
 	QVector<Rectangle>          getFaceIncidentOnPoint(Point &p);
 
 	// sampling
-	double	getVolume();
+	double	volume();
 	QVector<Vector3>	getGridSamples(int N);
 
 	// tags

@@ -284,7 +284,7 @@ QVector<Vector3> Geom::Box::getGridSamples( int N )
 	QVector<Vector3> samples;
 
 	// the size of regular grid
-	double gridV = this->getVolume() / N;
+	double gridV = this->volume() / N;
 	double gridSize = pow(gridV, 1.0/3);
 	int nbX = (int)ceil(2 * Extent[0] / gridSize);
 	int nbY = (int)ceil(2 * Extent[1] / gridSize);
@@ -314,7 +314,7 @@ bool Geom::Box::contains( Vector3 p )
 		&& inRange(c.z(), -1, 1);
 }
 
-double Geom::Box::getVolume()
+double Geom::Box::volume()
 {
 	return 8 * Extent[0] * Extent[1] * Extent[2];
 }

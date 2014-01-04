@@ -193,7 +193,7 @@ FdNode* FdGraph::merge( QVector<QString> nids )
 		removeNode(n->mID);
 	}
 
-	return addNode(mm.getMesh(), 0); 
+	return addNode(mm.getMesh()); 
 }
 
 
@@ -202,12 +202,24 @@ FdNode* FdGraph::addNode( SurfaceMeshModel* mesh, int method )
 	// box type
 	Geom::Box box;
 	QVector<Vector3> points = MeshHelper::getMeshVertices(mesh);
-	if (method == 0){
+	if (method == 0)
+	{
 		Geom::AABB aabb(points);
 		box = aabb.box();
-	}else{
+	}
+	else if (method == 1)
+	{
 		Geom::MinOBB obb(points, true);
 		box = obb.mMinBox;
+	}
+	else
+	{
+		Geom::AABB aabb(points);
+		Geom::MinOBB obb(points, true);
+		Geom::Box aabb_box = aabb.box();
+		Geom::Box& obb_box = obb.mMinBox;
+		box = (aabb_box.volume() <= obb_box.volume()) ?
+			aabb_box : obb_box;
 	}
 	int box_type = box.getType(5);
 
@@ -224,54 +236,40 @@ FdNode* FdGraph::addNode( SurfaceMeshModel* mesh, int method )
 }
 
 
-QVector<FdNode*> FdGraph::split( FdNode* fn, Geom::Plane& plane, double thr )
+QVector<FdNode*> FdGraph::split( FdNode* fn, Geom::Plane& plane)
+{
+	return split(fn, plane, plane.opposite());
+}
+
+// split by two planes: get two ends  <--|-|-->
+QVector<FdNode*> FdGraph::split( FdNode* fn, Geom::Plane& plane1, Geom::Plane& plane2 )
 {
 	QVector<FdNode*> splitted;
 
-	// cut point along skeleton
-	int aid = fn->mBox.getClosestAxisId(plane.Normal);
-	Vector3 cutPoint = plane.getProjection(fn->mBox.Center);
-	Vector3 cutCoord = fn->mBox.getCoordinates(cutPoint);
-	double cp = cutCoord[aid];
-
-	// no cut: cut point is too close to the end
-	if (cp + 1 < thr || 1 - cp < thr)	return splitted;
-
-	// split box
-	Geom::Box box1, box2;
-	fn->mBox.split(aid, cp, box1, box2);
-
-	// split mesh
-	Geom::Box cbox1 = box1; cbox1.Extent *= 1.001;
-	Geom::Box cbox2 = box2; cbox2.Extent *= 1.001;
-	SurfaceMeshModel* mesh1 = MeshBoolean::cork(fn->mMesh.data(), cbox2, MeshBoolean::DIFF);
-	SurfaceMeshModel* mesh2 = MeshBoolean::cork(fn->mMesh.data(), cbox1, MeshBoolean::DIFF);
-	mesh1->name = fn->mID + "_1";
-	mesh2->name = fn->mID + "_2";
-
-	// create new nodes
-	FdNode *node1, *node2;
-	MeshPtr meshPtr1(mesh1), meshPtr2(mesh2);
-	if (fn->mType == FdNode::ROD)
+	// positive side
+	FdNode* node1 = fn->cloneChopped(plane1);
+	if (node1)
 	{
-		node1 = new RodNode(meshPtr1, box1);
-		node2 = new RodNode(meshPtr2, box2);
+		QString id = fn->mID + QString("_%1").arg(splitted.size());
+		node1->setStringId(id);
+		Structure::Graph::addNode(node1);
+		splitted.push_back(node1);
 	}
-	else
+
+	// negative side
+	FdNode* node2 = fn->cloneChopped(plane2);
+	if (node2)
 	{
-		node1 = new PatchNode(meshPtr1, box1);
-		node2 = new PatchNode(meshPtr2, box2);
+		QString id = fn->mID + QString("_%1").arg(splitted.size());
+		node2->setStringId(id);
+		Structure::Graph::addNode(node2);
+		splitted.push_back(node2);
 	}
-	node1->mID = mesh1->name; 
-	node2->mID = mesh2->name; 
 
-	// replace nodes
-	removeNode(fn->mID);
-	Structure::Graph::addNode(node1);
-	Structure::Graph::addNode(node2);
+	// remove the original node
+	if (!splitted.isEmpty())
+		removeNode(fn->mID);
 
-	splitted.push_back(node1);
-	splitted.push_back(node2);
 	return splitted;
 }
 

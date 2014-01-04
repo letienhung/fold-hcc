@@ -11,10 +11,11 @@ public:
 	virtual Node* clone();
 
 public:
-
 	void createScaffold();
 	bool isPerpTo(Vector3 v, double dotThreshold);
 	void draw();
+
+	Geom::Plane getSurfacePlane(bool positive);
 
 public:
 	Geom::Rectangle mPatch;

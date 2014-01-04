@@ -85,11 +85,7 @@ QVector<FdNode*> DcGraph::mergeCoplanarParts( QVector<FdNode*> ns, PatchNode* pa
 			QSet<QString> groupIds;
 			foreach(FdNode* n, group) groupIds << n->mID;
 			copGroups << groupIds;
-
-			// debug
-			qDebug() << groupIds;
 		}
-		
 	}
 
 	// set cover: prefer large subsets
@@ -144,11 +140,13 @@ void DcGraph::createLayers()
 	// cut parts by control panels
  	foreach (PatchNode* panel, controlPanels)
 	{
-		Geom::Plane cutPlane = panel->mPatch.getPlane();
+		Geom::Plane plane1 = panel->getSurfacePlane(true);
+		Geom::Plane plane2 = panel->getSurfacePlane(false);
+
 		foreach(FdNode* n, getFdNodes())
 		{
 			if (n->isCtrlPanel) continue;
-			split(n, cutPlane, 0.1);
+			split(n, plane1, plane2);
 		}
 	}
 	

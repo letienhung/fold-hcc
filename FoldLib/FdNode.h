@@ -17,6 +17,7 @@ public:
 	~FdNode();
 
 	virtual Node* clone() = 0;
+	void setStringId(QString id);
 
 	// visualization
 	bool showCuboids;
@@ -39,8 +40,9 @@ public:
 	virtual void createScaffold() = 0;
 	Geom::AABB computeAABB();
 	Vector3 center();
+	FdNode* cloneChopped(Geom::Plane chopper);
 	 
-	// relation with pushing direction
+	// relation with direction
 	virtual bool isPerpTo(Vector3 v, double dotThreshold);
 
 public:

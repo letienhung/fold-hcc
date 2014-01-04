@@ -20,6 +20,11 @@ double Geom::Plane::signedDistanceTo( Vector3 p )
 	return dot(dv, Normal);
 }
 
+double Geom::Plane::distanceTo( Vector3 p )
+{
+	return fabs(signedDistanceTo(p));
+}
+
 int Geom::Plane::whichSide(Vector3 p)
 {
 	double sd = signedDistanceTo(p);
@@ -60,3 +65,31 @@ SurfaceMesh::Vector3 Geom::Plane::getProjection( Vector3 p )
 	double dis = signedDistanceTo(p);
 	return p - dis * Normal;
 }
+
+bool Geom::Plane::intersects( Segment seg )
+{
+	QVector<Vector3> endPs;
+	endPs << seg.P0 << seg.P1;
+	return !onSameSide(endPs);
+}
+
+// call \intersects() to make sure intersection exist 
+Vector3 Geom::Plane::getIntersection( Segment seg )
+{
+	double a = distanceTo(seg.P0);
+	double b = distanceTo(seg.P1);
+	double t = 2*a / (a + b) - 1;
+
+	return seg.getPosition(t);
+}
+
+Geom::Plane Geom::Plane::opposite()
+{
+	return Plane(Constant, -Normal);
+}
+
+void Geom::Plane::translate( Vector3 t )
+{
+	Constant += t;
+}
+

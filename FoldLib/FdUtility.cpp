@@ -224,6 +224,8 @@ bool onPlane( FdNode* n, Geom::Plane& plane )
 		double dotProd = fabs(dot(pn->mPatch.Normal, plane.Normal));
 
 		double thr = pn->mPatch.radius() / 10;
+
+		qDebug() << thr << "\t" << dist << "\t" << dotProd;
 		return (dist < thr && dotProd > 0.9);
 	}
 	else
@@ -233,6 +235,8 @@ bool onPlane( FdNode* n, Geom::Plane& plane )
 		double dotProd = fabs(dot(rn->mRod.Direction, plane.Normal));
 
 		double thr = rn->mRod.length() / 10;
+
+		qDebug() << thr << "\t" << dist << "\t" << dotProd;
 		return (dist < thr && dotProd < 0.1);
 	}
 }

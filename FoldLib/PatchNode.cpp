@@ -59,3 +59,18 @@ Structure::Node* PatchNode::clone()
 {
 	return new PatchNode(*this);
 }
+
+Geom::Plane PatchNode::getSurfacePlane( bool positive)
+{
+	int aid = mBox.getAxisId(mPatch.Normal);
+	double extent = mBox.getExtent(aid);
+	Geom::Plane plane = mPatch.getPlane();
+
+	if (positive) plane.translate(extent * mPatch.Normal);
+	else {
+		plane.translate(-extent * mPatch.Normal);
+		plane = plane.opposite();
+	}
+
+	return plane;
+}

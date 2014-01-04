@@ -11,7 +11,7 @@ SandwichChain::SandwichChain( FdNode* part, PatchNode* panel1, PatchNode* panel2
 	Vector3 pcenter = (mPanels[0]->center() + mPanels[1]->center()) * 0.5;
 	Vector3 pnormal = mPanels[0]->mPatch.Normal;
 	Geom::Plane cutPlane(pcenter, pnormal);
-	mParts = split(mParts[0], cutPlane, 0);
+	mParts = split(mParts[0], cutPlane);
 	sortParts();
 
 	// create hinge links between mPanels[0] and mParts[0]
