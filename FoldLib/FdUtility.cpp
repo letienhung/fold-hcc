@@ -8,6 +8,7 @@
 #include "DistRectRect.h"
 #include "Numeric.h"
 #include "MinOBB.h"
+#include "PcaOBB.h"
 
 FdNodeArray2D clusterNodes( QVector<FdNode*> nodes, double disThr )
 {
@@ -253,18 +254,52 @@ Geom::Box fitBox( QVector<Vector3>& pnts, int method )
 	}
 	else if (method == 1)
 	{
-		Geom::MinOBB obb(pnts, true);
+		Geom::MinOBB obb(pnts, false);
 		box = obb.mMinBox;
+	}
+	else if (method == 2)
+	{
+		Geom::PcaOBB pcaOBB(pnts);
+		box = pcaOBB.minBox;
 	}
 	else
 	{
 		Geom::AABB aabb(pnts);
 		Geom::Box aabb_box = aabb.box();
+		double vAABB = aabb_box.volume();
 
-		Geom::MinOBB obb(pnts, true);
+		Geom::MinOBB obb(pnts, false);
 		Geom::Box& obb_box = obb.mMinBox;
+		double vOBB = obb_box.volume();
 
-		box = (aabb_box.volume() <= obb_box.volume()) ? aabb_box : obb_box;
+		Geom::PcaOBB pcaOBB(pnts);
+		Geom::Box& pca_obb = pcaOBB.minBox;
+		double vPcaOBB = pca_obb.volume();
+
+		double vReal = std::min(vPcaOBB, std::min(vAABB, vOBB));
+
+		qDebug()<<"VAABB = "<<vAABB<<'\n';
+		qDebug()<<"VMinOBB = "<<vOBB<<'\n';
+		qDebug()<<"VPcaOBB = "<<vPcaOBB<<'\n';
+
+		if(vPcaOBB > vOBB){
+			qDebug()<<"VDiffRatio = "<<(vPcaOBB - vOBB)/vOBB<<'\n';
+		}
+
+		if(vReal == vAABB){
+			qDebug()<<"Method is AABB\n";
+			box = aabb_box;
+		}
+		else if(vReal == vOBB){
+			qDebug()<<"Method is minOBB\n";
+			box = obb_box;
+		}
+		else{
+			qDebug()<<"Method is PCAOBB\n";
+			box = pca_obb;
+		}
+		//box = (aabb_box.volume() <= obb_box.volume()) ? aabb_box : obb_box;
+		//box = (box.volume() <= pca_obb.volume()) ? box : pca_obb;
 	}
 
 	return box;
