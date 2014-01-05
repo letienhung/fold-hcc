@@ -95,17 +95,18 @@ void FdPlugin::resetScene()
 
 void FdPlugin::test()
 {
-	if (activeScaffold())
-	{
-		QVector<Structure::Node*> selNodes = activeScaffold()->getSelectedNodes();
-		if (!selNodes.isEmpty())
-		{
-			FdNode* node = (FdNode*)selNodes.front();
-			QVector<Vector3> pnts = MeshHelper::getMeshVertices(node->mMesh.data());
+	if(!activeScaffold()) return;
 
-			Geom::PCA pca(pnts);
-		}
+	QVector<Structure::Node*> selNodes = activeScaffold()->getSelectedNodes();
+    QVector<QString> nIds;
+	if(selNodes.isEmpty()) return;
+
+	foreach(Structure::Node* n, selNodes){
+		nIds.push_back(n->mID);
 	}
+
+	activeScaffold()->merge(nIds);
+	updateScene();
 }
 
 
