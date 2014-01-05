@@ -19,11 +19,15 @@ public:
 	QVector<Vector3> Axis;
 	Vector3 Extent;
 
-	// con(de)structor
+	// constructor
 	Box();
 	Box(const Point& c, const QVector<Vector3>& axis, const Vector3& ext);
 	Box(const Frame& f, const Vector3& ext);
-	~Box(){}
+	Box(const Rectangle& rect, const Vector3& n, const double& height);
+
+	// helper
+	void makeRightHanded();
+	void normalizeAxis();
 
 	// assignment
 	Box &operator =(const Box &);
@@ -76,7 +80,6 @@ public:
 	QVector< QVector<Point> >	getFacePoints();
 	QVector<Plane>				getFacePlanes();
 	QVector<Rectangle>			getFaceRectangles();
-
 	QVector<Segment>            getEdgeIncidentOnPoint(Point &p);
 	QVector<Rectangle>          getFaceIncidentOnPoint(Point &p);
 

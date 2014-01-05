@@ -36,7 +36,7 @@ void GraphManager::createScaffold()
 	// create nodes from meshes
 	foreach (SurfaceMeshModel* m, subMeshes)
 	{
-		scaffold->addNode(m, fitMethod);
+		scaffold->addNode(MeshPtr(m), fitMethod);
 	}
 
 	emit(scaffoldChanged(scaffold));

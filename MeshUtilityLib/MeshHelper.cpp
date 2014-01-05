@@ -56,6 +56,7 @@ QVector<Vector3> MeshHelper::encodeMeshInBox( SurfaceMeshModel* mesh, Geom::Box&
 bool MeshHelper::decodeMeshInBox( SurfaceMeshModel* mesh, Geom::Box& box, QVector<Vector3>& coords )
 {
 	if (mesh->n_vertices() != coords.size()) return false;
+	if (coords.isEmpty()) return true;
 
 	Surface_mesh::Vertex_property<Point> points = mesh->vertex_property<Point>("v:point");
 	

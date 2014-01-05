@@ -26,8 +26,6 @@ FdNode::FdNode( MeshPtr m, Geom::Box &b )
 	showCuboids = true;
 	showScaffold = true;
 	showMesh = true;
-
-	isCtrlPanel = false;
 }
 
 FdNode::FdNode(FdNode& other)
@@ -44,8 +42,6 @@ FdNode::FdNode(FdNode& other)
 	showCuboids = true;
 	showScaffold = true; 
 	showMesh = false;
-
-	isCtrlPanel = false;
 }
 
 
@@ -71,9 +67,8 @@ void FdNode::draw()
 		// wireframes
 		if(isSelected)	
 			mBox.drawWireframe(4.0, Qt::yellow);
-		else if (!isCtrlPanel)
+		else if (!properties.contains("isCtrlPanel"))
 			mBox.drawWireframe();
-					
 	}
 }
 

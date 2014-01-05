@@ -69,14 +69,8 @@ Geom::Box::Box(const Point& c, const QVector<Vector3>& axis, const Vector3& ext)
 	Axis = axis;
 	Extent = ext;
 
-	// normalize axis
-	for (int i = 0; i < 3; i++)
-		Axis[i].normalize();
-
-	// right handed system
-	Vector3 cross01 = cross(Axis[0], Axis[1]);
-	if (dot(cross01, Axis[2]) < 0)
-		Axis[2] *= -1;
+	normalizeAxis();
+	makeRightHanded();
 }
 
 Geom::Box::Box(const Frame& f, const Vector3& ext)
@@ -85,6 +79,17 @@ Geom::Box::Box(const Frame& f, const Vector3& ext)
 	Axis.clear();
 	Axis << f.r << f.s << f.t;
 	Extent = ext;
+}
+
+Geom::Box::Box(const Rectangle& rect, const Vector3& n, const double& height)
+{
+	Center = rect.Center + 0.5 * height * n;
+	Axis.clear();
+	Axis << rect.Axis[0] << rect.Axis[1] << n;
+	Extent = Vector3(rect.Extent[0], rect.Extent[1], 0.5 * height);
+
+	normalizeAxis();
+	makeRightHanded();
 }
 
 
@@ -647,4 +652,16 @@ void Geom::Box::scaleAsPart(double f, Vector3 c)
 	}
 	this->Center = centre/8;
 	this->Extent /= f;
+}
+
+void Geom::Box::makeRightHanded()
+{
+	if (dot(cross(Axis[0], Axis[1]), Axis[2]) < 0)
+		Axis[2] *= -1;
+}
+
+void Geom::Box::normalizeAxis()
+{
+	for (int i = 0; i < 3; i++)
+		Axis[i].normalize();
 }

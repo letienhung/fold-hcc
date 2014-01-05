@@ -7,7 +7,6 @@ class PatchNode : public FdNode
 public:
     PatchNode(MeshPtr m, Geom::Box &b);
 	PatchNode(PatchNode &other);
-	~PatchNode();
 	virtual Node* clone();
 
 public:

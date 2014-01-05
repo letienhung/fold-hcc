@@ -17,7 +17,7 @@ DcGraph::DcGraph( FdGraph* scaffold, StrArray2D panelGroups, Vector3 up, QString
 	foreach( QVector<QString> panelGroup, panelGroups )
 	{
 		FdNode* mf = merge(panelGroup);
-		mf->isCtrlPanel = true;
+		mf->properties["isCtrlPanel"] = true;
 
 		if (mf->mType != FdNode::PATCH)	changeNodeType(mf);
 		controlPanels.push_back((PatchNode*)mf);
@@ -52,7 +52,7 @@ void DcGraph::splitPartsByPanels()
 		QVector<QString> mergeParts;
 		foreach(FdNode* n, getFdNodes())
 		{
-			if (n->isCtrlPanel) continue;
+			if (n->properties.contains("isCtrlPanel")) continue;
 			QVector<FdNode*> splitted = split(n, cutPlane1);
 
 			foreach (FdNode* spn, splitted)
@@ -70,14 +70,14 @@ void DcGraph::splitPartsByPanels()
 			PatchNode* newPanel = (PatchNode*)merge(mergeParts);
 			Structure::Graph::replaceNode(panel, newPanel);
 			panel = newPanel;
-			panel->isCtrlPanel = true;
+			panel->properties["isCtrlPanel"] = true;
 		}
 
 		// cut plane2
 		mergeParts.clear();
 		foreach(FdNode* n, getFdNodes())
 		{
-			if (n->isCtrlPanel) continue;
+			if (n->properties.contains("isCtrlPanel")) continue;
 			QVector<FdNode*> splitted = split(n, cutPlane2);
 
 			foreach (FdNode* spn, splitted)
@@ -94,7 +94,7 @@ void DcGraph::splitPartsByPanels()
 			PatchNode* newPanel = (PatchNode*)merge(mergeParts);
 			Structure::Graph::replaceNode(panel, newPanel);
 			panel = newPanel;
-			panel->isCtrlPanel = true;
+			panel->properties["isCtrlPanel"] = true;
 		}
 
 		// save the new panel
@@ -224,7 +224,7 @@ void DcGraph::createLayers()
 	FdNodeArray2D layerGroups(cutPos.size());
 	foreach (FdNode* n, getFdNodes())
 	{
-		if (n->isCtrlPanel) continue;
+		if (n->properties.contains("isCtrlPanel")) continue;
 		double pos = upSklt.getProjCoordinates(n->center());
 		for (int i = 0; i < cutPos.size(); i++)
 		{

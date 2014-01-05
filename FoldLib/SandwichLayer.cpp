@@ -11,8 +11,8 @@ SandwichLayer::SandwichLayer( QVector<FdNode*> nodes, PatchNode* panel1, PatchNo
 
 	mPanel1 = (PatchNode*) getNode(panel1->mID);
 	mPanel2 = (PatchNode*) getNode(panel2->mID);
-	mPanel1->isCtrlPanel = true;
-	mPanel2->isCtrlPanel = true; 
+	mPanel1->properties["isCtrlPanel"] = true;
+	mPanel2->properties["isCtrlPanel"] = true;
 
 	// create chains
 	double thr = mPanel1->mBox.getExtent(mPanel1->mPatch.Normal) * 2;
@@ -21,7 +21,7 @@ SandwichLayer::SandwichLayer( QVector<FdNode*> nodes, PatchNode* panel1, PatchNo
 
 	foreach (FdNode* n, getFdNodes())
 	{
-		if (n->isCtrlPanel) continue;
+		if (n->properties.contains("isCtrlPanel")) continue;
 
 		if (getDistance(n, panels) < thr)
 		{

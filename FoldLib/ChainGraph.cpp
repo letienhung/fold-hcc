@@ -10,18 +10,18 @@ ChainGraph::ChainGraph( FdNode* part, PatchNode* panel1, PatchNode* panel2 /*= N
 	Structure::Graph::addNode(mParts[0]);
 
 	mPanels << (PatchNode*)panel1->clone();
-	mPanels[0]->isCtrlPanel = true;
+	mPanels[0]->properties["isCtrlPanel"] = true;
 	Graph::addNode(mPanels[0]);
 
 	if (panel2)
 	{
 		mPanels << (PatchNode*)panel2->clone();
-		mPanels[1]->isCtrlPanel = true;
+		mPanels[1]->properties["isCtrlPanel"] = true;
 		Graph::addNode(mPanels[1]);
 	}
 
 	// detect hinges
-	rootJointSegs = detectHingeSegments(mParts[0], mPanels[0]);
+	rootJointSegs = detectJointSegments(mParts[0], mPanels[0]);
 
 	// upSeg
 	Geom::Segment axisSeg = rootJointSegs[0];
@@ -40,9 +40,9 @@ ChainGraph::ChainGraph( FdNode* part, PatchNode* panel1, PatchNode* panel2 /*= N
 	if (chainUpSeg.getProjCoordinates(origin) > 0) chainUpSeg.flip();
 
 	// righV
-	foreach (Geom::Segment hinge, rootJointSegs)
+	foreach (Geom::Segment jointSeg, rootJointSegs)
 	{
-		Vector3 crossAxisV1 = cross(axisSeg.Direction, chainUpSeg.Direction);
+		Vector3 crossAxisV1 = cross(jointSeg.Direction, chainUpSeg.Direction);
 		Vector3 rV = mPanels[0]->mPatch.getProjectedVector(crossAxisV1);
 
 		rootRightVs.push_back(rV.normalized());

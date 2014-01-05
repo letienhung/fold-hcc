@@ -159,9 +159,9 @@ StrArray2D getIds( FdNodeArray2D nodeArray )
 	return idArray;
 }
 
-QVector<Geom::Segment> detectHingeSegments( FdNode* part, PatchNode* panel )
+QVector<Geom::Segment> detectJointSegments( FdNode* part, PatchNode* panel )
 {
-	QVector<Geom::Segment> hinges;
+	QVector<Geom::Segment> jointSegs;
 
 	if (part->mType == FdNode::PATCH)
 	{
@@ -169,34 +169,28 @@ QVector<Geom::Segment> detectHingeSegments( FdNode* part, PatchNode* panel )
 		Vector3 panelNormal = panel->mPatch.Normal;
 		QVector<Geom::Segment> perpEdges = partPatch->mPatch.getPerpEdges(panelNormal);
 
-		if (perpEdges.size() != 2)
-		{
-			qDebug() << "Detect hinge between patch and patch failed: patch edges are not aligned.";
-			return hinges;
-		}
-
 		Geom::DistSegRect dsr1(perpEdges[0], panel->mPatch);
 		Geom::DistSegRect dsr2(perpEdges[1], panel->mPatch);
-
-		if (dsr1.get() < dsr2.get())
-			hinges << perpEdges[0];
-		else    
-			hinges << perpEdges[1];
+		if (dsr1.get() < dsr2.get())	jointSegs << perpEdges[0];
+		else							jointSegs << perpEdges[1];
 	}
 	else if (part->mType == FdNode::ROD)
 	{
 		Geom::Segment distSeg = getDistSegment(part, panel);
 		Vector3 p = distSeg.P0;
+
 		Vector3 v1 = panel->mPatch.Axis[0];
+		int aid1 = part->mBox.getClosestAxisId(v1);
+		double ext1 = part->mBox.getExtent(aid1);
+
 		Vector3 v2 = panel->mPatch.Axis[1];
+		int aid2 = part->mBox.getClosestAxisId(v2);
+		double ext2 = part->mBox.getExtent(aid2);
 
-		RodNode* partRod = (RodNode*)part;
-		double e = partRod->mRod.Extent / 4;
-
-		hinges << Geom::Segment(p, v1, e) << Geom::Segment(p, v2, e);
+		jointSegs << Geom::Segment(p, v1, ext1) << Geom::Segment(p, v2, ext2);
 	}
 
-	return hinges;
+	return jointSegs;
 }
 
 double getLocalTime( double globalT, double localStart, double localEnd )

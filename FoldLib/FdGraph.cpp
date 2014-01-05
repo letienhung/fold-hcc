@@ -202,28 +202,28 @@ FdNode* FdGraph::merge( QVector<QString> nids )
 	// fit box using box corners
 	Geom::Box box = fitBox(boxPoints);
 
-	return addNode(mm.getMesh(), box); 
+	return addNode(MeshPtr(mm.getMesh()), box); 
 }
 
 
-FdNode* FdGraph::addNode( SurfaceMeshModel* mesh, int method )
+FdNode* FdGraph::addNode( MeshPtr mesh, int method )
 {
 	// fit box
-	QVector<Vector3> points = MeshHelper::getMeshVertices(mesh);
+	QVector<Vector3> points = MeshHelper::getMeshVertices(mesh.data());
 	Geom::Box box = fitBox(points, method);
 
 	return addNode(mesh, box);
 }
 
-FdNode* FdGraph::addNode(SurfaceMeshModel* mesh, Geom::Box& box)
+FdNode* FdGraph::addNode(MeshPtr mesh, Geom::Box& box)
 {
 	// create node depends on box type
 	int box_type = box.getType(5);
 
 	FdNode* node;
 	if (box_type == Geom::Box::ROD)	
-		node = new RodNode(MeshPtr(mesh), box);
-	else node = new PatchNode(MeshPtr(mesh), box);
+		node = new RodNode(mesh, box);
+	else node = new PatchNode(mesh, box);
 
 	// add to graph and set id
 	Graph::addNode(node);

@@ -21,12 +21,6 @@ PatchNode::PatchNode(PatchNode& other)
 }
 
 
-PatchNode::~PatchNode()
-{
-
-}
-
-
 void PatchNode::createScaffold()
 {
 	int aid = mBox.minAxisId();
@@ -37,7 +31,7 @@ void PatchNode::createScaffold()
 
 void PatchNode::draw()
 {
-	if (isCtrlPanel)
+	if (properties.contains("isCtrlPanel"))
 		mPatchColor = Qt::red;
 
 	if (showScaffold)

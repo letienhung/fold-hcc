@@ -87,7 +87,6 @@ SandwichChain::SandwichChain( FdNode* part, PatchNode* panel1, PatchNode* panel2
 
 		FdLink* linkR = new FdLink(mParts.last(), mPanels[1], hingeR);
 		FdLink* linkL = new FdLink(mParts.last(), mPanels[1], hingeL);
-		links.clear();
 		links << linkR << linkL;
 
 		Graph::addLink(linkR);

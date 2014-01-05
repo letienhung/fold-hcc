@@ -63,28 +63,47 @@ void FoldManager::createDcGraphs()
 	{
 		Vector3 direct(0, 0, 0);
 		direct[pushAxis] = 1;;
-		createDcGraphs(direct);
+		createDcGraphs(direct, true);
 	}
 	else
 	{
-		createDcGraphs(Vector3(1,0,0));
-		createDcGraphs(Vector3(0,1,0));
-		createDcGraphs(Vector3(0,0,1));
+		createDcGraphs(Vector3(1,0,0), true);
+		createDcGraphs(Vector3(0,1,0), true);
+		createDcGraphs(Vector3(0,0,1), true);
 	}
 
 	// update ui
 	updateLists();
 }
 
-void FoldManager::createDcGraphs(Vector3 pushDirect)
+void FoldManager::createDcGraphs(Vector3 pushDirect, bool addVirtualPanels)
 {
 	Geom::AABB aabb = scaffold->computeAABB();
 	Geom::Box box = aabb.box();
 	int pushAId = aabb.box().getAxisId(pushDirect);
+
+	// add virtual control panels
+	if (addVirtualPanels)
+	{
+		Vector3 upV = box.Axis[pushAId];
+		double thk = aabb.radius() / 50;
+		MeshPtr emptyMesh(new SurfaceMeshModel());
+
+		Geom::Rectangle topPatch = box.getPatch(pushAId, 1);
+		Geom::Box topBox(topPatch, upV, thk);
+		FdNode* topVN = scaffold->addNode(emptyMesh, topBox);
+		topVN->setStringId("topVirtual");
+
+		Geom::Rectangle bottomPatch = box.getPatch(pushAId, -1);
+		Geom::Box bottomBox(bottomPatch, -upV, thk);
+		FdNode* bottomVN = scaffold->addNode(emptyMesh, bottomBox);
+		bottomVN->setStringId("bottomVirtual");
+	}
+
 	
 	// threshold
 	double perpThr = 0.1;
-	double layerHeightThr = 0.05;
+	double layerHeightThr = 0.15;
 	double clusterDistThr = aabb.radius() * 0.1;
 	double areaThr = box.getPatch(pushAId, 0).area() * 0.2;
 
@@ -172,6 +191,13 @@ void FoldManager::createDcGraphs(Vector3 pushDirect)
 		QString id = "Dc-" + QString::number(dcGraphs.size());
 		dcGraphs.push_back(new DcGraph(scaffold, getIds(panelGroups2), pushDirect, id));
 	}
+
+	// remove virtual nodes
+	if (addVirtualPanels)
+	{
+		scaffold->Structure::Graph::removeNode("topVirtual");
+		scaffold->Structure::Graph::removeNode("bottomVirtual");
+	}
 }
 
 void FoldManager::foldSelLayer()
@@ -180,12 +206,10 @@ void FoldManager::foldSelLayer()
 	if (lg) lg->fold();
 }
 
-
 void FoldManager::fold()
 {
 	dcGraphs[0]->fold();
 }
-
 
 void FoldManager::selectDcGraph( QString id )
 {
@@ -222,7 +246,6 @@ void FoldManager::selectLayer( QString id )
 	emit(selectionChanged());
 }
 
-
 void FoldManager::selectChain( QString id )
 { 
 	if (getSelLayer())
@@ -232,7 +255,6 @@ void FoldManager::selectChain( QString id )
 
 	emit(selectionChanged());
 }
-
 
 void FoldManager::updateLists()
 {

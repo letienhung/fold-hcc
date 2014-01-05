@@ -52,9 +52,6 @@ public:
 
 	QColor mColor;
 	NODE_TYPE mType;
-
-	// tags used for folding
-	bool isCtrlPanel;
 };
 
 typedef QVector< QVector<FdNode*> > FdNodeArray2D;

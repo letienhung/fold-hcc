@@ -26,7 +26,7 @@ public:
 	QVector< QVector<FdGraph*> > results;
 
 public:
-	void createDcGraphs(Vector3 pushDirect); 
+	void createDcGraphs(Vector3 pushDirect, bool addVirtualPanels); 
 
 	FdGraph* activeScaffold();
 	DcGraph* getSelDcGraph();

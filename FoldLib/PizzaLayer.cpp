@@ -15,13 +15,13 @@ PizzaLayer::PizzaLayer( QVector<FdNode*> nodes, PatchNode* panel, QString id, Ge
 
 	// panel
 	mPanel = (PatchNode*)getNode(panel->mID);
-	mPanel->isCtrlPanel = true;
+	mPanel->properties["isCtrlPanel"] = true;
 
 	// create chains
 	double thr = mPanel->mBox.getExtent(mPanel->mPatch.Normal) * 2;
 	foreach (FdNode* n, getFdNodes())
 	{
-		if (n->isCtrlPanel) continue;
+		if (n->properties.contains("isCtrlPanel")) continue;
 
 		if (getDistance(n, mPanel) < thr)
 		{
