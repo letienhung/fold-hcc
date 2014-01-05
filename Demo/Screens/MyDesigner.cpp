@@ -562,10 +562,19 @@ void MyDesigner::loadObject()
 	clearButtons();
 	isLoaded = true;
 
+	designWidget->showModel->setChecked(true);
+	designWidget->showCuboid->setChecked(true);
+	designWidget->showGraph->setChecked(true);
+	designWidget->allowScale->setChecked(true);
+	designWidget->allowSplit->setChecked(true);
+
 	gManager = NULL;
 	mBox = NULL;
 	gManager = new GraphManager();
 	gManager->loadScaffold();
+
+	fManager = NULL;
+	fManager = new FoldManager;
 
 	// Pass the active scaffold to FoldManager
 	fManager->setScaffold(activeScaffold());
@@ -1001,17 +1010,20 @@ void MyDesigner::dequeueLastMessage()
 
 void MyDesigner::showCuboids(int state)
 {
+	if(isEmpty()) return;
 	gManager->scaffold->showCuboids(state);
 	updateGL();
 }
 void MyDesigner::showGraph(int state)
 {
+	if(isEmpty()) return;
 	gManager->scaffold->showScaffold(state);
 	updateGL();
 }
 
 void MyDesigner::showModel(int state)
 {
+	if(isEmpty()) return;
 	gManager->scaffold->showMeshes(state);
 	isShow = (state == Qt::Checked);
 	updateGL();
@@ -1019,6 +1031,7 @@ void MyDesigner::showModel(int state)
 
 void MyDesigner::setScalable(int state)
 {
+	if(isEmpty()) return;
 	bool isScalable = (state == Qt::Checked);
 	QVector <Structure::Node *> selectedNodes = activeScaffold()->getSelectedNodes();
 	foreach(Structure::Node *n, selectedNodes)
@@ -1027,6 +1040,7 @@ void MyDesigner::setScalable(int state)
 
 void MyDesigner::setSplittable(int state)
 {
+	if(isEmpty()) return;
 	bool isSplittable = (state == Qt::Checked);
 	QVector <Structure::Node *> selectedNodes = activeScaffold()->getSelectedNodes();
 	foreach(Structure::Node *n, selectedNodes)
