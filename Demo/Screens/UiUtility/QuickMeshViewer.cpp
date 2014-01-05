@@ -9,6 +9,8 @@ QuickMeshViewer::QuickMeshViewer( QWidget * parent /*= 0*/ ) :QGLViewer(parent)
 
 	this->isActive = false;
 	this->isLoading = false;
+
+	mGraph = NULL;
 	
 	// Could cause crashes..
 	connect(this, SIGNAL(graphLoaded()), SLOT(updateGL()));
@@ -44,7 +46,7 @@ void QuickMeshViewer::init()
 	// Camera
 	camera()->setType(Camera::ORTHOGRAPHIC);
 
-	resetView();
+	setupCamera();
 }
 
 void QuickMeshViewer::draw()
@@ -142,6 +144,8 @@ void QuickMeshViewer::setGraph(FdGraph *graph)
 	setSceneRadius((aabb.bbmax - aabb.bbmin).norm()*0.5f);
     setSceneCenter(center);
 
+	resetView();
+
 	updateGL();
 	emit(graphLoaded());
 }
@@ -154,18 +158,34 @@ void QuickMeshViewer::loadGraph( QString fileName )
 
 	isActive = true;
 
+	resetView();
+
 	updateGL();
 	emit(graphLoaded());
 }
 
 void QuickMeshViewer::resetView()
 {
-	camera()->setSceneRadius(2.0);
-	camera()->setUpVector(Vec(0,0,1));
-	camera()->setSceneCenter(Vec(0,0,0));
-	camera()->setPosition(Vec(1.25,1.25,1));
-	camera()->lookAt(Vec(0,0,0));
+	setupCamera();
+	if(!mGraph) return;
 
-	setGridIsDrawn(false);
-	setAxisIsDrawn(false);
+	Geom::AABB aabb = mGraph->computeAABB();
+
+	//camera()->setSceneRadius(activeScaffold()->computeAABB().radius());
+	Vec minbound(aabb.bbmin.x(), aabb.bbmin.y(), aabb.bbmin.z());
+	Vec maxbound(aabb.bbmax.x(), aabb.bbmax.y(), aabb.bbmax.z());
+
+	camera()->fitBoundingBox( minbound, maxbound);
+	camera()->setSceneRadius((maxbound - minbound).norm() * 0.5);
+	camera()->setSceneCenter((minbound + maxbound) * 0.5);
+	camera()->showEntireScene();
+}
+
+void QuickMeshViewer::setupCamera()
+{
+	camera()->setSceneRadius(2.0);
+	camera()->showEntireScene();
+	camera()->setUpVector(Vec(0,0,1));
+	camera()->setPosition(Vec(2,-2,2));
+	camera()->lookAt(Vec());
 }

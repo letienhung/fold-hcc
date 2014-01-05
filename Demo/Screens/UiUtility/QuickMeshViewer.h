@@ -17,6 +17,7 @@ public:
 	~QuickMeshViewer();
 
 	virtual void init();
+	virtual void setupCamera();
 	virtual void resetView();
 	virtual void draw();
 	virtual void preDraw();
