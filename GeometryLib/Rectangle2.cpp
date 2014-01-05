@@ -2,7 +2,7 @@
 
 Geom::Rectangle2::Rectangle2()
 {
-
+	Axis.resize(2);
 }
 
 Geom::Rectangle2::Rectangle2( Vector2 &center, QVector<Vector2> &axis, Vector2 &extent )

@@ -48,7 +48,8 @@ HEADERS += \
     DistRectRect.h \
     SectorCylinder.h \
     Rectangle2.h \
-    IntrRect2Rect2.h
+    IntrRect2Rect2.h \
+    PCA.h
 
 SOURCES += \
     Segment.cpp \
@@ -77,4 +78,6 @@ SOURCES += \
     DistRectRect.cpp \
     SectorCylinder.cpp \
     Rectangle2.cpp \
-    IntrRect2Rect2.cpp
+    IntrRect2Rect2.cpp \
+    PCA.cpp \
+    PcaOBB.cpp

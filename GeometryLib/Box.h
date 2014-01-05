@@ -20,9 +20,10 @@ public:
 	Vector3 Extent;
 
 	// con(de)structor
-	Box(){Axis.resize(3);}
-	~Box(){}
+	Box();
 	Box(const Point& c, const QVector<Vector3>& axis, const Vector3& ext);
+	Box(const Frame& f, const Vector3& ext);
+	~Box(){}
 
 	// assignment
 	Box &operator =(const Box &);
@@ -42,7 +43,6 @@ public:
 	void scale(Vector3 s);
 	void scale(int axisID, double s);
 	Box  scaled(double s);
-
 	void scaleAsPart(double f, Vector3 c);
 
 	// split

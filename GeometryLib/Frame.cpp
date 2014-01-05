@@ -12,17 +12,12 @@ Geom::Frame::Frame()
 Geom::Frame::Frame( const Vec3d& C,  const Vec3d& R, const Vec3d& S, const Vec3d& T )
 {
 	c = C;
-	r = R; 
-	s = S; 
-	t = T; 
-	normalize();
-}
+	r = R.normalized(); 
+	s = S.normalized(); 
+	t = T.normalized(); 
 
-void Geom::Frame::normalize()
-{
-	r.normalize(); 
-	s.normalize(); 
-	t.normalize();
+	// make it right handed
+	if (dot(cross(r, s), t) < 0) t *= -1;
 }
 
 Vector3 Geom::Frame::getCoordinates( Vector3 p )

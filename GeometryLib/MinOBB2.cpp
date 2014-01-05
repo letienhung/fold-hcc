@@ -284,7 +284,7 @@ void Geom::MinOBB2::UpdateBox (const Vector2& LPoint,
     }
 }
 
-Geom::MinOBB2::Box2 Geom::MinOBB2::getBox2()
+Geom::Box2 Geom::MinOBB2::getBox2()
 {
 	return mMinBox;
 }

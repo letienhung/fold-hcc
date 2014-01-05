@@ -58,6 +58,11 @@ int Geom::Box::TRI_FACE[12][3] =
 	7, 6, 2
 };
 
+Geom::Box::Box()
+{
+	Axis.resize(3);
+}
+
 Geom::Box::Box(const Point& c, const QVector<Vector3>& axis, const Vector3& ext)
 {
 	Center = c;
@@ -73,6 +78,15 @@ Geom::Box::Box(const Point& c, const QVector<Vector3>& axis, const Vector3& ext)
 	if (dot(cross01, Axis[2]) < 0)
 		Axis[2] *= -1;
 }
+
+Geom::Box::Box(const Frame& f, const Vector3& ext)
+{
+	Center = f.c;
+	Axis.clear();
+	Axis << f.r << f.s << f.t;
+	Extent = ext;
+}
+
 
 Geom::Box &Geom::Box::operator =(const Box &b)
 {
@@ -243,6 +257,7 @@ QVector<Geom::Plane> Geom::Box::getFacePlanes()
 	return faces;
 }
 
+
 QVector<Geom::Rectangle> Geom::Box::getFaceRectangles()
 {
 	QVector<Rectangle> rects;
@@ -252,6 +267,7 @@ QVector<Geom::Rectangle> Geom::Box::getFaceRectangles()
 
 	return rects;
 }
+
 
 QVector<Geom::Segment> Geom::Box::getEdgeIncidentOnPoint(Point &p)
 {

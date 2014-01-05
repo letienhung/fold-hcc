@@ -22,4 +22,6 @@ namespace Geom{
 	public:
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	};
+
+	typedef Rectangle2 Box2;
 }

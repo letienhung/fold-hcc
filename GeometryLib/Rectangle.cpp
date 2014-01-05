@@ -148,7 +148,7 @@ Vector2 Geom::Rectangle::getProjCoordinates( Vector3 p )
 	return Vector2(x, y);
 }
 
-SurfaceMesh::Vector3 Geom::Rectangle::getPosition( const Vector2& c )
+Vector3 Geom::Rectangle::getPosition( const Vector2& c )
 {
 	Vector3 pos = Center;
 	for (int i = 0; i < 2; i++)
@@ -156,6 +156,38 @@ SurfaceMesh::Vector3 Geom::Rectangle::getPosition( const Vector2& c )
 
 	return pos;
 }
+
+Vector3 Geom::Rectangle::getVector( const Vector2& v )
+{
+	return getPosition(v) - Center;
+}
+
+Vector2 Geom::Rectangle::getOpenProjCoord( Vector3 p )
+{
+	Vector3 v = p - Center;
+	double x = dot(v, Axis[0]);
+	double y = dot(v, Axis[1]);
+
+	return Vector2(x, y);
+}
+
+
+Vector3 Geom::Rectangle::getOpenVector( const Vector2& v )
+{
+	return getOpenPos(v) - Center;
+}
+
+
+Vector3 Geom::Rectangle::getOpenPos( const Vector2& c )
+{
+	Vector3 pos = Center;
+	for (int i = 0; i < 2; i++)
+		pos += c[i]*Axis[i];
+
+	return pos;
+}
+
+
 
 Geom::Segment2 Geom::Rectangle::getProjection2D( Segment s )
 {
@@ -279,5 +311,3 @@ double Geom::Rectangle::radius()
 {
 	return sqrt(Extent[0] * Extent[0] + Extent[1] * Extent[1]);
 }
-
-

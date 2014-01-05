@@ -8,6 +8,7 @@
 #include "MeshBoolean.h"
 #include "RodNode.h"
 #include "PatchNode.h"
+#include "PcaOBB.h"
 
 FdNode::FdNode( MeshPtr m, Geom::Box &b )
 	: Node(m->name)
@@ -116,11 +117,16 @@ void FdNode::refit( int method )
 			mBox = aabb.box();
 		}
 		break;
+	case 2:
+		{
+			Geom::PcaOBB pca_obb(points);
+			mBox = pca_obb.minBox;
+		}
+		break;
 	}
 
 	// encode mesh
 	origBox = mBox;
-
 
 	encodeMesh();
 	createScaffold();

@@ -51,7 +51,7 @@ void Geom::MinOBB::compute( QVector<Vector3> &points )
 	int i, j;
 	Vector3 origin, diff, U, V, W;
     QVector<Vector2> points2(uniqueIndices.size(), Vector2());
-	MinOBB2::Box2 box2;
+	Box2 box2;
     // Use the rotating calipers method on the projection of the hull onto
     // the plane of each face.  Also project the hull onto the normal line
     // of each face.  The minimum area box in the plane and the height on

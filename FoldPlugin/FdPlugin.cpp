@@ -5,6 +5,8 @@
 #include "Graph.h"
 #include <QDebug>
 #include <QProcess>
+#include "MeshHelper.h"
+#include "PCA.h"
 
 FdPlugin::FdPlugin()
 {
@@ -93,6 +95,17 @@ void FdPlugin::resetScene()
 
 void FdPlugin::test()
 {
+	if (activeScaffold())
+	{
+		QVector<Structure::Node*> selNodes = activeScaffold()->getSelectedNodes();
+		if (!selNodes.isEmpty())
+		{
+			FdNode* node = (FdNode*)selNodes.front();
+			QVector<Vector3> pnts = MeshHelper::getMeshVertices(node->mMesh.data());
+
+			Geom::PCA pca(pnts);
+		}
+	}
 }
 
 

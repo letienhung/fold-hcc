@@ -48,6 +48,10 @@ public:
 	// coordinates
 	Vector2 getProjCoordinates(Vector3 p);
 	Vector3 getPosition(const Vector2& c);
+	Vector3 getVector(const Vector2& v);
+	Vector2 getOpenProjCoord(Vector3 p);
+	Vector3 getOpenPos(const Vector2& c);
+	Vector3 getOpenVector(const Vector2& v);
 
 	// visualization
 	void draw(QColor color = Qt::red);

@@ -20,7 +20,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->g_manager->connect(ui->fitMethod, SIGNAL(currentIndexChanged(int)), SLOT(setFitMethod(int)));
 	plugin->g_manager->connect(ui->createScaffold, SIGNAL(clicked()), SLOT(createScaffold()));
 	plugin->g_manager->connect(ui->refitMethod, SIGNAL(currentIndexChanged(int)), SLOT(setRefitMethod(int)));
-	plugin->g_manager->connect(ui->fitCuboid, SIGNAL(clicked()), SLOT(fitCuboid()));
+	plugin->g_manager->connect(ui->fitCuboid, SIGNAL(clicked()), SLOT(refitNodes()));
 	plugin->g_manager->connect(ui->changeCuboidType, SIGNAL(clicked()), SLOT(changeNodeType()));
 	plugin->g_manager->connect(ui->addLink, SIGNAL(clicked()), SLOT(linkNodes()));
 
