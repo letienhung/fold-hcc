@@ -182,60 +182,55 @@ FdNode* FdGraph::merge( QVector<QString> nids )
 		if (n) ns.push_back((FdNode*)n);
 	}
 
-	// special cases
+	// trivial cases
 	if (ns.isEmpty()) return NULL;
 	if (ns.size() == 1) return ns[0];
 
+	// merge
 	MeshMerger mm;
+	QVector<Vector3> boxPoints;
 	foreach (FdNode* n, ns)
 	{
 		n->deformMesh();
 		mm.addMesh(n->mMesh.data());
+
+		boxPoints += n->mBox.getConnerPoints();
+
 		removeNode(n->mID);
 	}
 
-	return addNode(mm.getMesh()); 
+	// fit box using box corners
+	Geom::Box box = fitBox(boxPoints);
+
+	return addNode(mm.getMesh(), box); 
 }
 
 
 FdNode* FdGraph::addNode( SurfaceMeshModel* mesh, int method )
 {
-	// box type
-	Geom::Box box;
+	// fit box
 	QVector<Vector3> points = MeshHelper::getMeshVertices(mesh);
-	if (method == 0)
-	{
-		Geom::AABB aabb(points);
-		box = aabb.box();
-	}
-	else if (method == 1)
-	{
-		Geom::MinOBB obb(points, true);
-		box = obb.mMinBox;
-	}
-	else
-	{
-		Geom::AABB aabb(points);
-		Geom::MinOBB obb(points, true);
-		Geom::Box aabb_box = aabb.box();
-		Geom::Box& obb_box = obb.mMinBox;
-		box = (aabb_box.volume() <= obb_box.volume()) ?
-			aabb_box : obb_box;
-	}
+	Geom::Box box = fitBox(points, method);
+
+	return addNode(mesh, box);
+}
+
+FdNode* FdGraph::addNode(SurfaceMeshModel* mesh, Geom::Box& box)
+{
+	// create node depends on box type
 	int box_type = box.getType(5);
 
-	// create node depends on box type
 	FdNode* node;
 	if (box_type == Geom::Box::ROD)	
 		node = new RodNode(MeshPtr(mesh), box);
 	else node = new PatchNode(MeshPtr(mesh), box);
-	
+
+	// add to graph and set id
 	Graph::addNode(node);
 	node->mID = mesh->name;
 
 	return node;
 }
-
 
 QVector<FdNode*> FdGraph::split( FdNode* fn, Geom::Plane& plane)
 {

@@ -19,6 +19,7 @@ public:
 	// accessors
 	QVector<FdNode*> getFdNodes();
 	FdNode* addNode(SurfaceMeshModel* mesh, int method = -1);
+	FdNode* addNode(SurfaceMeshModel* mesh, Geom::Box& box);
 
 	// modifier
 	FdNode*			 merge(QVector<QString> nids);

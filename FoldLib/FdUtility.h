@@ -4,6 +4,7 @@
 #include "FdNode.h"
 #include "PatchNode.h"
 #include "Segment.h"
+#include "Box.h"
 
 Geom::Segment getDistSegment( FdNode* n1, FdNode* n2 );
 double getDistance( FdNode* n1, FdNode* n2 );
@@ -19,3 +20,5 @@ double getLocalTime(double globalT, double localStart, double localEnd);
 QVector<double> getEvenDivision(int n, double start = 0, double end = 1);
 
 bool onPlane( FdNode* n, Geom::Plane& plane );
+
+Geom::Box fitBox(QVector<Vector3>& pnts, int method = -1);

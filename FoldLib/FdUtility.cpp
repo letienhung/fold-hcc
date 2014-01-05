@@ -7,6 +7,7 @@
 #include "DistSegRect.h"
 #include "DistRectRect.h"
 #include "Numeric.h"
+#include "MinOBB.h"
 
 FdNodeArray2D clusterNodes( QVector<FdNode*> nodes, double disThr )
 {
@@ -239,5 +240,33 @@ bool onPlane( FdNode* n, Geom::Plane& plane )
 		qDebug() << thr << "\t" << dist << "\t" << dotProd;
 		return (dist < thr && dotProd < 0.1);
 	}
+}
+
+Geom::Box fitBox( QVector<Vector3>& pnts, int method )
+{
+	Geom::Box box;
+
+	if (method == 0)
+	{
+		Geom::AABB aabb(pnts);
+		box = aabb.box();
+	}
+	else if (method == 1)
+	{
+		Geom::MinOBB obb(pnts, true);
+		box = obb.mMinBox;
+	}
+	else
+	{
+		Geom::AABB aabb(pnts);
+		Geom::Box aabb_box = aabb.box();
+
+		Geom::MinOBB obb(pnts, true);
+		Geom::Box& obb_box = obb.mMinBox;
+
+		box = (aabb_box.volume() <= obb_box.volume()) ? aabb_box : obb_box;
+	}
+
+	return box;
 }
 

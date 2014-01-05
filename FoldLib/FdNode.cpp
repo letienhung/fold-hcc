@@ -156,18 +156,25 @@ SurfaceMesh::Vector3 FdNode::center()
 	return mBox.Center;
 }
 
-// clone half node on the positive side of the chopper plane
+// clone partial node on the positive side of the chopper plane
 FdNode* FdNode::cloneChopped( Geom::Plane chopper )
 {
 	// cut point along skeleton
 	int aid = mBox.getClosestAxisId(chopper.Normal);
 	Geom::Segment sklt = mBox.getSkeleton(aid);
+
+	// skip if chopper plane doesn't intersect with the node
 	if (!chopper.intersects(sklt)) return NULL;
 
-	// chop box
 	Vector3 cutPoint = chopper.getIntersection(sklt);
 	Vector3 endPoint = (chopper.signedDistanceTo(sklt.P0) > 0) ?
 						sklt.P0 : sklt.P1;
+	
+	// skip if chopped piece is too small
+	double chopLength = (cutPoint - endPoint).norm();
+	if (chopLength / sklt.length() < 0.1) return NULL;
+
+	// chop box
 	Geom::Box box = mBox;
 	box.Center = (cutPoint + endPoint) * 0.5;
 	box.Extent[aid] = (cutPoint - endPoint).norm() * 0.5;

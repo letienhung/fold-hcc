@@ -43,7 +43,7 @@ void DcGraph::splitPartsByPanels()
 	QVector<PatchNode*> newPanels;
 	foreach (PatchNode* panel, controlPanels)
 	{
-		double thr = panel->mBox.getExtent(panel->mPatch.Normal) * 0.5;
+		double thr = panel->mBox.getExtent(panel->mPatch.Normal);
 		Geom::Plane patchPlane = panel->mPatch.getPlane();
 		Geom::Plane cutPlane1 = panel->getSurfacePlane(true);
 		Geom::Plane cutPlane2 = panel->getSurfacePlane(false);
