@@ -195,7 +195,8 @@ Geom::MinOBB2::MinOBB2 (QVector<Vector2> &points)
             {
                 // Compute box axes with E[R] as an edge.
                 V = edges[RIndex];
-                U = Vector2(-V.y(), V.x());
+				//U = Vector2(-V.y(), V.x());
+				U = Vector2(V.y(), -V.x());
                 UpdateBox(hullPoints[LIndex], hullPoints[RIndex],
                     hullPoints[BIndex], hullPoints[TIndex], U, V,
                     minAreaDiv4);
@@ -239,7 +240,8 @@ Geom::MinOBB2::MinOBB2 (QVector<Vector2> &points)
             {
                 // Compute box axes with E[L] as an edge.
                 V = -edges[LIndex];
-                U = Vector2(-V.y(), V.x());
+                //U = Vector2(-V.y(), V.x());
+				U = Vector2(V.y(), -V.x());
                 UpdateBox(hullPoints[LIndex], hullPoints[RIndex],
                     hullPoints[BIndex], hullPoints[TIndex], U, V,
                     minAreaDiv4);

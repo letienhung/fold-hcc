@@ -7,7 +7,9 @@
 #include "Rectangle2.h"
 #include "Numeric.h"
 
-Geom::PcaOBB::PcaOBB( QVector<Vector3>& pnts )
+#include <fstream>
+
+Geom::PcaOBB::PcaOBB( QVector<Vector3>& pnts)
 {
 	// fit pca box
 	PCA pca(pnts);
@@ -32,6 +34,7 @@ Geom::PcaOBB::PcaOBB( QVector<Vector3>& pnts )
 
 		pnts2 << baseRect.getOpenProjCoord(p);
 	}
+
 	MinOBB2 obb2(pnts2);
 	Geom::Rectangle2 rect2 = obb2.getBox2();
 
