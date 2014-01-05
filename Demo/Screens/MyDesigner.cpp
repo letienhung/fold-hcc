@@ -838,7 +838,7 @@ void MyDesigner::wheelEvent( QWheelEvent* e )
 			mBox->deform(factor);
 			mBox->getBoxFaces();
 		
-			fManager->createLayerGraphs();
+			fManager->createDcGraphs();
 			fManager->fold();
 			fManager->generateFdKeyFrames();
 
