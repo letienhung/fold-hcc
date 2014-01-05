@@ -83,4 +83,7 @@ FORMS += ./Screens/DesignWidget.ui \
     ./MainWindow.ui\
 	./Screens/EvaluateWidget.ui\
 	./Screens/videoplayer/gui_player/VideoToolbar.ui
+	
+# Icons and images	
 RESOURCES += Resources/Resource.qrc
+win32:RC_FILE = Resources/Foldabilizer.rc
