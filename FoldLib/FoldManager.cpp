@@ -318,18 +318,18 @@ void FoldManager::generateFdKeyFrames()
 	// clear
 	results.clear();
 
-	// selected dc graph
-	DcGraph* dc_graph = getSelDcGraph();
-	if (!dc_graph) return;
-
 	// generate key frames
 	int nbFrames = 50;
 	double step = 1.0 / nbFrames;
 
-	QVector<FdGraph*> dc_results;
-	for (int i = 0; i <= nbFrames; i++)
-		dc_results << dc_graph->getKeyFrame(i * step);
-	results << dc_results;
+	// selected dc graph
+	foreach (DcGraph* dc_graph, dcGraphs)
+	{
+		QVector<FdGraph*> dc_results;
+		for (int i = 0; i <= nbFrames; i++)
+			dc_results << dc_graph->getKeyFrame(i * step);
+		results << dc_results;
+	}
 
 	emit(resultsGenerated(dc_results.size()));
 }
@@ -349,4 +349,10 @@ FdGraph* FoldManager::getKeyframe()
 	}
 	
 	return NULL;
+}
+
+void FoldManager::foldAll()
+{
+	foreach (DcGraph* dcg, dcGraphs)
+		dcg->fold();
 }

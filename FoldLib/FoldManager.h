@@ -43,11 +43,11 @@ public slots:
 	// \aid = 0(X), 1(Y), 2(Z)
 	void foldAlongAxis(int aid);
 	void createDcGraphs();
-	void fold();
 
 	// 3. invoke when a folding percentage is picked (multiple times)
 	// \pc \in (0, 1]
 	void generateFdKeyFrames();
+	void foldAll();
 
 public slots:
 	void selectDcGraph(QString id);
@@ -55,6 +55,7 @@ public slots:
 	void selectChain(QString id);
 	void selectKeyframe(int idx);
 
+	void fold();
 	void foldSelLayer();
 	void snapshotSelLayer(double t);
 
