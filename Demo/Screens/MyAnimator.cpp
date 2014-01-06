@@ -534,6 +534,9 @@ void MyAnimator::loadResult(int configId)
 	//gManager = NULL;
 	//gManager = new GraphManager();
 	//gManager->loadScaffold();
+	vti->ui->playButton->setText(vti->ui->playLabel->text());
+	vti->ui->slider->setValue(0);
+
 	if(isEmpty()) return;
 
 	if(configId < 0 || configId > fManager->results.size()){
@@ -762,8 +765,6 @@ void MyAnimator::dequeueLastMessage()
 
 void MyAnimator::startAnimation()
 {
-   // QString pauseLabel = vti->ui->pauseLabel->text();
-	//vti->ui->playButton->setText(pauseLabel);
 	if(mCurrFrameId == activeManager()->results[mCurrConfigId].size() - 1){
 	    mCurrFrameId = 0;
 		vti->ui->slider->setValue(0);
@@ -774,8 +775,6 @@ void MyAnimator::startAnimation()
 
 void MyAnimator::stopAnimation()
 {
-	//QString playLabel = vti->ui->playLabel->text();
-	//vti->ui->playButton->setText(playLabel);
 	isPlaying = false;
 	QGLViewer::stopAnimation();
 }
@@ -811,7 +810,9 @@ void MyAnimator::toggleSlider(int frameId)
 void MyAnimator::toggleAnimation()
 {
 	QString playLabel = vti->ui->playLabel->text();
-	if(isEmpty()){
+	if(isEmpty() || mCurrConfigId == -1){
+		mCurrFrameId = 0;
+		vti->ui->slider->setValue(0);
 		vti->ui->playButton->setText(playLabel);
 		return;
 	}
