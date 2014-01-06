@@ -12,7 +12,7 @@ class FoldManager : public QObject
 public:
     FoldManager();
 	~FoldManager();
-	void clear();
+	void clearDcGraphs();
 
 public:
 	FdGraph* scaffold; 
@@ -56,10 +56,12 @@ public slots:
 	void selectKeyframe(int idx);
 
 	void foldSelLayer();
+	void snapshotSelLayer(double t);
+
 	FdGraph* getKeyframe();
 
 signals:
-	void selectionChanged();
+	void sceneChanged();
 	void lyGraphsChanged(QStringList labels);
 	void layersChanged(QStringList labels);
 	void chainsChanged(QStringList labels);

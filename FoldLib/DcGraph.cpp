@@ -24,7 +24,6 @@ DcGraph::DcGraph( FdGraph* scaffold, StrArray2D panelGroups, Vector3 up, QString
 	}
 
 	// create layers
-	splitPartsByPanels();
 	createLayers();
 
 	selId = -1;
@@ -35,76 +34,6 @@ DcGraph::~DcGraph()
 	foreach (LayerGraph* l, layers)
 		delete l;
 }
-
-void DcGraph::splitPartsByPanels()
-{
-	// cut parts by control panels: use two surface planes
-	// and collect chopped pieces which should be merged into control panels
-	QVector<PatchNode*> newPanels;
-	foreach (PatchNode* panel, controlPanels)
-	{
-		double thr = panel->mBox.getExtent(panel->mPatch.Normal);
-		Geom::Plane patchPlane = panel->mPatch.getPlane();
-		Geom::Plane cutPlane1 = panel->getSurfacePlane(true);
-		Geom::Plane cutPlane2 = panel->getSurfacePlane(false);
-
-		// cut plane 1
-		QVector<QString> mergeParts;
-		foreach(FdNode* n, getFdNodes())
-		{
-			if (n->properties.contains("isCtrlPanel")) continue;
-			QVector<FdNode*> splitted = split(n, cutPlane1);
-
-			foreach (FdNode* spn, splitted)
-			{
-				double dist = patchPlane.distanceTo(spn->mBox.Center);
-				if (dist < thr)
-				{
-					mergeParts << spn->mID;
-				}
-			}
-		}
-		if (!mergeParts.isEmpty())
-		{
-			mergeParts.push_front(panel->mID);
-			PatchNode* newPanel = (PatchNode*)merge(mergeParts);
-			Structure::Graph::replaceNode(panel, newPanel);
-			panel = newPanel;
-			panel->properties["isCtrlPanel"] = true;
-		}
-
-		// cut plane2
-		mergeParts.clear();
-		foreach(FdNode* n, getFdNodes())
-		{
-			if (n->properties.contains("isCtrlPanel")) continue;
-			QVector<FdNode*> splitted = split(n, cutPlane2);
-
-			foreach (FdNode* spn, splitted)
-			{
-				if (patchPlane.distanceTo(spn->mBox.Center) < thr)
-				{
-					mergeParts << spn->mID;
-				}
-			}
-		}
-		if (!mergeParts.isEmpty())
-		{
-			mergeParts.push_front(panel->mID);
-			PatchNode* newPanel = (PatchNode*)merge(mergeParts);
-			Structure::Graph::replaceNode(panel, newPanel);
-			panel = newPanel;
-			panel->properties["isCtrlPanel"] = true;
-		}
-
-		// save the new panel
-		newPanels << panel;
-	}
-
-	// update control panles
-	controlPanels = newPanels;
-}
-
 
 QVector<FdNode*> DcGraph::mergeCoplanarParts( QVector<FdNode*> ns, PatchNode* panel )
 {
@@ -210,6 +139,14 @@ QVector<FdNode*> DcGraph::mergeCoplanarParts( QVector<FdNode*> ns, PatchNode* pa
 
 void DcGraph::createLayers()
 {
+	// split parts by control panels
+	foreach (PatchNode* panel, controlPanels){
+		foreach(FdNode* n, getFdNodes()){
+			if (n->properties.contains("isCtrlPanel")) continue;
+			split(n, panel->mPatch.getPlane());
+		}
+	}
+
 	// cut positions along pushing skeleton
 	// append 1.0 to help group parts
 	Geom::Box box = computeAABB().box();

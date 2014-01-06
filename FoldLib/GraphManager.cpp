@@ -13,8 +13,8 @@ GraphManager::GraphManager()
 	entireMesh = NULL;
 	scaffold = new FdGraph();
 
-	fitMethod = 0;
-	refitMethod = 0;
+	fitMethod = FIT_AABB;
+	refitMethod = FIT_MIN;
 }
 
 
@@ -109,12 +109,22 @@ void GraphManager::test()
 
 void GraphManager::setFitMethod( int method )
 {
-	fitMethod = method;
+	if (method == 0)
+		fitMethod = FIT_AABB;
+	else if (method == 1)
+		fitMethod = FIT_MIN;
+	else
+		fitMethod = FIT_PCA;
 }
 
 void GraphManager::setRefitMethod( int method )
 {
-	refitMethod = method;
+	if (method == 0)
+		fitMethod = FIT_MIN;
+	else if (method == 1)
+		fitMethod = FIT_AABB;
+	else
+		fitMethod = FIT_PCA;
 }
 
 

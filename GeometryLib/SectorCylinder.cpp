@@ -23,7 +23,8 @@ Geom::SectorCylinder::SectorCylinder( Segment a, Segment r1, Vector3 v2 )
 	V2 = v2.normalized();
 	Height = a.length();
 	Radius = r1.length();
-	Phi = radians2degrees(acos(dot(V1, V2)));
+	double dotProd = dot(V1, V2);
+	Phi = radians2degrees(acos(RANGED(-1, dotProd, 1)));
 
 	// make right handed
 	Vector3 crossV1V2 = cross(V1, V2);
@@ -88,7 +89,8 @@ Vector3 Geom::SectorCylinder::getCoordinates( Vector3 p )
 	Vector3 projP2P = p - projP;
 	double rho = projP2P.norm() / Radius;
 
-	double angle = acos(dot(V1, projP2P.normalized()));
+	double dotProd = dot(V1, projP2P.normalized());
+	double angle = acos(RANGED(-1, dotProd, 1));
 	Vector3 crossV1ProjP2P = cross(V1, projP2P);
 	if (dot(crossV1ProjP2P, Axis) < 0) angle *= -1;
 	double phi = radians2degrees(angle) / Phi;

@@ -218,10 +218,8 @@ bool onPlane( FdNode* n, Geom::Plane& plane )
 		PatchNode* pn = (PatchNode*)n;
 		double dist = fabs(plane.signedDistanceTo(pn->mPatch.Center));
 		double dotProd = fabs(dot(pn->mPatch.Normal, plane.Normal));
-
 		double thr = pn->mPatch.radius() / 10;
 
-		qDebug() << thr << "\t" << dist << "\t" << dotProd;
 		return (dist < thr && dotProd > 0.9);
 	}
 	else
@@ -229,71 +227,30 @@ bool onPlane( FdNode* n, Geom::Plane& plane )
 		RodNode* rn = (RodNode*)n;
 		double dist = fabs(plane.signedDistanceTo(rn->mRod.Center));
 		double dotProd = fabs(dot(rn->mRod.Direction, plane.Normal));
-
 		double thr = rn->mRod.length() / 10;
 
-		qDebug() << thr << "\t" << dist << "\t" << dotProd;
 		return (dist < thr && dotProd < 0.1);
 	}
 }
 
-Geom::Box fitBox( QVector<Vector3>& pnts, int method )
+Geom::Box fitBox( QVector<Vector3>& pnts, BOX_FIT_METHOD method )
 {
 	Geom::Box box;
 
-	if (method == 0)
+	if (method == FIT_AABB)
 	{
 		Geom::AABB aabb(pnts);
 		box = aabb.box();
 	}
-	else if (method == 1)
+	else if (method == FIT_MIN)
 	{
 		Geom::MinOBB obb(pnts, false);
 		box = obb.mMinBox;
 	}
-	else if (method == 2)
+	else
 	{
 		Geom::PcaOBB pcaOBB(pnts);
 		box = pcaOBB.minBox;
-	}
-	else
-	{
-		Geom::AABB aabb(pnts);
-		Geom::Box aabb_box = aabb.box();
-		double vAABB = aabb_box.volume();
-
-		Geom::MinOBB obb(pnts, false);
-		Geom::Box& obb_box = obb.mMinBox;
-		double vOBB = obb_box.volume();
-
-		Geom::PcaOBB pcaOBB(pnts);
-		Geom::Box& pca_obb = pcaOBB.minBox;
-		double vPcaOBB = pca_obb.volume();
-
-		double vReal = std::min(vPcaOBB, std::min(vAABB, vOBB));
-
-		qDebug()<<"VAABB = "<<vAABB<<'\n';
-		qDebug()<<"VMinOBB = "<<vOBB<<'\n';
-		qDebug()<<"VPcaOBB = "<<vPcaOBB<<'\n';
-
-		if(vPcaOBB > vOBB){
-			qDebug()<<"VDiffRatio = "<<(vPcaOBB - vOBB)/vOBB<<'\n';
-		}
-
-		if(vReal == vAABB){
-			qDebug()<<"Method is AABB\n";
-			box = aabb_box;
-		}
-		else if(vReal == vOBB){
-			qDebug()<<"Method is minOBB\n";
-			box = obb_box;
-		}
-		else{
-			qDebug()<<"Method is PCAOBB\n";
-			box = pca_obb;
-		}
-		//box = (aabb_box.volume() <= obb_box.volume()) ? aabb_box : obb_box;
-		//box = (box.volume() <= pca_obb.volume()) ? box : pca_obb;
 	}
 
 	return box;

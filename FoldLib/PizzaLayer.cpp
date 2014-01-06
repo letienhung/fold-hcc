@@ -7,8 +7,8 @@
 #include <QDir>
 
 
-PizzaLayer::PizzaLayer( QVector<FdNode*> nodes, PatchNode* panel, QString id, Geom::Box &bBox )
-	:LayerGraph(nodes, NULL, panel, id, bBox)
+PizzaLayer::PizzaLayer( QVector<FdNode*> parts, PatchNode* panel, QString id, Geom::Box &bBox )
+	:LayerGraph(parts, NULL, panel, id, bBox)
 {
 	// type
 	mType = LayerGraph::PIZZA;

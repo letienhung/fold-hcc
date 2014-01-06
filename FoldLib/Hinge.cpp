@@ -18,7 +18,12 @@ Hinge::Hinge( FdNode* n1, FdNode* n2, Point o, Vec3d x, Vector3 y, Vector3 z, do
 
 	// update dihedral frames and angle
 	state = UNFOLDED;
-	angle = acos(dot(hX, hY)); 
+	double dotProd = dot(hX, hY);
+	angle = acos(RANGED(-1, dotProd, 1));
+
+	qDebug() << "dotProd = " << dotProd << ", angle = " << angle;
+
+
 	maxAngle = angle;
 	updateDihedralFrames();
 

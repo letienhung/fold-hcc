@@ -14,7 +14,6 @@
 
 #include "AABB.h"
 #include "MinOBB.h"
-#include "FdUtility.h"
 
 
 FdGraph::FdGraph(QString id /*= ""*/)
@@ -206,7 +205,7 @@ FdNode* FdGraph::merge( QVector<QString> nids )
 }
 
 
-FdNode* FdGraph::addNode( MeshPtr mesh, int method )
+FdNode* FdGraph::addNode( MeshPtr mesh, BOX_FIT_METHOD method )
 {
 	// fit box
 	QVector<Vector3> points = MeshHelper::getMeshVertices(mesh.data());
@@ -234,16 +233,10 @@ FdNode* FdGraph::addNode(MeshPtr mesh, Geom::Box& box)
 
 QVector<FdNode*> FdGraph::split( FdNode* fn, Geom::Plane& plane)
 {
-	return split(fn, plane, plane.opposite());
-}
-
-// split by two planes: get two ends  <--|-|-->
-QVector<FdNode*> FdGraph::split( FdNode* fn, Geom::Plane& plane1, Geom::Plane& plane2 )
-{
 	QVector<FdNode*> splitted;
 
 	// positive side
-	FdNode* node1 = fn->cloneChopped(plane1);
+	FdNode* node1 = fn->cloneChopped(plane);
 	if (node1)
 	{
 		QString id = fn->mID + QString("_%1").arg(splitted.size());
@@ -253,7 +246,7 @@ QVector<FdNode*> FdGraph::split( FdNode* fn, Geom::Plane& plane1, Geom::Plane& p
 	}
 
 	// negative side
-	FdNode* node2 = fn->cloneChopped(plane2);
+	FdNode* node2 = fn->cloneChopped(plane.opposite());
 	if (node2)
 	{
 		QString id = fn->mID + QString("_%1").arg(splitted.size());
@@ -261,6 +254,10 @@ QVector<FdNode*> FdGraph::split( FdNode* fn, Geom::Plane& plane1, Geom::Plane& p
 		Structure::Graph::addNode(node2);
 		splitted.push_back(node2);
 	}
+
+	// keep the original id if only one major part remains
+	if (splitted.size() == 1)
+		splitted.front()->setStringId(fn->mID);
 
 	// remove the original node
 	if (!splitted.isEmpty())

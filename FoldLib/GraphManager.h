@@ -3,6 +3,7 @@
 
 #include "UtilityGlobal.h"
 #include "FdGraph.h"
+#include "FdUtility.h"
 
 class GraphManager : public QObject
 {
@@ -17,8 +18,8 @@ public:
 	FdGraph* scaffold;
 
 	// ui 
-	int fitMethod;
-	int refitMethod;
+	BOX_FIT_METHOD fitMethod;
+	BOX_FIT_METHOD refitMethod;
 
 public slots:
 	// creation

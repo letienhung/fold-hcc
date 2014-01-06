@@ -14,10 +14,10 @@ FoldManager::FoldManager()
 
 FoldManager::~FoldManager()
 {
-	clear();
+	clearDcGraphs();
 }
 
-void FoldManager::clear()
+void FoldManager::clearDcGraphs()
 {
 	foreach(DcGraph* lm, dcGraphs)
 		delete lm;
@@ -44,7 +44,7 @@ void FoldManager::setScaffold( FdGraph* fdg )
 {
 	scaffold = fdg;
 
-	clear();
+	clearDcGraphs();
 	updateLists();
 }
 
@@ -57,12 +57,15 @@ void FoldManager::createDcGraphs()
 {
 	if (!scaffold) return;
 
-	clear();
+	clearDcGraphs();
 
 	if (pushAxis < 3)
 	{
 		Vector3 direct(0, 0, 0);
 		direct[pushAxis] = 1;;
+		createDcGraphs(direct, false);
+
+		qDebug() << "\nvirtual nodes";
 		createDcGraphs(direct, true);
 	}
 	else
@@ -206,9 +209,22 @@ void FoldManager::foldSelLayer()
 	if (lg) lg->fold();
 }
 
+
+void FoldManager::snapshotSelLayer( double t )
+{
+	LayerGraph* lg = getSelLayer();
+	if (lg) lg->snapshot(t);
+
+	emit(sceneChanged());
+}
+
+
 void FoldManager::fold()
 {
-	dcGraphs[0]->fold();
+	if (getSelDcGraph())
+	{
+		getSelDcGraph()->fold();
+	}
 }
 
 void FoldManager::selectDcGraph( QString id )
@@ -231,7 +247,7 @@ void FoldManager::selectDcGraph( QString id )
 	updateLists();
 
 	// update scene
-	emit(selectionChanged());
+	emit(sceneChanged());
 }
 
 void FoldManager::selectLayer( QString id )
@@ -243,7 +259,7 @@ void FoldManager::selectLayer( QString id )
 
 	updateLists();
 
-	emit(selectionChanged());
+	emit(sceneChanged());
 }
 
 void FoldManager::selectChain( QString id )
@@ -253,7 +269,7 @@ void FoldManager::selectChain( QString id )
 		getSelLayer()->selectChain(id);
 	}
 
-	emit(selectionChanged());
+	emit(sceneChanged());
 }
 
 void FoldManager::updateLists()
@@ -299,21 +315,20 @@ LayerGraph* FoldManager::getSelLayer()
 
 void FoldManager::generateFdKeyFrames()
 {
-	if (dcGraphs.isEmpty()) return;
-
 	// clear
 	results.clear();
-	
-	// generate key frames
-	int nbFrames = 100;
-	QVector<FdGraph*> dc_results;
-	DcGraph* dc_graph = dcGraphs[0];
-	double step = 1.0 / nbFrames;
-	for (int i = 0; i <= nbFrames; i++)
-	{
-		dc_results << dc_graph->getKeyFrame(i * step);
-	}
 
+	// selected dc graph
+	DcGraph* dc_graph = getSelDcGraph();
+	if (!dc_graph) return;
+
+	// generate key frames
+	int nbFrames = 50;
+	double step = 1.0 / nbFrames;
+
+	QVector<FdGraph*> dc_results;
+	for (int i = 0; i <= nbFrames; i++)
+		dc_results << dc_graph->getKeyFrame(i * step);
 	results << dc_results;
 
 	emit(resultsGenerated(dc_results.size()));
@@ -323,7 +338,7 @@ void FoldManager::selectKeyframe( int idx )
 {
 	keyIndx = idx;
 
-	emit(selectionChanged());
+	emit(sceneChanged());
 }
 
 FdGraph* FoldManager::getKeyframe()

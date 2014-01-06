@@ -2,7 +2,7 @@
 #include "FdUtility.h"
 #include "RodNode.h"
 
-ChainGraph::ChainGraph( FdNode* part, PatchNode* panel1, PatchNode* panel2 /*= NULL*/ )
+ChainGraph::ChainGraph( FdNode* part, PatchNode* panel1, PatchNode* panel2)
 	: FdGraph(part->mID)
 {
 	// clone parts
@@ -24,12 +24,12 @@ ChainGraph::ChainGraph( FdNode* part, PatchNode* panel1, PatchNode* panel2 /*= N
 	rootJointSegs = detectJointSegments(mParts[0], mPanels[0]);
 
 	// upSeg
-	Geom::Segment axisSeg = rootJointSegs[0];
-	Vector3 origin = axisSeg.P0;
+	Geom::Segment jointSeg = rootJointSegs[0];
+	Vector3 origin = jointSeg.P0;
 	if (mParts[0]->mType == FdNode::PATCH)
 	{
 		PatchNode* partPatch = (PatchNode*)mParts[0];
-		QVector<Geom::Segment> edges = partPatch->mPatch.getPerpEdges(axisSeg.Direction);
+		QVector<Geom::Segment> edges = partPatch->mPatch.getPerpEdges(jointSeg.Direction);
 		chainUpSeg = edges[0].contains(origin) ? edges[0] : edges[1];
 	}
 	else
@@ -40,9 +40,9 @@ ChainGraph::ChainGraph( FdNode* part, PatchNode* panel1, PatchNode* panel2 /*= N
 	if (chainUpSeg.getProjCoordinates(origin) > 0) chainUpSeg.flip();
 
 	// righV
-	foreach (Geom::Segment jointSeg, rootJointSegs)
+	foreach (Geom::Segment rjs, rootJointSegs)
 	{
-		Vector3 crossAxisV1 = cross(jointSeg.Direction, chainUpSeg.Direction);
+		Vector3 crossAxisV1 = cross(rjs.Direction, chainUpSeg.Direction);
 		Vector3 rV = mPanels[0]->mPatch.getProjectedVector(crossAxisV1);
 
 		rootRightVs.push_back(rV.normalized());

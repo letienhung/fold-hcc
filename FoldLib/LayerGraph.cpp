@@ -1,18 +1,18 @@
 #include "LayerGraph.h"
 #include "FdUtility.h"
 
-LayerGraph::LayerGraph( QVector<FdNode*> nodes, PatchNode* panel1, PatchNode* panel2, QString id, Geom::Box &bBox)
+LayerGraph::LayerGraph( QVector<FdNode*> parts, PatchNode* panel1, PatchNode* panel2, QString id, Geom::Box &bBox)
 	:FdGraph(id), barrierBox(bBox)
 {
 	// clone nodes
-	foreach (FdNode* n, nodes)
+	foreach (FdNode* n, parts)
 	{
 		Structure::Graph::addNode(n->clone());
 	}
 
 	if (panel1)
 	{
-		FdNode* cloneP1 = (FdNode*)panel1->clone();
+		PatchNode* cloneP1 = (PatchNode*)panel1->clone();
 		cloneP1->properties["isCtrlPanel"] = true;
 		Structure::Graph::addNode(cloneP1);
 	}
@@ -87,7 +87,7 @@ ChainGraph* LayerGraph::getChain( QString cid )
 void LayerGraph::fold()
 {
 	buildDependGraph();
-	computeChainSequence();
+	computeChainSequence(false);
 
 	for (int i = 0; i < chainSequence.size(); i++)
 	{
@@ -96,7 +96,7 @@ void LayerGraph::fold()
 	}
 }
 
-void LayerGraph::computeChainSequence()
+void LayerGraph::computeChainSequence(bool writeImg)
 {
 	chainSequence.clear();
 	fnSequence.clear();
@@ -114,8 +114,11 @@ void LayerGraph::computeChainSequence()
 		dy_graph->computeScores();
 
 		// output dependency graph
-		QString filePath = path + "/" + mID + "_" + QString::number(i);
-		dy_graph->saveAsImage(filePath);
+		if (writeImg)
+		{
+			QString filePath = path + "/" + mID + "_" + QString::number(i);
+			dy_graph->saveAsImage(filePath);
+		}
 
 		// get best folding node
 		FoldingNode* best_fn = dy_graph->getBestFoldingNode();
@@ -136,9 +139,18 @@ void LayerGraph::computeChainSequence()
 		}
 	}
 
-	QString filePath = path + "/" + mID + "_" + QString::number(chains.size());
-	dy_graph->saveAsImage(filePath);
+	if (writeImg)
+	{
+		QString filePath = path + "/" + mID + "_" + QString::number(chains.size());
+		dy_graph->saveAsImage(filePath);
+	}
 
 	// folding sequence
 	qDebug() << "Chain sequence: " << QStringList(chainSequence.toList());
+}
+
+void LayerGraph::snapshot( double t )
+{
+	foreach(ChainGraph* chain, chains)
+		chain->fold(t);
 }

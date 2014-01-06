@@ -187,6 +187,8 @@ FdNode* FdNode::cloneChopped( Geom::Plane chopper )
 		choppedNode = new PatchNode(mMesh, box);
 	choppedNode->meshCoords = meshCoords;
 
+	//qDebug() << mID << "(" << mBox.volume() << ") => " << choppedNode->mID << "(" << choppedNode->mBox.volume() << ")";
+
 	return choppedNode;
 }
 

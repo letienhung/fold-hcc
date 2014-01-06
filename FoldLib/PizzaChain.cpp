@@ -3,7 +3,7 @@
 #include "Numeric.h"
 
 PizzaChain::PizzaChain( FdNode* part, PatchNode* panel )
-	:ChainGraph(part, panel)
+	:ChainGraph(part, panel, NULL)
 {
 	// type
 	properties["type"] = "pizza";

@@ -189,6 +189,11 @@
           <string>MinOBB</string>
          </property>
         </item>
+        <item>
+         <property name="text">
+          <string>PCA</string>
+         </property>
+        </item>
        </widget>
       </item>
       <item row="0" column="1" alignment="Qt::AlignRight">
@@ -353,6 +358,26 @@
        <widget class="QPushButton" name="generateKeyframes">
         <property name="text">
          <string>Generate Keyframes</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QDoubleSpinBox" name="snapshotTime">
+        <property name="maximum">
+         <double>1.000000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.100000000000000</double>
+        </property>
+        <property name="value">
+         <double>0.500000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_11">
+        <property name="text">
+         <string>Snapshot Time:</string>
         </property>
        </widget>
       </item>

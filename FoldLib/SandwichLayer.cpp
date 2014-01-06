@@ -4,8 +4,8 @@
 #include "FdUtility.h"
 #include "IntrRect2Rect2.h"
 
-SandwichLayer::SandwichLayer( QVector<FdNode*> nodes, PatchNode* panel1, PatchNode* panel2, QString id, Geom::Box &bBox )
-	:LayerGraph(nodes, panel1, panel2, id, bBox)
+SandwichLayer::SandwichLayer( QVector<FdNode*> parts, PatchNode* panel1, PatchNode* panel2, QString id, Geom::Box &bBox )
+	:LayerGraph(parts, panel1, panel2, id, bBox)
 {
 	mType = LayerGraph::SANDWICH;
 

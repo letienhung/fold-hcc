@@ -5,6 +5,7 @@
 #include "FdLink.h"
 #include "AABB.h"
 #include <QSharedPointer>
+#include "FdUtility.h"
 
 class FdGraph : public Structure::Graph
 {
@@ -18,13 +19,12 @@ public:
 public:
 	// accessors
 	QVector<FdNode*> getFdNodes();
-	FdNode* addNode(MeshPtr mesh, int method = -1);
+	FdNode* addNode(MeshPtr mesh, BOX_FIT_METHOD method = FIT_PCA);
 	FdNode* addNode(MeshPtr mesh, Geom::Box& box);
 
 	// modifier
 	FdNode*			 merge(QVector<QString> nids);
 	QVector<FdNode*> split(FdNode* fn, Geom::Plane& plane);
-	QVector<FdNode*> split(FdNode* fn, Geom::Plane& plane1, Geom::Plane& plane2);
 	void			 changeNodeType(FdNode* n);
 	void             normalize(double f);
 	void             translate(Vector3 v);

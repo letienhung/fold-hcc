@@ -21,4 +21,5 @@ QVector<double> getEvenDivision(int n, double start = 0, double end = 1);
 
 bool onPlane( FdNode* n, Geom::Plane& plane );
 
-Geom::Box fitBox(QVector<Vector3>& pnts, int method = -1);
+enum BOX_FIT_METHOD{FIT_AABB, FIT_MIN, FIT_PCA};
+Geom::Box fitBox(QVector<Vector3>& pnts, BOX_FIT_METHOD method = FIT_PCA);

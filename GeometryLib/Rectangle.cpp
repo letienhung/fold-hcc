@@ -4,6 +4,24 @@
 #include "Segment2.h"
 #include "CustomDrawObjects.h"
 
+
+//   1	 _______________  0
+//		|				|
+//		|		Y		|
+//		|		|		|
+//		|		|___ X	|
+//		|				|
+//		|				|
+//	   2|_______________|3
+
+
+int Geom::Rectangle::EDGE[4][2] = {
+	3, 0,
+	2, 1,
+	1, 0,
+	2, 3
+};
+
 Geom::Rectangle::Rectangle()
 {
 	Center = Vector3(0,0,0);
@@ -110,7 +128,7 @@ QVector<Geom::Segment> Geom::Rectangle::getEdges()
 
 	QVector<Vector3> Conners = getConners();
 	for (int i = 0; i < 4; i++)
-		edges.push_back(Segment(Conners[i], Conners[(i+1)%4]));
+		edges.push_back(Segment(Conners[ EDGE[i][0] ], Conners[ EDGE[i][1] ]));
 
 	return edges;
 }
@@ -248,18 +266,10 @@ double Geom::Rectangle::area()
 
 QVector<Geom::Segment> Geom::Rectangle::getPerpEdges(Vector3 v)
 {
-	QVector<Segment> pe;
-	foreach(Segment e, getEdges())
-	{
-		if (isPerp(e.Direction, v))	pe.push_back(e);
-	}
+	QVector<Segment> edges = getEdges();
+	int aid = getClosestAxisId(v);
 
-	return pe;
-}
-
-SurfaceMesh::Vector3 Geom::Rectangle::getPerpAxis( Vector3 v )
-{
-	return Axis[getPerpAxisId(v)];
+	return QVector<Segment>() << edges[2*aid] << edges[2*aid + 1];
 }
 
 QStringList Geom::Rectangle::toStrList()
@@ -281,7 +291,7 @@ SurfaceMesh::Vector3 Geom::Rectangle::getProjectedVector( Vector3 v )
 	return getProjection(Center + v) - Center;
 }
 
-int Geom::Rectangle::getAxisId( Vector3 v )
+int Geom::Rectangle::getClosestAxisId( Vector3 v )
 {
 	double dotVAxis0 = fabs(dot(v, Axis[0]));
 	double dotVAxis1 = fabs(dot(v, Axis[1]));

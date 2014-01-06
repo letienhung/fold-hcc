@@ -26,12 +26,12 @@ public:
 	bool containsOneEdge(Rectangle& other);
 
 	// geometry
+	static int EDGE[4][2];
 	double  area();
 	double	radius();
 	Plane   getPlane();
-	int		getAxisId(Vector3 v);
+	int		getClosestAxisId(Vector3 v);
 	int		getPerpAxisId(Vector3 v);
-	Vector3 getPerpAxis(Vector3 v);
 	Rectangle getRectangle(Rectangle2 &rect2);
 	QVector<Segment>  getEdges();
 	QVector<Segment>  getPerpEdges(Vector3 v);

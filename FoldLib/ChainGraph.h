@@ -7,7 +7,7 @@
 class ChainGraph : public FdGraph
 {
 public:
-    ChainGraph(FdNode* part, PatchNode* panel1, PatchNode* panel2 = NULL);
+    ChainGraph(FdNode* part, PatchNode* panel1, PatchNode* panel2);
 	
 	virtual void prepareFolding(FoldingNode* fn) = 0;
 	virtual void fold(double t) = 0;

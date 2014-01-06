@@ -8,7 +8,7 @@ public:
 	enum LAYER_TYPE{PIZZA, SANDWICH};
 
 public:
-    LayerGraph(QVector<FdNode*> nodes, PatchNode* panel1, PatchNode* panel2, QString id, Geom::Box &bBox);
+    LayerGraph(QVector<FdNode*> parts, PatchNode* panel1, PatchNode* panel2, QString id, Geom::Box &bBox);
 	~LayerGraph();
 
 	// selection
@@ -23,9 +23,10 @@ public:
 	// fold
 	void fold();
 	virtual void buildDependGraph() = 0;
-	void computeChainSequence();
+	void computeChainSequence(bool writeImg);
 
 	// key frames
+	virtual void snapshot(double t);
 	virtual QVector<Structure::Node*> getKeyFrameNodes(double t) = 0;
 
 public:

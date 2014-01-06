@@ -19,7 +19,7 @@ FdPlugin::FdPlugin()
 
 	f_manager = new FoldManager();
 	f_manager->connect(g_manager, SIGNAL(scaffoldChanged(FdGraph*)), SLOT(setScaffold(FdGraph*)));
-	this->connect(f_manager, SIGNAL(selectionChanged()), SLOT(updateScene()));
+	this->connect(f_manager, SIGNAL(sceneChanged()), SLOT(updateScene()));
 	
 	drawKeyframe = false;
 	drawFolded = false;
