@@ -839,7 +839,7 @@ void MyDesigner::wheelEvent( QWheelEvent* e )
 			mBox->getBoxFaces();
 		
 			fManager->createDcGraphs();
-			fManager->fold();
+			fManager->foldAll();
 			fManager->generateFdKeyFrames();
 
 		    emit(resultsGenerated());
