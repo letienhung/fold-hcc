@@ -218,7 +218,7 @@ bool onPlane( FdNode* n, Geom::Plane& plane )
 		PatchNode* pn = (PatchNode*)n;
 		double dist = fabs(plane.signedDistanceTo(pn->mPatch.Center));
 		double dotProd = fabs(dot(pn->mPatch.Normal, plane.Normal));
-		double thr = pn->mPatch.radius() / 10;
+		double thr = pn->mPatch.radius() / 5;
 
 		return (dist < thr && dotProd > 0.9);
 	}

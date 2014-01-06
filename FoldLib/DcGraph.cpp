@@ -60,11 +60,13 @@ QVector<FdNode*> DcGraph::mergeCoplanarParts( QVector<FdNode*> ns, PatchNode* pa
 		{
 			Vector3 v1 = rootRod[i]->mRod.Direction;
 			Vector3 v2 = rootRod[j]->mRod.Direction;
-			double dotProd = fabs(dot(v1, v2));
-			if (dotProd > 0.9)
+			double dotProd = dot(v1, v2);
+			if (fabs(dotProd) > 0.9)
 			{
-				Vector3 v = (v1 + v2) * 0.5;
+				Vector3 v = v1 + v2; 
+				if (dotProd < 0) v = v1 - v2;
 				Vector3 u = rootRod[i]->mRod.Center - rootRod[j]->mRod.Center;
+				v.normalize(); u.normalize();
 				Vector3 normal = cross(u, v).normalized();
 				fitPlanes << Geom::Plane(rootRod[i]->mRod.Center, normal);
 			}
@@ -135,7 +137,6 @@ QVector<FdNode*> DcGraph::mergeCoplanarParts( QVector<FdNode*> ns, PatchNode* pa
 
 	return mnodes;
 }
-
 
 void DcGraph::createLayers()
 {
