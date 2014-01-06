@@ -12,7 +12,7 @@ public:
 	Node* clone();
 
 public:
-	void draw();
+	void drawScaffold();
 	void createScaffold();
 
 	bool isPerpTo(Vector3 v, double dotThreshold);

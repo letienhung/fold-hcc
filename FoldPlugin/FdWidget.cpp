@@ -9,7 +9,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin = fp;
 
 	// connections
-	this->connect(ui->scaffoldList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(selectDcGraph(QListWidgetItem*)));
+	this->connect(ui->DcList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(selectDcGraph(QListWidgetItem*)));
 	this->connect(ui->layerList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(selectLayer(QListWidgetItem*)));
 	this->connect(ui->chainList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(selectChain(QListWidgetItem*)));
 	this->connect(ui->keyframeList, SIGNAL(itemSelectionChanged()), SLOT(selectKeyframe()));
@@ -30,12 +30,12 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 
 	// fold
 	plugin->f_manager->connect(ui->pushDirection, SIGNAL(currentIndexChanged(int)), SLOT(foldAlongAxis(int)));
-	plugin->f_manager->connect(ui->createLayers, SIGNAL(clicked()), SLOT(createDcGraphs()));
+	plugin->f_manager->connect(ui->createDc, SIGNAL(clicked()), SLOT(createDcGraphs()));
 
 	this->connect(plugin->f_manager, SIGNAL(lyGraphsChanged(QStringList)), SLOT(setDcGraphList(QStringList)));
 	this->connect(plugin->f_manager, SIGNAL(layersChanged(QStringList)), SLOT(setLayerList(QStringList)));
 	this->connect(plugin->f_manager, SIGNAL(chainsChanged(QStringList)), SLOT(setChainList(QStringList)));
-	this->connect(plugin->f_manager, SIGNAL(resultsGenerated(int)), SLOT(setKeyframeList(int)));
+	this->connect(plugin->f_manager, SIGNAL(keyframesChanged(int)), SLOT(setKeyframeList(int)));
 	plugin->f_manager->connect(this, SIGNAL(dcGraphSelectionChanged(QString)), SLOT(selectDcGraph(QString)));
 	plugin->f_manager->connect(this, SIGNAL(layerSelectionChanged(QString)), SLOT(selectLayer(QString)));
 	plugin->f_manager->connect(this, SIGNAL(chainSelectionChanged(QString)), SLOT(selectChain(QString)));
@@ -43,7 +43,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 
 	plugin->f_manager->connect(ui->foldLayer, SIGNAL(clicked()), SLOT(foldSelLayer()));
 	plugin->f_manager->connect(ui->snapshotTime, SIGNAL(valueChanged(double)), SLOT(snapshotSelLayer(double)));
-	plugin->f_manager->connect(ui->fold, SIGNAL(clicked()), SLOT(fold()));
+	plugin->f_manager->connect(ui->fold, SIGNAL(clicked()), SLOT(foldAll()));
 	plugin->f_manager->connect(ui->generateKeyframes, SIGNAL(clicked()), SLOT(generateFdKeyFrames()));
 
 	// visualization
@@ -73,8 +73,8 @@ void FdWidget::setScaffold(FdGraph* fdg)
 
 void FdWidget::setDcGraphList( QStringList labels )
 {
-	ui->scaffoldList->clear();
-	ui->scaffoldList->addItems(labels);
+	ui->DcList->clear();
+	ui->DcList->addItems(labels);
 }
 
 void FdWidget::setLayerList( QStringList labels )

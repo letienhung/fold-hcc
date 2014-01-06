@@ -245,12 +245,12 @@
       <item row="1" column="0" alignment="Qt::AlignHCenter">
        <widget class="QLabel" name="label_7">
         <property name="text">
-         <string>Scaffolds</string>
+         <string>DcGraphs</string>
         </property>
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QListWidget" name="scaffoldList"/>
+       <widget class="QListWidget" name="DcList"/>
       </item>
       <item row="0" column="0" alignment="Qt::AlignRight">
        <widget class="QLabel" name="label_6">
@@ -348,9 +348,9 @@
        </widget>
       </item>
       <item row="0" column="3" colspan="2">
-       <widget class="QPushButton" name="createLayers">
+       <widget class="QPushButton" name="createDc">
         <property name="text">
-         <string>Create Layers</string>
+         <string>Create DcGraph</string>
         </property>
        </widget>
       </item>

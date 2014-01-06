@@ -52,6 +52,12 @@ FdNode::~FdNode()
 
 void FdNode::draw()
 {
+	if (showScaffold)
+	{
+		if (!properties.contains("virtual"))
+			drawScaffold();
+	}
+
 	if (showMesh)
 	{
 		deformMesh();
@@ -61,6 +67,9 @@ void FdNode::draw()
 
 	if (showCuboids)
 	{
+		if (properties.contains("virtual"))
+			mBox.draw(QColor(255, 255, 255, 30));
+
 		// faces
 		mBox.draw(mColor);
 

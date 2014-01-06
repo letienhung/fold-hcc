@@ -13,6 +13,7 @@ public:
     FoldManager();
 	~FoldManager();
 	void clearDcGraphs();
+	void clearResults();
 
 public:
 	FdGraph* scaffold; 
@@ -43,11 +44,11 @@ public slots:
 	// \aid = 0(X), 1(Y), 2(Z)
 	void foldAlongAxis(int aid);
 	void createDcGraphs();
+	void foldAll();
 
 	// 3. invoke when a folding percentage is picked (multiple times)
 	// \pc \in (0, 1]
 	void generateFdKeyFrames();
-	void foldAll();
 
 public slots:
 	void selectDcGraph(QString id);
@@ -55,7 +56,6 @@ public slots:
 	void selectChain(QString id);
 	void selectKeyframe(int idx);
 
-	void fold();
 	void foldSelLayer();
 	void snapshotSelLayer(double t);
 
@@ -66,6 +66,8 @@ signals:
 	void lyGraphsChanged(QStringList labels);
 	void layersChanged(QStringList labels);
 	void chainsChanged(QStringList labels);
-	void resultsGenerated(int N);
+	void keyframesChanged(int N);
+
+	void resultsGenerated();
 };
 

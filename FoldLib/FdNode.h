@@ -24,6 +24,7 @@ public:
 	bool showScaffold;
 	bool showMesh;
 	void draw();
+	virtual void drawScaffold() = 0;
 	void drawWithName(int name);
 
 	// mesh

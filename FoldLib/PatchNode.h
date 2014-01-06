@@ -12,7 +12,7 @@ public:
 public:
 	void createScaffold();
 	bool isPerpTo(Vector3 v, double dotThreshold);
-	void draw();
+	void drawScaffold();
 
 	Geom::Plane getSurfacePlane(bool positive);
 

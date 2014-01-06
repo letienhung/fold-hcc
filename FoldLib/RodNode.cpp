@@ -32,14 +32,9 @@ void RodNode::createScaffold()
 }
 
 
-void RodNode::draw()
+void RodNode::drawScaffold()
 {
-	if (showScaffold)
-	{
-		mRod.draw(3.0, mRodColor);
-	}
-
-	FdNode::draw();
+	mRod.draw(3.0, mRodColor);
 }
 
 bool RodNode::isPerpTo( Vector3 v, double dotThreshold )

@@ -25,6 +25,16 @@ void FoldManager::clearDcGraphs()
 	dcGraphs.clear();
 }
 
+
+void FoldManager::clearResults()
+{
+	foreach (QVector<FdGraph*> res, results)
+		foreach(FdGraph* g, res) delete g;
+
+	results.clear();
+}
+
+
 DcGraph* FoldManager::getSelDcGraph()
 {
 	if (selId >= 0 && selId < dcGraphs.size())
@@ -58,6 +68,7 @@ void FoldManager::createDcGraphs()
 	if (!scaffold) return;
 
 	clearDcGraphs();
+	clearResults();
 
 	if (pushAxis < 3)
 	{
@@ -96,14 +107,15 @@ void FoldManager::createDcGraphs(Vector3 pushDirect, bool addVirtualPanels)
 		Geom::Box topBox(topPatch, upV, thk);
 		FdNode* topVN = scaffold->addNode(emptyMesh, topBox);
 		topVN->setStringId("topVirtual");
+		topVN->properties["virtual"] = true;
 
 		Geom::Rectangle bottomPatch = box.getPatch(pushAId, -1);
 		Geom::Box bottomBox(bottomPatch, -upV, thk);
 		FdNode* bottomVN = scaffold->addNode(emptyMesh, bottomBox);
 		bottomVN->setStringId("bottomVirtual");
+		bottomVN->properties["virtual"] = true;
 	}
 
-	
 	// threshold
 	double perpThr = 0.1;
 	double layerHeightThr = 0.15;
@@ -219,14 +231,6 @@ void FoldManager::snapshotSelLayer( double t )
 }
 
 
-void FoldManager::fold()
-{
-	if (getSelDcGraph())
-	{
-		getSelDcGraph()->fold();
-	}
-}
-
 void FoldManager::selectDcGraph( QString id )
 {
 	// selected lyGraph index
@@ -277,6 +281,7 @@ void FoldManager::updateLists()
 	QStringList dcGraphLabels;
 	QStringList layerLabels;
 	QStringList chainLables;
+	int nbFrames = 0;
 
 	dcGraphLabels = getDcGraphLabels();
 	if (getSelDcGraph()) 
@@ -287,11 +292,15 @@ void FoldManager::updateLists()
 		{
 			chainLables = getSelLayer()->getChainLabels();
 		}
+
+		if (selId >= 0 && selId < results.size())
+			nbFrames = results[selId].size();
 	}
 
 	emit(lyGraphsChanged(dcGraphLabels));
 	emit(layersChanged(layerLabels));
 	emit(chainsChanged(chainLables));
+	emit(keyframesChanged(nbFrames));
 }
 
 QStringList FoldManager::getDcGraphLabels()
@@ -316,7 +325,7 @@ LayerGraph* FoldManager::getSelLayer()
 void FoldManager::generateFdKeyFrames()
 {
 	// clear
-	results.clear();
+	clearResults();
 
 	// generate key frames
 	int nbFrames = 100;
@@ -331,7 +340,8 @@ void FoldManager::generateFdKeyFrames()
 		results << dc_results;
 	}
 
-	emit(resultsGenerated(nbFrames));
+	emit(resultsGenerated());
+	updateLists();
 }
 
 void FoldManager::selectKeyframe( int idx )
@@ -343,11 +353,13 @@ void FoldManager::selectKeyframe( int idx )
 
 FdGraph* FoldManager::getKeyframe()
 {
-	if (!results.isEmpty() && keyIndx >= 0 && keyIndx < results[0].size())
+	if (selId >= 0 && selId < results.size())
 	{
-		return results[0][keyIndx];
+		if (keyIndx >= 0 && keyIndx < results[selId].size())
+		{
+			return results[selId][keyIndx];
+		}
 	}
-	
 	return NULL;
 }
 

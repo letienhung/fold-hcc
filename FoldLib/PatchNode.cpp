@@ -29,18 +29,13 @@ void PatchNode::createScaffold()
 
 
 
-void PatchNode::draw()
+void PatchNode::drawScaffold()
 {
 	if (properties.contains("isCtrlPanel"))
 		mPatchColor = Qt::red;
 
-	if (showScaffold)
-	{
-		mPatch.draw(mPatchColor);
-		mPatch.drawBackFace(mPatchColor);
-	}
-
-	FdNode::draw();
+	mPatch.draw(mPatchColor);
+	mPatch.drawBackFace(mPatchColor);
 }
 
 bool PatchNode::isPerpTo( Vector3 v, double dotThreshold )
