@@ -16,6 +16,7 @@ public:
 
         ui->pauseLabel->setVisible(false);
         ui->playLabel->setVisible(false);
+		ui->stopLabel->setVisible(false);
 
         connect(ui->playButton, SIGNAL(clicked()), SLOT(togglePlay()));
         connect(ui->slider, SIGNAL(valueChanged(int)), SLOT(sliderChanged(int)));

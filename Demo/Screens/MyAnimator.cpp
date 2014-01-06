@@ -573,6 +573,12 @@ void MyAnimator::setActiveObject(FoldManager *fm)
 	// Update the object
 	updateActiveObject();
 
+	mCurrConfigId = -1;
+	mCurrFrameId = 0;
+
+	vti->ui->playButton->setText(vti->ui->playLabel->text());
+	vti->ui->slider->setValue(0);
+
 	updateGL();
 
 	//SaveUndo();
@@ -590,10 +596,12 @@ void MyAnimator::newScene()
 	// Update the object
 	updateActiveObject();
 
-	//SaveUndo();
 	isMousePressed = false;
 	mCurrConfigId = -1;
 	mCurrFrameId = 0;
+
+	vti->ui->playButton->setText(vti->ui->playLabel->text());
+	vti->ui->slider->setValue(0);
 
 	//fManager = NULL;
 	fManager = new FoldManager;
@@ -754,16 +762,20 @@ void MyAnimator::dequeueLastMessage()
 
 void MyAnimator::startAnimation()
 {
-    QString pauseLabel = vti->ui->pauseLabel->text();
-	vti->ui->playButton->setText(pauseLabel);
+   // QString pauseLabel = vti->ui->pauseLabel->text();
+	//vti->ui->playButton->setText(pauseLabel);
+	if(mCurrFrameId == activeManager()->results[mCurrConfigId].size() - 1){
+	    mCurrFrameId = 0;
+		vti->ui->slider->setValue(0);
+	}
 	isPlaying = true;
 	QGLViewer::startAnimation();
 }
 
 void MyAnimator::stopAnimation()
 {
-	QString playLabel = vti->ui->playLabel->text();
-	vti->ui->playButton->setText(playLabel);
+	//QString playLabel = vti->ui->playLabel->text();
+	//vti->ui->playButton->setText(playLabel);
 	isPlaying = false;
 	QGLViewer::stopAnimation();
 }
@@ -781,37 +793,52 @@ void MyAnimator::animate()
 
 void MyAnimator::toggleSlider(int frameId)
 {
+	QString playLabel = vti->ui->playLabel->text();
+	if(isEmpty() || mCurrConfigId == -1){
+		vti->ui->playButton->setText(playLabel);
+		return;
+	}
 	mCurrFrameId = frameId ;
 	updateGL();
 	if(mCurrFrameId == activeManager()->results[mCurrConfigId].size() - 1){
 		isPlaying = false;
 		stopAnimation();
+		vti->ui->playButton->setText(playLabel);
 		//emit(timeout());
 	}
 }
 
 void MyAnimator::toggleAnimation()
 {
+	QString playLabel = vti->ui->playLabel->text();
+	if(isEmpty()){
+		vti->ui->playButton->setText(playLabel);
+		return;
+	}
+
 	QString label = vti->ui->playButton->text();
 
-	QString playLabel = vti->ui->playLabel->text();
 	QString pauseLabel = vti->ui->pauseLabel->text();
 
 	if(label != pauseLabel)
 	{
-		startAnimation();
+		stopAnimation();
 	}
 	else
 	{
-		stopAnimation();
+		startAnimation();
 	}
-	QGLViewer::toggleAnimation();
+	//QGLViewer::toggleAnimation();
 }
 
 void MyAnimator::teminate()
 {
 	mCurrFrameId = activeManager()->results[mCurrConfigId].size() - 1;
 	isPlaying = false;
+
 	stopAnimation();
+	QString playLabel = vti->ui->playLabel->text();
+	vti->ui->playButton->setText(playLabel);
+
 	updateGL();
 }

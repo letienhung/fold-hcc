@@ -91,6 +91,17 @@ void MainWindow::importObject()
 {
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
+	designer->newScene();
+	animator->newScene();
+
+	for(int i = 0; i < numViewer; i++){
+		if(viewers[i]->mGraph)
+			viewers[i]->clearGraph();
+	}
+
+	//mFManager = NULL;
+	mFManager = new FoldManager;
+
 	designer->loadObject();
 
 	//DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();

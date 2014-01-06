@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>322</width>
+    <width>332</width>
     <height>50</height>
    </rect>
   </property>
@@ -143,6 +143,19 @@ border-radius: 4px;
     <widget class="QLabel" name="playLabel">
      <property name="text">
       <string>►</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="stopLabel">
+     <property name="minimumSize">
+      <size>
+       <width>12</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:6pt;&quot;&gt;█ &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
     </widget>
    </item>
