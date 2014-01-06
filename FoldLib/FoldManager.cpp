@@ -319,7 +319,7 @@ void FoldManager::generateFdKeyFrames()
 	results.clear();
 
 	// generate key frames
-	int nbFrames = 50;
+	int nbFrames = 100;
 	double step = 1.0 / nbFrames;
 
 	// selected dc graph
@@ -331,7 +331,7 @@ void FoldManager::generateFdKeyFrames()
 		results << dc_results;
 	}
 
-	emit(resultsGenerated(dc_results.size()));
+	emit(resultsGenerated(nbFrames));
 }
 
 void FoldManager::selectKeyframe( int idx )
