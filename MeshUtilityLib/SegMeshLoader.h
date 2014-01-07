@@ -17,5 +17,7 @@ public:
 	void loadGroupsFromObj();
 	SurfaceMeshModel* extractSegMesh( QString gid );
 	QVector<SurfaceMeshModel*> getSegMeshes();
+	//Directly read segments from OBJ
+	QVector<SurfaceMeshModel*> loadSegmentedOBJ(QString filename);
 };
 

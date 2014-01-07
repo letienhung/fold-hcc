@@ -85,6 +85,14 @@ void FdPlugin::resetScene()
 
 		qglviewer::Vec bbmin(aabb.bbmin.data());
 		qglviewer::Vec bbmax(aabb.bbmax.data());
+		//Samuel added
+		//drawArea()->setSceneRadius(60);
+		/*drawArea()->setSceneCenter(qglviewer::Vec(aabb.center().x(), aabb.center().y(), aabb.center().z()));
+		drawArea()->camera()->setSceneRadius(30.0);
+		drawArea()->camera()->setUpVector(qglviewer::Vec(0,0,1));
+		drawArea()->camera()->setPosition(qglviewer::Vec(-10,0,0));
+		drawArea()->camera()->lookAt(qglviewer::Vec());*/
+
 		drawArea()->camera()->setSceneBoundingBox(bbmin, bbmax);
 		drawArea()->camera()->showEntireScene();
 	}

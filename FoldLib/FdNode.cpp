@@ -61,7 +61,7 @@ void FdNode::draw()
 	if (showMesh)
 	{
 		deformMesh();
-		QuickMeshDraw::drawMeshSolid(mMesh.data());
+		QuickMeshDraw::drawMeshSolid(mMesh.data());//, QColor(255,128,0,255));
 		QuickMeshDraw::drawMeshWireFrame(mMesh.data());
 	}
 

@@ -37,6 +37,7 @@ void SegMeshLoader::loadGroupsFromObj()
 			}
 		}
 	}
+
 }
 
 
@@ -46,6 +47,9 @@ SurfaceMeshModel* SegMeshLoader::extractSegMesh( QString gid )
 
 	QVector<int> part = groupFaces[gid];
 	
+	int v_count = entireMesh->n_vertices();
+	int f_count = entireMesh->n_faces();
+
 	// vertex set from face
 	QSet<int> vertSet;
 	foreach(int fidx, part)
@@ -78,11 +82,97 @@ SurfaceMeshModel* SegMeshLoader::extractSegMesh( QString gid )
 
 QVector<SurfaceMeshModel*> SegMeshLoader::getSegMeshes()
 {
-	loadGroupsFromObj();
+	/*loadGroupsFromObj();
 
 	QVector<SurfaceMeshModel*> meshes;
 	foreach (QString gid, groupFaces.keys())
-		meshes.push_back(extractSegMesh(gid));
+	meshes.push_back(extractSegMesh(gid));
+	return meshes;*/
 
-	return meshes;
+	return loadSegmentedOBJ(entireMesh->path);
+}
+
+QVector<SurfaceMeshModel*> SegMeshLoader::loadSegmentedOBJ(QString filename)
+{
+	QVector<SurfaceMeshModel*> sub_meshes;
+
+	// Read obj file
+	QFile file( filename );
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) return sub_meshes;
+	QTextStream inF(&file);
+
+	bool isLoadingGroup = false;
+	int voffset = 0;
+
+	typedef std::vector<Vertex> VectorVertices;
+
+	QVector< Vector3 > vertices;
+	QVector< VectorVertices > faces;
+	QString groupName;
+
+	while( !inF.atEnd() )
+	{
+		QString line = inF.readLine();
+		if(line.isEmpty()) continue;
+
+		if(isLoadingGroup && line.startsWith("v"))
+		{
+			// Create the mesh we have right now
+			sub_meshes.push_back(new SurfaceMeshModel(groupName + ".obj", groupName));
+
+			foreach(Vector3 p, vertices) sub_meshes.back()->add_vertex(p);
+			foreach(VectorVertices f, faces) sub_meshes.back()->add_face(f);
+
+			voffset += vertices.size();
+
+			// Clear containers 'vertices' and 'faces'
+			vertices.clear();
+			faces.clear();
+
+			isLoadingGroup = false;
+		}
+
+		if (line.startsWith("v"))
+		{
+			QStringList vLine = line.split(" ", QString::SkipEmptyParts);
+
+			double x = vLine[1].toDouble();
+			double y = vLine[2].toDouble();
+			double z = vLine[3].toDouble();
+
+			vertices.push_back(Vector3(x,y,z));
+		}
+
+		if (line.startsWith("f"))
+		{
+			QStringList fLine = line.split(" ", QString::SkipEmptyParts);
+
+			int v1 = (fLine[1].toInt() - 1) - voffset;
+			int v2 = (fLine[2].toInt() - 1) - voffset;
+			int v3 = (fLine[3].toInt() - 1) - voffset;
+
+			std::vector<Vertex> verts;
+			verts.push_back(Vertex(v1));
+			verts.push_back(Vertex(v2));
+			verts.push_back(Vertex(v3));
+			faces.push_back(verts);
+		}
+
+		if (line.startsWith("g"))
+		{
+			isLoadingGroup = true;
+
+			groupName = line.split(" ", QString::SkipEmptyParts).at(1);
+		}
+	}
+
+	// Last part
+	if(vertices.size() && faces.size())
+	{
+		sub_meshes.push_back(new SurfaceMeshModel(groupName + ".obj", groupName));
+		foreach(Vector3 p, vertices) sub_meshes.back()->add_vertex(p);
+		foreach(VectorVertices f, faces) sub_meshes.back()->add_face(f);
+	}
+
+	return sub_meshes;
 }
