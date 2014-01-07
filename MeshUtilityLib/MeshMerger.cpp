@@ -4,7 +4,7 @@
 MeshMerger::MeshMerger()
 {
 	mergedMesh = new SurfaceMeshModel();
-	name = "";
+	meshName = "";
 }
 
 SurfaceMeshModel* MeshMerger::getMesh()
@@ -13,8 +13,7 @@ SurfaceMeshModel* MeshMerger::getMesh()
 	mergedMesh->update_vertex_normals();
 	mergedMesh->updateBoundingBox();
 
-	mergedMesh->name = name;
-	mergedMesh->path = name + ".obj";
+	mergedMesh->name = meshName;
 
 	return mergedMesh;
 }
@@ -41,5 +40,5 @@ void MeshMerger::addMesh( SurfaceMeshModel* subMesh )
 		mergedMesh->add_face(pnts);
 	}
 
-	name += "+" + subMesh->name;
+	meshName += "+" + subMesh->name;
 }

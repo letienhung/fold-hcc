@@ -51,7 +51,7 @@ QVector<FdNode*> DcGraph::mergeCoplanarParts( QVector<FdNode*> ns, PatchNode* pa
 		}
 	}
 
-	// RANSAC like strategy: use a few samples to produce fitting model, which is a plane
+	// RANSAC-like strategy: use a few samples to produce fitting model, which is a plane
 	// a plane is fitted by either one root patch or two coplanar root rods
 	QVector<Geom::Plane> fitPlanes;
 	foreach(PatchNode* pn, rootPatch) fitPlanes << pn->mPatch.getPlane();
@@ -174,13 +174,13 @@ void DcGraph::createLayers()
 		}
 	}
 
-	// merge coplanar parts within each layer 
+	//// merge coplanar parts within each layer 
 	FdNodeArray2D mergedGroups;
 	mergedGroups << mergeCoplanarParts(layerGroups[0], controlPanels[0]);
 	for (int i = 1; i < layerGroups.size(); i++)
 		mergedGroups << mergeCoplanarParts(layerGroups[i], controlPanels[i-1]);
 	layerGroups = mergedGroups;
-
+	
 	// clear layers
 	layers.clear();
 

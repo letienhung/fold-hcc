@@ -23,7 +23,8 @@ public:
 	// fold
 	void fold();
 	virtual void buildDependGraph() = 0;
-	void computeChainSequence(bool writeImg);
+	void computeChainSequence();
+	void outputDyGraphSequence();
 
 	// key frames
 	virtual void snapshot(double t);
@@ -35,6 +36,7 @@ public:
 	QVector<ChainGraph*> chains;
 
 	DependGraph* dy_graph;
+	QVector<DependGraph*> dygSequence;
 	QVector<QString> chainSequence;
 	QVector<FoldingNode*> fnSequence;
 

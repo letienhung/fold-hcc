@@ -74,47 +74,58 @@ void FoldManager::createDcGraphs()
 	{
 		Vector3 direct(0, 0, 0);
 		direct[pushAxis] = 1;;
-		createDcGraphs(direct, false);
-
-		qDebug() << "\nvirtual nodes";
-		createDcGraphs(direct, true);
+		createDcGraphs(direct);
 	}
 	else
 	{
-		createDcGraphs(Vector3(1,0,0), true);
-		createDcGraphs(Vector3(0,1,0), true);
-		createDcGraphs(Vector3(0,0,1), true);
+		createDcGraphs(Vector3(1,0,0));
+		createDcGraphs(Vector3(0,1,0));
+		createDcGraphs(Vector3(0,0,1));
 	}
 
 	// update ui
 	updateLists();
 }
 
-void FoldManager::createDcGraphs(Vector3 pushDirect, bool addVirtualPanels)
+void FoldManager::createDcGraphs(Vector3 pushDirect)
+{
+	// w\o virtual nodes
+	int N = createDcGraphs(pushDirect, -1);
+
+	// add virtual control panels
+	Geom::AABB aabb = scaffold->computeAABB();
+	Geom::Box box = aabb.box();
+	int pushAId = aabb.box().getAxisId(pushDirect);
+	Vector3 upV = box.Axis[pushAId];
+	double thk = aabb.radius() / 50;
+	MeshPtr emptyMesh(new SurfaceMeshModel("", "empty"));
+
+	Geom::Rectangle topPatch = box.getPatch(pushAId, 1);
+	Geom::Box topBox(topPatch, upV, thk);
+	FdNode* topVN = scaffold->addNode(emptyMesh, topBox);
+	topVN->mID = "topVirtual";
+	topVN->properties["virtual"] = true;
+
+	Geom::Rectangle bottomPatch = box.getPatch(pushAId, -1);
+	Geom::Box bottomBox(bottomPatch, -upV, thk);
+	FdNode* bottomVN = scaffold->addNode(emptyMesh, bottomBox);
+	bottomVN->mID = "bottomVirtual";
+	bottomVN->properties["virtual"] = true;
+
+	// with virtual nodes: must create more control panels
+	N = createDcGraphs(pushDirect, N);
+
+	// remove virtual nodes
+	scaffold->Structure::Graph::removeNode("topVirtual");
+	scaffold->Structure::Graph::removeNode("bottomVirtual");
+}
+
+
+int FoldManager::createDcGraphs( Vector3 pushDirect, int N )
 {
 	Geom::AABB aabb = scaffold->computeAABB();
 	Geom::Box box = aabb.box();
 	int pushAId = aabb.box().getAxisId(pushDirect);
-
-	// add virtual control panels
-	if (addVirtualPanels)
-	{
-		Vector3 upV = box.Axis[pushAId];
-		double thk = aabb.radius() / 50;
-		MeshPtr emptyMesh(new SurfaceMeshModel());
-
-		Geom::Rectangle topPatch = box.getPatch(pushAId, 1);
-		Geom::Box topBox(topPatch, upV, thk);
-		FdNode* topVN = scaffold->addNode(emptyMesh, topBox);
-		topVN->setStringId("topVirtual");
-		topVN->properties["virtual"] = true;
-
-		Geom::Rectangle bottomPatch = box.getPatch(pushAId, -1);
-		Geom::Box bottomBox(bottomPatch, -upV, thk);
-		FdNode* bottomVN = scaffold->addNode(emptyMesh, bottomBox);
-		bottomVN->setStringId("bottomVirtual");
-		bottomVN->properties["virtual"] = true;
-	}
 
 	// threshold
 	double perpThr = 0.1;
@@ -176,22 +187,9 @@ void FoldManager::createDcGraphs(Vector3 pushDirect, bool addVirtualPanels)
 			if (area > areaThr) panelGroups.push_back(cluster);
 		}
 	}
+	// don't create DcGraph if no more layers can be found
+	if (panelGroups.size() <= N)	return 0;
 
-	// reject rod structure
-	FdNodeArray2D panelGroups2;
-	foreach (QVector<FdNode*> panelGroup, panelGroups)
-	{
-		bool rodStruct = true;
-		foreach(FdNode* n, panelGroup)	{
-			if (n->mType == FdNode::PATCH){
-				rodStruct = false;
-				break;
-			}
-		}
-
-		if (!rodStruct) panelGroups2.push_back(panelGroup);
-	}
-	
 	// ==STEP 4==: create layer models
 	// use all control panels
 	if (!panelGroups.isEmpty())
@@ -200,19 +198,7 @@ void FoldManager::createDcGraphs(Vector3 pushDirect, bool addVirtualPanels)
 		dcGraphs.push_back(new DcGraph(scaffold, getIds(panelGroups), pushDirect, id));
 	}
 
-	// exclude rod structures
-	if (!panelGroups2.isEmpty() && panelGroups2.size() < panelGroups.size())
-	{
-		QString id = "Dc-" + QString::number(dcGraphs.size());
-		dcGraphs.push_back(new DcGraph(scaffold, getIds(panelGroups2), pushDirect, id));
-	}
-
-	// remove virtual nodes
-	if (addVirtualPanels)
-	{
-		scaffold->Structure::Graph::removeNode("topVirtual");
-		scaffold->Structure::Graph::removeNode("bottomVirtual");
-	}
+	return panelGroups.size();
 }
 
 void FoldManager::foldSelLayer()
@@ -230,6 +216,11 @@ void FoldManager::snapshotSelLayer( double t )
 	emit(sceneChanged());
 }
 
+void FoldManager::outputDyGraphSequence()
+{
+	LayerGraph* lg = getSelLayer();
+	if (lg) lg->outputDyGraphSequence();
+}
 
 void FoldManager::selectDcGraph( QString id )
 {
@@ -328,7 +319,7 @@ void FoldManager::generateFdKeyFrames()
 	clearResults();
 
 	// generate key frames
-	int nbFrames = 100;
+	int nbFrames = 25;
 	double step = 1.0 / nbFrames;
 
 	// selected dc graph

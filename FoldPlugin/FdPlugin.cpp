@@ -136,10 +136,10 @@ bool FdPlugin::postSelection( const QPoint& point )
 	{
 		int nidx = drawArea()->selectedName();
 
-		Structure::Node* sn = activeScaffold()->getNode(nidx);
+		FdNode* sn = (FdNode*)activeScaffold()->getNode(nidx);
 		if (sn)
 		{
-			showMessage("Selected name = %d, nodeId = %s", nidx, sn->mID.toStdString().c_str());
+			showMessage("Selected name = %d, nodeId = %s, mesh = %s", nidx, qPrintable(sn->mID), qPrintable(sn->mMesh->name));
 			activeScaffold()->selectNode(nidx);
 		}
 		else

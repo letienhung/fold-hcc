@@ -188,12 +188,14 @@ FdNode* FdGraph::merge( QVector<QString> nids )
 	// merge
 	MeshMerger mm;
 	QVector<Vector3> boxPoints;
+	QString mergedID;
 	foreach (FdNode* n, ns)
 	{
 		n->deformMesh();
 		mm.addMesh(n->mMesh.data());
 
 		boxPoints += n->mBox.getConnerPoints();
+		mergedID += "+" + n->mID;
 
 		removeNode(n->mID);
 	}
@@ -201,7 +203,11 @@ FdNode* FdGraph::merge( QVector<QString> nids )
 	// fit box using box corners
 	Geom::Box box = fitBox(boxPoints);
 
-	return addNode(MeshPtr(mm.getMesh()), box); 
+	// add node
+	FdNode* mergedNode = addNode(MeshPtr(mm.getMesh()), box); 
+	mergedNode->mID = mergedID;
+
+	return mergedNode;
 }
 
 
@@ -239,8 +245,7 @@ QVector<FdNode*> FdGraph::split( FdNode* fn, Geom::Plane& plane)
 	FdNode* node1 = fn->cloneChopped(plane);
 	if (node1)
 	{
-		QString id = fn->mID + QString("_%1").arg(splitted.size());
-		node1->setStringId(id);
+		node1->mID = fn->mID + QString("_%1").arg(splitted.size());
 		Structure::Graph::addNode(node1);
 		splitted.push_back(node1);
 	}
@@ -249,15 +254,14 @@ QVector<FdNode*> FdGraph::split( FdNode* fn, Geom::Plane& plane)
 	FdNode* node2 = fn->cloneChopped(plane.opposite());
 	if (node2)
 	{
-		QString id = fn->mID + QString("_%1").arg(splitted.size());
-		node2->setStringId(id);
+		node2->mID = fn->mID + QString("_%1").arg(splitted.size());
 		Structure::Graph::addNode(node2);
 		splitted.push_back(node2);
 	}
 
 	// keep the original id if only one major part remains
 	if (splitted.size() == 1)
-		splitted.front()->setStringId(fn->mID);
+		splitted.front()->mID = fn->mID;
 
 	// remove the original node
 	if (!splitted.isEmpty())

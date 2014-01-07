@@ -247,10 +247,8 @@ QString DependGraph::toGraphvizFormat( QString subcaption, QString caption )
 		// label
 		QString label = node->mID;
 		if (type == "folding")
-		{
-			FoldingNode* fnode = (FoldingNode*)node;
-			label += "\n" + QString::number(fnode->score);
-		}
+			label = QString::number(((FoldingNode*)node)->score);
+		if (type == "barrier") label = "Barrier";
 
 		// shape
 		QString shape = "rectangle";

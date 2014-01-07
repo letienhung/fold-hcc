@@ -88,6 +88,7 @@ void FdNode::encodeMesh()
 
 void FdNode::deformMesh()
 {
+	qDebug() << mID << " has deformed mesh" << int(this);
 	MeshHelper::decodeMeshInBox(mMesh.data(), mBox, meshCoords);
 }
 
@@ -199,10 +200,4 @@ FdNode* FdNode::cloneChopped( Geom::Plane chopper )
 	//qDebug() << mID << "(" << mBox.volume() << ") => " << choppedNode->mID << "(" << choppedNode->mBox.volume() << ")";
 
 	return choppedNode;
-}
-
-void FdNode::setStringId( QString id )
-{
-	mID = id;
-	mMesh->name = id;
 }

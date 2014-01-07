@@ -381,6 +381,13 @@
         </property>
        </widget>
       </item>
+      <item row="6" column="0" colspan="2">
+       <widget class="QPushButton" name="outputDyGSequence">
+        <property name="text">
+         <string>Output DyG Sequence</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

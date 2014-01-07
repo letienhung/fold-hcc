@@ -27,7 +27,8 @@ public:
 	QVector< QVector<FdGraph*> > results;
 
 public:
-	void createDcGraphs(Vector3 pushDirect, bool addVirtualPanels); 
+	void createDcGraphs(Vector3 pushDirect); 
+	int createDcGraphs(Vector3 pushDirect, int N);
 
 	FdGraph* activeScaffold();
 	DcGraph* getSelDcGraph();
@@ -58,6 +59,7 @@ public slots:
 
 	void foldSelLayer();
 	void snapshotSelLayer(double t);
+	void outputDyGraphSequence();
 
 	FdGraph* getKeyframe();
 

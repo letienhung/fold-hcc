@@ -218,18 +218,20 @@ bool onPlane( FdNode* n, Geom::Plane& plane )
 		PatchNode* pn = (PatchNode*)n;
 		double dist = fabs(plane.signedDistanceTo(pn->mPatch.Center));
 		double dotProd = fabs(dot(pn->mPatch.Normal, plane.Normal));
-		double thr = pn->mPatch.radius() / 5;
+		double thr = pn->mPatch.radius() / 2;
 
-		return (dist < thr && dotProd > 0.9);
+		return (dist < thr && dotProd > 0.5);
 	}
 	else
 	{
 		RodNode* rn = (RodNode*)n;
 		double dist = fabs(plane.signedDistanceTo(rn->mRod.Center));
 		double dotProd = fabs(dot(rn->mRod.Direction, plane.Normal));
-		double thr = rn->mRod.length() / 10;
+		double thr = rn->mRod.length() / 2;
 
-		return (dist < thr && dotProd < 0.1);
+		//qDebug() << "dist = " << dist << ", dotProd = " << dotProd << ", thr = " << thr;
+
+		return (dist < thr && dotProd < 0.5);
 	}
 }
 

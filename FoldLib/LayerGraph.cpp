@@ -87,7 +87,7 @@ ChainGraph* LayerGraph::getChain( QString cid )
 void LayerGraph::fold()
 {
 	buildDependGraph();
-	computeChainSequence(false);
+	computeChainSequence();
 
 	for (int i = 0; i < chainSequence.size(); i++)
 	{
@@ -96,10 +96,12 @@ void LayerGraph::fold()
 	}
 }
 
-void LayerGraph::computeChainSequence(bool writeImg)
+void LayerGraph::computeChainSequence()
 {
 	chainSequence.clear();
 	fnSequence.clear();
+	foreach(DependGraph* dyg, dygSequence) delete dyg;
+	dygSequence.clear();
 
 	// set up tags
 	foreach(Structure::Node* node, dy_graph->nodes)
@@ -113,12 +115,8 @@ void LayerGraph::computeChainSequence(bool writeImg)
 		// update scores for each folding node
 		dy_graph->computeScores();
 
-		// output dependency graph
-		if (writeImg)
-		{
-			QString filePath = path + "/" + mID + "_" + QString::number(i);
-			dy_graph->saveAsImage(filePath);
-		}
+		// save dependency graph sequence
+		dygSequence << (DependGraph*)dy_graph->clone();
 
 		// get best folding node
 		FoldingNode* best_fn = dy_graph->getBestFoldingNode();
@@ -139,11 +137,8 @@ void LayerGraph::computeChainSequence(bool writeImg)
 		}
 	}
 
-	if (writeImg)
-	{
-		QString filePath = path + "/" + mID + "_" + QString::number(chains.size());
-		dy_graph->saveAsImage(filePath);
-	}
+	// the last step
+	dygSequence << (DependGraph*)dy_graph->clone();
 
 	// folding sequence
 	qDebug() << "Chain sequence: " << QStringList(chainSequence.toList());
@@ -153,4 +148,13 @@ void LayerGraph::snapshot( double t )
 {
 	foreach(ChainGraph* chain, chains)
 		chain->fold(t);
+}
+
+void LayerGraph::outputDyGraphSequence()
+{
+	for (int i = 0; i < dygSequence.size(); i++)
+	{
+		QString filePath = path + "/" + mID + "_" + QString::number(i);
+		dygSequence[i]->saveAsImage(filePath);
+	}
 }

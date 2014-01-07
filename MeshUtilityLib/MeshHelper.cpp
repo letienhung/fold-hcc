@@ -59,14 +59,6 @@ bool MeshHelper::decodeMeshInBox( SurfaceMeshModel* mesh, Geom::Box& box, QVecto
 	if (coords.isEmpty()) return true;
 
 	Surface_mesh::Vertex_property<Point> points = mesh->vertex_property<Point>("v:point");
-	
-	// in case the decoded mesh is the same as the original one
-	Vector3 oldPos = points[Surface_mesh::Vertex(0)];
-	Vector3 newPos = box.getPosition(coords[0]);
-	if ((oldPos - newPos).norm() < ZERO_TOLERANCE_LOW) 
-		return true;
-
-	// decode the mesh
 	for(int i = 0; i < (int)mesh->n_vertices(); i++)
 		points[Surface_mesh::Vertex(i)] = box.getPosition(coords[i]);
 

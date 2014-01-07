@@ -17,7 +17,6 @@ public:
 	~FdNode();
 
 	virtual Node* clone() = 0;
-	void setStringId(QString id);
 
 	// visualization
 	bool showCuboids;

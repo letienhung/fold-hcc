@@ -43,6 +43,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 
 	plugin->f_manager->connect(ui->foldLayer, SIGNAL(clicked()), SLOT(foldSelLayer()));
 	plugin->f_manager->connect(ui->snapshotTime, SIGNAL(valueChanged(double)), SLOT(snapshotSelLayer(double)));
+	plugin->f_manager->connect(ui->outputDyGSequence, SIGNAL(clicked()), SLOT(outputDyGraphSequence()));
 	plugin->f_manager->connect(ui->fold, SIGNAL(clicked()), SLOT(foldAll()));
 	plugin->f_manager->connect(ui->generateKeyframes, SIGNAL(clicked()), SLOT(generateFdKeyFrames()));
 
