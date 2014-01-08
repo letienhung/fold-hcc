@@ -84,7 +84,7 @@ void FdNode::drawMesh()
 
 	deformMesh();
 	QuickMeshDraw::drawMeshSolid(mMesh.data());
-	QuickMeshDraw::drawMeshWireFrame(mMesh.data());
+	//QuickMeshDraw::drawMeshWireFrame(mMesh.data());
 }
 
 void FdNode::encodeMesh()
@@ -163,6 +163,11 @@ FdNode* FdNode::cloneChopped( Geom::Plane chopper )
 	Geom::Box box = mBox;
 	box.Center = (cutPoint + endPoint) * 0.5;
 	box.Extent[aid] = (cutPoint - endPoint).norm() * 0.5;
+
+	// chop mesh
+	// Geom::Box chopBox = box;
+	// chopBox.Extent *= 1.001;
+	// SurfaceMeshModel* mesh = MeshBoolean::cork(mMesh.data(), chopBox, MeshBoolean::ISCT);
 	
 	// create new nodes
 	FdNode *choppedNode;

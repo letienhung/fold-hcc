@@ -8,11 +8,11 @@
 class DcGraph : public FdGraph
 {
 public:
-    DcGraph(FdGraph* scaffold, StrArray2D panelGroups, Vector3 up, QString id);
+    DcGraph(FdGraph* scaffold, StrArray2D panelGroups, Vector3 pushV, QString id);
 	~DcGraph();
 
 public:
-	Vector3 upV;
+	int pushAId;
 	QVector<PatchNode*> controlPanels;
 
 	int selId;

@@ -27,8 +27,6 @@ void PatchNode::createScaffold()
 	mPatch = mBox.getPatch(aid, 0);
 }
 
-
-
 void PatchNode::drawScaffold()
 {
 	if (properties.contains("virtual")) return;
@@ -36,7 +34,7 @@ void PatchNode::drawScaffold()
 	if (properties.contains("isCtrlPanel"))
 		mPatchColor = Qt::red;
 
-	mPatch.draw(mPatchColor);
+	mPatch.drawFace(mPatchColor);
 	mPatch.drawBackFace(mPatchColor);
 }
 

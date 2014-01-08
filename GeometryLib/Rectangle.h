@@ -54,8 +54,9 @@ public:
 	Vector3 getOpenVector(const Vector2& v);
 
 	// visualization
-	void draw(QColor color = Qt::red);
+	void drawFace(QColor color = Qt::red);
 	void drawBackFace(QColor color = Qt::red);
+	void drawEdges(double width = 2.0, QColor color = Qt::red);
 
 	// to string
 	QStringList toStrList();

@@ -6,12 +6,13 @@
 #include "FdUtility.h"
 
 
-DcGraph::DcGraph( FdGraph* scaffold, StrArray2D panelGroups, Vector3 up, QString id)
+DcGraph::DcGraph( FdGraph* scaffold, StrArray2D panelGroups, Vector3 pushV, QString id)
 	: FdGraph(*scaffold)
 {
 	path = QFileInfo(path).absolutePath();
-	upV = up;
 	mID = id;
+
+	pushAId = computeAABB().box().getClosestAxisId(pushV);
 
 	// merge control panels
 	foreach( QVector<QString> panelGroup, panelGroups )
@@ -151,11 +152,10 @@ void DcGraph::createLayers()
 	// cut positions along pushing skeleton
 	// append 1.0 to help group parts
 	Geom::Box box = computeAABB().box();
-	int upAId = box.getAxisId(upV);
-	Geom::Segment upSklt = box.getSkeleton(upAId);
+	Geom::Segment pushSklt = box.getSkeleton(pushAId);
 	QVector<double> cutPos;
 	foreach (FdNode* cp, controlPanels)
-		cutPos.push_back(upSklt.getProjCoordinates(cp->center()));
+		cutPos.push_back(pushSklt.getProjCoordinates(cp->center()));
 	cutPos.push_back(1.0);
 
 	// group parts into layers
@@ -163,7 +163,7 @@ void DcGraph::createLayers()
 	foreach (FdNode* n, getFdNodes())
 	{
 		if (n->properties.contains("isCtrlPanel")) continue;
-		double pos = upSklt.getProjCoordinates(n->center());
+		double pos = pushSklt.getProjCoordinates(n->center());
 		for (int i = 0; i < cutPos.size(); i++)
 		{
 			if (pos < cutPos[i])
@@ -352,6 +352,8 @@ FdGraph* DcGraph::getKeyFrame( double t )
 			key_graph->Structure::Graph::addNode(n);
 		}
 	}
+
+	key_graph->properties["pushAId"] = pushAId;
 
 	return key_graph;
 }

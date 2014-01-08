@@ -1,0 +1,181 @@
+<!--?xml Version = "1.0"?-->
+<document>
+    <cN>16</cN>
+    <node>
+        <type>2</type>
+        <ID>TopSheet</ID>
+        <box>
+            <c>0.00559 0.0074785 1.61078</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>1.32202 0.495688 0.0206</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>LeftFrontLeg</ID>
+        <box>
+            <c>-1.20622 -0.378134 0.788206</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.010575 0.010437 0.802815</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>RightFrontLeg</ID>
+        <box>
+            <c>1.2174 -0.378134 0.788206</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.010575 0.010437 0.802815</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>RightBackLeg</ID>
+        <box>
+            <c>1.2174 0.393091 0.788206</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.010575 0.010437 0.802815</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>LeftBackLeg</ID>
+        <box>
+            <c>-1.20622 0.393091 0.788206</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.010575 0.010437 0.802815</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>FrontUpStretcher</ID>
+        <box>
+            <c>0.005595 -0.378134 1.42987</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>1.21181 0.00988 0.01002</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>BackUpStretcher</ID>
+        <box>
+            <c>0.005595 0.393091 1.42987</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>1.21181 0.0098795 0.01002</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>LowStretcher01</ID>
+        <box>
+            <c>0.005595 -0.378134 0.195941</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>1.21181 0.00988 0.0101585</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>LowStretcher02</ID>
+        <box>
+            <c>0.005595 -0.223666 0.19594</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>1.21181 0.010159 0.009324</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>LowStretcher03</ID>
+        <box>
+            <c>0.005595 -0.069477 0.19594</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>1.21181 0.0101587 0.009324</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>LowStretcher04</ID>
+        <box>
+            <c>0.005595 0.0847123 0.19594</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>1.21181 0.0101587 0.009324</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>LowStretcher05</ID>
+        <box>
+            <c>0.005595 0.238901 0.19594</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>1.21181 0.0101595 0.009324</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>LowStretcher06</ID>
+        <box>
+            <c>0.005595 0.393091 0.195941</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>1.21181 0.0098795 0.0101585</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>LeftUpStretcher</ID>
+        <box>
+            <c>-1.20635 0.008452 1.42987</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.00988 0.385612 0.01002</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>LeftDownStretcher</ID>
+        <box>
+            <c>-1.20635 0.008452 0.195941</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.00988 0.385612 0.0101585</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>RightUpStretcher</ID>
+        <box>
+            <c>1.21726 0.0083135 1.42987</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.00988 0.385474 0.01002</e>
+        </box>
+    </node>
+    <cL>0</cL>
+</document>

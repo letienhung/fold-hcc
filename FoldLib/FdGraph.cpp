@@ -15,6 +15,7 @@
 
 #include "AABB.h"
 #include "MinOBB.h"
+#include "CustomDrawObjects.h"
 
 
 FdGraph::FdGraph(QString id /*= ""*/)
@@ -168,8 +169,27 @@ void FdGraph::draw()
 	// draw aabb
 	if (showAABB)
 	{
-		Geom::AABB aabb = computeAABB();
-		aabb.box().drawWireframe(2.0, Qt::cyan);
+
+		if (properties.contains("pushAId"))
+		{
+			int aid =  properties["pushAId"].toInt();
+			Geom::Box box = computeAABB().box();
+			Geom::Rectangle patch1 = box.getPatch(aid, 1);
+			Geom::Rectangle patch2 = box.getPatch(aid, -1);
+
+			patch1.drawEdges(2.0, Qt::yellow);
+			patch2.drawEdges(2.0, Qt::yellow);
+
+			LineSegments ls(2.0);
+			foreach (Geom::Segment seg, box.getEdgeSegments(aid))
+				ls.addLine(seg.P0, seg.P1, Qt::cyan);
+			ls.draw();
+		}
+		else
+		{
+			Geom::AABB aabb = computeAABB();
+			aabb.box().drawWireframe(2.0, Qt::cyan);
+		}
 	}
 }
 

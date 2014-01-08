@@ -221,7 +221,7 @@ QVector<Geom::Segment> Geom::Box::getEdgeSegments()
 	return edges;
 }
 
-
+// return edge segments that are parallel to Axis[aid]
 QVector<Geom::Segment> Geom::Box::getEdgeSegments( int aid )
 {
 	QVector<Segment> edges;
