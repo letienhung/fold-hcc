@@ -15,6 +15,7 @@ public:
 	void drawMesh();
 	QString getMeshName();
 	void deformMesh();
+	void cloneMesh();
 
 	QVector<FdNode*> getPlainNodes();
 

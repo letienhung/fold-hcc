@@ -66,6 +66,8 @@ public:
 	GraphManager* gManager;
 	// To communicate with the MainWindow and MyAnimation
 	FoldManager* fManager;
+	// Cloned scaffold to display in the scene
+	FdGraph *currGraph;
 	BBox * mBox;
     double scalePercent;
 	bool isShow;

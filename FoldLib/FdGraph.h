@@ -14,6 +14,7 @@ public:
 	FdGraph(FdGraph& other);
 
 	virtual Graph* clone();
+	FdGraph * deepClone();
 	FdLink* addLink(FdNode* n1, FdNode* n2);
 
 public:

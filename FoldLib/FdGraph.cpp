@@ -38,6 +38,18 @@ Structure::Graph* FdGraph::clone()
 	return new FdGraph(*this);
 }
 
+FdGraph * FdGraph::deepClone()
+{
+	FdGraph *fdGraph = (FdGraph*)clone();
+
+	QVector<FdNode *> nodes = fdGraph->getFdNodes();
+	foreach(FdNode *n, nodes){
+		n->cloneMesh();
+	}
+
+	return fdGraph;
+}
+
 
 FdLink* FdGraph::addLink( FdNode* n1, FdNode* n2 )
 {

@@ -100,3 +100,10 @@ void BundleNode::deformMesh()
 		mNodes[i]->deformMesh();
 	}
 }
+
+void BundleNode::cloneMesh()
+{
+	foreach(FdNode* n, mNodes){
+		n->cloneMesh();
+	}
+}

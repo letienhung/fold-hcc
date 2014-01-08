@@ -83,9 +83,11 @@ void FdNode::drawMesh()
 	if (mMesh.isNull()) return;
 
 	deformMesh();
-	QuickMeshDraw::drawMeshSolid(mMesh.data());
+<<<<<<< .mine	QuickMeshDraw::drawMeshSolid(mMesh.data(), QColor(255,128,0,255));
 	//QuickMeshDraw::drawMeshWireFrame(mMesh.data());
-}
+=======	QuickMeshDraw::drawMeshSolid(mMesh.data());
+	//QuickMeshDraw::drawMeshWireFrame(mMesh.data());
+>>>>>>> .theirs}
 
 void FdNode::encodeMesh()
 {
@@ -189,4 +191,35 @@ QString FdNode::getMeshName()
 QVector<FdNode*> FdNode::getPlainNodes()
 {
 	return QVector<FdNode*>() << this;
+}
+
+void FdNode::cloneMesh()
+{
+	deformMesh();
+	SurfaceMeshModel *mesh = new SurfaceMeshModel;
+	
+	foreach (Vector3 p, MeshHelper::getMeshVertices(mMesh.data())){
+		mesh->add_vertex(p);
+	}
+
+	Surface_mesh::Face_iterator fit, fend = mMesh.data()->faces_end();
+	for (fit = mMesh.data()->faces_begin(); fit != fend; fit++)
+	{
+		std::vector<Vertex> pnts; 
+		Surface_mesh::Vertex_around_face_circulator vit = mMesh.data()->vertices(fit), vend = vit;
+		do{ 
+			int sub_vid = Vertex(vit).idx();
+			pnts.push_back(Vertex(sub_vid)); 
+		} while(++vit != vend);
+
+		mesh->add_face(pnts);
+	}
+
+	mesh->update_face_normals();
+	mesh->update_vertex_normals();
+	mesh->updateBoundingBox();
+
+	mMesh = MeshPtr(mesh);
+
+	showMesh = true;
 }

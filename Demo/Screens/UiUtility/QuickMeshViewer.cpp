@@ -57,7 +57,7 @@ void QuickMeshViewer::draw()
 	
 	if(mGraph){
 		// Temporarily set
-		mGraph->showCuboids(true);
+		mGraph->showCuboids(false);
 		mGraph->showScaffold(true);
 		mGraph->showMeshes(false);
 		mGraph->draw();

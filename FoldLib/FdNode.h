@@ -35,6 +35,7 @@ public:
 	void encodeMesh();
 	virtual void deformMesh();
 	virtual QString getMeshName();
+	virtual void cloneMesh();
 
 	// fit cuboid
 	void refit(BOX_FIT_METHOD method);

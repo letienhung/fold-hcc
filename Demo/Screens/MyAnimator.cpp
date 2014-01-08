@@ -193,9 +193,9 @@ void MyAnimator::draw()
 	// The main object
 	if(activeScaffold()){
 		//Temporarily set
-		activeScaffold()->showCuboids(true);
-		activeScaffold()->showScaffold(true);
-		activeScaffold()->showMeshes(false);
+		activeScaffold()->showCuboids(false);
+		activeScaffold()->showScaffold(false);
+		activeScaffold()->showMeshes(true);
 		//drawObject();
 		activeScaffold()->draw();
 	}

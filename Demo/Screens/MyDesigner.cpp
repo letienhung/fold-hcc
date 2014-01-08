@@ -33,6 +33,7 @@ MyDesigner::MyDesigner( Ui::DesignWidget * useDesignWidget, QWidget * parent /*=
 	skyRadius = 1.0;
 	gManager = NULL;
 	fManager = new FoldManager;
+	currGraph = NULL;
 	mBox = NULL;
 	isMousePressed = false;
 	loadedMeshHalfHight = 1.0;
@@ -193,21 +194,20 @@ void MyDesigner::draw()
 {
 	// No object to draw
 	if (isEmpty()) return;
+	if (!currGraph) //activeScaffold()
+		return;
 
-	if(selectMode == CUBOID && activeScaffold()){
-		//designWidget->selectCuboidButton->setChecked(true);
-		activeScaffold()->showCuboids(true);
+	if(selectMode == CUBOID){
+		currGraph ->showCuboids(true);
 	}
 
 	// The main object
-	if(activeScaffold()){
-		if(designWidget->showModel->isChecked())
-			drawObject();
-		activeScaffold()->draw();
-	}
+	if(designWidget->showModel->isChecked())
+		drawObject();
+	currGraph->draw();
 
-	if(selectMode == BOX && activeScaffold()){
-		Geom::AABB aabb = activeScaffold()->computeAABB();
+	if(selectMode == BOX){
+		Geom::AABB aabb = currGraph->computeAABB();
 		if(mBox == NULL){
 			mBox = new BBox(aabb.center(), (aabb.bbmax-aabb.bbmin)*0.5f);
 			scalePercent = 0.0;
@@ -270,7 +270,8 @@ void MyDesigner::drawObject()
 		glPopAttrib ();
 	} 
 	else{// Fall back
-		activeScaffold()->draw();
+		//activeScaffold()->draw();
+		currGraph->draw();
 	}
 }
 
@@ -318,10 +319,10 @@ QVector<uint> MyDesigner::fillTrianglesList(FdNode* n)
 
 void MyDesigner::updateVBOs()
 {
-	if(gManager && activeScaffold())
+	if(gManager && currGraph)//activeScaffold())
 	{
 		// Create VBO for each segment if needed
-	    QVector<FdNode*> nodes = activeScaffold()->getFdNodes();
+	    QVector<FdNode*> nodes = currGraph->getFdNodes();//activeScaffold()->getFdNodes();
 		for (int i=0;i<nodes.size();i++)
 		{			
 			QSharedPointer<SurfaceMeshModel> seg = nodes[i]->mMesh;
@@ -461,10 +462,11 @@ void MyDesigner::drawOSD()
 	drawMessage("Select mode: " + selectModeTxt[selectMode], padY(lineNum));
 	drawMessage(toolModeTxt[selectMode], width()- 100 - fm->width(toolModeTxt[selectMode])*0.5, paddingY + (pixelsHigh * 3), Vec4d(0.5,0.0,0.5,0.25));
 
-	if(!gManager) return; //|| !gManager->scaffold
+	//if(!gManager) return; //|| !gManager->scaffold
+	if(!currGraph) return;
 
 	if(selectMode == CUBOID){
-		QVector<Structure::Node*> nodes = activeScaffold()->getSelectedNodes();
+		QVector<Structure::Node*> nodes = currGraph->getSelectedNodes();//activeScaffold()->getSelectedNodes();
 		foreach(Structure::Node *n, nodes)
 			drawMessage("Cuboid -" + n->mID, padY(lineNum), Vec4d(0,1.0,0,0.25));
 
@@ -598,6 +600,9 @@ void MyDesigner::loadObject()
 
 	loadedMeshHalfHight = (aabb.bbmax.z() - aabb.bbmin.z()) * -0.01;
 
+	// Set scaffold to display
+	currGraph = activeScaffold()->deepClone();
+
 	// Set camera
 	resetView();
 
@@ -660,6 +665,8 @@ void MyDesigner::newScene()
 	fManager = NULL;
 	fManager = new FoldManager;
 
+	currGraph = NULL;
+
 	updateGL();
 }
 
@@ -690,7 +697,7 @@ void MyDesigner::mousePressEvent( QMouseEvent* e )
 		    updateGL();
 		}
 
-		if(selectMode == CUBOID && activeScaffold())
+		if(selectMode == CUBOID && currGraph)
 		{
 
 		}
@@ -726,7 +733,7 @@ void MyDesigner::mouseReleaseEvent( QMouseEvent* e )
 	if(x > width() - scale && y > height() - scale && gManager)
 	{
 		QPoint p(abs(x - width() + scale), abs(y - height() + scale));
-		Geom::AABB aabb = activeScaffold()->computeAABB();
+		Geom::AABB aabb = currGraph->computeAABB();
 
 		double meshHeight = aabb.bbmax.z() - aabb.bbmin.z();
 		double meshLength = aabb.bbmax.y() - aabb.bbmin.y();
@@ -889,9 +896,11 @@ void MyDesigner::endUnderMesh()
 
 void MyDesigner::drawWithNames()
 {
-	if(isEmpty())
-		return;
-	activeScaffold()->drawWithNames();
+	if(isEmpty()) return;
+	if(!currGraph) return;
+
+	currGraph->drawWithNames();
+	//activeScaffold()->drawWithNames();
 }
 
 void MyDesigner::postSelection( const QPoint& point )
@@ -900,14 +909,15 @@ void MyDesigner::postSelection( const QPoint& point )
 		return;
 
 	//int selected = selectedName();
-	if (selectMode == CUBOID && activeScaffold())
+	if (selectMode == CUBOID && currGraph)
 	{
 		int nidx = selectedName();
 
-		Structure::Node* sn = activeScaffold()->getNode(nidx);
+		Structure::Node* sn = currGraph->getNode(nidx);//activeScaffold()->getNode(nidx);
 		if (sn)
 		{
-			activeScaffold()->selectNode(nidx);
+			currGraph->selectNode(nidx);
+			//activeScaffold()->selectNode(nidx);
 		}
 	}
 
@@ -923,19 +933,20 @@ void MyDesigner::setSelectMode( SelectMode toMode )
 void MyDesigner::selectCuboidMode()
 {
 	clearButtons();
-	if(isEmpty()){
+	if(!currGraph){
 		this->displayMessage("* Please import an object first *", 1000);
 		return;
 	}
 	setManipulatedFrame(activeFrame);
 
-	if(!activeScaffold()) return;
+	//if(!activeScaffold()) return;
 
 	setMouseBinding(Qt::LeftButton, SELECT);
 	setMouseBinding(Qt::ShiftModifier | Qt::LeftButton, CAMERA, ROTATE);
 
 	setSelectMode(CUBOID);
-	activeScaffold()->showCuboids(true);
+	currGraph->showCuboids(true);
+	//activeScaffold()->showCuboids(true);
 	this->setCursor(QCursor(QPixmap(":/Resources/push.png"), 0, 32));
 	this->displayMessage("* Left click to select a node *", 5000);
 	selectTool();
@@ -947,13 +958,15 @@ void MyDesigner::selectCameraMode()
 	clearButtons();
 	setManipulatedFrame(activeFrame);
 
-	if(!activeManager()) return;
+	//if(!activeManager()) return;
+	if(!currGraph) return;
 
 	designWidget->selectCameraButton->setChecked(true);
 	
 	//setMouseBinding(Qt::ShiftModifier | Qt::LeftButton, SELECT);
 	setMouseBinding(Qt::LeftButton, CAMERA, ROTATE);
-	activeScaffold()->showCuboids(designWidget->showCuboid->isChecked());
+	currGraph->showCuboids(designWidget->showCuboid->isChecked());
+	//activeScaffold()->showCuboids(designWidget->showCuboid->isChecked());
 	this->setCursor(QCursor(Qt::ArrowCursor));
 	setSelectMode(SELECT_NONE);
 	updateGL();
@@ -962,14 +975,15 @@ void MyDesigner::selectCameraMode()
 void MyDesigner::selectAABBMode()
 {
 	clearButtons();
-	if(mBox == NULL){
+	if(!currGraph){
 		this->displayMessage("* Please import an object first *", 1000);
 		return;
 	}
 
 	//setMouseBinding(Qt::RightButton, SELECT);
 	setMouseBinding(Qt::ShiftModifier | Qt::LeftButton, CAMERA, ROTATE);
-	activeScaffold()->showCuboids(designWidget->showCuboid->isChecked());
+	currGraph->showCuboids(designWidget->showCuboid->isChecked());
+	//activeScaffold()->showCuboids(designWidget->showCuboid->isChecked());
 	this->setCursor(QCursor(QPixmap(":/Resources/push.png"), 0, 32));
 	setSelectMode(BOX);
     selectTool();
@@ -1011,20 +1025,26 @@ void MyDesigner::dequeueLastMessage()
 void MyDesigner::showCuboids(int state)
 {
 	if(isEmpty()) return;
-	gManager->scaffold->showCuboids(state);
+	if(!currGraph) return;
+	//gManager->scaffold->showCuboids(state);
+	currGraph->showCuboids(state);
 	updateGL();
 }
 void MyDesigner::showGraph(int state)
 {
 	if(isEmpty()) return;
-	gManager->scaffold->showScaffold(state);
+	if(!currGraph) return;
+	//gManager->scaffold->showScaffold(state);
+	currGraph->showScaffold(state);
 	updateGL();
 }
 
 void MyDesigner::showModel(int state)
 {
 	if(isEmpty()) return;
-	gManager->scaffold->showMeshes(state);
+	if(!currGraph) return;
+	//gManager->scaffold->showMeshes(state);
+	currGraph->showMeshes(state);
 	isShow = (state == Qt::Checked);
 	updateGL();
 }
@@ -1032,17 +1052,25 @@ void MyDesigner::showModel(int state)
 void MyDesigner::setScalable(int state)
 {
 	if(isEmpty()) return;
+	if(!currGraph) return;
 	bool isScalable = (state == Qt::Checked);
-	QVector <Structure::Node *> selectedNodes = activeScaffold()->getSelectedNodes();
-	foreach(Structure::Node *n, selectedNodes)
-		n->properties["isScalable"] = isScalable;
+	QVector <Structure::Node *> selectedNodes = currGraph->getSelectedNodes();
+	foreach(Structure::Node *n, selectedNodes){
+		activeScaffold()->getNode(n->mID)->properties["isScalable"] = isScalable;
+	}
+	//foreach(Structure::Node *n, selectedNodes)
+	//	n->properties["isScalable"] = isScalable;
 }
 
 void MyDesigner::setSplittable(int state)
 {
 	if(isEmpty()) return;
+	if(!currGraph) return;
 	bool isSplittable = (state == Qt::Checked);
-	QVector <Structure::Node *> selectedNodes = activeScaffold()->getSelectedNodes();
-	foreach(Structure::Node *n, selectedNodes)
-		n->properties["isSplittable"] = isSplittable;
+	QVector <Structure::Node *> selectedNodes = currGraph->getSelectedNodes();
+	foreach(Structure::Node *n, selectedNodes){
+		activeScaffold()->getNode(n->mID)->properties["isScalable"] = isSplittable;
+	}
+	/*foreach(Structure::Node *n, selectedNodes)
+	n->properties["isSplittable"] = isSplittable;*/
 }

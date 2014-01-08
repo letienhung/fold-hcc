@@ -334,7 +334,8 @@ void MainWindow::loadCurrentGraphs()
 
 		//QString fileName = path + "\\" + files[index + c];
 		int size = mFManager->results[index+c].size();
-		new LoaderThread(viewers[i], mFManager->results[index+c][size-1]);
+		FdGraph *currFrame = mFManager->results[index+c][size - 1]->deepClone();
+		new LoaderThread(viewers[i], currFrame);
 		viewers[i]->mIdx = index+c;
 		c++; 
 		if(c > curActive) return;
