@@ -10,6 +10,7 @@
 
 #include "RodNode.h"
 #include "PatchNode.h"
+#include "BundleNode.h"
 #include "FdLink.h"
 
 #include "AABB.h"
@@ -134,10 +135,11 @@ void FdGraph::loadFromFile(QString fname)
 		// create new node
 		FdNode* new_node;
 		MeshPtr m(mesh);
+		QString id = m->name;
 		if(ntype == FdNode::ROD)
-			new_node = new RodNode(m, box);
+			new_node = new RodNode(id, box, m);
 		else
-			new_node = new PatchNode(m, box);
+			new_node = new PatchNode(id, box, m);
 
 		Graph::addNode(new_node);
 	}
@@ -185,27 +187,17 @@ FdNode* FdGraph::merge( QVector<QString> nids )
 	if (ns.isEmpty()) return NULL;
 	if (ns.size() == 1) return ns[0];
 
-	// merge
-	MeshMerger mm;
-	QVector<Vector3> boxPoints;
-	QString mergedID;
+	// merge into a bundle node
+	QVector<FdNode*> plainNodes;
+	foreach (FdNode* n, ns)	plainNodes += n->getPlainNodes();
+	QString bid = getBundleName(plainNodes);
+	Geom::Box box = getBundleBox(plainNodes);
+	BundleNode* mergedNode = new BundleNode(bid, box, plainNodes); 
+	Structure::Graph::addNode(mergedNode);
+
+	// remove original nodes
 	foreach (FdNode* n, ns)
-	{
-		n->deformMesh();
-		mm.addMesh(n->mMesh.data());
-
-		boxPoints += n->mBox.getConnerPoints();
-		mergedID += "+" + n->mID;
-
-		removeNode(n->mID);
-	}
-
-	// fit box using box corners
-	Geom::Box box = fitBox(boxPoints);
-
-	// add node
-	FdNode* mergedNode = addNode(MeshPtr(mm.getMesh()), box); 
-	mergedNode->mID = mergedID;
+		Structure::Graph::removeNode(n->mID);
 
 	return mergedNode;
 }
@@ -226,9 +218,10 @@ FdNode* FdGraph::addNode(MeshPtr mesh, Geom::Box& box)
 	int box_type = box.getType(5);
 
 	FdNode* node;
+	QString id = mesh->name;
 	if (box_type == Geom::Box::ROD)	
-		node = new RodNode(mesh, box);
-	else node = new PatchNode(mesh, box);
+		node = new RodNode(id, box, mesh);
+	else node = new PatchNode(id, box, mesh);
 
 	// add to graph and set id
 	Graph::addNode(node);
@@ -241,31 +234,24 @@ QVector<FdNode*> FdGraph::split( FdNode* fn, Geom::Plane& plane)
 {
 	QVector<FdNode*> splitted;
 
+	// split only when the plane cuts the node
+	if (relationWithPlane(fn, plane, 0.1) != ISCT_PLANE)
+		return splitted;
+
 	// positive side
 	FdNode* node1 = fn->cloneChopped(plane);
-	if (node1)
-	{
-		node1->mID = fn->mID + QString("_%1").arg(splitted.size());
-		Structure::Graph::addNode(node1);
-		splitted.push_back(node1);
-	}
+	node1->mID = fn->mID + "_" + QString::number(0);
+	Structure::Graph::addNode(node1);
+	splitted.push_back(node1);
 
 	// negative side
 	FdNode* node2 = fn->cloneChopped(plane.opposite());
-	if (node2)
-	{
-		node2->mID = fn->mID + QString("_%1").arg(splitted.size());
-		Structure::Graph::addNode(node2);
-		splitted.push_back(node2);
-	}
-
-	// keep the original id if only one major part remains
-	if (splitted.size() == 1)
-		splitted.front()->mID = fn->mID;
+	node2->mID = fn->mID + "_" + QString::number(1);
+	Structure::Graph::addNode(node2);
+	splitted.push_back(node2);
 
 	// remove the original node
-	if (!splitted.isEmpty())
-		removeNode(fn->mID);
+	if (!splitted.isEmpty()) removeNode(fn->mID);
 
 	return splitted;
 }
@@ -293,9 +279,9 @@ void FdGraph::changeNodeType( FdNode* n )
 	// create new node
 	Structure::Node* new_node;
 	if (n->mType == FdNode::PATCH)
-		new_node =new RodNode(n->mMesh, n->mBox);
+		new_node =new RodNode(n->mID, n->mBox, n->mMesh);
 	else
-		new_node = new PatchNode(n->mMesh, n->mBox);
+		new_node = new PatchNode(n->mID, n->mBox, n->mMesh);
 
 	// replace
 	replaceNode(n, new_node);

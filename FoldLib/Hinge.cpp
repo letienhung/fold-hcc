@@ -32,14 +32,14 @@ Hinge::Hinge( FdNode* n1, FdNode* n2, Point o, Vec3d x, Vector3 y, Vector3 z, do
 	hinge_record2 = createLinkRecord(node2->mBox);
 
 	// create node records in dihedral frames
-	node1_record = createNodeRecord(node1_frame, zxFrame);
-	node2_record = createNodeRecord(node2_frame, zyFrame);
+	n1_frecord = zxFrame.encodeFrame(node1_frame);
+	n2_frecord = zyFrame.encodeFrame(node2_frame);
 }
 
 
-Hinge::HingeRecord Hinge::createLinkRecord( Geom::Box& node_box )
+Hinge::HingeRecordInBox Hinge::createLinkRecord( Geom::Box& node_box )
 {
-	HingeRecord lr;
+	HingeRecordInBox lr;
 	lr.c_box = node_box.getCoordinates(Origin);
 
 	Geom::Frame f = node_box.getFrame();
@@ -51,34 +51,23 @@ Hinge::HingeRecord Hinge::createLinkRecord( Geom::Box& node_box )
 	return lr;
 }
 
-Hinge::NodeRecord Hinge::createNodeRecord( Geom::Frame node_frame, Geom::Frame dl_frame )
-{
-	NodeRecord nr;
-	nr.c = dl_frame.getCoordinates(node_frame.c);
-	nr.cpr = dl_frame.getCoordinates(node_frame.r + node_frame.c);
-	nr.cps = dl_frame.getCoordinates(node_frame.s + node_frame.c);
-	nr.cpt = dl_frame.getCoordinates(node_frame.t + node_frame.c);
-
-	return nr;
-}
-
 bool Hinge::fix()
 {
 	// if both nodes are fixed, treat node2 as free
 	// distinguish between fixed and free
 	FdNode *fixed_node, *free_node;
-	HingeRecord fixed_hr, free_hr;
-	NodeRecord free_nr;
+	HingeRecordInBox fixed_hr, free_hr;
+	Geom::Frame::RecordInFrame free_nr;
 	if (node1->properties["fixed"].toBool())
 	{
 		fixed_node = node1; free_node = node2;
 		fixed_hr = hinge_record1; free_hr = hinge_record2;
-		free_nr = node2_record;
+		free_nr = n2_frecord;
 	}else
 	{
 		fixed_node = node2; free_node = node1;
 		fixed_hr = hinge_record2; free_hr = hinge_record1;
-		free_nr = node1_record;
+		free_nr = n1_frecord;
 	}
 
 	// fix hinge position and orientation from fixed node
@@ -99,7 +88,7 @@ bool Hinge::fix()
 	{
 		// step 1: fix the frame
 		Geom::Frame free_dhf = (node1->properties["fixed"].toBool())? zyFrame : zxFrame;
-		Geom::Frame free_nf = this->recoverNodeFrame(free_nr, free_dhf);
+		Geom::Frame free_nf = free_dhf.decodeFrame(free_nr);
 		free_node->mBox.setFrame( free_nf ); 
 
 		// step 2: snap two nodes
@@ -114,7 +103,7 @@ bool Hinge::fix()
 	}
 }
 
-void Hinge::recoverLink( HingeRecord lr, Geom::Box& node_box )
+void Hinge::recoverLink( HingeRecordInBox lr, Geom::Box& node_box )
 {
 	this->Origin = node_box.getPosition(lr.c_box);
 
@@ -125,16 +114,6 @@ void Hinge::recoverLink( HingeRecord lr, Geom::Box& node_box )
 	this->hY	= f.getPosition(lr.cpv2) - c;
 }
 
-Geom::Frame Hinge::recoverNodeFrame( NodeRecord nr, Geom::Frame dl_frame )
-{
-	Geom::Frame node_frame;
-	node_frame.c = dl_frame.getPosition(nr.c);
-	node_frame.r = dl_frame.getPosition(nr.cpr) - node_frame.c;
-	node_frame.s = dl_frame.getPosition(nr.cps) - node_frame.c;
-	node_frame.t = dl_frame.getPosition(nr.cpt) - node_frame.c;
-
-	return node_frame;
-}
 
 void Hinge::updateDihedralFrames()
 {

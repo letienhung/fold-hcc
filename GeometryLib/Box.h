@@ -60,6 +60,8 @@ public:
 	static int QUAD_FACE[6][4];
 	static int TRI_FACE[12][3];
 
+	double	radius();
+	double	volume();
 	int		getFaceId(Vector3 n);
 	int		getFaceId(int aid, bool positive);
 	int		getAxisId(Vector3 a);
@@ -84,7 +86,6 @@ public:
 	QVector<Rectangle>          getFaceIncidentOnPoint(Point &p);
 
 	// sampling
-	double	volume();
 	QVector<Vector3>	getGridSamples(int N);
 
 	// tags

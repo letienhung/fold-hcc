@@ -3,8 +3,8 @@
 #include "Box.h"
 #include "CustomDrawObjects.h"
 
-PatchNode::PatchNode(MeshPtr m, Geom::Box &b)
-	: FdNode(m, b)
+PatchNode::PatchNode(QString id, Geom::Box &b, MeshPtr m)
+	: FdNode(id, b, m)
 {
 	mType = FdNode::PATCH;
 	createScaffold();
@@ -31,6 +31,8 @@ void PatchNode::createScaffold()
 
 void PatchNode::drawScaffold()
 {
+	if (properties.contains("virtual")) return;
+
 	if (properties.contains("isCtrlPanel"))
 		mPatchColor = Qt::red;
 

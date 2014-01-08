@@ -16,5 +16,14 @@ struct Frame
 	Vector3 getPosition(Vector3 coord); 
 
 	bool	isAlignedWith(const Frame& other);
+
+	// encode and decode
+	struct RecordInFrame{
+		Vector3 c, cpr, cps, cpt;
+	};
+	RecordInFrame encodeFrame(Frame& other);
+	Frame decodeFrame(RecordInFrame record);
+
 };
+
 }

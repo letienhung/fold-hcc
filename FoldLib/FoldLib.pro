@@ -49,7 +49,8 @@ HEADERS += \
     PizzaChain.h \
     SandwichChain.h \
     ChainGraph.h \
-    Hinge.h
+    Hinge.h \
+    BundleNode.h
 
 SOURCES += \
     PatchNode.cpp \
@@ -68,5 +69,6 @@ SOURCES += \
     PizzaChain.cpp \
     SandwichChain.cpp \
     ChainGraph.cpp \
-    Hinge.cpp
+    Hinge.cpp \
+    BundleNode.cpp
 

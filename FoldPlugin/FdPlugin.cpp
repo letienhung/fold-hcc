@@ -101,20 +101,32 @@ void FdPlugin::resetScene()
 }
 
 
-void FdPlugin::test()
+void FdPlugin::test1()
 {
 	if(!activeScaffold()) return;
 
-	QVector<Structure::Node*> selNodes = activeScaffold()->getSelectedNodes();
     QVector<QString> nIds;
-	if(selNodes.isEmpty()) return;
-
-	foreach(Structure::Node* n, selNodes){
+	foreach(Structure::Node* n, activeScaffold()->getSelectedNodes()){
 		nIds.push_back(n->mID);
 	}
 
 	activeScaffold()->merge(nIds);
 	updateScene();
+}
+
+void FdPlugin::test2()
+{
+	if (!activeScaffold()) return;
+	QVector<Structure::Node*> selNodes = activeScaffold()->getSelectedNodes();
+	if (selNodes.isEmpty()) return;
+
+	FdNode* node = (FdNode*)selNodes.front();
+
+	Vector3 v(1, 0, 0);
+	int aid = node->mBox.getClosestAxisId(v);
+	Geom::Plane cutPlane = node->mBox.getPatch(aid, 0).getPlane();
+
+	activeScaffold()->split(node, cutPlane);
 }
 
 
@@ -147,7 +159,7 @@ bool FdPlugin::postSelection( const QPoint& point )
 		FdNode* sn = (FdNode*)activeScaffold()->getNode(nidx);
 		if (sn)
 		{
-			showMessage("Selected name = %d, nodeId = %s, mesh = %s", nidx, qPrintable(sn->mID), qPrintable(sn->mMesh->name));
+			showMessage("Selected name = %d, nodeId = %s, mesh = %s", nidx, qPrintable(sn->mID), qPrintable(sn->getMeshName()));
 			activeScaffold()->selectNode(nidx);
 		}
 		else
@@ -193,6 +205,8 @@ void FdPlugin::showKeyframe( int state )
 	drawKeyframe = (state == Qt::Checked);
 	updateScene();
 }
+
+
 
 
 Q_EXPORT_PLUGIN(FdPlugin)

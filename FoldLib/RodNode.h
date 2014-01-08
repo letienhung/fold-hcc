@@ -5,7 +5,7 @@
 class RodNode : public FdNode
 {
 public:
-    RodNode(MeshPtr m, Geom::Box &b);
+    RodNode(QString id, Geom::Box &b, MeshPtr m);
 	RodNode(RodNode& other);
 	~RodNode();
 

@@ -5,6 +5,7 @@
 #include "Box.h"
 #include "XmlWriter.h"
 #include "AABB.h"
+#include "FdUtility.h"
 
 class FdNode : public Structure::Node
 {
@@ -12,26 +13,31 @@ public:
 	enum NODE_TYPE{NONE, ROD, PATCH};
 
 public:
-    FdNode(MeshPtr m, Geom::Box &b);
+    FdNode(QString id, Geom::Box &b, MeshPtr m);
 	FdNode(FdNode& other);
 	~FdNode();
 
 	virtual Node* clone() = 0;
+
+	// plain nodes
+	virtual QVector<FdNode*> getPlainNodes();
 
 	// visualization
 	bool showCuboids;
 	bool showScaffold;
 	bool showMesh;
 	void draw();
+	virtual void drawMesh();
 	virtual void drawScaffold() = 0;
 	void drawWithName(int name);
 
 	// mesh
 	void encodeMesh();
-	void deformMesh();
+	virtual void deformMesh();
+	virtual QString getMeshName();
 
 	// fit cuboid
-	void refit(int method);
+	void refit(BOX_FIT_METHOD method);
 
 	// I/O
 	void write(XmlWriter& xw);
@@ -40,7 +46,7 @@ public:
 	virtual void createScaffold() = 0;
 	Geom::AABB computeAABB();
 	Vector3 center();
-	FdNode* cloneChopped(Geom::Plane chopper);
+	virtual FdNode* cloneChopped(Geom::Plane chopper);
 	 
 	// relation with direction
 	virtual bool isPerpTo(Vector3 v, double dotThreshold);
@@ -53,5 +59,3 @@ public:
 	QColor mColor;
 	NODE_TYPE mType;
 };
-
-typedef QVector< QVector<FdNode*> > FdNodeArray2D;

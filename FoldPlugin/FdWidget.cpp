@@ -56,7 +56,8 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->connect(ui->showAABB, SIGNAL(stateChanged(int)), SLOT(showAABB(int)));
 
 	// test
-	plugin->connect(ui->test, SIGNAL(clicked()), SLOT(test()));
+	plugin->connect(ui->test1, SIGNAL(clicked()), SLOT(test1()));
+	plugin->connect(ui->test2, SIGNAL(clicked()), SLOT(test2()));
 }
 
 

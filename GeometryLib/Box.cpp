@@ -665,3 +665,12 @@ void Geom::Box::normalizeAxis()
 	for (int i = 0; i < 3; i++)
 		Axis[i].normalize();
 }
+
+double Geom::Box::radius()
+{
+	double s;
+	for (int i = 0; i < 3; i++)
+		s += Extent[i] * Extent[i];
+
+	return sqrt(s);
+}

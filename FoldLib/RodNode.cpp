@@ -2,8 +2,8 @@
 #include "Box.h"
 #include "CustomDrawObjects.h"
 
-RodNode::RodNode(MeshPtr m, Geom::Box &b)
-	: FdNode(m, b)
+RodNode::RodNode(QString id, Geom::Box &b, MeshPtr m)
+	: FdNode(id, b, m)
 {
 	mType = FdNode::ROD;
 	createScaffold();
@@ -34,6 +34,8 @@ void RodNode::createScaffold()
 
 void RodNode::drawScaffold()
 {
+	if (properties.contains("virtual")) return;
+
 	mRod.draw(3.0, mRodColor);
 }
 

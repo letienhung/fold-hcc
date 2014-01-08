@@ -56,7 +56,8 @@ public slots:
 	void resetScene();
 	void showStatus(QString msg);
 
-	void test();
+	void test1();
+	void test2();
 };
 
 

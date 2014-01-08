@@ -40,7 +40,6 @@ FdNodeArray2D clusterNodes( QVector<FdNode*> nodes, double disThr )
 				visited[i] = true;
 				nbVisited++;
 			}
-	
 		}
 
 		// cannot find more nodes
@@ -211,30 +210,6 @@ QVector<double> getEvenDivision( int n, double start /*= 0*/, double end /*= 1*/
 	return cp;
 }
 
-bool onPlane( FdNode* n, Geom::Plane& plane )
-{
-	if (n->mType == FdNode::PATCH)
-	{
-		PatchNode* pn = (PatchNode*)n;
-		double dist = fabs(plane.signedDistanceTo(pn->mPatch.Center));
-		double dotProd = fabs(dot(pn->mPatch.Normal, plane.Normal));
-		double thr = pn->mPatch.radius() / 2;
-
-		return (dist < thr && dotProd > 0.5);
-	}
-	else
-	{
-		RodNode* rn = (RodNode*)n;
-		double dist = fabs(plane.signedDistanceTo(rn->mRod.Center));
-		double dotProd = fabs(dot(rn->mRod.Direction, plane.Normal));
-		double thr = rn->mRod.length() / 2;
-
-		//qDebug() << "dist = " << dist << ", dotProd = " << dotProd << ", thr = " << thr;
-
-		return (dist < thr && dotProd < 0.5);
-	}
-}
-
 Geom::Box fitBox( QVector<Vector3>& pnts, BOX_FIT_METHOD method )
 {
 	Geom::Box box;
@@ -258,3 +233,58 @@ Geom::Box fitBox( QVector<Vector3>& pnts, BOX_FIT_METHOD method )
 	return box;
 }
 
+PLANE_RELATION relationWithPlane( FdNode* n, Geom::Plane plane, double thr )
+{
+	double minDist = maxDouble();
+	double maxDist = minDouble();
+	foreach (Vector3 p, n->mBox.getConnerPoints())
+	{
+		double dist = plane.signedDistanceTo(p);
+		if (dist < minDist) minDist = dist;
+		if (dist > maxDist) maxDist = dist;
+	}
+	double distThr = n->mBox.radius() * thr;
+
+	int minSide;
+	if (minDist < -distThr) minSide = -1;
+	else if (minDist > distThr) minSide = 1;
+	else minSide = 0;
+
+	int maxSide;
+	if (maxDist < -distThr) maxSide = -1;
+	else if (maxDist > distThr) maxSide = 1;
+	else maxSide = 0;
+
+	int sum = minSide + maxSide;
+	if (sum >= 1) return POS_PLANE;
+	if (sum <= -1) return NEG_PLANE;
+	if (minSide == 0 && maxSide == 0) return ON_PLANE;
+	else return ISCT_PLANE;
+}
+
+bool onPlane( FdNode* n, Geom::Plane& plane )
+{
+	return (relationWithPlane(n, plane, 0.2) == ON_PLANE);
+}
+
+QString getBundleName( const QVector<FdNode*>& nodes )
+{
+	QString bname;
+	foreach (FdNode* n, nodes)
+	{
+		bname += "+" + n->mID;
+	}
+
+	return "(" + bname + ")";
+}
+
+Geom::Box getBundleBox( const QVector<FdNode*>& nodes )
+{
+	QVector<Vector3> points;
+	foreach (FdNode* n, nodes)
+	{
+		points += n->mBox.getConnerPoints();
+	}
+
+	return fitBox(points);
+}

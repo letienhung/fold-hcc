@@ -226,13 +226,6 @@
      </property>
     </spacer>
    </item>
-   <item row="10" column="1">
-    <widget class="QPushButton" name="test">
-     <property name="text">
-      <string>TEST</string>
-     </property>
-    </widget>
-   </item>
    <item row="3" column="0" colspan="2">
     <widget class="QGroupBox" name="groupBox_3">
      <property name="title">
@@ -389,6 +382,20 @@
        </widget>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QPushButton" name="test1">
+     <property name="text">
+      <string>TEST-1</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QPushButton" name="test2">
+     <property name="text">
+      <string>TEST-2</string>
+     </property>
     </widget>
    </item>
   </layout>

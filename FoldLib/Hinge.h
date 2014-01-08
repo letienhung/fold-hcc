@@ -34,14 +34,13 @@ public:
 		FOLDED, UNFOLDED, HALF_FOLDED
 	} state;							// folding state
 
-	struct HingeRecord{			
+	struct HingeRecordInBox{			
 		Vector3 c_box;					// relative position in box
 		Vector3 c, cpa, cpv1, cpv2;		// absolute positions in box-frame to recover vectors
 	}hinge_record1, hinge_record2;
 
-	struct NodeRecord{					// node records in dihedral frames
-		Vector3 c, cpr, cps, cpt;
-	}node1_record, node2_record;
+	Geom::Frame::RecordInFrame n1_frecord;	// node records in dihedral frames
+	Geom::Frame::RecordInFrame n2_frecord; 
 
 public:
 	// restore the configuration of self and two incident nodes
@@ -60,8 +59,6 @@ public:
 private:
 	void updateDihedralVectors(bool hXFixed);
 	void updateDihedralFrames();
-	HingeRecord createLinkRecord(Geom::Box& node_box);
-	NodeRecord createNodeRecord(Geom::Frame node_frame, Geom::Frame dl_frame);
-	void recoverLink(HingeRecord lr, Geom::Box& node_box);
-	Geom::Frame recoverNodeFrame(NodeRecord nr, Geom::Frame dl_frame);
+	HingeRecordInBox createLinkRecord(Geom::Box& node_box);
+	void recoverLink(HingeRecordInBox lr, Geom::Box& node_box);
 };
