@@ -152,7 +152,7 @@ void MyAnimator::preDraw()
 	double floorOpacity = 0.25; 
 	if(camera()->position().z < loadedMeshHalfHight) floorOpacity = 0.05;
 	drawCircleFade(Vec4d(0,0,0,floorOpacity), 4); // Floor
-	drawShadows();
+	//drawShadows();
 	endUnderMesh();
 
 	glClear(GL_DEPTH_BUFFER_BIT);
@@ -193,10 +193,10 @@ void MyAnimator::draw()
 	// The main object
 	if(activeScaffold()){
 		//Temporarily set
+		//drawObject();
 		activeScaffold()->showCuboids(false);
 		activeScaffold()->showScaffold(false);
 		activeScaffold()->showMeshes(true);
-		//drawObject();
 		activeScaffold()->draw();
 	}
 
@@ -437,7 +437,7 @@ void MyAnimator::drawOSD()
 	int pixelsHigh = fm->height();
 
 	/* Configuration text */
-	drawMessage("Configuration #" + QString::number(mCurrConfigId), paddingX, paddingY + (pixelsHigh * 3), Vec4d(0.5,0.5,0.0,0.25));
+	drawMessage("Configuration #" + QString::number(mCurrConfigId+1), paddingX, paddingY + (pixelsHigh * 3), Vec4d(0.5,0.5,0.0,0.25));
 			
 	// View changer title
 	qglColor(QColor(255,255,180,200));
@@ -784,8 +784,8 @@ void MyAnimator::animate()
 	if(isEmpty()) return;
 	for(int i = 0; i < activeManager()->results[mCurrConfigId].size(); i++){
 		mCurrFrameId = i;
-		updateGL();
-		//emit(setSliderValue(100 * (double(mCurrFrameId) / activeManager()->results[mCurrConfigId].size()))); 
+		//updateGL();
+		//emit(setSliderValue(100 * (double(mCurrFrameId) / activeManager()->results[mCurrConfigId].size())+1)); 
 		emit(setSliderValue(mCurrFrameId));
 	}
 }
@@ -797,7 +797,7 @@ void MyAnimator::toggleSlider(int frameId)
 		vti->ui->playButton->setText(playLabel);
 		return;
 	}
-	mCurrFrameId = frameId ;
+	mCurrFrameId = frameId;
 	updateGL();
 	if(mCurrFrameId == activeManager()->results[mCurrConfigId].size() - 1){
 		isPlaying = false;

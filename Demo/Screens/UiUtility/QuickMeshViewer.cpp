@@ -58,8 +58,8 @@ void QuickMeshViewer::draw()
 	if(mGraph){
 		// Temporarily set
 		mGraph->showCuboids(false);
-		mGraph->showScaffold(true);
-		mGraph->showMeshes(false);
+		mGraph->showScaffold(false);
+		mGraph->showMeshes(true);
 		mGraph->draw();
 	}
 
@@ -92,12 +92,12 @@ void QuickMeshViewer::postDraw()
 
 	if(isLoading){
 		glColor3d(1,1,1);
-		renderText(8, 15, "Loading...");
+		//renderText(8, 15, "Loading...");
 	}
 	else
 	{
 		glColor4d(1,1,1,0.5);
-		renderText(8, 15, QFileInfo(mGraph->path).baseName());
+		//renderText(8, 15, mGraph->mID);
 	}
 
 	if(this->hasFocus())
@@ -146,7 +146,7 @@ void QuickMeshViewer::setGraph(FdGraph *graph)
 
 	resetView();
 
-	updateGL();
+	//updateGL();
 	emit(graphLoaded());
 }
 
