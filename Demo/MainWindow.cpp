@@ -332,11 +332,13 @@ void MainWindow::loadCurrentGraphs()
 
 		if(index + c > n - 1) return;
 
-		//QString fileName = path + "\\" + files[index + c];
 		int size = mFManager->results[index+c].size();
-		FdGraph *currFrame = mFManager->results[index+c][size - 1]->deepClone();
+		FdGraph *currFrame = mFManager->results[index+c][(int)(size*7/10)]->deepClone();
+		QString res = "Result #";
+		currFrame->mID = res + QString::number(index+c+1);
 		new LoaderThread(viewers[i], currFrame);
 		viewers[i]->mIdx = index+c;
+		viewers[i]->updateGL();
 		c++; 
 		if(c > curActive) return;
 	}
