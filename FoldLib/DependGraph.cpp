@@ -30,19 +30,25 @@ Structure::Node* ChainNode::clone()
 //////////////////////////////////////////////////////////////////////////
 
 FoldingNode::FoldingNode(int hIdx, QString id )
-	: Node(id), hingeIdx(hIdx), score(0)
+	: Node(id), hingeIdx(hIdx), gain(0), cost(0)
 {
 }
 
 FoldingNode::FoldingNode( FoldingNode &other )
 	: Node(other)
 {
-	score = other.score;
+	gain = other.gain;
+	cost = other.cost;
 }
 
 Structure::Node* FoldingNode::clone()
 {
 	return new FoldingNode(*this);
+}
+
+double FoldingNode::getScore()
+{
+	return gain - cost;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -228,7 +234,7 @@ QString DependGraph::toGraphvizFormat( QString subcaption, QString caption )
 {
 	QStringList out;
 	out << "graph G{\n";
-	out << "\t" << "node [ fontcolor = black, color = white];" << "\n";
+	out << "\t" << "node [fontcolor = black, color = white];" << "\n";
 
 	// Place on a grid
 	double size = 50;
@@ -247,7 +253,10 @@ QString DependGraph::toGraphvizFormat( QString subcaption, QString caption )
 		// label
 		QString label = node->mID;
 		if (type == "folding")
-			label = QString::number(((FoldingNode*)node)->score);
+		{
+			FoldingNode* fn = (FoldingNode*) node;
+			label = QString("%1").arg(fn->getScore());
+		}
 		if (type == "barrier") label = "Barrier";
 
 		// shape
@@ -256,13 +265,17 @@ QString DependGraph::toGraphvizFormat( QString subcaption, QString caption )
 
 		// color
 		QString colorHex; 
-		QColor color = QColor(0, 0, 255, 127);
-		if (type == "folding") color = QColor(0, 255, 0, 127);
-		if (type == "barrier") color = QColor(255, 165, 0, 127);
+		QColor color = Qt::blue;
+		if (type == "folding") color = Qt::green;
+		if (type == "barrier") color = QColor(255, 165, 0);
+		if (node->properties.contains("selected")) color = color.lighter();
 		colorHex.sprintf("#%02X%02X%02X", color.red(), color.green(), color.blue());
 
+		// highlight by filling colors
+		QString other;
+		if (node->properties.contains("selected")) other = "style = filled";
 
-		out << "\t" << QString("%1 [label = \"%2\", color = \"%3\", shape = %4];").arg(i).arg(label).arg(colorHex).arg(shape) << "\n";
+		out << "\t" << QString("%1 [label = \"%2\", color = \"%3\", shape = %4, %5];").arg(i).arg(label).arg(colorHex).arg(shape).arg(other) << "\n";
 
 		// Move virtual cursor
 		x += dx;
@@ -341,70 +354,6 @@ bool DependGraph::isFreeChainNode( QString cnid )
 }
 
 
-int DependGraph::computeCost( FoldingNode* fnode )
-{
-	QVector<Structure::Link*> clinks = getCollisionLinks(fnode->mID);
-
-	return clinks.size() * 10;
-}
-
-int DependGraph::computeGain( FoldingNode* fnode )
-{
-	int gain = 0;
-
-	// clone the graph
-	DependGraph* g_copy = (DependGraph*)clone();
-
-	// exclude all free chains by themselves
-	foreach(ChainNode* cnode, g_copy->getAllChainNodes())
-	{
-		cnode->properties["visited"] = g_copy->isFreeChainNode(cnode->mID);
-	}
-
-	// propagate 
-	QQueue<ChainNode*> freeChains;
-	ChainNode* cn = g_copy->getChainNode(fnode->mID);
-	cn->properties["visited"] = true;
-	freeChains.enqueue(cn);
-
-	while(!freeChains.isEmpty())
-	{
-		ChainNode* cnode = freeChains.dequeue();
-
-		// remove collision links
-		foreach (Structure::Link* link, g_copy->getFamilyCollisionLinks(cnode->mID))
-		{
-			g_copy->removeLink(link);
-			gain ++;
-		}
-
-		// update free chains 
-		foreach(ChainNode* cn, g_copy->getAllChainNodes())
-		{
-			if (!cn->properties["visited"].toBool() && g_copy->isFreeChainNode(cn->mID))
-			{
-				cn->properties["visited"] = true;
-				freeChains.enqueue(cn);
-			}
-		}
-	}
-
-	delete g_copy;
-
-	return gain;
-}
-
-void DependGraph::computeScores()
-{
-	foreach(FoldingNode* fnode, getAllFoldingNodes())
-	{
-		double gain = computeGain(fnode);
-		double cost = computeCost(fnode);
-
-		fnode->score = gain - cost;
-	}
-}
-
 FoldingNode* DependGraph::getBestFoldingNode()
 {
 	FoldingNode* best_fn = NULL;
@@ -413,9 +362,9 @@ FoldingNode* DependGraph::getBestFoldingNode()
 	{
 		if (!fn->properties["visited"].toBool())
 		{
-			if (fn->score > best_score)
+			if (fn->getScore() > best_score)
 			{
-				best_score = fn->score;
+				best_score = fn->getScore();
 				best_fn = fn;
 			}
 		}

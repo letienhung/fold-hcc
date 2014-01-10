@@ -132,3 +132,15 @@ QVector<Structure::Node*> SandwichLayer::getKeyFrameNodes( double t )
 
 	return knodes;
 }
+
+void SandwichLayer::resolveCollision()
+{
+
+}
+
+double SandwichLayer::computeCost( QString fnid )
+{
+	QVector<Structure::Link*> clinks = dy_graph->getCollisionLinks(fnid);
+
+	return clinks.size() * 10;
+}

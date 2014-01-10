@@ -94,7 +94,7 @@ QVector<FdNode*> DcGraph::mergeCoplanarParts( QVector<FdNode*> ns, PatchNode* pa
 
 	// set cover: prefer large subsets
 	QVector<bool> deleted(copGroups.size(), false);
-	int count = copGroups.size();
+	int count = copGroups.size(); 
 	QVector<int> subsetIndices;
 	while(count > 0)
 	{

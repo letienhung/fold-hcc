@@ -7,6 +7,9 @@ public:
     SandwichLayer(QVector<FdNode*> parts, PatchNode* panel1, PatchNode* panel2, QString id, Geom::Box &bBox);
 
 	void buildDependGraph();
+	double computeCost(QString fnid);
+	void resolveCollision();
+
 	QVector<Structure::Node*> getKeyFrameNodes( double t );
 
 public:

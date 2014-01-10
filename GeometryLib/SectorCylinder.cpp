@@ -30,9 +30,7 @@ Geom::SectorCylinder::SectorCylinder( Segment a, Segment r1, Vector3 v2 )
 	Vector3 crossV1V2 = cross(V1, V2);
 	if (dot(crossV1V2, Axis) < 0)
 	{
-		Vector3 v = V1;
-		V1 = V2;
-		V2 = v;
+		std::swap(V1, V2);
 	}
 }
 
@@ -96,6 +94,23 @@ Vector3 Geom::SectorCylinder::getCoordinates( Vector3 p )
 	double phi = radians2degrees(angle) / Phi;
 
 	return Vector3(rho, phi, z);
+}
+
+Vector3 Geom::SectorCylinder::getPosition( Vector3 coord )
+{
+	//double z = coord.z();
+	//Vector3 up = Origin + z * Height * Axis;
+
+	//double rho = coord.x();
+	//double phi = degrees2radians(coord.y() * Phi);
+	//double a = rho * cos(phi);
+	//double b = rho * sin(phi);
+
+	//Vector3 va = a * V1;
+	//Vector3 vb = b * cross(Axis, V1);
+
+	//return up + va + vb;
+	return Vector3();
 }
 
 bool Geom::SectorCylinder::contains( Vector3 p )

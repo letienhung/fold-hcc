@@ -46,6 +46,10 @@ public:
 	// configuration
 	void restoreConfiguration();
 
+	// debug
+	void addDebugSegment(Geom::Segment seg);
+	void drawDebug();
+
 public:
 	QString path;
 	bool showAABB;

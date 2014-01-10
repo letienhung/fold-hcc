@@ -55,7 +55,7 @@ void FoldManager::setScaffold( FdGraph* fdg )
 	scaffold = fdg;
 
 	clearDcGraphs();
-	updateLists();
+	updateDcList();
 }
 
 void FoldManager::foldAlongAxis( int d )
@@ -84,7 +84,7 @@ void FoldManager::createDcGraphs()
 	}
 
 	// update ui
-	updateLists();
+	updateDcList();
 }
 
 void FoldManager::createDcGraphs(Vector3 pushDirect)
@@ -239,7 +239,8 @@ void FoldManager::selectDcGraph( QString id )
 	selectLayer("");
 
 	// update list
-	updateLists();
+	updateLayerList();
+	updateKeyFrameList();
 
 	// update scene
 	emit(sceneChanged());
@@ -252,7 +253,7 @@ void FoldManager::selectLayer( QString id )
 		getSelDcGraph()->selectLayer(id);
 	}
 
-	updateLists();
+	updateChainList();
 
 	emit(sceneChanged());
 }
@@ -265,33 +266,6 @@ void FoldManager::selectChain( QString id )
 	}
 
 	emit(sceneChanged());
-}
-
-void FoldManager::updateLists()
-{
-	QStringList dcGraphLabels;
-	QStringList layerLabels;
-	QStringList chainLables;
-	int nbFrames = 0;
-
-	dcGraphLabels = getDcGraphLabels();
-	if (getSelDcGraph()) 
-	{
-		layerLabels = getSelDcGraph()->getLayerLabels();
-
-		if (getSelLayer())
-		{
-			chainLables = getSelLayer()->getChainLabels();
-		}
-
-		if (selId >= 0 && selId < results.size())
-			nbFrames = results[selId].size();
-	}
-
-	emit(lyGraphsChanged(dcGraphLabels));
-	emit(layersChanged(layerLabels));
-	emit(chainsChanged(chainLables));
-	emit(keyframesChanged(nbFrames));
 }
 
 QStringList FoldManager::getDcGraphLabels()
@@ -332,7 +306,7 @@ void FoldManager::generateFdKeyFrames()
 	}
 
 	emit(resultsGenerated());
-	updateLists();
+	updateKeyFrameList();
 }
 
 void FoldManager::selectKeyframe( int idx )
@@ -359,3 +333,43 @@ void FoldManager::foldAll()
 	foreach (DcGraph* dcg, dcGraphs)
 		dcg->fold();
 }
+
+void FoldManager::updateDcList()
+{
+	emit(DcGraphsChanged(getDcGraphLabels()));
+
+	updateLayerList();
+	updateKeyFrameList();
+}
+
+void FoldManager::updateLayerList()
+{
+	QStringList layerLabels;
+	if (getSelDcGraph()) 
+		layerLabels = getSelDcGraph()->getLayerLabels();
+
+	emit(layersChanged(layerLabels));
+
+	updateChainList();
+}
+
+void FoldManager::updateChainList()
+{
+	QStringList chainLables;
+	if (getSelLayer())
+		chainLables = getSelLayer()->getChainLabels();
+
+	emit(chainsChanged(chainLables));
+}
+
+
+void FoldManager::updateKeyFrameList()
+{
+	int nbFrames = 0;
+	if (selId >= 0 && selId < results.size())
+		nbFrames = results[selId].size();
+
+	emit(keyframesChanged(nbFrames));
+}
+
+	

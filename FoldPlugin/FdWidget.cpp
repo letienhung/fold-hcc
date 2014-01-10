@@ -9,9 +9,9 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin = fp;
 
 	// connections
-	this->connect(ui->DcList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(selectDcGraph(QListWidgetItem*)));
-	this->connect(ui->layerList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(selectLayer(QListWidgetItem*)));
-	this->connect(ui->chainList, SIGNAL(itemClicked(QListWidgetItem*)), SLOT(selectChain(QListWidgetItem*)));
+	this->connect(ui->DcList, SIGNAL(itemSelectionChanged()), SLOT(selectDcGraph()));
+	this->connect(ui->layerList, SIGNAL(itemSelectionChanged()), SLOT(selectLayer()));
+	this->connect(ui->chainList, SIGNAL(itemSelectionChanged()), SLOT(selectChain()));
 	this->connect(ui->keyframeList, SIGNAL(itemSelectionChanged()), SLOT(selectKeyframe()));
 
 	// creation and refine
@@ -91,21 +91,6 @@ void FdWidget::setChainList( QStringList labels )
 	ui->chainList->addItems(labels);
 }
 
-void FdWidget::selectDcGraph( QListWidgetItem* item )
-{
-	emit(dcGraphSelectionChanged(item->text()));
-}
-
-void FdWidget::selectLayer( QListWidgetItem* item )
-{
-	emit(layerSelectionChanged(item->text()));
-}
-
-void FdWidget::selectChain( QListWidgetItem* item )
-{
-	emit(chainSelectionChanged(item->text()));
-}
-
 void FdWidget::setKeyframeList( int N )
 {
 	ui->keyframeList->clear();
@@ -114,6 +99,36 @@ void FdWidget::setKeyframeList( int N )
 		labels << QString::number(i);
 
 	ui->keyframeList->addItems(labels);
+}
+
+void FdWidget::selectDcGraph()
+{
+	QList<QListWidgetItem *> selItems = ui->DcList->selectedItems();
+
+	if (!selItems.isEmpty())
+	{
+		emit(dcGraphSelectionChanged(selItems.front()->text()));
+	}
+}
+
+void FdWidget::selectLayer()
+{
+	QList<QListWidgetItem *> selItems = ui->layerList->selectedItems();
+
+	if (!selItems.isEmpty())
+	{
+		emit(layerSelectionChanged(selItems.front()->text()));
+	}
+}
+
+void FdWidget::selectChain()
+{
+	QList<QListWidgetItem *> selItems = ui->chainList->selectedItems();
+
+	if (!selItems.isEmpty())
+	{
+		emit(chainSelectionChanged(selItems.front()->text()));
+	}
 }
 
 void FdWidget::selectKeyframe()

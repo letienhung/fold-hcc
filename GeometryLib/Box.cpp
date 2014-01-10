@@ -674,3 +674,10 @@ double Geom::Box::radius()
 
 	return sqrt(s);
 }
+
+Geom::Rectangle Geom::Box::getFaceRectangle( int fid )
+{
+	int aid = fid / 3;
+	double c = (fid % 2) ? 1 : -1;
+	return getPatch(aid, c);
+}

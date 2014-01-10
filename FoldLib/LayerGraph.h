@@ -22,7 +22,13 @@ public:
 
 	// fold
 	void fold();
+
+	// depend graph
 	virtual void buildDependGraph() = 0;
+	virtual void resolveCollision() = 0;
+
+	double computeGain(QString fnid);
+	virtual double computeCost(QString fnid) = 0;
 	void computeChainSequence();
 	void outputDyGraphSequence();
 

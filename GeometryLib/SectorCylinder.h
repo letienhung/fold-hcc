@@ -15,6 +15,7 @@ public:
 
 	Geom::Segment getAxisSegment();
 	Vector3 getCoordinates(Vector3 p);
+	Vector3 getPosition(Vector3 coord);
 	bool contains(Vector3 p);
 
 	bool intersects(Segment& seg);

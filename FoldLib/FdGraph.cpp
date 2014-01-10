@@ -203,6 +203,9 @@ void FdGraph::draw()
 			aabb.box().drawWireframe(2.0, Qt::cyan);
 		}
 	}
+
+	// debug
+	drawDebug();
 }
 
 FdNode* FdGraph::merge( QVector<QString> nids )
@@ -369,4 +372,28 @@ void FdGraph::translate(Vector3 v)
 		n->deformMesh();
 		n->createScaffold();
 	}
+}
+
+void FdGraph::drawDebug()
+{
+	// debug segments
+	if (properties.contains("debugSegs"))
+	{
+		QVector<Geom::Segment> debugSegs = properties["debugSegs"].value< QVector<Geom::Segment> >();
+		foreach (Geom::Segment seg, debugSegs)
+		{
+			seg.draw();
+		}
+	}
+}
+
+void FdGraph::addDebugSegment( Geom::Segment seg )
+{
+	QVector<Geom::Segment> debugSegs;
+	if (properties.contains("debugSegs"))
+		debugSegs = properties["debugSegs"].value< QVector<Geom::Segment> >();
+
+	debugSegs << seg;
+
+	properties["debugSegs"].setValue(debugSegs);
 }

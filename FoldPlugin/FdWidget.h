@@ -22,9 +22,9 @@ private:
 
 public slots:
 	// from Ui
-	void selectDcGraph(QListWidgetItem* item);
-	void selectLayer(QListWidgetItem* item);
-	void selectChain(QListWidgetItem* item);
+	void selectDcGraph();
+	void selectLayer();
+	void selectChain();
 	void selectKeyframe();
 
 	// to Ui

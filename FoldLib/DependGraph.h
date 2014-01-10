@@ -23,7 +23,9 @@ public:
 	int hingeIdx;
 
 	// score
-	double score;
+	double gain;
+	double cost;
+	double getScore();
 };
 
 class BarrierNode : public Structure::Node
@@ -69,9 +71,6 @@ public:
 	QVector<Structure::Link*> getFamilyCollisionLinks(QString nid);
 
 	// fold
-	int computeGain(FoldingNode* fnode);
-	int computeCost(FoldingNode* fnode);
-	void computeScores();
 	bool isFreeChainNode(QString cnid);
     FoldingNode* getBestFoldingNode();
 

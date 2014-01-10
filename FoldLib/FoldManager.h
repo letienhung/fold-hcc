@@ -33,7 +33,11 @@ public:
 	FdGraph* activeScaffold();
 	DcGraph* getSelDcGraph();
 	QStringList getDcGraphLabels();
-	void updateLists();
+
+	void updateDcList();
+	void updateLayerList();
+	void updateChainList();
+	void updateKeyFrameList();
 
 	LayerGraph* getSelLayer();
 
@@ -65,7 +69,7 @@ public slots:
 
 signals:
 	void sceneChanged();
-	void lyGraphsChanged(QStringList labels);
+	void DcGraphsChanged(QStringList labels);
 	void layersChanged(QStringList labels);
 	void chainsChanged(QStringList labels);
 	void keyframesChanged(int N);

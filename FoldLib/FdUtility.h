@@ -3,11 +3,15 @@
 #include "UtilityGlobal.h"
 #include "Segment.h"
 #include "Box.h"
+#include "SectorCylinder.h"
 
 class FdNode;
 class PatchNode;
 
 typedef QVector< QVector<FdNode*> > FdNodeArray2D;
+
+Q_DECLARE_METATYPE(Geom::SectorCylinder)
+Q_DECLARE_METATYPE(QVector<Geom::Segment>)
 
 Geom::Segment getDistSegment( FdNode* n1, FdNode* n2 );
 double getDistance( FdNode* n1, FdNode* n2 );
