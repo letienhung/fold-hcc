@@ -126,7 +126,7 @@ void FdPlugin::test2()
 	int aid = node->mBox.getClosestAxisId(v);
 	Geom::Plane cutPlane = node->mBox.getPatch(aid, 0).getPlane();
 
-	activeScaffold()->split(node, cutPlane);
+	activeScaffold()->split(node->mID, cutPlane);
 }
 
 

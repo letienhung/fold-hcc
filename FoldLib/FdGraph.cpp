@@ -265,30 +265,90 @@ FdNode* FdGraph::addNode(MeshPtr mesh, Geom::Box& box)
 	return node;
 }
 
-QVector<FdNode*> FdGraph::split( FdNode* fn, Geom::Plane& plane)
+QVector<FdNode*> FdGraph::split( QString nid, Geom::Plane& plane)
 {
-	QVector<FdNode*> splitted;
+	return split(nid, QVector<Geom::Plane>() << plane);
 
-	// split only when the plane cuts the node
-	if (relationWithPlane(fn, plane, 0.1) != ISCT_PLANE)
-		return splitted;
+	//QVector<FdNode*> chopped;
 
-	// positive side
-	FdNode* node1 = fn->cloneChopped(plane);
-	node1->mID = fn->mID + "_" + QString::number(0);
-	Structure::Graph::addNode(node1);
-	splitted.push_back(node1);
+	//// get node
+	//FdNode* fn = (FdNode*) getNode(nid);
+	//if (!fn) return chopped;
 
-	// negative side
-	FdNode* node2 = fn->cloneChopped(plane.opposite());
-	node2->mID = fn->mID + "_" + QString::number(1);
-	Structure::Graph::addNode(node2);
-	splitted.push_back(node2);
+	//// split only when the plane cuts the node
+	//if (relationWithPlane(fn, plane, 0.1) != ISCT_PLANE)
+	//	return chopped;
+
+	//// positive side
+	//FdNode* node1 = fn->cloneChopped(plane);
+	//node1->mID = nid + "_" + QString::number(0);
+	//Structure::Graph::addNode(node1);
+	//chopped.push_back(node1);
+
+	//// negative side
+	//FdNode* node2 = fn->cloneChopped(plane.opposite());
+	//node2->mID = nid + "_" + QString::number(1);
+	//Structure::Graph::addNode(node2);
+	//chopped.push_back(node2);
+
+	//// remove the original node
+	//if (!chopped.isEmpty()) removeNode(fn->mID);
+
+	//return chopped;
+}
+
+QVector<FdNode*> FdGraph::split( QString nid, QVector<Geom::Plane>& planes )
+{
+	QVector<FdNode*> chopped;
+
+	if (planes.isEmpty()) return chopped;
+
+	FdNode* fn = (FdNode*) getNode(nid);
+	if (!fn) return chopped;
+
+	// sort cut planes 
+	int aid = fn->mBox.getClosestAxisId(planes.front().Normal);
+	Geom::Segment sklt = fn->mBox.getSkeleton(aid);
+	QMap<double, Geom::Plane> distPlaneMap;
+	foreach (Geom::Plane plane, planes)
+	{
+		// skip a plane if it doesn't intersect the node
+		if (relationWithPlane(fn, plane, 0.1) != ISCT_PLANE) continue;
+
+		Vector3 cutPoint = plane.getIntersection(sklt);
+		double dist = (cutPoint - sklt.P0).norm();
+		distPlaneMap[dist] = plane;
+	}
+	QVector<Geom::Plane> sortedPlanes = distPlaneMap.values().toVector();
+	if (sortedPlanes.isEmpty()) return chopped;
+
+	// the front end
+	Geom::Plane frontPlane = sortedPlanes.front();
+	if (frontPlane.whichSide(sklt.P0) < 0) frontPlane.flip();
+	chopped << fn->cloneChopped(frontPlane);
+
+	// the middle section bounded by two planes
+	for (int i = 0; i < sortedPlanes.size()-1; i++)
+	{
+		chopped << fn->cloneChopped(sortedPlanes[i], sortedPlanes[i+1]);
+	}
+
+	// the back end
+	Geom::Plane backPlane = sortedPlanes.back();
+	if (backPlane.whichSide(sklt.P1) < 0) backPlane.flip();
+	chopped << fn->cloneChopped(backPlane);
+
+	// change node id and add to graph
+	for (int i = 0; i < chopped.size(); i++)
+	{
+		chopped[i]->mID = nid + "_" + QString::number(i);
+		Structure::Graph::addNode(chopped[i]);
+	}
 
 	// remove the original node
-	if (!splitted.isEmpty()) removeNode(fn->mID);
+	if (!chopped.isEmpty()) removeNode(nid);
 
-	return splitted;
+	return chopped;
 }
 
 void FdGraph::showCuboids( bool show )

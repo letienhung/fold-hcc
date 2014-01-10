@@ -25,7 +25,8 @@ public:
 
 	// modifier
 	FdNode*			 merge(QVector<QString> nids);
-	QVector<FdNode*> split(FdNode* fn, Geom::Plane& plane);
+	QVector<FdNode*> split(QString nid, Geom::Plane& plane);
+	QVector<FdNode*> split(QString nid, QVector<Geom::Plane>& planes);
 	void			 changeNodeType(FdNode* n);
 	void             normalize(double f);
 	void             translate(Vector3 v);

@@ -62,29 +62,78 @@ QVector<FdNode*> BundleNode::getPlainNodes()
 	return pnodes;
 }
 
-FdNode* BundleNode::cloneChopped( Geom::Plane chopper )
+FdNode* BundleNode::cloneChopped( Geom::Plane& chopper )
 {
+	// clone plain nodes
 	QVector<FdNode*> plainNodes;
 	foreach (FdNode* n, mNodes)
 	{
 		PLANE_RELATION relation = relationWithPlane(n, chopper, 0.1);
 		if (relation == POS_PLANE)
-			plainNodes << n;
+			plainNodes << (FdNode*)n->clone();
 		else if (relation == ISCT_PLANE)
 			plainNodes << n->cloneChopped(chopper);
 	}
 
-	// clone 
+	// return single plain fd node
 	if (plainNodes.size() == 1)
 	{
-		return (FdNode*)plainNodes.front()->clone();
+		return (FdNode*)plainNodes.front();
 	}
 
+	// return a bundle node
 	if (plainNodes.size() > 1)
 	{
 		QString bid = getBundleName(plainNodes);
 		Geom::Box box = getBundleBox(plainNodes);
 		return new BundleNode(bid, box, plainNodes);
+
+		// delete plain nodes
+		foreach(FdNode* n, plainNodes)
+			delete n;
+	}
+
+	return NULL;
+}
+
+FdNode* BundleNode::cloneChopped( Geom::Plane& chopper1, Geom::Plane& chopper2 )
+{
+	Geom::Plane plane1 = chopper1;
+	Geom::Plane plane2 = chopper2;
+	if (plane1.whichSide(plane2.Constant) < 0) plane1.flip();
+	if (plane2.whichSide(plane1.Constant) < 0) plane2.flip();
+
+	QVector<FdNode*> plainNodes;
+	foreach (FdNode* n, mNodes)
+	{
+		PLANE_RELATION relation1 = relationWithPlane(n, plane1, 0.1);
+		PLANE_RELATION relation2 = relationWithPlane(n, plane2, 0.1);
+		if (relation1 == POS_PLANE && relation2 == POS_PLANE)
+			plainNodes << (FdNode*)n->clone();
+		else if (relation1 == ISCT_PLANE && relation2 == ISCT_PLANE)
+			plainNodes << n->cloneChopped(plane1, plane2);
+		else if (relation1 == ISCT_PLANE)
+			plainNodes << n->cloneChopped(plane1);
+		else if (relation2 == ISCT_PLANE)
+			plainNodes << n->cloneChopped(plane2);
+	}
+
+	// return single plain fd node
+	if (plainNodes.size() == 1)
+	{
+		return (FdNode*)plainNodes.front();
+	}
+
+	// return a bundle node
+	if (plainNodes.size() > 1)
+	{
+		QString bid = getBundleName(plainNodes);
+		Geom::Box box = getBundleBox(plainNodes);
+		return new BundleNode(bid, box, plainNodes);
+
+		// delete plain nodes
+		foreach(FdNode* n, plainNodes)
+			delete n;
 	}
 
 	return NULL;

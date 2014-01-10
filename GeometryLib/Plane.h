@@ -27,8 +27,10 @@ public:
 	Vector3 getIntersection(Segment seg);
 
 	Plane opposite();
+	void flip();
 
 	void translate(Vector3 t);
+	Plane translated(Vector3 t);
 
 public:
 	Vector3 Constant, Normal;

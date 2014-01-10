@@ -98,19 +98,18 @@ Vector3 Geom::SectorCylinder::getCoordinates( Vector3 p )
 
 Vector3 Geom::SectorCylinder::getPosition( Vector3 coord )
 {
-	//double z = coord.z();
-	//Vector3 up = Origin + z * Height * Axis;
+	double z = coord.z();
+	Vector3 up = Origin + z * Height * Axis;
 
-	//double rho = coord.x();
-	//double phi = degrees2radians(coord.y() * Phi);
-	//double a = rho * cos(phi);
-	//double b = rho * sin(phi);
+	double rho = coord.x() * Radius;
+	double phi = degrees2radians(coord.y() * Phi);
+	double a = rho * cos(phi);
+	double b = rho * sin(phi);
 
-	//Vector3 va = a * V1;
-	//Vector3 vb = b * cross(Axis, V1);
+	Vector3 va = a * V1;
+	Vector3 vb = b * cross(Axis, V1);
 
-	//return up + va + vb;
-	return Vector3();
+	return up + va + vb;
 }
 
 bool Geom::SectorCylinder::contains( Vector3 p )

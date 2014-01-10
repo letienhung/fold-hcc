@@ -93,3 +93,13 @@ void Geom::Plane::translate( Vector3 t )
 	Constant += t;
 }
 
+void Geom::Plane::flip()
+{
+	Normal *= -1;
+}
+
+Geom::Plane Geom::Plane::translated( Vector3 t )
+{
+	return Plane(Constant + t, Normal);
+}
+

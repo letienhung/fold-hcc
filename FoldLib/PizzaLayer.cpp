@@ -187,7 +187,7 @@ Vector3 PizzaLayer::getClosestCoordinates(Geom::SectorCylinder& fVolume, FdNode*
 		closestP = dss.mClosestPoint1;
 	}
 
-	addDebugSegment(Geom::Segment(fVolume.getAxisSegment().Center, closestP));
+	//addDebugSegment(Geom::Segment(fVolume.getAxisSegment().Center, closestP));
 
 	return fVolume.getCoordinates(closestP);
 }
@@ -198,7 +198,7 @@ Vector3 PizzaLayer::getClosestCoordinates( Geom::SectorCylinder& fVolume, Geom::
 	Geom::DistSegRect dsr(axisSeg, rect);
 
 	Vector3 closestP = dsr.mClosestPoint1;
-	addDebugSegment(Geom::Segment(fVolume.getAxisSegment().Center, closestP));
+	//addDebugSegment(Geom::Segment(fVolume.getAxisSegment().Center, closestP));
 
 	return fVolume.getCoordinates(closestP);
 }
@@ -232,6 +232,8 @@ double PizzaLayer::computeCost( QString fnid )
 			Geom::Rectangle brect = bfaces[bnode->faceIdx];
 			hotCoords << getClosestCoordinates(fVolume, brect);
 		}
+
+		//addDebugSegment(Geom::Segment(fVolume.getAxisSegment().Center, fVolume.getPosition(hotCoords.last())));
 	}
 
 	// shrink fVolume to avoid all collisions

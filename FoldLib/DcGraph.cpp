@@ -145,7 +145,7 @@ void DcGraph::createLayers()
 	foreach (PatchNode* panel, controlPanels){
 		foreach(FdNode* n, getFdNodes()){
 			if (n->properties.contains("isCtrlPanel")) continue;
-			split(n, panel->mPatch.getPlane());
+			split(n->mID, panel->mPatch.getPlane());
 		}
 	}
 

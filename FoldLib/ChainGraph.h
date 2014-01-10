@@ -15,13 +15,19 @@ public:
 	QVector<Structure::Node*> getKeyframeParts(double t);
 	QVector<Structure::Node*> getKeyFramePanels(double t);
 
+	void splitChain(int N);
+	void sortChainParts();
+	QVector<Geom::Plane> generateCutPlanes(int N);
+	double getHeight();
+
 public:
 	QVector<PatchNode*>		mPanels;		// two control panels
+	FdNode*					mOrigPart;	// original part, which is split into chain parts
 	QVector<FdNode*>		mParts;			// sorted parts in the chain, from panels[0] to panels[1]
 
-	QVector<Geom::Segment>	rootJointSegs;	// hinge segments between parts[0] and panels[0]
-	Geom::Segment			chainUpSeg;		// perp segment on part
-	QVector<Vector3>		rootRightVs;	// perp direction on panel to the right
+	QVector<Geom::Segment>	rootJointSegs;	// hinge segments between mOrigPart and panels[0]
+	Geom::Segment			chainUpSeg;		// perp segment on mOrigPart
+	QVector<Vector3>		rootRightVs;	// perp direction on panels[0] to the right
 
 	// each joint corresponds one or two joint segments
 	// for each joint segment, there are two hinge links
@@ -30,7 +36,5 @@ public:
 	//		2nd dimension: hinge pairs [2*i, 2*i+1] for each jointSeg[i]
 	int nbRods;
 	QVector< QVector<FdLink*> > hingeLinks;
-
-	bool isReady;
 	QVector<FdLink*> activeLinks;
 };

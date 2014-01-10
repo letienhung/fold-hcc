@@ -19,7 +19,8 @@ public:
 
 	QVector<FdNode*> getPlainNodes();
 
-	FdNode* cloneChopped(Geom::Plane chopper);
+	FdNode* cloneChopped(Geom::Plane& chopper);
+	FdNode* cloneChopped(Geom::Plane& chopper1, Geom::Plane& chopper2);
 
 public:
 	QVector<FdNode*> mNodes;

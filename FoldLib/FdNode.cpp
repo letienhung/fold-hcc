@@ -150,7 +150,7 @@ SurfaceMesh::Vector3 FdNode::center()
 }
 
 // clone partial node on the positive side of the chopper plane
-FdNode* FdNode::cloneChopped( Geom::Plane chopper )
+FdNode* FdNode::cloneChopped( Geom::Plane& chopper )
 {
 	// cut point along skeleton
 	int aid = mBox.getClosestAxisId(chopper.Normal);
@@ -160,21 +160,41 @@ FdNode* FdNode::cloneChopped( Geom::Plane chopper )
 						sklt.P0 : sklt.P1;
 
 	// chop box
-	Geom::Box box = mBox;
-	box.Center = (cutPoint + endPoint) * 0.5;
-	box.Extent[aid] = (cutPoint - endPoint).norm() * 0.5;
+	Geom::Box chopBox = mBox;
+	chopBox.Center = (cutPoint + endPoint) * 0.5;
+	chopBox.Extent[aid] = (cutPoint - endPoint).norm() * 0.5;
 
+	return cloneChopped(chopBox);
+}
+
+FdNode* FdNode::cloneChopped( Geom::Plane& chopper1, Geom::Plane& chopper2 )
+{
+	// cut point along skeleton
+	int aid = mBox.getClosestAxisId(chopper1.Normal);
+	Geom::Segment sklt = mBox.getSkeleton(aid);
+	Vector3 cutPoint1 = chopper1.getIntersection(sklt);
+	Vector3 cutPoint2 = chopper2.getIntersection(sklt);
+
+	// chop box
+	Geom::Box chopBox = mBox;
+	chopBox.Center = (cutPoint1 + cutPoint2) * 0.5;
+	chopBox.Extent[aid] = (cutPoint1 - cutPoint2).norm() * 0.5;
+
+	return cloneChopped(chopBox);
+}
+
+FdNode* FdNode::cloneChopped( Geom::Box& chopBox )
+{
 	// chop mesh
 	// Geom::Box chopBox = box;
 	// chopBox.Extent *= 1.001;
 	// SurfaceMeshModel* mesh = MeshBoolean::cork(mMesh.data(), chopBox, MeshBoolean::ISCT);
-	
-	// create new nodes
+
 	FdNode *choppedNode;
 	if (mType == FdNode::ROD)
-		choppedNode = new RodNode(mMesh->name, box, mMesh);
+		choppedNode = new RodNode(mMesh->name, chopBox, mMesh);
 	else
-		choppedNode = new PatchNode(mMesh->name, box, mMesh);
+		choppedNode = new PatchNode(mMesh->name, chopBox, mMesh);
 	choppedNode->meshCoords = meshCoords;
 
 	return choppedNode;
