@@ -691,6 +691,7 @@ void MyDesigner::mousePressEvent( QMouseEvent* e )
 			else{
 				this->displayMessage("* Setting up fold handle. Please wait!!! *", 5000);
 				fManager->foldAlongAxis(mBox->axisID);
+				fManager->createDcGraphs();
 			    this->displayMessage("* Done!!! Please CTRL + SCROLL THE MOUSE to squeeze the box. *", 5000);
 				scalePercent = 0.0;
 			}
@@ -845,7 +846,6 @@ void MyDesigner::wheelEvent( QWheelEvent* e )
 			mBox->deform(factor);
 			mBox->getBoxFaces();
 		
-			fManager->createDcGraphs();
 			fManager->foldAll();
 			fManager->generateFdKeyFrames();
 
