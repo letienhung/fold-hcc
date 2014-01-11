@@ -333,7 +333,7 @@ void MainWindow::loadCurrentGraphs()
 		if(index + c > n - 1) return;
 
 		int size = mFManager->results[index+c].size();
-		FdGraph *currFrame = mFManager->results[index+c][(int)(size*7/10)]->deepClone();
+		FdGraph *currFrame = mFManager->results[index+c][(int)(size*5/10)]->deepClone();
 		QString res = "Result #";
 		currFrame->mID = res + QString::number(index+c+1);
 		new LoaderThread(viewers[i], currFrame);

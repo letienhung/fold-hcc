@@ -689,10 +689,10 @@ void MyDesigner::mousePressEvent( QMouseEvent* e )
 				this->displayMessage("* No face has been selected. LEFT CLICK to select a face to push in. *");
 			}
 			else{
-				this->displayMessage("* Setting up fold handle. Please wait!!! *", 5000);
+				this->displayMessage("* Setting up fold handle. Please wait!!! *", 1000);
 				fManager->foldAlongAxis(mBox->axisID);
 				fManager->createDcGraphs();
-			    this->displayMessage("* Done!!! Please CTRL + SCROLL THE MOUSE to squeeze the box. *", 5000);
+			    this->displayMessage("* Done!!! Please CTRL + SCROLL THE MOUSE to squeeze the box. *", 1000);
 				scalePercent = 0.0;
 			}
 		    updateGL();
@@ -845,14 +845,16 @@ void MyDesigner::wheelEvent( QWheelEvent* e )
 			}
 			mBox->deform(factor);
 			mBox->getBoxFaces();
-		
+		    
+			this->displayMessage("* Processing foldabilization. Please wait!!! *", 2000);
 			fManager->foldAll();
 			fManager->generateFdKeyFrames();
+			this->displayMessage("* Foldabilization done!!! *", 1000);
 
 		    emit(resultsGenerated());
 		}
 		else
-	        this->displayMessage("* Fail to push in the right direction *", 5000);
+	        this->displayMessage("* Fail to push in the right direction. *", 1000);
 		updateGL();
 	}		
 }
