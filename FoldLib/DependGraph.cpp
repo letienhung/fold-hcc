@@ -71,7 +71,7 @@ Structure::Node* BarrierNode::clone()
 
 //////////////////////////////////////////////////////////////////////////
 
-QString DependGraph::dotPath = "\"" + getcwd() + "/FoldLib/GraphVis/dot.exe" + "\"";
+QString DependGraph::dotPath = "\"" + getcwd() + "/FoldLib/Graphviz/dot.exe" + "\"";
 
 
 DependGraph::DependGraph( QString id )
