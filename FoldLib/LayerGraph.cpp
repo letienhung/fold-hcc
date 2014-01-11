@@ -92,7 +92,9 @@ void LayerGraph::fold()
 	for (int i = 0; i < chainSequence.size(); i++)
 	{
 		ChainGraph* chain = getChain(chainSequence[i]);
-		chain->prepareFolding(fnSequence[i]);
+		FoldingNode* folding = fnSequence[i];
+		chain->resolveCollision(folding);
+		chain->setupActiveLinks(folding);
 	}
 }
 

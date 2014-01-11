@@ -10,7 +10,6 @@ public:
 
 	Geom::Rectangle2 getFoldingArea(FoldingNode* fn);
 
-	void prepareFolding(FoldingNode* fn);
-	void fold(double t);
+	void resolveCollision(FoldingNode* fn);
 };
 

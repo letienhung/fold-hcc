@@ -268,42 +268,18 @@ FdNode* FdGraph::addNode(MeshPtr mesh, Geom::Box& box)
 QVector<FdNode*> FdGraph::split( QString nid, Geom::Plane& plane)
 {
 	return split(nid, QVector<Geom::Plane>() << plane);
-
-	//QVector<FdNode*> chopped;
-
-	//// get node
-	//FdNode* fn = (FdNode*) getNode(nid);
-	//if (!fn) return chopped;
-
-	//// split only when the plane cuts the node
-	//if (relationWithPlane(fn, plane, 0.1) != ISCT_PLANE)
-	//	return chopped;
-
-	//// positive side
-	//FdNode* node1 = fn->cloneChopped(plane);
-	//node1->mID = nid + "_" + QString::number(0);
-	//Structure::Graph::addNode(node1);
-	//chopped.push_back(node1);
-
-	//// negative side
-	//FdNode* node2 = fn->cloneChopped(plane.opposite());
-	//node2->mID = nid + "_" + QString::number(1);
-	//Structure::Graph::addNode(node2);
-	//chopped.push_back(node2);
-
-	//// remove the original node
-	//if (!chopped.isEmpty()) removeNode(fn->mID);
-
-	//return chopped;
 }
 
+// if cut planes intersect with the part, the part is split and replaced by chopped parts
+// otherwise the original part remains
+// the return value could either be the original part or the chopped fragment parts
 QVector<FdNode*> FdGraph::split( QString nid, QVector<Geom::Plane>& planes )
 {
+	FdNode* fn = (FdNode*) getNode(nid);
 	QVector<FdNode*> chopped;
+	chopped << fn;
 
 	if (planes.isEmpty()) return chopped;
-
-	FdNode* fn = (FdNode*) getNode(nid);
 	if (!fn) return chopped;
 
 	// sort cut planes 
@@ -321,6 +297,9 @@ QVector<FdNode*> FdGraph::split( QString nid, QVector<Geom::Plane>& planes )
 	}
 	QVector<Geom::Plane> sortedPlanes = distPlaneMap.values().toVector();
 	if (sortedPlanes.isEmpty()) return chopped;
+
+	// cut planes DO intersect the part, do splitting
+	chopped.clear();
 
 	// the front end
 	Geom::Plane frontPlane = sortedPlanes.front();
@@ -346,7 +325,7 @@ QVector<FdNode*> FdGraph::split( QString nid, QVector<Geom::Plane>& planes )
 	}
 
 	// remove the original node
-	if (!chopped.isEmpty()) removeNode(nid);
+	removeNode(nid);
 
 	return chopped;
 }

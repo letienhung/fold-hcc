@@ -9,16 +9,19 @@ class ChainGraph : public FdGraph
 public:
     ChainGraph(FdNode* part, PatchNode* panel1, PatchNode* panel2);
 	
-	virtual void prepareFolding(FoldingNode* fn) = 0;
-	virtual void fold(double t) = 0;
+	void setupBaseOrientations();
+	void createChain(int N);
+	void sortChainParts();
+
+	virtual void resolveCollision(FoldingNode* fn) = 0;
+	void setupActiveLinks(FoldingNode* fn);
+	void fold(double t);
 
 	QVector<Structure::Node*> getKeyframeParts(double t);
 	QVector<Structure::Node*> getKeyFramePanels(double t);
 
-	void splitChain(int N);
-	void sortChainParts();
-	QVector<Geom::Plane> generateCutPlanes(int N);
 	double getHeight();
+	QVector<Geom::Plane> generateCutPlanes(int N);
 
 public:
 	QVector<PatchNode*>		mPanels;		// two control panels
@@ -34,7 +37,6 @@ public:
 	// \hingeLinks: 
 	//		1st dimension: joint
 	//		2nd dimension: hinge pairs [2*i, 2*i+1] for each jointSeg[i]
-	int nbRods;
 	QVector< QVector<FdLink*> > hingeLinks;
 	QVector<FdLink*> activeLinks;
 };

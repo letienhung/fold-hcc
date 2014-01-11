@@ -22,6 +22,12 @@ ChainGraph::ChainGraph( FdNode* part, PatchNode* panel1, PatchNode* panel2)
 		Graph::addNode(mPanels[1]);
 	}
 
+	// setup base orientations
+	setupBaseOrientations();
+}
+
+void ChainGraph::setupBaseOrientations()
+{
 	// detect hinges
 	rootJointSegs = detectJointSegments(mOrigPart, mPanels[0]);
 
@@ -97,9 +103,10 @@ QVector<Geom::Plane> ChainGraph::generateCutPlanes( int N )
 	return cutPlanes;
 }
 
-void ChainGraph::splitChain( int N )
+// split \mOrigPart into N parts and set up links
+void ChainGraph::createChain( int N )
 {
-	// remove original chain parts
+	// remove original chain parts and hinge links
 	foreach (FdNode* n, mParts) removeNode(n->mID);
 
 	// clone original part and add to graph
@@ -108,6 +115,12 @@ void ChainGraph::splitChain( int N )
 	// split part
 	mParts = FdGraph::split(mOrigPart->mID, generateCutPlanes(N - 1));
 	sortChainParts();
+
+	// remove hinge links
+	foreach (QVector<FdLink*> links, hingeLinks)
+		foreach (FdLink* l, links)
+			delete l;
+	hingeLinks.clear();
 
 	// create hinge links between mPanels[0] and mParts[0]
 	QVector<FdLink*> links;
@@ -133,7 +146,7 @@ void ChainGraph::splitChain( int N )
 	links.clear();
 
 	// create hinge links between two rods in the chain
-	nbRods = 2;
+	int nbRods = mParts.size();
 	double step = 2.0 / nbRods;
 	for (int i = 1; i < nbRods; i++) // each joint
 	{
@@ -168,26 +181,29 @@ void ChainGraph::splitChain( int N )
 	}
 
 	// create hinge links between mPanels[1] and mParts[1]
-	for (int i = 0; i < rootJointSegs.size(); i++)
+	if (mPanels.size() == 2)
 	{
-		Geom::Segment jseg = rootJointSegs[i].translated(chainUpSeg.P1 - chainUpSeg.P0);
-		Vector3 upV = chainUpSeg.Direction;
-		Vector3 rV = rootRightVs[i];
-		Vector3 axisV = jseg.Direction;
-		Hinge* hingeR = new Hinge(mParts.last(), mPanels[1], 
-			jseg.P1, -upV,  rV, -axisV, jseg.length());
-		Hinge* hingeL = new Hinge(mParts.last(), mPanels[1], 
-			jseg.P0, -upV, -rV, axisV, jseg.length());
+		for (int i = 0; i < rootJointSegs.size(); i++)
+		{
+			Geom::Segment jseg = rootJointSegs[i].translated(chainUpSeg.P1 - chainUpSeg.P0);
+			Vector3 upV = chainUpSeg.Direction;
+			Vector3 rV = rootRightVs[i];
+			Vector3 axisV = jseg.Direction;
+			Hinge* hingeR = new Hinge(mParts.last(), mPanels[1], 
+				jseg.P1, -upV,  rV, -axisV, jseg.length());
+			Hinge* hingeL = new Hinge(mParts.last(), mPanels[1], 
+				jseg.P0, -upV, -rV, axisV, jseg.length());
 
-		FdLink* linkR = new FdLink(mParts.last(), mPanels[1], hingeR);
-		FdLink* linkL = new FdLink(mParts.last(), mPanels[1], hingeL);
-		links << linkR << linkL;
+			FdLink* linkR = new FdLink(mParts.last(), mPanels[1], hingeR);
+			FdLink* linkL = new FdLink(mParts.last(), mPanels[1], hingeL);
+			links << linkR << linkL;
 
-		Graph::addLink(linkR);
-		Graph::addLink(linkL);
+			Graph::addLink(linkR);
+			Graph::addLink(linkL);
+		}
+
+		hingeLinks << links;
 	}
-
-	hingeLinks << links;
 }
 
 double ChainGraph::getHeight()
@@ -214,4 +230,38 @@ void ChainGraph::sortChainParts()
 	}
 
 	mParts = distPartMap.values().toVector();
+}
+
+void ChainGraph::fold( double t )
+{
+	// fix panels[0] but free all others
+	foreach (Structure::Node* n, nodes)
+		n->properties["fixed"] = false;
+	mPanels[0]->properties["fixed"] = true;
+
+	// hinge angle
+	foreach(FdLink* alink, activeLinks)
+		alink->hinge->setAngleByTime(t);
+
+	// apply folding
+	restoreConfiguration();
+}
+
+void ChainGraph::setupActiveLinks( FoldingNode* fn )
+{
+	activeLinks.clear();
+
+	int hidx_m = fn->hingeIdx;
+	int hidx_v = (hidx_m % 2) ? hidx_m - 1 : hidx_m + 1;
+	for (int i = 0; i < hingeLinks.size(); i++)
+	{
+		// activate corresponding hinges
+		foreach(FdLink* l, hingeLinks[i])
+			l->properties["active"] = false;
+
+		int hidx = (i % 2) ? hidx_v : hidx_m;
+		FdLink* activeLink = hingeLinks[i][hidx];
+		activeLink->properties["active"] = true;
+		activeLinks << activeLink;
+	}
 }

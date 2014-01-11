@@ -8,29 +8,8 @@ PizzaChain::PizzaChain( FdNode* part, PatchNode* panel )
 	// type
 	properties["type"] = "pizza";
 
-	// create hinge links
-	nbRods = 1;
-	QVector<FdLink*> links;
-	for (int i = 0; i < rootJointSegs.size(); i++)
-	{
-		Geom::Segment jseg = rootJointSegs[i];
-		Vector3 upV = chainUpSeg.Direction;
-		Vector3 rV = rootRightVs[i];
-		Vector3 axisV = jseg.Direction;
-		Hinge* hingeR = new Hinge(mParts[0], mPanels[0], 
-			jseg.P0, upV,  rV, axisV, jseg.length());
-		Hinge* hingeL = new Hinge(mParts[0], mPanels[0], 
-			jseg.P1, upV, -rV, -axisV, jseg.length());
-
-		FdLink* linkR = new FdLink(mParts[0], mPanels[0], hingeR);
-		FdLink* linkL = new FdLink(mParts[0], mPanels[0], hingeL);
-		links << linkR << linkL;
-
-		Graph::addLink(linkR);
-		Graph::addLink(linkL);
-	}
-
-	hingeLinks << links;
+	// create chain
+	createChain(1);
 }
 
 Geom::SectorCylinder PizzaChain::getFoldingVolume( FoldingNode* fn )
@@ -44,27 +23,18 @@ Geom::SectorCylinder PizzaChain::getFoldingVolume( FoldingNode* fn )
 	return Geom::SectorCylinder(axisSeg, chainUpSeg, rightV);
 }
 
-void PizzaChain::prepareFolding( FoldingNode* fn )
+void PizzaChain::resolveCollision( FoldingNode* fn )
 {
-	// activate corresponding hinges
-	foreach(FdLink* l, hingeLinks[0])
-		l->properties["active"] = false;
-
-	activeLinks.clear();
-	FdLink* activeLink = hingeLinks[0][fn->hingeIdx];
-	activeLink->properties["active"] = true;
-	activeLinks.push_back(activeLink);
-}
-
-void PizzaChain::fold( double t )
-{
-	// set up fixed and free nodes
-	mPanels[0]->properties["fixed"] = true;
-	mParts[0]->properties["fixed"] = false;
-
-	// hinge angle
-	activeLinks[0]->hinge->setAngleByTime(t);
-
-	// apply folding
-	restoreConfiguration();
+	// change the chain if need
+	if (fn->properties.contains("fVolume"))
+	{
+		Geom::SectorCylinder fVolume0 = getFoldingVolume(fn);
+		Geom::SectorCylinder fVolume1 = fn->properties["fVolume"].value<Geom::SectorCylinder>();
+		double radius0 = fVolume0.Radius;
+		double radius1 = fVolume1.Radius;
+		double ratio = (radius0 + ZERO_TOLERANCE_LOW) / radius1;
+		int nbPart = ceil(ratio);
+		if (nbPart != mParts.size())
+			createChain(nbPart);
+	}
 }

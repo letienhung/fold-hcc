@@ -25,10 +25,9 @@ public:
 
 	// depend graph
 	virtual void buildDependGraph() = 0;
-	virtual void resolveCollision() = 0;
+	virtual double computeCost(QString fnid) = 0;
 
 	double computeGain(QString fnid);
-	virtual double computeCost(QString fnid) = 0;
 	void computeChainSequence();
 	void outputDyGraphSequence();
 

@@ -8,7 +8,6 @@ public:
 
 	void buildDependGraph();
 	double computeCost(QString fnid);
-	void resolveCollision();
 
 	QVector<Structure::Node*> getKeyFrameNodes( double t );
 
