@@ -25,16 +25,12 @@ Geom::SectorCylinder PizzaChain::getFoldingVolume( FoldingNode* fn )
 
 void PizzaChain::resolveCollision( FoldingNode* fn )
 {
-	// change the chain if need
-	if (fn->properties.contains("fVolume"))
-	{
-		Geom::SectorCylinder fVolume0 = getFoldingVolume(fn);
-		Geom::SectorCylinder fVolume1 = fn->properties["fVolume"].value<Geom::SectorCylinder>();
-		double radius0 = fVolume0.Radius;
-		double radius1 = fVolume1.Radius;
-		double ratio = (radius0 + ZERO_TOLERANCE_LOW) / radius1;
-		int nbPart = ceil(ratio);
-		if (nbPart != mParts.size())
-			createChain(nbPart);
-	}
+	Geom::SectorCylinder sfVolume = fn->properties["sfVolume"].value<Geom::SectorCylinder>();
+
+	// impossible splits
+	// to do: resolve collision cooperatively
+	if (sfVolume.Radius <= 0) return; 
+
+	int nbPart = ceil( getLength() / (sfVolume.Radius + ZERO_TOLERANCE_LOW) );
+	if (nbPart != mParts.size()) createChain(nbPart);
 }

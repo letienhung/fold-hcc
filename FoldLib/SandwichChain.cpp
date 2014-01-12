@@ -18,7 +18,7 @@ Geom::Rectangle2 SandwichChain::getFoldingArea(FoldingNode* fn)
 	Vector3 rightV = rootRightVs[jidx];
 	if (hidx % 2) rightV *= -1;
 
-	double width = chainUpSeg.length() / mParts.size();
+	double width = getLength() / mParts.size();
 	Geom::Segment seg = axisSeg;
 	seg.translate(width * rightV);
 
@@ -34,7 +34,20 @@ Geom::Rectangle2 SandwichChain::getFoldingArea(FoldingNode* fn)
 
 void SandwichChain::resolveCollision( FoldingNode* fn )
 {
+	Geom::Rectangle2 fArea = fn->properties["fArea"].value<Geom::Rectangle2>();
+	Geom::Rectangle2 sfArea = fn->properties["sfArea"].value<Geom::Rectangle2>();
 
+	Geom::Segment2 axisSeg = getFoldingAxis2D(fn);
+	double ext = fArea.getPerpExtent(axisSeg.Direction);
+	double sext = sfArea.getPerpExtent(axisSeg.Direction);
+
+	// impossible splits
+	// to do: resolve collision cooperatively
+	if (sext <= 0) return; 
+
+	int nbPart = ceil( 2 * ext / (sext + ZERO_TOLERANCE_LOW) );
+	if (nbPart % 2) nbPart++;
+	if (nbPart != mParts.size()) createChain(nbPart);
 }
 
 Geom::Segment2 SandwichChain::getFoldingAxis2D( FoldingNode* fn )

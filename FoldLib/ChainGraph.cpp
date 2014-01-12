@@ -92,11 +92,11 @@ QVector<Geom::Plane> ChainGraph::generateCutPlanes( int N )
 
 	// deltaV to shift up
 	double step = getHeight() / (N + 1);
-	Vector3 deltaV = step * plane0.Normal;
 
 	QVector<Geom::Plane> cutPlanes;
 	for (int i = 0; i < N; i++)
 	{
+		Vector3 deltaV = (i+1) * step * plane0.Normal;
 		cutPlanes << plane0.translated(deltaV);
 	}
 
@@ -216,6 +216,11 @@ double ChainGraph::getHeight()
 	double dist2 = plane0.distanceTo(sklt.P1);
 
 	return Max(dist1, dist2);
+}
+
+double ChainGraph::getLength()
+{
+	return chainUpSeg.length();
 }
 
 void ChainGraph::sortChainParts()

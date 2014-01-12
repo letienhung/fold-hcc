@@ -188,13 +188,16 @@ double SandwichLayer::computeCost( QString fnid )
 	}
 
 	// shrink fArea to avoid all collisions
-	Geom::Rectangle2 fArea_shrunk = fArea;
+	Geom::Rectangle2 sfArea = fArea;
 	QString cid = dy_graph->getChainNode(fnid)->mID;
 	SandwichChain* chain = (SandwichChain*)getChain(cid);
 	Geom::Segment2 fAxis2D = chain->getFoldingAxis2D(fn);
-	fArea_shrunk.shrinkToAvoidPoints(hotPoints, fAxis2D);
+	sfArea.shrinkToAvoidPoints(hotPoints, fAxis2D);
+
+	// save sfArea for further use
+	fn->properties["sfArea"].setValue(sfArea);
 
 	// cost
-	double cost = 1 - fArea_shrunk.area() / fArea.area();
+	double cost = 1 - sfArea.area() / fArea.area();
 	return cost;
 }

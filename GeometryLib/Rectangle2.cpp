@@ -125,7 +125,24 @@ int Geom::Rectangle2::getAxisId( Vector2& v )
 {
 	double XdV = fabs(dot(Axis[0], v));
 	double YdV = fabs(dot(Axis[1], v));
-	return (XdV > YdV) ? 0 : 1;
+	return (XdV >= YdV) ? 0 : 1;
+}
+
+int Geom::Rectangle2::getPerpAxisId( Vector2& v )
+{
+	double XdV = fabs(dot(Axis[0], v));
+	double YdV = fabs(dot(Axis[1], v));
+	return (XdV < YdV) ? 0 : 1;
+}
+
+double Geom::Rectangle2::getExtent( Vector2& v )
+{
+	return Extent[getAxisId(v)];
+}
+
+double Geom::Rectangle2::getPerpExtent( Vector2& v )
+{
+	return Extent[getPerpAxisId(v)];
 }
 
 double Geom::Rectangle2::area()
@@ -146,6 +163,20 @@ void Geom::Rectangle2::shrinkToAvoidPoints( QVector<Vector2>& pnts, Segment2& ba
 {
 	QVector<Rectangle2> rects;
 	rects << shrinkFront(pnts, base) << shrinkLeftRight(pnts, base) << shrinkFrontLeftRight(pnts, base);
+
+	double maxArea = minDouble();
+	int maxId = 0;
+	for (int i = 0; i < 3; i++)
+	{
+		double a = rects[i].area();
+		if (a > maxArea)
+		{
+			maxArea = a;
+			maxId = i;
+		}
+	}
+
+	copyFrom(rects[maxId]);
 }
 
 Geom::Rectangle2 Geom::Rectangle2::shrinkFront( QVector<Vector2>& pnts, Segment2& base )
@@ -265,5 +296,3 @@ Geom::Rectangle2 Geom::Rectangle2::shrinkFrontLeftRight( QVector<Vector2>& pnts,
 
 	return shrunk_rect;
 }
-
-

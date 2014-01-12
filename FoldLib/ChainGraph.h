@@ -21,6 +21,7 @@ public:
 	QVector<Structure::Node*> getKeyFramePanels(double t);
 
 	double getHeight();
+	double getLength();
 	QVector<Geom::Plane> generateCutPlanes(int N);
 
 public:

@@ -5,6 +5,7 @@
 #include "FdUtility.h"
 #include "DistSegSeg.h"
 #include "DistSegRect.h"
+#include "Numeric.h"
 #include <QDir>
 
 
@@ -58,10 +59,14 @@ void PizzaLayer::buildDependGraph()
 			// folding nodes
 			QString fnid1 = chain->mID + "_" + QString::number(2*j);
 			FoldingNode* fn1 = new FoldingNode(2*j, fnid1);
+			Geom::SectorCylinder fVolume1 = chain->getFoldingVolume(fn1);
+			fn1->properties["fVolume"].setValue(fVolume1);
 			dy_graph->addNode(fn1);
 
 			QString fnid2 = chain->mID + "_" + QString::number(2*j+1);
 			FoldingNode* fn2 = new FoldingNode(2*j+1, fnid2);
+			Geom::SectorCylinder fVolume2 = chain->getFoldingVolume(fn2);
+			fn2->properties["fVolume"].setValue(fVolume2);
 			dy_graph->addNode(fn2);
 
 			// folding links
@@ -198,10 +203,8 @@ Vector3 PizzaLayer::getClosestCoordinates( Geom::SectorCylinder& fVolume, Geom::
 double PizzaLayer::computeCost( QString fnid )
 {
 	FoldingNode* fn = (FoldingNode*)dy_graph->getNode(fnid);
-	QString cid = dy_graph->getChainNode(fnid)->mID;
-	PizzaChain* chain = (PizzaChain*)getChain(cid);
-	Geom::SectorCylinder fVolume = chain->getFoldingVolume(fn);
-	
+	Geom::SectorCylinder fVolume = fn->properties["fVolume"].value<Geom::SectorCylinder>();
+
 	// compute the coordinates of closest colliding point in fVolume
 	QVector<Vector3> hotCoords;
 	foreach (Structure::Link* link, dy_graph->getCollisionLinks(fnid))
@@ -214,7 +217,6 @@ double PizzaLayer::computeCost( QString fnid )
 			PizzaChain* other_chain = (PizzaChain*)getChain(other_node->mID);
 			FdNode* other_part = other_chain->mParts[0];
 			hotCoords << getClosestCoordinates(fVolume, other_part);
-
 		}
 		// collision with barrier
 		else
@@ -232,13 +234,12 @@ double PizzaLayer::computeCost( QString fnid )
 		if (coord.x() < minRadius) 
 			minRadius = coord.x();
 	}
+	fVolume.Radius *= minRadius;
+
+	// save the shrunk fVolume for further use
+	fn->properties["sfVolume"].setValue(fVolume);
 
 	// the cost is the volume lost of fVolume
 	double cost = 1 - minRadius;
-
-	// save the shrunk fVolume for further use
-	fVolume.Radius *= minRadius;
-	fn->properties["fVolume"].setValue(fVolume);
-
 	return cost;
 }

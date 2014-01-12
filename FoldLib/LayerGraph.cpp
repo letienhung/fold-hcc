@@ -119,7 +119,7 @@ void LayerGraph::computeChainSequence()
 		{
 			if (fn->properties["visited"].toBool()) continue;
 
-			fn->gain = computeGain(fn->mID);
+			//fn->gain = computeGain(fn->mID);
 			fn->cost = computeCost(fn->mID);
 		}
 

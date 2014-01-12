@@ -17,25 +17,29 @@ namespace Geom{
 
 		// geometry
 		static int EDGE[4][2];
-		double area();
-		int getAxisId(Vector2& v);
-		QVector<Vector2> getConners();
-		QVector<Segment2> getEdgeSegments();
+		double	area();
+		int		getAxisId(Vector2& v);
+		int		getPerpAxisId(Vector2& v);
+		double	getExtent(Vector2& v);
+		double	getPerpExtent(Vector2& v);
+		QVector<Vector2>	getConners();
+		QVector<Segment2>	getEdgeSegments();
 
 		// coordinates
+		bool	contains(Vector2& p);
 		Vector2 getCoordinates(Vector2& p);
 		Vector2 getPosition(Vector2& coord);
-		bool contains(Vector2& p);
 
 		// samples
 		QVector<Vector2> getEdgeSamples(int N);
 
 		// shrink
-		void shrinkToAvoidPoints(QVector<Vector2>& pnts, Segment2& base);
-		Rectangle2 shrinkFront(QVector<Vector2>& pnts, Segment2& base);
-		Rectangle2 shrinkLeftRight(QVector<Vector2>& pnts, Segment2& base);
-		Rectangle2 shrinkFrontLeftRight(QVector<Vector2>& pnts, Segment2& base);
+		void		shrinkToAvoidPoints(QVector<Vector2>& pnts, Segment2& base);
+		Rectangle2	shrinkFront(QVector<Vector2>& pnts, Segment2& base);
+		Rectangle2	shrinkLeftRight(QVector<Vector2>& pnts, Segment2& base);
+		Rectangle2	shrinkFrontLeftRight(QVector<Vector2>& pnts, Segment2& base);
 
+		// to string
 		QStringList toStrList(); 
 
 	public:
