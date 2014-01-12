@@ -116,7 +116,10 @@ void MainWindow::exportObject()
 {
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
-	designer->saveObject();
+	//designer->saveObject();
+	if(mFManager == NULL) return;
+	
+	mFManager->exportResultMesh();
 
 	//DEFAULT_FILE_PATH = QFileInfo(fileName).absolutePath();
 	QApplication::restoreOverrideCursor();

@@ -1,4 +1,5 @@
 #pragma once
+#include <QFile>
 
 #include "UtilityGlobal.h"
 #include "Node.h"
@@ -42,6 +43,7 @@ public:
 
 	// I/O
 	void write(XmlWriter& xw);
+	virtual void exportMesh(QFile &file);
 
 	// geometry
 	virtual void createScaffold() = 0;

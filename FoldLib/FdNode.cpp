@@ -241,3 +241,22 @@ void FdNode::cloneMesh()
 
 	showMesh = true;
 }
+
+void FdNode::exportMesh(QFile &file)
+{
+	cloneMesh();
+	QTextStream out(&file);
+	out << "# Object " << this->mID << " #\n";
+	out << "# NV = " << mMesh->n_vertices() << " NF = " << mMesh->n_faces() << "\n";
+	SurfaceMesh::Vector3VertexProperty points = mMesh->vertex_property<Vector3>("v:point");
+	foreach( SurfaceMesh::Vertex v, mMesh->vertices() )
+		out << "v " << points[v][0] << " " << points[v][1] << " " << points[v][2] << "\n";
+	out << "g " << this->mID << "\n";
+	foreach( SurfaceMesh::Face f, mMesh->faces() ){
+		out << "f ";
+		Surface_mesh::Vertex_around_face_circulator fvit=mMesh->vertices(f), fvend=fvit;
+		do{	out << (((Surface_mesh::Vertex)fvit).idx()+1) << " ";} while (++fvit != fvend);
+		out << "\n";
+	}
+	out << "\n";
+}

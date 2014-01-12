@@ -17,6 +17,8 @@ public:
 	void deformMesh();
 	void cloneMesh();
 
+	void exportMesh(QFile &file);
+
 	QVector<FdNode*> getPlainNodes();
 
 	FdNode* cloneChopped(Geom::Plane& chopper);

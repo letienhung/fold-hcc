@@ -157,3 +157,11 @@ void BundleNode::cloneMesh()
 		n->cloneMesh();
 	}
 }
+
+void BundleNode::exportMesh(QFile &file)
+{
+	cloneMesh();
+	foreach(FdNode* n, mNodes){
+		n->exportMesh(file);
+	}
+}

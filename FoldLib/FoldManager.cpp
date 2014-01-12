@@ -1,6 +1,9 @@
 #include "FoldManager.h"
 #include "FdUtility.h"
 
+#include <QFileDialog>
+#include <QDir>
+
 FoldManager::FoldManager()
 {
 	scaffold = NULL;
@@ -372,4 +375,23 @@ void FoldManager::updateKeyFrameList()
 	emit(keyframesChanged(nbFrames));
 }
 
-	
+void FoldManager::exportResultMesh()
+{
+	if (results.isEmpty()) return;
+
+	// Get results output folder
+	QString dataPath = QFileDialog::getExistingDirectory(0, tr("Export Results"), getcwd());
+	// Create folder
+	dataPath += "//" + activeScaffold()->mID;
+    QDir d(""); d.mkpath(dataPath);
+
+	for(int i = 0; i < results.size(); i++){
+		// Create folder
+		QString currPath = dataPath + "//result"+ QString::number(i+1);
+		d.mkpath(currPath);
+		for(int j = 0; j < results[i].size(); j++){
+			QString filename = currPath + "//" + QString::number(j) + ".obj";
+			results[i][j]->exportMesh(filename);
+		}
+	}
+}

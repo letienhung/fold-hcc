@@ -55,6 +55,9 @@ public slots:
 	// \pc \in (0, 1]
 	void generateFdKeyFrames();
 
+	//I/O
+	void exportResultMesh();
+
 public slots:
 	void selectDcGraph(QString id);
 	void selectLayer(QString id);

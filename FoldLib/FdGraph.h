@@ -34,6 +34,7 @@ public:
 	// I/O
 	void saveToFile(QString fname);
 	void loadFromFile(QString fname);
+	void exportMesh(QString fname);
 
 	// aabb
 	Geom::AABB computeAABB();

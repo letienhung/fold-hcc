@@ -69,6 +69,20 @@ QVector<FdNode*> FdGraph::getFdNodes()
 	return fdns;
 }
 
+void FdGraph::exportMesh(QString fname)
+{
+	QFile file(fname);
+
+	// Open for writing
+	if (!file.open(QIODevice::Append | QIODevice::Text)) return;
+	
+	QVector<FdNode*> nodes = getFdNodes();
+	foreach(FdNode *n, nodes){
+		n->exportMesh(file);
+	}
+	file.close();
+}
+
 void FdGraph::saveToFile(QString fname)
 {
 	QFile file(fname);
