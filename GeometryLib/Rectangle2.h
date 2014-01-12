@@ -13,7 +13,7 @@ namespace Geom{
 		Rectangle2(QVector<Vector2> &conners);
 		
 		// set
-		void copyFrom();
+		void copyFrom( Rectangle2& other );
 
 		// geometry
 		static int EDGE[4][2];
