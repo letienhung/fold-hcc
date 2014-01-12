@@ -3,6 +3,7 @@
 #include "PatchNode.h"
 #include "FdUtility.h"
 #include "IntrRect2Rect2.h"
+#include "Numeric.h"
 
 SandwichLayer::SandwichLayer( QVector<FdNode*> parts, PatchNode* panel1, PatchNode* panel2, QString id, Geom::Box &bBox )
 	:LayerGraph(parts, panel1, panel2, id, bBox)
@@ -49,15 +50,27 @@ void SandwichLayer::buildDependGraph()
 			// folding nodes
 			QString fnid1 = chain->mID + "_" + QString::number(2*j);
 			FoldingNode* fn1 = new FoldingNode(2*j, fnid1);
+			Geom::Rectangle2 fArea1 = chain->getFoldingArea(fn1);
+			fn1->properties["fArea"].setValue(fArea1);
 			dy_graph->addNode(fn1);
 
 			QString fnid2 = chain->mID + "_" + QString::number(2*j+1);
 			FoldingNode* fn2 = new FoldingNode(2*j+1, fnid2);
+			Geom::Rectangle2 fArea2 = chain->getFoldingArea(fn2);
+			fn2->properties["fArea"].setValue(fArea2);
 			dy_graph->addNode(fn2);
 
 			// folding links
 			dy_graph->addFoldingLink(cn, fn1);
 			dy_graph->addFoldingLink(cn, fn2);
+
+			// debug
+			Geom::Rectangle rect1 = mPanel1->mPatch.getRectangle(fArea1);
+			Geom::Rectangle rect2 = mPanel1->mPatch.getRectangle(fArea2);
+			QVector<Geom::Segment> segs;
+			segs += rect1.getEdgeSegments();
+			segs += rect2.getEdgeSegments();
+			addDebugSegments(segs);
 		}
 	}
 
@@ -77,8 +90,7 @@ void SandwichLayer::buildDependGraph()
 	{
 		FoldingNode* fn = fns[i];
 		ChainNode* cn = dy_graph->getChainNode(fn->mID);
-		SandwichChain* chain = (SandwichChain*) getChain(cn->mID);
-		Geom::Rectangle2 fArea = chain->getFoldingArea(fn);
+		Geom::Rectangle2 fArea = fn->properties["fArea"].value<Geom::Rectangle2>();
 
 		// with barriers
 		QVector<Vector3> fConners = mPanel1->mPatch.getRectangle(fArea).getConners();
@@ -95,15 +107,12 @@ void SandwichLayer::buildDependGraph()
 		for (int j = i+1; j < fns.size(); j++)
 		{
 			FoldingNode* other_fn = fns[j];
-			ChainNode* other_cn = dy_graph->getChainNode(other_fn->mID);
 
 			// skip siblings
+			ChainNode* other_cn = dy_graph->getChainNode(other_fn->mID);
 			if (cn == other_cn) continue; 
 
-			SandwichChain* other_chain = (SandwichChain*) getChain(other_cn->mID);
-			Geom::Rectangle2 other_fArea = other_chain->getFoldingArea(other_fn);
-
-			// add collision link
+			Geom::Rectangle2 other_fArea = other_fn->properties["fArea"].value<Geom::Rectangle2>();
 			if (Geom::IntrRect2Rect2::test(fArea, other_fArea))
 			{
 				dy_graph->addCollisionLink(fn, other_fn);
@@ -111,7 +120,6 @@ void SandwichLayer::buildDependGraph()
 		}
 	}
 }
-
 
 QVector<Structure::Node*> SandwichLayer::getKeyFrameNodes( double t )
 {
@@ -135,7 +143,58 @@ QVector<Structure::Node*> SandwichLayer::getKeyFrameNodes( double t )
 
 double SandwichLayer::computeCost( QString fnid )
 {
-	QVector<Structure::Link*> clinks = dy_graph->getCollisionLinks(fnid);
+	FoldingNode* fn = (FoldingNode*)dy_graph->getNode(fnid);
+	Geom::Rectangle2 fArea = fn->properties["fArea"].value<Geom::Rectangle2>();
 
-	return clinks.size() * 10;
+	// samples along edges of fArea in 3D
+	int nbSamples = 20;
+	Geom::Rectangle fArea3D = mPanel1->mPatch.getRectangle(fArea);
+	QVector<Vector3> fAreaSamples = fArea3D.getEdgeSamples(nbSamples);
+
+	// faces of barrier box
+	QVector<Geom::Plane> barrierPlanes = barrierBox.getFacePlanes();
+
+	// compute the coordinates of colliding points, which are samples from edges
+	QVector<Vector2> hotPoints;
+	foreach (Structure::Link* link, dy_graph->getCollisionLinks(fnid))
+	{
+		Structure::Node* other_node = link->getNodeOther(fnid);
+
+		// collision with other folding node
+		if (other_node->properties["type"] == "folding")
+		{
+			FoldingNode* other_fn = (FoldingNode*)other_node;
+			Geom::Rectangle2 other_fArea = other_fn->properties["fArea"].value<Geom::Rectangle2>();
+			foreach (Vector2 p, other_fArea.getEdgeSamples(nbSamples))
+			{
+				if (fArea.contains(p)) hotPoints << p;
+			}
+		}
+		// collision with barrier
+		else
+		{
+			BarrierNode* bnode = (BarrierNode*)other_node;
+			Geom::Plane bplane = barrierPlanes[bnode->faceIdx];
+
+			// estimate the barrier in 2D using samples from fArea and projection
+			foreach(Vector3 sample, fAreaSamples)
+			{
+				Vector3 bsample = bplane.getProjection(sample);
+				Vector2 bsample2D = mPanel1->mPatch.getProjCoordinates(bsample);
+
+				if (fArea.contains(bsample2D)) hotPoints << bsample2D;
+			}
+		}
+	}
+
+	// shrink fArea to avoid all collisions
+	Geom::Rectangle2 fArea_shrunk = fArea;
+	QString cid = dy_graph->getChainNode(fnid)->mID;
+	SandwichChain* chain = (SandwichChain*)getChain(cid);
+	Geom::Segment2 fAxis2D = chain->getFoldingAxis2D(fn);
+	fArea_shrunk.shrinkToAvoidPoints(hotPoints, fAxis2D);
+
+	// cost
+	double cost = 1 - fArea_shrunk.area() / fArea.area();
+	return cost;
 }

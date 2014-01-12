@@ -45,6 +45,7 @@ public:
 
 	// geometry
 	double length();
+	QVector<Vector3> getUniformSamples(int N);
 
 	// str
 	QStringList toStrList();

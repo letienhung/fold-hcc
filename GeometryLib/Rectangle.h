@@ -33,7 +33,7 @@ public:
 	int		getClosestAxisId(Vector3 v);
 	int		getPerpAxisId(Vector3 v);
 	Rectangle getRectangle(Rectangle2 &rect2);
-	QVector<Segment>  getEdges();
+	QVector<Segment>  getEdgeSegments();
 	QVector<Segment>  getPerpEdges(Vector3 v);
 	QVector<Vector2>  get2DConners();
 	QVector<Segment2> get2DEdges();
@@ -52,6 +52,9 @@ public:
 	Vector2 getOpenProjCoord(Vector3 p);
 	Vector3 getOpenPos(const Vector2& c);
 	Vector3 getOpenVector(const Vector2& v);
+
+	// samples
+	QVector<Vector3> getEdgeSamples(int N);
 
 	// visualization
 	void drawFace(QColor color = Qt::red);

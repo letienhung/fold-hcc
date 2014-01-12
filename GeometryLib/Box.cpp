@@ -677,7 +677,11 @@ double Geom::Box::radius()
 
 Geom::Rectangle Geom::Box::getFaceRectangle( int fid )
 {
-	int aid = fid / 3;
-	double c = (fid % 2) ? 1 : -1;
-	return getPatch(aid, c);
+	QVector<Rectangle> faces = getFaceRectangles();
+	return faces[fid];
+}
+
+Geom::Plane Geom::Box::getFacePlane( int fid )
+{
+	return getFaceRectangle(fid).getPlane();
 }

@@ -182,3 +182,13 @@ Geom::Segment Geom::Segment::translated( Vector3 t )
 {
 	return Segment(P0 + t, P1 + t);
 }
+
+QVector<Vector3> Geom::Segment::getUniformSamples( int N )
+{
+	QVector<Vector3> samples;
+	double step = 2 * Extent / (N - 1);
+	for (int i = 0; i < N; i++)
+		samples << P0 + i * step * Direction;
+
+	return samples;
+}

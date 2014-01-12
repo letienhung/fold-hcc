@@ -15,3 +15,13 @@ Segment2::Segment2(const Vector2& p0, const Vector2& p1)
 	Extent = Direction.norm() / 2;
 	Direction.normalize();
 }
+
+QVector<Vector2> Geom::Segment2::getUniformSamples( int N )
+{
+	QVector<Vector2> samples;
+	double step = 2 * Extent / (N - 1);
+	for (int i = 0; i < N; i++)
+		samples << P0 + i * step * Direction;
+
+	return samples;
+}

@@ -103,30 +103,22 @@ void FdPlugin::resetScene()
 
 void FdPlugin::test1()
 {
-	if(!activeScaffold()) return;
+	QVector<Vector2> conners;
+	conners << Vector2(1, 1) << Vector2(-1, 1) << Vector2(-1, -1) << Vector2(1, -1);
+	Geom::Rectangle2 rect(conners);
+	qDebug() << rect.toStrList();
 
-    QVector<QString> nIds;
-	foreach(Structure::Node* n, activeScaffold()->getSelectedNodes()){
-		nIds.push_back(n->mID);
-	}
-
-	activeScaffold()->merge(nIds);
-	updateScene();
+	Geom::Segment2 seg(Vector2(0.5, 0.5), Vector2(-0.5, -0.5));
+	QVector<Vector2> points = seg.getUniformSamples(10);
+	
+	Geom::Segment2 base(Vector2(1, 1), Vector2(1, -1));
+	rect.shrinkToAvoidPoints(points, base);
+	qDebug() << rect.toStrList();
 }
 
 void FdPlugin::test2()
 {
-	if (!activeScaffold()) return;
-	QVector<Structure::Node*> selNodes = activeScaffold()->getSelectedNodes();
-	if (selNodes.isEmpty()) return;
 
-	FdNode* node = (FdNode*)selNodes.front();
-
-	Vector3 v(1, 0, 0);
-	int aid = node->mBox.getClosestAxisId(v);
-	Geom::Plane cutPlane = node->mBox.getPatch(aid, 0).getPlane();
-
-	activeScaffold()->split(node->mID, cutPlane);
 }
 
 

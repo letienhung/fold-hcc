@@ -11,6 +11,7 @@ class PatchNode;
 typedef QVector< QVector<FdNode*> > FdNodeArray2D;
 
 Q_DECLARE_METATYPE(Geom::SectorCylinder)
+Q_DECLARE_METATYPE(Geom::Rectangle2)
 Q_DECLARE_METATYPE(QVector<Geom::Segment>)
 
 Geom::Segment getDistSegment( FdNode* n1, FdNode* n2 );

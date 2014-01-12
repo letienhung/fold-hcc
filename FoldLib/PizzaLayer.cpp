@@ -220,8 +220,7 @@ double PizzaLayer::computeCost( QString fnid )
 		else
 		{
 			BarrierNode* bnode = (BarrierNode*)other_node;
-			QVector<Geom::Rectangle> bfaces = barrierBox.getFaceRectangles();
-			Geom::Rectangle brect = bfaces[bnode->faceIdx];
+			Geom::Rectangle brect = barrierBox.getFaceRectangle(bnode->faceIdx);
 			hotCoords << getClosestCoordinates(fVolume, brect);
 		}
 	}

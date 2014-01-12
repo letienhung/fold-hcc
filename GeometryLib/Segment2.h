@@ -7,6 +7,12 @@ namespace Geom {
 class Segment2
 {
 public:
+	Segment2();
+	Segment2(const Vector2& p0, const Vector2& p1);
+
+	QVector<Vector2> getUniformSamples(int N);
+
+public:
 	// End-point representation.
 	Vector2 P0, P1;
 
@@ -14,10 +20,6 @@ public:
 	Vector2 Center;
 	Vector2 Direction;
 	double Extent;
-
-public:
-    Segment2();
-	Segment2(const Vector2& p0, const Vector2& p1);
 };
 
 }

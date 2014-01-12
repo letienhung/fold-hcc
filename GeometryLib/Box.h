@@ -75,6 +75,7 @@ public:
 	Segment getSkeleton(int aid);
 	Rectangle getPatch(int aid, double c);
 	Rectangle getFaceRectangle(int fid);
+	Plane	getFacePlane(int fid);
 
 	QVector<Point>				getConnerPoints();
 	QVector<Line>				getEdgeLines();

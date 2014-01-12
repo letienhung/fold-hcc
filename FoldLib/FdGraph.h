@@ -49,6 +49,7 @@ public:
 
 	// debug
 	void addDebugSegment(Geom::Segment seg);
+	void addDebugSegments(QVector<Geom::Segment>& segs);
 	void drawDebug();
 
 public:

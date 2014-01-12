@@ -428,11 +428,16 @@ void FdGraph::drawDebug()
 
 void FdGraph::addDebugSegment( Geom::Segment seg )
 {
+	addDebugSegments(QVector<Geom::Segment>() << seg);
+}
+
+void FdGraph::addDebugSegments( QVector<Geom::Segment>& segs )
+{
 	QVector<Geom::Segment> debugSegs;
 	if (properties.contains("debugSegs"))
 		debugSegs = properties["debugSegs"].value< QVector<Geom::Segment> >();
 
-	debugSegs << seg;
+	debugSegs += segs;
 
 	properties["debugSegs"].setValue(debugSegs);
 }

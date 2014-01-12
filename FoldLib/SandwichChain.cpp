@@ -36,3 +36,23 @@ void SandwichChain::resolveCollision( FoldingNode* fn )
 {
 
 }
+
+Geom::Segment2 SandwichChain::getFoldingAxis2D( FoldingNode* fn )
+{
+	int hidx = fn->hingeIdx;
+	int jidx = hidx / 2;
+	Geom::Segment axisSeg = rootJointSegs[jidx];
+	Geom::Rectangle& panel_rect = mPanels[0]->mPatch;
+
+	Vector2 p0 = panel_rect.getProjCoordinates(axisSeg.P0);
+	Vector2 p1 = panel_rect.getProjCoordinates(axisSeg.P1);
+
+	return Geom::Segment2(p0, p1);
+}
+
+Geom::Segment SandwichChain::getJointSegment( FoldingNode* fn )
+{
+	int hidx = fn->hingeIdx;
+	int jidx = hidx / 2;
+	return rootJointSegs[jidx];
+}

@@ -16,10 +16,10 @@
 
 
 int Geom::Rectangle::EDGE[4][2] = {
-	3, 0,
-	2, 1,
 	1, 0,
-	2, 3
+	2, 3,
+	2, 1,
+	3, 0
 };
 
 Geom::Rectangle::Rectangle()
@@ -108,21 +108,18 @@ bool Geom::Rectangle::contains( Rectangle& other )
 
 bool Geom::Rectangle::containsOneEdge( Rectangle& other )
 {
-	foreach (Segment e, other.getEdges())
+	foreach (Segment e, other.getEdgeSegments())
 		if (contains(e)) return true;
 
 	return false;
 }
-
 
 Geom::Plane Geom::Rectangle::getPlane()
 {
 	return Plane(this->Center, this->Normal);
 }
 
-
-
-QVector<Geom::Segment> Geom::Rectangle::getEdges()
+QVector<Geom::Segment> Geom::Rectangle::getEdgeSegments()
 {
 	QVector<Segment> edges;
 
@@ -262,7 +259,7 @@ void Geom::Rectangle::drawBackFace( QColor color /*= Qt::red*/ )
 void Geom::Rectangle::drawEdges( double width /*= 2.0*/, QColor color /*= Qt::red*/ )
 {
 	LineSegments ls(width);
-	foreach (Segment e, getEdges())
+	foreach (Segment e, getEdgeSegments())
 		ls.addLine(e.P0, e.P1, color);
 	ls.draw();
 }
@@ -274,10 +271,11 @@ double Geom::Rectangle::area()
 
 QVector<Geom::Segment> Geom::Rectangle::getPerpEdges(Vector3 v)
 {
-	QVector<Segment> edges = getEdges();
+	QVector<Segment> edges = getEdgeSegments();
 	int aid = getClosestAxisId(v);
+	int perpAid = (aid + 1) % 2;
 
-	return QVector<Segment>() << edges[2*aid] << edges[2*aid + 1];
+	return QVector<Segment>() << edges[2*perpAid] << edges[2*perpAid + 1];
 }
 
 QStringList Geom::Rectangle::toStrList()
@@ -328,4 +326,13 @@ Geom::Rectangle Geom::Rectangle::getRectangle( Rectangle2 &rect2 )
 double Geom::Rectangle::radius()
 {
 	return sqrt(Extent[0] * Extent[0] + Extent[1] * Extent[1]);
+}
+
+QVector<Vector3> Geom::Rectangle::getEdgeSamples( int N )
+{
+	QVector<Vector3> samples;
+	foreach(Geom::Segment edge, getEdgeSegments())
+		samples += edge.getUniformSamples(N);
+
+	return samples;
 }
