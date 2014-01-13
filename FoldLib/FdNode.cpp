@@ -153,7 +153,7 @@ SurfaceMesh::Vector3 FdNode::center()
 FdNode* FdNode::cloneChopped( Geom::Plane& chopper )
 {
 	// cut point along skeleton
-	int aid = mBox.getClosestAxisId(chopper.Normal);
+	int aid = mBox.getAxisId(chopper.Normal);
 	Geom::Segment sklt = mBox.getSkeleton(aid);
 	Vector3 cutPoint = chopper.getIntersection(sklt);
 	Vector3 endPoint = (chopper.signedDistanceTo(sklt.P0) > 0) ?
@@ -170,7 +170,7 @@ FdNode* FdNode::cloneChopped( Geom::Plane& chopper )
 FdNode* FdNode::cloneChopped( Geom::Plane& chopper1, Geom::Plane& chopper2 )
 {
 	// cut point along skeleton
-	int aid = mBox.getClosestAxisId(chopper1.Normal);
+	int aid = mBox.getAxisId(chopper1.Normal);
 	Geom::Segment sklt = mBox.getSkeleton(aid);
 	Vector3 cutPoint1 = chopper1.getIntersection(sklt);
 	Vector3 cutPoint2 = chopper2.getIntersection(sklt);

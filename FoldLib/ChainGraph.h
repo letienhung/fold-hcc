@@ -12,6 +12,9 @@ public:
 	void setupBaseOrientations();
 	void createChain(int N);
 	void sortChainParts();
+	void resetHingeLinks();
+	void shrinkChainAlongJoint(double t0, double t1);
+	void shrinkChainPerpJoint();
 
 	virtual void resolveCollision(FoldingNode* fn) = 0;
 	void setupActiveLinks(FoldingNode* fn);

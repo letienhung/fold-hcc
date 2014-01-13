@@ -12,7 +12,6 @@ namespace Geom{
 		Rectangle2(Vector2 &center, QVector<Vector2> &axis, Vector2 &extent);
 		Rectangle2(QVector<Vector2> &conners);
 		
-		// set
 		void copyFrom( Rectangle2& other );
 
 		// geometry
@@ -22,6 +21,8 @@ namespace Geom{
 		int		getPerpAxisId(Vector2& v);
 		double	getExtent(Vector2& v);
 		double	getPerpExtent(Vector2& v);
+		Vector2 getEdgeCenter(int aid, bool positive);
+		Segment2 getSkeleton(int aid);
 		QVector<Vector2>	getConners();
 		QVector<Segment2>	getEdgeSegments();
 

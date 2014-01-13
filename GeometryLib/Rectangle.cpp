@@ -5,21 +5,21 @@
 #include "CustomDrawObjects.h"
 
 
-//   1	 _______________  0
+//   1	 _______e2______  0
 //		|				|
 //		|		Y		|
 //		|		|		|
-//		|		|___ X	|
+//	e1	|		|___ X	|e0
 //		|				|
 //		|				|
 //	   2|_______________|3
-
+//				e3
 
 int Geom::Rectangle::EDGE[4][2] = {
-	1, 0,
-	2, 3,
+	3, 0,
 	2, 1,
-	3, 0
+	1, 0,
+	2, 3
 };
 
 Geom::Rectangle::Rectangle()
@@ -204,13 +204,23 @@ Vector3 Geom::Rectangle::getOpenPos( const Vector2& c )
 
 
 
-Geom::Segment2 Geom::Rectangle::getProjection2D( Segment s )
+Geom::Segment2 Geom::Rectangle::get2DSegment( Segment& s )
 {
-	Vector2 p0 = this->getProjCoordinates(s.P0);
-	Vector2 p1 = this->getProjCoordinates(s.P1);
+	Vector2 p0 = getProjCoordinates(s.P0);
+	Vector2 p1 = getProjCoordinates(s.P1);
 
 	return Segment2(p0, p1);
 }
+
+
+Geom::Segment Geom::Rectangle::get3DSegment( Segment2& s )
+{
+	Vector3 p0 = getPosition(s.P0);
+	Vector3 p1 = getPosition(s.P1);
+
+	return Segment(p0, p1);
+}
+
 
 QVector<Vector3> Geom::Rectangle::getConners()
 {
@@ -273,9 +283,8 @@ QVector<Geom::Segment> Geom::Rectangle::getPerpEdges(Vector3 v)
 {
 	QVector<Segment> edges = getEdgeSegments();
 	int aid = getClosestAxisId(v);
-	int perpAid = (aid + 1) % 2;
 
-	return QVector<Segment>() << edges[2*perpAid] << edges[2*perpAid + 1];
+	return QVector<Segment>() << edges[2*aid] << edges[2*aid + 1];
 }
 
 QStringList Geom::Rectangle::toStrList()

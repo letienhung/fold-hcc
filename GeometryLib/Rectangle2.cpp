@@ -1,15 +1,15 @@
 #include "Rectangle2.h"
 #include "Numeric.h"
 
-//   1	 _______________  0
+//   1	 _______e2______  0
 //		|				|
 //		|		Y		|
 //		|		|		|
-//		|		|___ X	|
+//	e1	|		|___ X	|e0
 //		|				|
 //		|				|
 //	   2|_______________|3
-
+//				e3
 
 int Geom::Rectangle2::EDGE[4][2] = {
 	3, 0,
@@ -295,4 +295,21 @@ Geom::Rectangle2 Geom::Rectangle2::shrinkFrontLeftRight( QVector<Vector2>& pnts,
 	shrunk_rect.Extent[yId] *= (yhigh - ylow) / 2;
 
 	return shrunk_rect;
+}
+
+SurfaceMesh::Vector2 Geom::Rectangle2::getEdgeCenter( int aid, bool positive )
+{
+	Vector2 ec = Center;
+	Vector2 v = Extent[aid] * Axis[aid];
+	if (positive) ec += v;
+	else ec -= v;
+
+	return ec;
+}
+
+Geom::Segment2 Geom::Rectangle2::getSkeleton( int aid )
+{
+	Vector2 p0 = getEdgeCenter(aid, true);
+	Vector2 p1 = getEdgeCenter(aid, false);
+	return Segment2(p0, p1);
 }

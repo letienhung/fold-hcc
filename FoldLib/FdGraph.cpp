@@ -297,7 +297,7 @@ QVector<FdNode*> FdGraph::split( QString nid, QVector<Geom::Plane>& planes )
 	if (!fn) return chopped;
 
 	// sort cut planes 
-	int aid = fn->mBox.getClosestAxisId(planes.front().Normal);
+	int aid = fn->mBox.getAxisId(planes.front().Normal);
 	Geom::Segment sklt = fn->mBox.getSkeleton(aid);
 	QMap<double, Geom::Plane> distPlaneMap;
 	foreach (Geom::Plane plane, planes)

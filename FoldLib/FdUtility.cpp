@@ -179,11 +179,11 @@ QVector<Geom::Segment> detectJointSegments( FdNode* part, PatchNode* panel )
 		Vector3 p = distSeg.P0;
 
 		Vector3 v1 = panel->mPatch.Axis[0];
-		int aid1 = part->mBox.getClosestAxisId(v1);
+		int aid1 = part->mBox.getAxisId(v1);
 		double ext1 = part->mBox.getExtent(aid1);
 
 		Vector3 v2 = panel->mPatch.Axis[1];
-		int aid2 = part->mBox.getClosestAxisId(v2);
+		int aid2 = part->mBox.getAxisId(v2);
 		double ext2 = part->mBox.getExtent(aid2);
 
 		jointSegs << Geom::Segment(p, v1, ext1) << Geom::Segment(p, v2, ext2);

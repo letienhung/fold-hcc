@@ -45,7 +45,8 @@ public:
 	void translate(Vector3 t);
 	void scale(double s);
 	void scale(Vector3 s);
-	void scale(int axisID, double s);
+	void scale(int axisId, double s);
+	void scale(int axisId, double t0, double t1);
 	Box  scaled(double s);
 	void scaleAsPart(double f, Vector3 c);
 
@@ -65,7 +66,6 @@ public:
 	int		getFaceId(Vector3 n);
 	int		getFaceId(int aid, bool positive);
 	int		getAxisId(Vector3 a);
-	int		getClosestAxisId(Vector3 a);
 	int		minAxisId();
 	int		maxAxisId();
 	double	getExtent(int aid);

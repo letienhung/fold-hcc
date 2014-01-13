@@ -24,8 +24,8 @@ void Geom::IntrRectRect::unilateralTest( Rectangle& rect0, Rectangle& rect1 )
 	QVector<Segment2> seg2d0, seg2d1;
 	for (int i = 0; i < 4; i++)
 	{
-		seg2d0.push_back(rect1.getProjection2D(seg0[i]));
-		seg2d1.push_back(rect1.getProjection2D(seg1[i]));
+		seg2d0.push_back(rect1.get2DSegment(seg0[i]));
+		seg2d1.push_back(rect1.get2DSegment(seg1[i]));
 	}
 
 	// test each corner against rect1

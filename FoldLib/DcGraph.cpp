@@ -12,7 +12,7 @@ DcGraph::DcGraph( FdGraph* scaffold, StrArray2D panelGroups, Vector3 pushV, QStr
 	path = QFileInfo(path).absolutePath();
 	mID = id;
 
-	pushAId = computeAABB().box().getClosestAxisId(pushV);
+	pushAId = computeAABB().box().getAxisId(pushV);
 
 	// merge control panels
 	foreach( QVector<QString> panelGroup, panelGroups )

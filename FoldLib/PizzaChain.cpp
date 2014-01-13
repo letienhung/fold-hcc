@@ -29,7 +29,7 @@ void PizzaChain::resolveCollision( FoldingNode* fn )
 
 	// impossible splits
 	// to do: resolve collision cooperatively
-	if (sfVolume.Radius <= 0) return; 
+	if (sfVolume.Radius <= 0) return;  
 
 	int nbPart = ceil( getLength() / (sfVolume.Radius + ZERO_TOLERANCE_LOW) );
 	if (nbPart != mParts.size()) createChain(nbPart);

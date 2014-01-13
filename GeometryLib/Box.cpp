@@ -155,10 +155,20 @@ void Geom::Box::scale( Vector3 s )
 		this->Extent[i] *= s[i];
 }
 
-void Geom::Box::scale( int axisID, double s )
+void Geom::Box::scale( int axisId, double s )
 {
-	if (axisID >= 0 && axisID < 3)
-		this->Extent[axisID] *= s;
+	if (axisId >= 0 && axisId < 3)
+		this->Extent[axisId] *= s;
+}
+
+void Geom::Box::scale( int axisId, double t0, double t1 )
+{
+	// shift center
+	double dt = (t0 + t1) / 2;
+	Center += dt * Extent[axisId] * Axis[axisId];
+
+	// change extent
+	Extent[axisId] *= (t1 - t0) / 2;
 }
 
 bool Geom::Box::hasFaceCoplanarWith( Line line )
@@ -361,17 +371,7 @@ int Geom::Box::getFaceId( Vector3 n )
 	return -1;
 }
 
-
 int Geom::Box::getAxisId( Vector3 a )
-{
-	for (int i = 0; i < 3; i++)
-		 if (areCollinear(a, Axis[i])) return i;
-
-	return -1;
-}
-
-
-int Geom::Box::getClosestAxisId( Vector3 a )
 {
 	double maxDot = minDouble();
 	int aid = 0;
@@ -520,8 +520,8 @@ SurfaceMesh::Vector3 Geom::Box::getFaceCenter( int fid )
 {
 	Vector3 c = Center;
 
-	int aid = fid / 3;
-	if (fid % 3)
+	int aid = fid / 2;
+	if (fid % 2)
 		c -= Extent[aid] * Axis[aid];
 	else
 		c += Extent[aid] * Axis[aid];
@@ -537,7 +537,7 @@ SurfaceMesh::Vector3 Geom::Box::getFaceCenter( int aid, bool positive )
 
 int Geom::Box::getFaceId( int aid, bool positive )
 {
-	return positive ? (3 * aid) : (3 * aid + 1);
+	return positive ? (2 * aid) : (2 * aid + 1);
 }
 
 

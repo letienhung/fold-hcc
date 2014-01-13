@@ -103,23 +103,95 @@ QVector<Geom::Plane> ChainGraph::generateCutPlanes( int N )
 	return cutPlanes;
 }
 
-// split \mOrigPart into N parts and set up links
 void ChainGraph::createChain( int N )
 {
-	// remove original chain parts and hinge links
+	// skip if chain size is the same
+	if (mParts.size() == N) return;
+
+	// remove original chain parts
 	foreach (FdNode* n, mParts) removeNode(n->mID);
 
-	// clone original part and add to graph
-	Structure::Graph::addNode(mOrigPart->clone());
-
-	// split part
+	// clone original part
+	// add to graph and split
+	FdNode* origPart = (FdNode*)mOrigPart->clone();
+	Structure::Graph::addNode(origPart);
 	mParts = FdGraph::split(mOrigPart->mID, generateCutPlanes(N - 1));
+	
+	// reset hinge links
 	sortChainParts();
+	resetHingeLinks();
+}
 
+double ChainGraph::getHeight()
+{
+	int aid = mOrigPart->mBox.getAxisId(mPanels[0]->mPatch.Normal);
+	Geom::Segment sklt = mOrigPart->mBox.getSkeleton(aid);
+
+	Geom::Plane plane0 = mPanels[0]->mPatch.getPlane();
+	double dist1 = plane0.distanceTo(sklt.P0);
+	double dist2 = plane0.distanceTo(sklt.P1);
+
+	return Max(dist1, dist2);
+}
+
+double ChainGraph::getLength()
+{
+	return chainUpSeg.length();
+}
+
+void ChainGraph::sortChainParts()
+{
+	QMap<double, FdNode*> distPartMap;
+
+	Geom::Plane panel_plane = mPanels[0]->mPatch.getPlane();
+	foreach(FdNode* n, mParts)
+	{
+		double dist = panel_plane.signedDistanceTo(n->center());
+		distPartMap[fabs(dist)] = n;
+	}
+
+	mParts = distPartMap.values().toVector();
+}
+
+void ChainGraph::fold( double t )
+{
+	// fix panels[0] but free all others
+	foreach (Structure::Node* n, nodes)
+		n->properties["fixed"] = false;
+	mPanels[0]->properties["fixed"] = true;
+
+	// hinge angle
+	foreach(FdLink* alink, activeLinks)
+		alink->hinge->setAngleByTime(t);
+
+	// apply folding
+	restoreConfiguration();
+}
+
+void ChainGraph::setupActiveLinks( FoldingNode* fn )
+{
+	activeLinks.clear();
+
+	int hidx_m = fn->hingeIdx;
+	int hidx_v = (hidx_m % 2) ? hidx_m - 1 : hidx_m + 1;
+	for (int i = 0; i < hingeLinks.size(); i++)
+	{
+		// activate corresponding hinges
+		foreach(FdLink* l, hingeLinks[i])
+			l->properties["active"] = false;
+
+		int hidx = (i % 2) ? hidx_v : hidx_m;
+		FdLink* activeLink = hingeLinks[i][hidx];
+		activeLink->properties["active"] = true;
+		activeLinks << activeLink;
+	}
+}
+
+void ChainGraph::resetHingeLinks()
+{
 	// remove hinge links
-	foreach (QVector<FdLink*> links, hingeLinks)
-		foreach (FdLink* l, links)
-			delete l;
+	foreach (Structure::Link* link, links)
+		Structure::Graph::removeLink(link);
 	hingeLinks.clear();
 
 	// create hinge links between mPanels[0] and mParts[0]
@@ -206,67 +278,14 @@ void ChainGraph::createChain( int N )
 	}
 }
 
-double ChainGraph::getHeight()
+void ChainGraph::shrinkChainAlongJoint(double t0, double t1)
 {
-	int aid = mOrigPart->mBox.getClosestAxisId(mPanels[0]->mPatch.Normal);
-	Geom::Segment sklt = mOrigPart->mBox.getSkeleton(aid);
-
-	Geom::Plane plane0 = mPanels[0]->mPatch.getPlane();
-	double dist1 = plane0.distanceTo(sklt.P0);
-	double dist2 = plane0.distanceTo(sklt.P1);
-
-	return Max(dist1, dist2);
-}
-
-double ChainGraph::getLength()
-{
-	return chainUpSeg.length();
-}
-
-void ChainGraph::sortChainParts()
-{
-	QMap<double, FdNode*> distPartMap;
-
-	Geom::Plane panel_plane = mPanels[0]->mPatch.getPlane();
-	foreach(FdNode* n, mParts)
+	Vector3 jointV = rootJointSegs.front().Direction;
+	foreach(FdNode* part, mParts)
 	{
-		double dist = panel_plane.signedDistanceTo(n->center());
-		distPartMap[fabs(dist)] = n;
-	}
-
-	mParts = distPartMap.values().toVector();
-}
-
-void ChainGraph::fold( double t )
-{
-	// fix panels[0] but free all others
-	foreach (Structure::Node* n, nodes)
-		n->properties["fixed"] = false;
-	mPanels[0]->properties["fixed"] = true;
-
-	// hinge angle
-	foreach(FdLink* alink, activeLinks)
-		alink->hinge->setAngleByTime(t);
-
-	// apply folding
-	restoreConfiguration();
-}
-
-void ChainGraph::setupActiveLinks( FoldingNode* fn )
-{
-	activeLinks.clear();
-
-	int hidx_m = fn->hingeIdx;
-	int hidx_v = (hidx_m % 2) ? hidx_m - 1 : hidx_m + 1;
-	for (int i = 0; i < hingeLinks.size(); i++)
-	{
-		// activate corresponding hinges
-		foreach(FdLink* l, hingeLinks[i])
-			l->properties["active"] = false;
-
-		int hidx = (i % 2) ? hidx_v : hidx_m;
-		FdLink* activeLink = hingeLinks[i][hidx];
-		activeLink->properties["active"] = true;
-		activeLinks << activeLink;
+		int aid = part->mBox.getAxisId(jointV);
+		part->mBox.scale(aid, t0, t1);
+		part->deformMesh();
+		part->createScaffold();
 	}
 }

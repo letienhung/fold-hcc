@@ -41,7 +41,8 @@ public:
 	QVector<Vector3>  getConnersReverse();
 
 	// projection
-	Segment2 getProjection2D(Segment s);
+	Segment2 get2DSegment(Segment& s);
+	Segment get3DSegment(Segment2& s);
 	Vector3 getProjection(Vector3 p);
 	Vector3 getProjectedVector(Vector3 v);
 
