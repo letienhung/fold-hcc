@@ -174,7 +174,7 @@ void DcGraph::createLayers()
 		}
 	}
 
-	//// merge coplanar parts within each layer 
+	// merge coplanar parts within each layer 
 	FdNodeArray2D mergedGroups;
 	mergedGroups << mergeCoplanarParts(layerGroups[0], controlPanels[0]);
 	for (int i = 1; i < layerGroups.size(); i++)

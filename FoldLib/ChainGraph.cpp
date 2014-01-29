@@ -105,9 +105,6 @@ QVector<Geom::Plane> ChainGraph::generateCutPlanes( int N )
 
 void ChainGraph::createChain( int N )
 {
-	// skip if chain size is the same
-	if (mParts.size() == N) return;
-
 	// remove original chain parts
 	foreach (FdNode* n, mParts) removeNode(n->mID);
 
