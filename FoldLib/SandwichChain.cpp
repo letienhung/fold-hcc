@@ -47,7 +47,6 @@ Geom::Segment SandwichChain::getJointSegment( FoldingNode* fn )
 	return rootJointSegs[jidx];
 }
 
-
 void SandwichChain::resolveCollision( FoldingNode* fn )
 {
 	// folding areas

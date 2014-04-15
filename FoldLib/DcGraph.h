@@ -5,6 +5,9 @@
 #include "Numeric.h"
 #include "LayerGraph.h"
 
+// DcGraph is the Decomposition graph of a Concertina
+// including base patches and layers
+
 class DcGraph : public FdGraph
 {
 public:

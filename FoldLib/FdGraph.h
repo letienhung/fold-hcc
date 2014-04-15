@@ -7,6 +7,8 @@
 #include <QSharedPointer>
 #include "FdUtility.h"
 
+// FdGraph represents all segments of the input shape
+
 class FdGraph : public Structure::Graph
 {
 public:

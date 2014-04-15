@@ -113,6 +113,7 @@ public:
 		glDisable(GL_LIGHTING);
 		glLineWidth(width);
 		glColorQt(c);
+
 		glBegin(GL_LINES);
 		foreach(QVector<QVector3> poly, polys){
 			for(int i = 0; i < (int) poly.size(); i++){

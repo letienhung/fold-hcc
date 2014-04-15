@@ -20,7 +20,8 @@ HEADERS += \
     ProbabilityDistributions.h \
     Numeric.h \
     CustomDrawObjects.h \
-    XmlWriter.h
+    XmlWriter.h \
+    mcqd.h
 
 SOURCES += \
     Numeric.cpp \
