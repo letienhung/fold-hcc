@@ -34,13 +34,18 @@ PizzaLayer::PizzaLayer( QVector<FdNode*> parts, PatchNode* panel, QString id, Ge
 
 PizzaLayer::~PizzaLayer()
 {
-	delete dy_graph;
 }
+
+void PizzaLayer::foldabilize()
+{
+	buildDependGraph();
+}
+
 
 void PizzaLayer::buildDependGraph()
 {
 	// clear
-	dy_graph->clear();
+	fog->clear();
 
 	// empty pizzaLayer
 	if (nodes.size() == 1) return;
@@ -52,7 +57,7 @@ void PizzaLayer::buildDependGraph()
 
 		// chain nodes
 		ChainNode* cn = new ChainNode(i, chain->mID);
-		dy_graph->addNode(cn);
+		fog->addNode(cn);
 
 		for (int j = 0; j < chain->rootJointSegs.size(); j++)
 		{
@@ -61,17 +66,17 @@ void PizzaLayer::buildDependGraph()
 			FoldingNode* fn1 = new FoldingNode(2*j, fnid1);
 			Geom::SectorCylinder fVolume1 = chain->getFoldingVolume(fn1);
 			fn1->properties["fVolume"].setValue(fVolume1);
-			dy_graph->addNode(fn1);
+			fog->addNode(fn1);
 
 			QString fnid2 = chain->mID + "_" + QString::number(2*j+1);
 			FoldingNode* fn2 = new FoldingNode(2*j+1, fnid2);
 			Geom::SectorCylinder fVolume2 = chain->getFoldingVolume(fn2);
 			fn2->properties["fVolume"].setValue(fVolume2);
-			dy_graph->addNode(fn2);
+			fog->addNode(fn2);
 
 			// folding links
-			dy_graph->addFoldingLink(cn, fn1);
-			dy_graph->addFoldingLink(cn, fn2);
+			fog->addFoldingLink(cn, fn1);
+			fog->addFoldingLink(cn, fn2);
 		}
 	}
 
@@ -82,28 +87,28 @@ void PizzaLayer::buildDependGraph()
 	{
 		double dotProd = fabs(dot(pNormal, barriers[i].Normal));
 		if (dotProd > 0.5)  continue;
-		dy_graph->addNode(new BarrierNode(i));
+		fog->addNode(new BarrierNode(i));
 	}
 
-	// collision links
-	foreach (FoldingNode* fn, dy_graph->getAllFoldingNodes())
+	// dependency links
+	foreach (FoldingNode* fn, fog->getAllFoldingNodes())
 	{
-		ChainNode* cn = dy_graph->getChainNode(fn->mID);
+		ChainNode* cn = fog->getChainNode(fn->mID);
 		PizzaChain* chain = (PizzaChain*) getChain(cn->mID);
 		Geom::SectorCylinder fVolume = chain->getFoldingVolume(fn);
 
 		// with barriers 
-		foreach (BarrierNode* bn, dy_graph->getAllBarrierNodes())
+		foreach (BarrierNode* bn, fog->getAllBarrierNodes())
 		{
 			Geom::Rectangle& barrier = barriers[bn->faceIdx];
 			if (fVolume.intersects(barrier))
 			{
-				dy_graph->addCollisionLink(fn, bn);
+				fog->addCollisionLink(fn, bn);
 			}
 		}
 
 		// with other chain nodes
-		foreach(ChainNode* other_cn, dy_graph->getAllChainNodes())
+		foreach(ChainNode* other_cn, fog->getAllChainNodes())
 		{
 			if (cn == other_cn) continue;
 
@@ -132,7 +137,7 @@ void PizzaLayer::buildDependGraph()
 			// add collision link
 			if (collide)
 			{
-				dy_graph->addCollisionLink(fn, other_cn);
+				fog->addCollisionLink(fn, other_cn);
 			}
 		}
 	}
@@ -150,8 +155,7 @@ QVector<Structure::Node*> PizzaLayer::getKeyFrameNodes( double t )
 	for (int i = 0; i < chains.size(); i++)
 	{
 		double lt = getLocalTime(t, chainStarts[i], chainStarts[i+1]);
-		ChainGraph* chain = getChain(chainSequence[i]);
-		knodes += chain->getKeyframeParts(lt);
+		knodes += chains[i]->getKeyframeParts(lt);
 	}
 
 	// control panels
@@ -198,48 +202,4 @@ Vector3 PizzaLayer::getClosestCoordinates( Geom::SectorCylinder& fVolume, Geom::
 	Vector3 closestP = dsr.mClosestPoint1;
 
 	return fVolume.getCoordinates(closestP);
-}
-
-double PizzaLayer::computeCost( QString fnid )
-{
-	FoldingNode* fn = (FoldingNode*)dy_graph->getNode(fnid);
-	Geom::SectorCylinder fVolume = fn->properties["fVolume"].value<Geom::SectorCylinder>();
-
-	// compute the coordinates of closest colliding point in fVolume
-	QVector<Vector3> hotCoords;
-	foreach (Structure::Link* link, dy_graph->getCollisionLinks(fnid))
-	{
-		Structure::Node* other_node = link->getNodeOther(fnid);
-
-		// collision with other chain
-		if (other_node->properties["type"] == "chain")
-		{
-			PizzaChain* other_chain = (PizzaChain*)getChain(other_node->mID);
-			FdNode* other_part = other_chain->mParts[0];
-			hotCoords << getClosestCoordinates(fVolume, other_part);
-		}
-		// collision with barrier
-		else
-		{
-			BarrierNode* bnode = (BarrierNode*)other_node;
-			Geom::Rectangle brect = barrierBox.getFaceRectangle(bnode->faceIdx);
-			hotCoords << getClosestCoordinates(fVolume, brect);
-		}
-	}
-
-	// shrink fVolume to avoid all collisions
-	double minRadius = 1;
-	foreach(Vector3 coord, hotCoords)
-	{ 
-		if (coord.x() < minRadius) 
-			minRadius = coord.x();
-	}
-	fVolume.Radius *= minRadius;
-
-	// save the shrunk fVolume for further use
-	fn->properties["sfVolume"].setValue(fVolume);
-
-	// the cost is the volume lost of fVolume
-	double cost = 1 - minRadius;
-	return cost;
 }

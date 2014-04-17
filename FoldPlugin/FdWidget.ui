@@ -290,20 +290,6 @@
         </item>
        </widget>
       </item>
-      <item row="4" column="3" colspan="2">
-       <widget class="QPushButton" name="fold">
-        <property name="text">
-         <string>Fold</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0" colspan="2">
-       <widget class="QPushButton" name="foldLayer">
-        <property name="text">
-         <string>Fold Layer</string>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="4" alignment="Qt::AlignHCenter">
        <widget class="QLabel" name="label_10">
         <property name="text">
@@ -318,7 +304,7 @@
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
+      <item row="7" column="1">
        <widget class="QDoubleSpinBox" name="snapshotTime">
         <property name="maximum">
          <double>1.000000000000000</double>
@@ -331,7 +317,7 @@
         </property>
        </widget>
       </item>
-      <item row="6" column="0">
+      <item row="7" column="0">
        <widget class="QLabel" name="label_11">
         <property name="text">
          <string>Snapshot Time:</string>
@@ -344,7 +330,7 @@
       <item row="2" column="1">
        <widget class="QListWidget" name="layerList"/>
       </item>
-      <item row="8" column="0">
+      <item row="9" column="0">
        <widget class="QLabel" name="label_5">
         <property name="text">
          <string>Target Volume</string>
@@ -354,7 +340,7 @@
         </property>
        </widget>
       </item>
-      <item row="8" column="1">
+      <item row="9" column="1">
        <widget class="QDoubleSpinBox" name="targetV">
         <property name="maximum">
          <double>1.000000000000000</double>
@@ -367,7 +353,21 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="0" colspan="2">
+      <item row="4" column="0">
+       <widget class="QPushButton" name="foldLayer">
+        <property name="text">
+         <string>Fold Layer</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QPushButton" name="fold">
+        <property name="text">
+         <string>Fold</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="3" colspan="2">
        <widget class="QPushButton" name="generateKeyframes">
         <property name="text">
          <string>Generate Keyframes</string>
@@ -375,13 +375,13 @@
        </widget>
       </item>
       <item row="6" column="3" colspan="2">
-       <widget class="QPushButton" name="outputDyGSequence">
+       <widget class="QPushButton" name="exportFOG">
         <property name="text">
-         <string>Output DyG Sequence</string>
+         <string>Export FOG</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="3" colspan="2">
+      <item row="6" column="0" colspan="2">
        <widget class="QPushButton" name="exportCurrent">
         <property name="text">
          <string>Export Current</string>

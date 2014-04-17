@@ -27,7 +27,7 @@ public:
 	QVector<FdNode*> mergeCoplanarParts(QVector<FdNode*> ns, PatchNode* panel);
 
 	// fold
-	void fold();
+	void foldabilize();
 
 	// key frame
 	FdGraph* getKeyFrame(double t);

@@ -20,16 +20,11 @@ public:
 	// getter
 	ChainGraph* getChain(QString cid);
 
-	// fold
-	void fold();
+	// foldabilize
+	virtual void foldabilize() = 0;
 
-	// depend graph
-	virtual void buildDependGraph() = 0;
-	virtual double computeCost(QString fnid) = 0;
-
-	double computeGain(QString fnid);
-	void computeChainSequence();
-	void outputDyGraphSequence();
+	// fold option graph
+	void exportFOG();
 
 	// key frames
 	virtual void snapshot(double t);
@@ -40,11 +35,7 @@ public:
 	int selId;
 	QVector<ChainGraph*> chains;
 
-	DependGraph* dy_graph;
-	QVector<DependGraph*> dygSequence;
-	QVector<QString> chainSequence;
-	QVector<FoldingNode*> fnSequence;
-
+	FoldOptionGraph* fog;
 	Geom::Box barrierBox;
 }; 
 

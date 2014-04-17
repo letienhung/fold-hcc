@@ -8,12 +8,11 @@ public:
     PizzaLayer(QVector<FdNode*> parts, PatchNode* panel, QString id, Geom::Box &bBox);
 	~PizzaLayer();
 
+	void foldabilize();
 	void buildDependGraph();
 
-	double computeCost(QString fnid);
 	Vector3 getClosestCoordinates(Geom::SectorCylinder& fVolume, FdNode* node);
 	Vector3 getClosestCoordinates(Geom::SectorCylinder& fVolume, Geom::Rectangle& rect);
-
 	QVector<Structure::Node*> getKeyFrameNodes( double t );
 
 public: 

@@ -1,4 +1,4 @@
-#include "DependGraph.h"
+#include "FoldOptionGraph.h"
 #include <QFile>
 #include <QStringList>
 #include <QTextStream>
@@ -71,68 +71,68 @@ Structure::Node* BarrierNode::clone()
 
 //////////////////////////////////////////////////////////////////////////
 
-QString DependGraph::dotPath = "\"" + getcwd() + "/FoldLib/Graphviz/dot.exe" + "\"";
+QString FoldOptionGraph::dotPath = "\"" + getcwd() + "/FoldLib/Graphviz/dot.exe" + "\"";
 
 
-DependGraph::DependGraph( QString id )
+FoldOptionGraph::FoldOptionGraph( QString id )
 	:Graph(id)
 {
 }
 
-DependGraph::DependGraph( DependGraph& other )
+FoldOptionGraph::FoldOptionGraph( FoldOptionGraph& other )
 	:Graph(other)
 {
 }
 
-DependGraph::~DependGraph()
+FoldOptionGraph::~FoldOptionGraph()
 {
 }
 
-Structure::Graph* DependGraph::clone()
+Structure::Graph* FoldOptionGraph::clone()
 {
-	return new DependGraph(*this);
+	return new FoldOptionGraph(*this);
 }
 
 
-void DependGraph::addNode( ChainNode* cn )
+void FoldOptionGraph::addNode( ChainNode* cn )
 {
 	Graph::addNode(cn);
 	cn->properties["type"] = "chain";
 }
 
-void DependGraph::addNode( FoldingNode* fn )
+void FoldOptionGraph::addNode( FoldingNode* fn )
 {
 	Graph::addNode(fn);
 	fn->properties["type"] = "folding";
 }
 
-void DependGraph::addNode( BarrierNode* bn )
+void FoldOptionGraph::addNode( BarrierNode* bn )
 {
 	Graph::addNode(bn);
 	bn->properties["type"] = "barrier";
 }
 
-void DependGraph::addFoldingLink( Structure::Node* n1, Structure::Node* n2 )
+void FoldOptionGraph::addFoldingLink( Structure::Node* n1, Structure::Node* n2 )
 {
 	Structure::Link* link =  Graph::addLink(n1, n2);
 	link->properties["type"] = "folding";
 }
 
-void DependGraph::addCollisionLink( Structure::Node* n1, Structure::Node* n2 )
+void FoldOptionGraph::addCollisionLink( Structure::Node* n1, Structure::Node* n2 )
 {
 	Structure::Link* link =  Graph::addLink(n1, n2);
 	link->properties["type"] = "collision";
 }
 
 
-bool DependGraph::verifyNodeType( QString nid, QString type )
+bool FoldOptionGraph::verifyNodeType( QString nid, QString type )
 {
 	Structure::Node* node = getNode(nid);
 	return (node && node->properties["type"] == type);
 }
 
 
-ChainNode* DependGraph::getChainNode( QString fnid )
+ChainNode* FoldOptionGraph::getChainNode( QString fnid )
 {
 	if (!verifyNodeType(fnid, "folding")) return NULL;
 
@@ -140,7 +140,7 @@ ChainNode* DependGraph::getChainNode( QString fnid )
 	return (ChainNode*)l->getNodeOther(fnid);
 }
 
-QVector<FoldingNode*> DependGraph::getFoldingNodes( QString cnid )
+QVector<FoldingNode*> FoldOptionGraph::getFoldingNodes( QString cnid )
 {
 	QVector<FoldingNode*> fns;
 	if (!verifyNodeType(cnid, "chain")) return fns;
@@ -154,7 +154,7 @@ QVector<FoldingNode*> DependGraph::getFoldingNodes( QString cnid )
 }
 
 
-QVector<FoldingNode*> DependGraph::getSiblings( QString fnid )
+QVector<FoldingNode*> FoldOptionGraph::getSiblings( QString fnid )
 {
 	if (verifyNodeType(fnid, "chain")) 
 		return getFoldingNodes(getChainNode(fnid)->mID);
@@ -163,7 +163,7 @@ QVector<FoldingNode*> DependGraph::getSiblings( QString fnid )
 }
 
 
-QVector<FoldingNode*> DependGraph::getAllFoldingNodes()
+QVector<FoldingNode*> FoldOptionGraph::getAllFoldingNodes()
 {
 	QVector<FoldingNode*> fns;
 	foreach(Structure::Node* n, nodes)
@@ -175,7 +175,7 @@ QVector<FoldingNode*> DependGraph::getAllFoldingNodes()
 	return fns;
 }
 
-QVector<ChainNode*> DependGraph::getAllChainNodes()
+QVector<ChainNode*> FoldOptionGraph::getAllChainNodes()
 {
 	QVector<ChainNode*> cns;
 	foreach(Structure::Node* n, nodes)
@@ -188,7 +188,7 @@ QVector<ChainNode*> DependGraph::getAllChainNodes()
 }
 
 
-QVector<BarrierNode*> DependGraph::getAllBarrierNodes()
+QVector<BarrierNode*> FoldOptionGraph::getAllBarrierNodes()
 {
 	QVector<BarrierNode*> bns;
 	foreach(Structure::Node* n, nodes)
@@ -201,7 +201,7 @@ QVector<BarrierNode*> DependGraph::getAllBarrierNodes()
 }
 
 
-QVector<Structure::Link*> DependGraph::getFoldinglinks( QString nid )
+QVector<Structure::Link*> FoldOptionGraph::getFoldinglinks( QString nid )
 {
 	QVector<Structure::Link*> flinks;
 	foreach (Structure::Link* l, getLinks(nid))
@@ -215,7 +215,7 @@ QVector<Structure::Link*> DependGraph::getFoldinglinks( QString nid )
 	return flinks;
 }
 
-QVector<Structure::Link*> DependGraph::getCollisionLinks( QString nid )
+QVector<Structure::Link*> FoldOptionGraph::getCollisionLinks( QString nid )
 {
 	QVector<Structure::Link*> clinks;
 	foreach (Structure::Link* l, getLinks(nid))
@@ -230,7 +230,7 @@ QVector<Structure::Link*> DependGraph::getCollisionLinks( QString nid )
 }
 
 
-QString DependGraph::toGraphvizFormat( QString subcaption, QString caption )
+QString FoldOptionGraph::toGraphvizFormat( QString subcaption, QString caption )
 {
 	QStringList out;
 	out << "graph G{\n";
@@ -310,7 +310,7 @@ QString DependGraph::toGraphvizFormat( QString subcaption, QString caption )
 	return out.join("");
 }
 
-void DependGraph::saveAsGraphviz( QString fname, QString subcaption /*= ""*/, QString caption /*= ""*/ )
+void FoldOptionGraph::saveAsGraphviz( QString fname, QString subcaption /*= ""*/, QString caption /*= ""*/ )
 {
 	QFile file(fname + ".gv");
 	if (!file.open(QFile::WriteOnly | QFile::Text))	return;
@@ -322,7 +322,7 @@ void DependGraph::saveAsGraphviz( QString fname, QString subcaption /*= ""*/, QS
 	file.close();
 }
 
-void DependGraph::saveAsImage( QString fname )
+void FoldOptionGraph::saveAsImage( QString fname )
 {
 	// save graphvis
 	saveAsGraphviz(fname);
@@ -334,7 +334,7 @@ void DependGraph::saveAsImage( QString fname )
 }
 
 // A chain node is free if one of its folding nodes is collision free
-bool DependGraph::isFreeChainNode( QString cnid )
+bool FoldOptionGraph::isFreeChainNode( QString cnid )
 {
 	Structure::Node* cnode = getNode(cnid);
 	if (!cnode || cnode->properties["type"] != "chain")
@@ -354,32 +354,13 @@ bool DependGraph::isFreeChainNode( QString cnid )
 }
 
 
-FoldingNode* DependGraph::getBestFoldingNode()
-{
-	FoldingNode* best_fn = NULL;
-	double best_score = -maxDouble();
-	foreach (FoldingNode* fn, getAllFoldingNodes())
-	{
-		if (!fn->properties["visited"].toBool())
-		{
-			if (fn->getScore() > best_score)
-			{
-				best_score = fn->getScore();
-				best_fn = fn;
-			}
-		}
-	}
-
-	return best_fn;
-}
-
-QVector<Structure::Node*> DependGraph::getFamilyNodes( QString nid )
+QVector<Structure::Node*> FoldOptionGraph::getFamilyNodes( QString nid )
 {
 	QVector<Structure::Node*> family;
 
 	Structure::Node* node = getNode(nid);
 	ChainNode* cnode = (node->properties["type"] == "chain") ? 
-						(ChainNode*)node : getChainNode(nid);
+		(ChainNode*)node : getChainNode(nid);
 
 	family << cnode;
 	foreach(FoldingNode* fn, getFoldingNodes(cnode->mID))
@@ -388,7 +369,7 @@ QVector<Structure::Node*> DependGraph::getFamilyNodes( QString nid )
 	return family;
 }
 
-QVector<Structure::Link*> DependGraph::getFamilyCollisionLinks( QString nid )
+QVector<Structure::Link*> FoldOptionGraph::getFamilyCollisionLinks( QString nid )
 {
 	QVector<Structure::Link*> clinks;
 	foreach(Structure::Node* node, getFamilyNodes(nid))
@@ -399,7 +380,7 @@ QVector<Structure::Link*> DependGraph::getFamilyCollisionLinks( QString nid )
 	return clinks;
 }
 
-BarrierNode* DependGraph::getBarrierNode( int fIdx )
+BarrierNode* FoldOptionGraph::getBarrierNode( int fIdx )
 {
 	foreach(Structure::Node* n, nodes)
 	{
@@ -415,4 +396,3 @@ BarrierNode* DependGraph::getBarrierNode( int fIdx )
 
 	return NULL;
 }
-

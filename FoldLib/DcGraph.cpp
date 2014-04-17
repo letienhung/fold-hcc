@@ -175,11 +175,11 @@ void DcGraph::createLayers()
 	}
 
 	// merge coplanar parts within each layer 
-	FdNodeArray2D mergedGroups;
-	mergedGroups << mergeCoplanarParts(layerGroups[0], controlPanels[0]);
-	for (int i = 1; i < layerGroups.size(); i++)
-		mergedGroups << mergeCoplanarParts(layerGroups[i], controlPanels[i-1]);
-	layerGroups = mergedGroups;
+	//FdNodeArray2D mergedGroups;
+	//mergedGroups << mergeCoplanarParts(layerGroups[0], controlPanels[0]);
+	//for (int i = 1; i < layerGroups.size(); i++)
+	//	mergedGroups << mergeCoplanarParts(layerGroups[i], controlPanels[i-1]);
+	//layerGroups = mergedGroups;
 	
 	// clear layers
 	layers.clear();
@@ -358,8 +358,8 @@ FdGraph* DcGraph::getKeyFrame( double t )
 	return key_graph;
 }
 
-void DcGraph::fold()
+void DcGraph::foldabilize()
 {
 	foreach(LayerGraph* layer, layers)
-		layer->fold();
+		layer->foldabilize();
 }

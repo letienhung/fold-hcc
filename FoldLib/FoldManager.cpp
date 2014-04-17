@@ -207,7 +207,7 @@ int FoldManager::createDcGraphs( Vector3 pushDirect, int N )
 void FoldManager::foldSelLayer()
 {
 	LayerGraph* lg = getSelLayer();
-	if (lg) lg->fold();
+	if (lg) lg->foldabilize();
 }
 
 
@@ -219,10 +219,10 @@ void FoldManager::snapshotSelLayer( double t )
 	emit(sceneChanged());
 }
 
-void FoldManager::outputDyGraphSequence()
+void FoldManager::exportFOG()
 {
 	LayerGraph* lg = getSelLayer();
-	if (lg) lg->outputDyGraphSequence();
+	if (lg) lg->exportFOG();
 }
 
 void FoldManager::selectDcGraph( QString id )
@@ -331,10 +331,10 @@ FdGraph* FoldManager::getKeyframe()
 	return NULL;
 }
 
-void FoldManager::foldAll()
+void FoldManager::foldabilize()
 {
 	foreach (DcGraph* dcg, dcGraphs)
-		dcg->fold();
+		dcg->foldabilize();
 }
 
 void FoldManager::updateDcList()

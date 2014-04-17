@@ -45,12 +45,12 @@ HEADERS += \
     LayerGraph.h \
     SandwichLayer.h \
     PizzaLayer.h \
-    DependGraph.h \
     PizzaChain.h \
     SandwichChain.h \
     ChainGraph.h \
     Hinge.h \
-    BundleNode.h
+    BundleNode.h \
+    FoldOptionGraph.h
 
 SOURCES += \
     PatchNode.cpp \
@@ -65,10 +65,10 @@ SOURCES += \
     LayerGraph.cpp \
     SandwichLayer.cpp \
     PizzaLayer.cpp \
-    DependGraph.cpp \
     PizzaChain.cpp \
     SandwichChain.cpp \
     ChainGraph.cpp \
     Hinge.cpp \
-    BundleNode.cpp
+    BundleNode.cpp \
+    FoldOptionGraph.cpp
 

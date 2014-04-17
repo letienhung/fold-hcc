@@ -2,7 +2,7 @@
 
 #include "FdGraph.h"
 #include "PatchNode.h"
-#include "DependGraph.h"
+#include "FoldOptionGraph.h"
 
 class ChainGraph : public FdGraph
 {

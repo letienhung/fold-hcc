@@ -39,12 +39,13 @@ public:
 	int faceIdx;
 };
 
-class DependGraph : public Structure::Graph
+
+class FoldOptionGraph : public Structure::Graph
 {
 public:
-    DependGraph(QString id = "");
-	DependGraph(DependGraph& other);
-	~DependGraph();
+	FoldOptionGraph(QString id = "");
+	FoldOptionGraph(FoldOptionGraph& other);
+	~FoldOptionGraph();
 	Graph* clone();
 
 	// modifier
@@ -72,7 +73,7 @@ public:
 
 	// fold
 	bool isFreeChainNode(QString cnid);
-    FoldingNode* getBestFoldingNode();
+	FoldingNode* getBestFoldingNode();
 
 	// visualize
 	QString toGraphvizFormat(QString subcaption, QString caption);

@@ -49,7 +49,7 @@ public slots:
 	// \aid = 0(X), 1(Y), 2(Z)
 	void foldAlongAxis(int aid);
 	void createDcGraphs();
-	void foldAll();
+	void foldabilize();
 
 	// 3. invoke when a folding percentage is picked (multiple times)
 	// \pc \in (0, 1]
@@ -66,7 +66,7 @@ public slots:
 
 	void foldSelLayer();
 	void snapshotSelLayer(double t);
-	void outputDyGraphSequence();
+	void exportFOG();
 
 	FdGraph* getKeyframe();
 
