@@ -296,7 +296,7 @@ void FoldManager::generateFdKeyFrames()
 	clearResults();
 
 	// generate key frames
-	int nbFrames = 100;
+	int nbFrames = 10;
 	double step = 1.0 / nbFrames;
 
 	// selected dc graph

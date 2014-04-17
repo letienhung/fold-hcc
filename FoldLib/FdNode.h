@@ -43,7 +43,7 @@ public:
 
 	// I/O
 	void write(XmlWriter& xw);
-	virtual void exportMesh(QFile &file);
+	virtual void exportMesh(QFile &file, int& v_offset);
 
 	// geometry
 	virtual void createScaffold() = 0;

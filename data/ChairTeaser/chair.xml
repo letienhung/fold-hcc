@@ -1,0 +1,203 @@
+<!--?xml Version = "1.0"?-->
+<document>
+    <cN>18</cN>
+    <node>
+        <type>2</type>
+        <ID>Box001</ID>
+        <box>
+            <c>-4.5 0 0.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>4.5 10 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>Box003</ID>
+        <box>
+            <c>-9.5 9.5 -9.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 0.5 9.5</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>Box004</ID>
+        <box>
+            <c>9.3915 9.5 -9.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 0.5 9.5</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>Box005</ID>
+        <box>
+            <c>9.5 -9.5 -9.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 0.5 9.5</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>Box006</ID>
+        <box>
+            <c>-9.5 -9.5 -9.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 0.5 9.5</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>Box009</ID>
+        <box>
+            <c>-9.5 0 -9.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 10 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>Box010</ID>
+        <box>
+            <c>9.5 0 -9.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 10 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>Box011</ID>
+        <box>
+            <c>-9.5 9.5 10.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 0.5 9.5</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>Box012</ID>
+        <box>
+            <c>9.5 9.5 10.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 0.5 9.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>Box013</ID>
+        <box>
+            <c>4.5 0 0.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>4.5 10 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>Box015</ID>
+        <box>
+            <c>-4.5 -9.5 -6</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>4.5 0.5 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>Box016</ID>
+        <box>
+            <c>4.5 -9.5 -6</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>4.5 0.5 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>Box019</ID>
+        <box>
+            <c>9.5 0 0.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 10 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>Box020</ID>
+        <box>
+            <c>-9.5 0 0.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 10 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>Box021</ID>
+        <box>
+            <c>-4.5 9.5 -6</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>4.5 0.5 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>Box022</ID>
+        <box>
+            <c>4.5 9.5 -6</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>4.5 0.5 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>Box023</ID>
+        <box>
+            <c>-4.5 9.5 16</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>4.5 0.5 4</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>Box024</ID>
+        <box>
+            <c>4.5 9.5 16</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>4.5 0.5 4</e>
+        </box>
+    </node>
+    <cL>0</cL>
+</document>

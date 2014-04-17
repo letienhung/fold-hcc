@@ -242,7 +242,7 @@ void FdNode::cloneMesh()
 	showMesh = true;
 }
 
-void FdNode::exportMesh(QFile &file)
+void FdNode::exportMesh(QFile &file, int &v_offset)
 {
 	cloneMesh();
 	QTextStream out(&file);
@@ -255,8 +255,10 @@ void FdNode::exportMesh(QFile &file)
 	foreach( SurfaceMesh::Face f, mMesh->faces() ){
 		out << "f ";
 		Surface_mesh::Vertex_around_face_circulator fvit=mMesh->vertices(f), fvend=fvit;
-		do{	out << (((Surface_mesh::Vertex)fvit).idx()+1) << " ";} while (++fvit != fvend);
+		do{	out << (((Surface_mesh::Vertex)fvit).idx()+1+v_offset) << " ";} while (++fvit != fvend);
 		out << "\n";
 	}
 	out << "\n";
+
+	v_offset += mMesh->n_vertices();
 }

@@ -8,6 +8,9 @@
 #include "MeshHelper.h"
 #include "PCA.h"
 
+#include <QFileInfo>
+#include <QFileDialog>
+
 FdPlugin::FdPlugin()
 {
 	widget = NULL;
@@ -196,6 +199,13 @@ void FdPlugin::showKeyframe( int state )
 {
 	drawKeyframe = (state == Qt::Checked);
 	updateScene();
+}
+
+void FdPlugin::exportCurrent()
+{
+	QString filename = QFileDialog::getSaveFileName(0, tr("Save Current Scaffold"), NULL, tr("Mesh Files (*.obj)"));
+	activeScaffold()->exportMesh(filename);
+	showMessage("Current mesh has been exported.");
 }
 
 

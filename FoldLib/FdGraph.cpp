@@ -76,9 +76,10 @@ void FdGraph::exportMesh(QString fname)
 	// Open for writing
 	if (!file.open(QIODevice::Append | QIODevice::Text)) return;
 	
+	int v_offset = 0;
 	QVector<FdNode*> nodes = getFdNodes();
 	foreach(FdNode *n, nodes){
-		n->exportMesh(file);
+		n->exportMesh(file, v_offset);
 	}
 	file.close();
 }

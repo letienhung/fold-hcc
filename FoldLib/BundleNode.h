@@ -17,7 +17,7 @@ public:
 	void deformMesh();
 	void cloneMesh();
 
-	void exportMesh(QFile &file);
+	void exportMesh(QFile &file, int& v_offset);
 
 	QVector<FdNode*> getPlainNodes();
 

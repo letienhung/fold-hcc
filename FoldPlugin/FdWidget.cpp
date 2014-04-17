@@ -55,6 +55,9 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->connect(ui->showMesh, SIGNAL(stateChanged(int)), SLOT(showMesh(int)));
 	plugin->connect(ui->showAABB, SIGNAL(stateChanged(int)), SLOT(showAABB(int)));
 
+	// export
+	plugin->connect(ui->exportCurrent, SIGNAL(clicked()), SLOT(exportCurrent()));
+
 	// test
 	plugin->connect(ui->test1, SIGNAL(clicked()), SLOT(test1()));
 	plugin->connect(ui->test2, SIGNAL(clicked()), SLOT(test2()));
