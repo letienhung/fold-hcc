@@ -255,7 +255,7 @@ QString FoldOptionGraph::toGraphvizFormat( QString subcaption, QString caption )
 		if (type == "folding")
 		{
 			FoldingNode* fn = (FoldingNode*) node;
-			label = QString("%1").arg(fn->getScore());
+			label = fn->mID;
 		}
 		if (type == "barrier") label = "Barrier";
 

@@ -37,5 +37,6 @@ public:
 
 	FoldOptionGraph* fog;
 	Geom::Box barrierBox;
+	QVector<FoldOptionGraph*> fogs;
 }; 
 
