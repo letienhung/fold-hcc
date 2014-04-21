@@ -29,16 +29,16 @@ Structure::Node* ChainNode::clone()
 
 //////////////////////////////////////////////////////////////////////////
 
-FoldingNode::FoldingNode(int hIdx, QString id )
-	: Node(id), hingeIdx(hIdx), gain(0), cost(0)
+FoldingNode::FoldingNode(int hIdx, bool right, QString id )
+	: Node(id), hingeIdx(hIdx), rightSide(right)
 {
 }
 
 FoldingNode::FoldingNode( FoldingNode &other )
 	: Node(other)
 {
-	gain = other.gain;
-	cost = other.cost;
+	hingeIdx = other.hingeIdx;
+	rightSide = other.rightSide;
 }
 
 Structure::Node* FoldingNode::clone()
@@ -46,10 +46,6 @@ Structure::Node* FoldingNode::clone()
 	return new FoldingNode(*this);
 }
 
-double FoldingNode::getScore()
-{
-	return gain - cost;
-}
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -131,6 +127,24 @@ bool FoldOptionGraph::verifyNodeType( QString nid, QString type )
 	return (node && node->properties["type"] == type);
 }
 
+bool FoldOptionGraph::verifyLinkType( QString nid1, QString nid2, QString type )
+{
+	Structure::Link* link = getLink(nid1, nid2);
+	return (link && link->properties["type"] == type);
+}
+
+bool FoldOptionGraph::areSiblings( QString nid1, QString nid2 )
+{
+	// both are folding nodes
+	if (!verifyNodeType(nid1, "folding") || !verifyNodeType(nid2, "folding"))
+		return false;
+
+	// share the same chain node
+	ChainNode* cn1 = getChainNode(nid1);
+	ChainNode* cn2 = getChainNode(nid2);
+	return cn1->mID == cn2->mID;
+}
+
 
 ChainNode* FoldOptionGraph::getChainNode( QString fnid )
 {
@@ -153,7 +167,6 @@ QVector<FoldingNode*> FoldOptionGraph::getFoldingNodes( QString cnid )
 	return fns;
 }
 
-
 QVector<FoldingNode*> FoldOptionGraph::getSiblings( QString fnid )
 {
 	if (verifyNodeType(fnid, "chain")) 
@@ -161,7 +174,6 @@ QVector<FoldingNode*> FoldOptionGraph::getSiblings( QString fnid )
 	else
 		return QVector<FoldingNode*>();
 }
-
 
 QVector<FoldingNode*> FoldOptionGraph::getAllFoldingNodes()
 {
@@ -187,7 +199,6 @@ QVector<ChainNode*> FoldOptionGraph::getAllChainNodes()
 	return cns;
 }
 
-
 QVector<BarrierNode*> FoldOptionGraph::getAllBarrierNodes()
 {
 	QVector<BarrierNode*> bns;
@@ -199,7 +210,6 @@ QVector<BarrierNode*> FoldOptionGraph::getAllBarrierNodes()
 
 	return bns;
 }
-
 
 QVector<Structure::Link*> FoldOptionGraph::getFoldinglinks( QString nid )
 {
@@ -227,6 +237,49 @@ QVector<Structure::Link*> FoldOptionGraph::getCollisionLinks( QString nid )
 	}
 
 	return clinks;
+}
+
+QVector<Structure::Node*> FoldOptionGraph::getFamilyNodes( QString nid )
+{
+	QVector<Structure::Node*> family;
+
+	Structure::Node* node = getNode(nid);
+	ChainNode* cnode = (node->properties["type"] == "chain") ? 
+		(ChainNode*)node : getChainNode(nid);
+
+	family << cnode;
+	foreach(FoldingNode* fn, getFoldingNodes(cnode->mID))
+		family << fn;
+
+	return family;
+}
+
+QVector<Structure::Link*> FoldOptionGraph::getFamilyCollisionLinks( QString nid )
+{
+	QVector<Structure::Link*> clinks;
+	foreach(Structure::Node* node, getFamilyNodes(nid))
+	{
+		clinks += getCollisionLinks(node->mID);
+	}
+
+	return clinks;
+}
+
+BarrierNode* FoldOptionGraph::getBarrierNode( int fIdx )
+{
+	foreach(Structure::Node* n, nodes)
+	{
+		if (n->properties["type"].toString() == "barrier")
+		{
+			BarrierNode* bn = (BarrierNode*)n;
+			if (bn->faceIdx == fIdx)
+			{
+				return bn;
+			}
+		}
+	}
+
+	return NULL;
 }
 
 
@@ -273,7 +326,7 @@ QString FoldOptionGraph::toGraphvizFormat( QString subcaption, QString caption )
 
 		// highlight by filling colors
 		QString other;
-		if (node->properties.contains("selected")) other = "style = filled";
+		if (node->hasTag("selected")) other = "style = filled";
 
 		out << "\t" << QString("%1 [label = \"%2\", color = \"%3\", shape = %4, %5];").arg(i).arg(label).arg(colorHex).arg(shape).arg(other) << "\n";
 
@@ -331,68 +384,4 @@ void FoldOptionGraph::saveAsImage( QString fname )
 	QString command = dotPath + QString(" -Tpng %1.gv > %2.png").arg(fname).arg(fname);
 	qDebug() << "Executing: "  << command;
 	system(qPrintable(command));
-}
-
-// A chain node is free if one of its folding nodes is collision free
-bool FoldOptionGraph::isFreeChainNode( QString cnid )
-{
-	Structure::Node* cnode = getNode(cnid);
-	if (!cnode || cnode->properties["type"] != "chain")
-		return false;
-
-	bool isFree = false;
-	foreach(FoldingNode* fnode, getFoldingNodes(cnode->mID))
-	{
-		if (getCollisionLinks(fnode->mID).isEmpty())
-		{
-			isFree = true;
-			break;
-		}
-	}
-
-	return isFree;
-}
-
-
-QVector<Structure::Node*> FoldOptionGraph::getFamilyNodes( QString nid )
-{
-	QVector<Structure::Node*> family;
-
-	Structure::Node* node = getNode(nid);
-	ChainNode* cnode = (node->properties["type"] == "chain") ? 
-		(ChainNode*)node : getChainNode(nid);
-
-	family << cnode;
-	foreach(FoldingNode* fn, getFoldingNodes(cnode->mID))
-		family << fn;
-
-	return family;
-}
-
-QVector<Structure::Link*> FoldOptionGraph::getFamilyCollisionLinks( QString nid )
-{
-	QVector<Structure::Link*> clinks;
-	foreach(Structure::Node* node, getFamilyNodes(nid))
-	{
-		clinks += getCollisionLinks(node->mID);
-	}
-
-	return clinks;
-}
-
-BarrierNode* FoldOptionGraph::getBarrierNode( int fIdx )
-{
-	foreach(Structure::Node* n, nodes)
-	{
-		if (n->properties["type"].toString() == "barrier")
-		{
-			BarrierNode* bn = (BarrierNode*)n;
-			if (bn->faceIdx == fIdx)
-			{
-				return bn;
-			}
-		}
-	}
-
-	return NULL;
 }

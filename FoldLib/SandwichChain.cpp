@@ -12,16 +12,18 @@ SandwichChain::SandwichChain( FdNode* part, PatchNode* panel1, PatchNode* panel2
 
 Geom::Rectangle2 SandwichChain::getFoldingArea(FoldingNode* fn)
 {
+	// axis and rightV
 	int hidx = fn->hingeIdx;
-	int jidx = hidx / 2;
-	Geom::Segment axisSeg = rootJointSegs[jidx];
-	Vector3 rightV = rootRightVs[jidx];
-	if (hidx % 2) rightV *= -1;
+	Geom::Segment axisSeg = rootJointSegs[hidx];
+	Vector3 rightV = rootRightVs[hidx];
+	if (!fn->rightSide) rightV *= -1;
 
+	// shift the axis along rightV
 	double width = getLength() / mParts.size();
 	Geom::Segment seg = axisSeg;
 	seg.translate(width * rightV);
 
+	// conners of projected rectangle
 	QVector<Vector2> conners;
 	Geom::Rectangle& panel_rect = mPanels[0]->mPatch;
 	conners << panel_rect.getProjCoordinates(axisSeg.P0) 

@@ -25,6 +25,10 @@ public:
 	virtual void draw();
 	virtual void drawWithName(int name);
 
+	// properties
+	void addTag(QString tag);
+	bool hasTag(QString tag);
+
 public:
 	QString	mID;
 	bool isSelected;

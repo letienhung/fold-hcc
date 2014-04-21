@@ -15,17 +15,13 @@ public:
 class FoldingNode : public Structure::Node
 {
 public:
-	FoldingNode(int hIdx, QString id);
+	FoldingNode(int hIdx, bool right, QString id);
 	FoldingNode(FoldingNode &other);
 	Node* clone();
 
 	// hinge info
 	int hingeIdx;
-
-	// score
-	double gain;
-	double cost;
-	double getScore();
+	bool rightSide;
 };
 
 class BarrierNode : public Structure::Node
@@ -57,6 +53,8 @@ public:
 
 	// verifier
 	bool verifyNodeType(QString nid, QString type);
+	bool verifyLinkType(QString nid1, QString nid2, QString type);
+	bool areSiblings(QString nid1, QString nid2);
 
 	// getters
 	ChainNode*		getChainNode(QString fnid);		// chain node of a folding node
@@ -67,13 +65,10 @@ public:
 	QVector<FoldingNode*>	getSiblings(QString fnid);		// siblings of folding node
 	QVector<FoldingNode*>	getFoldingNodes(QString cnid);	// folding nodes of a chain node
 	QVector<Structure::Node*> getFamilyNodes(QString nid);
+
 	QVector<Structure::Link*> getFoldinglinks(QString nid);
 	QVector<Structure::Link*> getCollisionLinks(QString nid);
 	QVector<Structure::Link*> getFamilyCollisionLinks(QString nid);
-
-	// fold
-	bool isFreeChainNode(QString cnid);
-	FoldingNode* getBestFoldingNode();
 
 	// visualize
 	QString toGraphvizFormat(QString subcaption, QString caption);

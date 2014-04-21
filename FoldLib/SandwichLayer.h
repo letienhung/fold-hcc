@@ -6,7 +6,6 @@ class SandwichLayer : public LayerGraph
 public:
     SandwichLayer(QVector<FdNode*> parts, PatchNode* panel1, PatchNode* panel2, QString id, Geom::Box &bBox);
 
-
 	// collision graph
 	void foldabilize();
 	void buildCollisionGraph();
@@ -15,5 +14,6 @@ public:
 
 public:
 	PatchNode *mPanel1, *mPanel2;
+	QVector<FoldingNode*> foldSolution;
 };
 

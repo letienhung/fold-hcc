@@ -14,11 +14,11 @@ PizzaChain::PizzaChain( FdNode* part, PatchNode* panel )
 
 Geom::SectorCylinder PizzaChain::getFoldingVolume( FoldingNode* fn )
 {
+	// hinge axis and rightV
 	int hidx = fn->hingeIdx;
-	int jidx = hidx / 2;
-	Geom::Segment axisSeg = rootJointSegs[jidx];
-	Vector3 rightV = rootRightVs[jidx];
-	if (hidx % 2) rightV *= -1;
+	Geom::Segment axisSeg = rootJointSegs[hidx];
+	Vector3 rightV = rootRightVs[hidx];
+	if (!fn->rightSide) rightV *= -1;
 
 	return Geom::SectorCylinder(axisSeg, chainUpSeg, rightV);
 }

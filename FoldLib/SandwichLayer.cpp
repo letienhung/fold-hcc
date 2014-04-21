@@ -4,6 +4,7 @@
 #include "FdUtility.h"
 #include "IntrRect2Rect2.h"
 #include "Numeric.h"
+#include "mcqd.h"
 
 SandwichLayer::SandwichLayer( QVector<FdNode*> parts, PatchNode* panel1, PatchNode* panel2, 
 	QString id, Geom::Box &bBox )
@@ -30,11 +31,69 @@ SandwichLayer::SandwichLayer( QVector<FdNode*> parts, PatchNode* panel1, PatchNo
 			chains.push_back(new SandwichChain(n, mPanel1, mPanel2));
 		}
 	}
+
+	// allocate space for solution
+	foldSolution.resize(chains.size());
 }
 
 void SandwichLayer::foldabilize()
 {
 	buildCollisionGraph();
+
+	// get all folding nodes
+	QVector<FoldingNode*> fns = fog->getAllFoldingNodes();
+
+	// the adjacent matrix
+	QVector<bool> dumpy(fns.size(), false);
+	QVector<QVector<bool>> conn(fns.size(), dumpy);
+	for (int i = 0; i < fns.size(); i++)
+	{
+		FoldingNode* fn = fns[i];
+		for (int j = i+1; j < fns.size(); j++)
+		{
+			FoldingNode* other_fn = fns[j];
+
+			// connect siblings and colliding folding options
+			if (fog->areSiblings(fn->mID, other_fn->mID) ||
+				fog->verifyLinkType(fn->mID, other_fn->mID, "collision"))
+			{
+				conn[i][j] = true;
+				conn[j][i] = true;
+			}
+		}
+	}
+
+	// maximum independent sets (maximum clique on the dual graph)
+	// get the dual graph
+	bool** dual_conn = new bool*[fns.size()];
+	for (int i = 0; i < fns.size(); i++)
+	{
+		dual_conn[i] = new bool[fns.size()];
+		for (int j = 0; j < fns.size(); j++)
+		{
+			// do not touch diagonal entries
+			if (i == j) continue;
+			dual_conn[i][j] = !conn[i][j];
+		}
+	}
+
+	// maximum clique on the dual graph
+	Maxclique m(dual_conn, fns.size());
+	int* qmax;
+	int qsize;
+	m.mcq(qmax, qsize);
+
+	// delete matrix
+	for (int i = 0; i < fns.size(); i++)
+		delete [] dual_conn[i];
+	delete [] dual_conn;
+
+	// visualize the maximum independent set
+	for (int i = 0; i< qsize; i++)
+	{
+		int fnidx = qmax[i];
+		fns[fnidx]->addTag("selected");
+	}
 }
 
 void SandwichLayer::buildCollisionGraph()
@@ -54,14 +113,16 @@ void SandwichLayer::buildCollisionGraph()
 		for (int j = 0; j < chain->rootJointSegs.size(); j++)
 		{
 			// folding nodes
-			QString fnid1 = chain->mID + "_" + QString::number(2*j);
-			FoldingNode* fn1 = new FoldingNode(2*j, fnid1);
+			QString fnid = chain->mID + "_" + QString::number(j);
+			// left
+			QString fnid1 = fnid + "_" + QString::number(false);
+			FoldingNode* fn1 = new FoldingNode(j, false, fnid1);
 			Geom::Rectangle2 fArea1 = chain->getFoldingArea(fn1);
 			fn1->properties["fArea"].setValue(fArea1);
 			fog->addNode(fn1);
-
-			QString fnid2 = chain->mID + "_" + QString::number(2*j+1);
-			FoldingNode* fn2 = new FoldingNode(2*j+1, fnid2);
+			// right
+			QString fnid2 = fnid + "_" + QString::number(true);
+			FoldingNode* fn2 = new FoldingNode(j, true, fnid2);
 			Geom::Rectangle2 fArea2 = chain->getFoldingArea(fn2);
 			fn2->properties["fArea"].setValue(fArea2);
 			fog->addNode(fn2);
@@ -115,8 +176,7 @@ void SandwichLayer::buildCollisionGraph()
 			FoldingNode* other_fn = fns[j];
 
 			// skip siblings
-			ChainNode* other_cn = fog->getChainNode(other_fn->mID);
-			if (cn == other_cn) continue; 
+			if (fog->areSiblings(fn->mID, other_fn->mID)) continue; 
 
 			Geom::Rectangle2 other_fArea = other_fn->properties["fArea"].value<Geom::Rectangle2>();
 			if (Geom::IntrRect2Rect2::test(fArea, other_fArea))

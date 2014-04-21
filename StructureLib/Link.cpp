@@ -39,3 +39,13 @@ Structure::Node* Structure::Link::getNodeOther( QString nid )
 {
 	return (node1->hasId(nid))? node2 : node1;
 }
+
+void Structure::Link::addTag( QString tag )
+{
+	properties[tag] = true;
+}
+
+bool Structure::Link::hasTag( QString tag )
+{
+	return properties.contains(tag);
+}

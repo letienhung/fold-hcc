@@ -62,14 +62,15 @@ void PizzaLayer::buildDependGraph()
 		for (int j = 0; j < chain->rootJointSegs.size(); j++)
 		{
 			// folding nodes
-			QString fnid1 = chain->mID + "_" + QString::number(2*j);
-			FoldingNode* fn1 = new FoldingNode(2*j, fnid1);
+			QString fnid = chain->mID + "_" + QString::number(j);
+			QString fnid1 = fnid + "_" + QString::number(false);
+			FoldingNode* fn1 = new FoldingNode(j, false, fnid1);
 			Geom::SectorCylinder fVolume1 = chain->getFoldingVolume(fn1);
 			fn1->properties["fVolume"].setValue(fVolume1);
 			fog->addNode(fn1);
 
-			QString fnid2 = chain->mID + "_" + QString::number(2*j+1);
-			FoldingNode* fn2 = new FoldingNode(2*j+1, fnid2);
+			QString fnid2 = fnid + "_" + QString::number(true);
+			FoldingNode* fn2 = new FoldingNode(j, true, fnid2);
 			Geom::SectorCylinder fVolume2 = chain->getFoldingVolume(fn2);
 			fn2->properties["fVolume"].setValue(fVolume2);
 			fog->addNode(fn2);

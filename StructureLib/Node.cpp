@@ -44,3 +44,13 @@ Structure::Node* Structure::Node::clone()
 {
 	return new Node(*this);
 }
+
+void Structure::Node::addTag( QString tag )
+{
+	properties[tag] = true;
+}
+
+bool Structure::Node::hasTag( QString tag )
+{
+	return properties.contains(tag);
+}
