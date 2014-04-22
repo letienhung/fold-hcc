@@ -119,9 +119,22 @@ void FdPlugin::test1()
 	qDebug() << rect.toStrList();
 }
 
+#include "CliquerAdapter.h"
 void FdPlugin::test2()
 {
+	int N = 10;
+	QVector<bool> dumpy(N, false);
+	QVector< QVector<bool> > conn(N, dumpy);
+	for (int i = 0; i < N; i++)
+	{
+		conn[i][(i-2+N)%N] = true;
+		conn[i][(i-1+N)%N] = true;
+		conn[i][(i+1)%N] = true;
+		conn[i][(i+2)%N] = true;
+	}
 
+	CliquerAdapter cliquer(conn);
+	QVector< QVector<int> > maxCliques = cliquer.getAllMaximumCliques();
 }
 
 

@@ -19,9 +19,11 @@ HEADERS += \
     reorder.h \
     set.h \
     cliquerconf.h \
-    cliquer_graph.h
+    cliquer_graph.h \
+    CliquerAdapter.h
 
 SOURCES += \
     cliquer.c \
     reorder.c \
-    cliquer_graph.c
+    cliquer_graph.c \
+    CliquerAdapter.cpp

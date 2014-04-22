@@ -2,6 +2,11 @@
 #ifndef CLIQUERCONF_H
 #define CLIQUERCONF_H
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 /*
  * setelement is the basic memory type used in sets.  It is often fastest
  * to be as large as can fit into the CPU registers.
@@ -53,5 +58,10 @@
  */
 
 /* #define ASSERT(x) */
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* !CLIQUERCONF_H */

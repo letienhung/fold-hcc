@@ -2,6 +2,11 @@
 #ifndef CLIQUER_MISC_H
 #define CLIQUER_MISC_H
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include "cliquerconf.h"
 
 /*
@@ -66,5 +71,8 @@
 #define ABS(v)  (((v)<0)?(-(v)):(v))
 #endif
 
-#endif /* !CLIQUER_MISC_H */
+#ifdef __cplusplus
+}
+#endif
 
+#endif /* !CLIQUER_MISC_H */

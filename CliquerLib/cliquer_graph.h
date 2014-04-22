@@ -2,6 +2,11 @@
 #ifndef CLIQUER_GRAPH_H
 #define CLIQUER_GRAPH_H
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include "set.h"
 
 typedef struct _graph_t graph_t;
@@ -69,5 +74,9 @@ static int graph_subgraph_weight(graph_t *g,set_t s) {
 static int graph_vertex_degree(graph_t *g, int v) {
 	return set_size(g->edges[v]);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* !CLIQUER_GRAPH_H */

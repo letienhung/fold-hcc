@@ -2,6 +2,11 @@
 #ifndef CLIQUER_H
 #define CLIQUER_H
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <string.h>
 
 #include "set.h"
@@ -54,5 +59,9 @@ extern boolean clique_print_time_always(int level, int i, int n, int max,
 /* Alternate spelling (let's be a little forgiving): */
 #define cliquer_options clique_options
 #define cliquer_default_options clique_default_options
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* !CLIQUER_H */

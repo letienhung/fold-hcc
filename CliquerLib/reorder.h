@@ -2,6 +2,11 @@
 #ifndef CLIQUER_REORDER_H
 #define CLIQUER_REORDER_H
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include "set.h"
 #include "cliquer_graph.h"
 
@@ -22,5 +27,9 @@ extern int *reorder_by_degree(graph_t *g, boolean weighted);
 extern int *reorder_by_random(graph_t *g, boolean weighted);
 extern int *reorder_by_ident(graph_t *g, boolean weighted);
 extern int *reorder_by_reverse(graph_t *g, boolean weighted);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* !CLIQUER_REORDER_H */

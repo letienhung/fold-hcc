@@ -28,6 +28,10 @@ INCLUDEPATH += ../StructureLib
 LIBS += -L$$PWD/../MeshUtilityLib/$$CFG/lib -lMeshUtilityLib
 INCLUDEPATH += ../MeshUtilityLib
 
+# Cliquer library
+LIBS += -L$$PWD/../CliquerLib/$$CFG/lib -lCliquerLib
+INCLUDEPATH += ../CliquerLib
+
 # Library name and destination
 TARGET = FoldLib
 DESTDIR = $$PWD/$$CFG/lib

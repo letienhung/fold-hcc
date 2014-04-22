@@ -57,7 +57,7 @@ set_t old_best_clique = best_clique;                    \
 int old_clique_list_count = clique_list_count;          \
 int old_weight_multiplier = weight_multiplier;          \
 int **old_temp_list = temp_list;                        \
-int old_temp_count = temp_count;                        \
+int old_temp_count = temp_count;                        //\
 struct tms old_cputimer;                                \
 struct timeval old_realtimer;                           \
 memcpy(&old_cputimer,&cputimer,sizeof(struct tms));       \
@@ -70,7 +70,7 @@ best_clique = old_best_clique;                          \
 clique_list_count = old_clique_list_count;              \
 weight_multiplier = old_weight_multiplier;              \
 temp_list = old_temp_list;                              \
-temp_count = old_temp_count;                            \
+temp_count = old_temp_count;                            //\
 memcpy(&cputimer,&old_cputimer,sizeof(struct tms));       \
 memcpy(&realtimer,&old_realtimer,sizeof(struct timeval));
 
@@ -1084,7 +1084,7 @@ set_t clique_unweighted_find_single(graph_t *g,int min_size,int max_size,
 	int *table;
 	set_t s;
 
-	//ENTRANCE_SAVE();
+	ENTRANCE_SAVE();
 	entrance_level++;
 
 	if (opts==NULL)
@@ -1173,7 +1173,7 @@ set_t clique_unweighted_find_single(graph_t *g,int min_size,int max_size,
 	free(table);
 	free(clique_size);
 
-	//ENTRANCE_RESTORE();
+	ENTRANCE_RESTORE();
 	entrance_level--;
 
 	return s;
@@ -1208,7 +1208,7 @@ int clique_unweighted_find_all(graph_t *g, int min_size, int max_size,
 	int *table;
 	int count;
 
-	//ENTRANCE_SAVE();
+	ENTRANCE_SAVE();
 	entrance_level++;
 
 	if (opts==NULL)
@@ -1288,7 +1288,7 @@ int clique_unweighted_find_all(graph_t *g, int min_size, int max_size,
 	free(clique_size);
 	set_free(current_clique);
 
-	//ENTRANCE_RESTORE();
+	ENTRANCE_RESTORE();
 	entrance_level--;
 
 	return count;
@@ -1358,7 +1358,7 @@ set_t clique_find_single(graph_t *g,int min_weight,int max_weight,
 	int *table;
 	set_t s;
 
-	//ENTRANCE_SAVE();
+	ENTRANCE_SAVE();
 	entrance_level++;
 
 	if (opts==NULL)
@@ -1398,7 +1398,7 @@ set_t clique_find_single(graph_t *g,int min_weight,int max_weight,
 		entrance_level--;
 		s=clique_unweighted_find_single(g,min_weight,max_weight,
 						maximal,opts);
-		//ENTRANCE_RESTORE();
+		ENTRANCE_RESTORE();
 		return s;
 	}
 
@@ -1476,7 +1476,7 @@ set_t clique_find_single(graph_t *g,int min_weight,int max_weight,
 	free(clique_size);
 	clique_size=NULL;
 
-	//ENTRANCE_RESTORE();
+	ENTRANCE_RESTORE();
 	entrance_level--;
 
 	return s;
@@ -1517,7 +1517,7 @@ int clique_find_all(graph_t *g, int min_weight, int max_weight,
 	int i,n;
 	int *table;
 
-	//ENTRANCE_SAVE();
+	ENTRANCE_SAVE();
 	entrance_level++;
 
 	if (opts==NULL)
@@ -1556,7 +1556,7 @@ int clique_find_all(graph_t *g, int min_weight, int max_weight,
 		entrance_level--;
 		i=clique_unweighted_find_all(g,min_weight,max_weight,maximal,
 					     opts);
-		//ENTRANCE_RESTORE();
+		ENTRANCE_RESTORE();
 		return i;
 	}
 
@@ -1617,7 +1617,7 @@ int clique_find_all(graph_t *g, int min_weight, int max_weight,
 	set_free(best_clique);
 	free(clique_size);
 
-	//ENTRANCE_RESTORE();
+	ENTRANCE_RESTORE();
 	entrance_level--;
 
 	return n;

@@ -4,7 +4,7 @@
 #include "FdUtility.h"
 #include "IntrRect2Rect2.h"
 #include "Numeric.h"
-#include "mcqd.h"
+#include "CliquerAdapter.h"
 
 SandwichLayer::SandwichLayer( QVector<FdNode*> parts, PatchNode* panel1, PatchNode* panel2, 
 	QString id, Geom::Box &bBox )
@@ -43,57 +43,37 @@ void SandwichLayer::foldabilize()
 	// get all folding nodes
 	QVector<FoldingNode*> fns = fog->getAllFoldingNodes();
 
-	// the adjacent matrix
-	QVector<bool> dumpy(fns.size(), false);
-	QVector<QVector<bool>> conn(fns.size(), dumpy);
+	// the dual adjacent matrix
+	QVector<bool> dumpy(fns.size(), true);
+	QVector< QVector<bool> > conn(fns.size(), dumpy);
 	for (int i = 0; i < fns.size(); i++)
 	{
+		// the i-th node
 		FoldingNode* fn = fns[i];
+
+		// diagonal entry
+		conn[i][i] = false;
+
+		// other entries
 		for (int j = i+1; j < fns.size(); j++)
 		{
+			// the j-th node
 			FoldingNode* other_fn = fns[j];
 
 			// connect siblings and colliding folding options
 			if (fog->areSiblings(fn->mID, other_fn->mID) ||
 				fog->verifyLinkType(fn->mID, other_fn->mID, "collision"))
 			{
-				conn[i][j] = true;
-				conn[j][i] = true;
+				conn[i][j] = false;
+				conn[j][i] = false;
 			}
 		}
 	}
 
-	// maximum independent sets (maximum clique on the dual graph)
-	// get the dual graph
-	bool** dual_conn = new bool*[fns.size()];
-	for (int i = 0; i < fns.size(); i++)
-	{
-		dual_conn[i] = new bool[fns.size()];
-		for (int j = 0; j < fns.size(); j++)
-		{
-			// do not touch diagonal entries
-			if (i == j) continue;
-			dual_conn[i][j] = !conn[i][j];
-		}
-	}
+	// find all maximum cliques
+	CliquerAdapter cliquer(conn);
+	QVector< QVector<int> > maxCliques = cliquer.getAllMaximumCliques();
 
-	// maximum clique on the dual graph
-	Maxclique m(dual_conn, fns.size());
-	int* qmax;
-	int qsize;
-	m.mcq(qmax, qsize);
-
-	// delete matrix
-	for (int i = 0; i < fns.size(); i++)
-		delete [] dual_conn[i];
-	delete [] dual_conn;
-
-	// visualize the maximum independent set
-	for (int i = 0; i< qsize; i++)
-	{
-		int fnidx = qmax[i];
-		fns[fnidx]->addTag("selected");
-	}
 }
 
 void SandwichLayer::buildCollisionGraph()

@@ -9,6 +9,11 @@
 #ifndef CLIQUER_SET_H
 #define CLIQUER_SET_H
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -149,7 +154,7 @@ static set_t set_new(int size) {
 	ASSERT(size>0);
 
 	n=(size/ELEMENTSIZE+1)+1;
-	s=calloc(n,sizeof(setelement));
+	s=(set_t)calloc(n,sizeof(setelement));
 	s[0]=size;
 
 	return &(s[1]);
@@ -383,5 +388,9 @@ static void set_print(set_t s) {
 	printf("\n");
 	return;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* !CLIQUER_SET_H */
