@@ -1,17 +1,22 @@
 #pragma once
 
 #include <QVector>
+#include <QMultiMap>
 #include "cliquer_graph.h"
 
 class CliquerAdapter
 {
 public:
-    CliquerAdapter(QVector< QVector<bool> > &m);
+    CliquerAdapter(const QVector< QVector<bool> > &m, const QVector<double>& w);
 	~CliquerAdapter();
 
-	QVector< QVector<int> > getAllMaximumCliques();
-
+	double weightOf(const QVector<int> &clique);
+	void computeWeightsOfAllMaxCliques();
+	QVector<int> getMinWeightMaxClique();
+	
 private:
 	graph_t* g;
+	QVector<double> weights;
+	QMultiMap< double, QVector<int> > weight_clique_map;
 };
 

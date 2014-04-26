@@ -133,8 +133,11 @@ void FdPlugin::test2()
 		conn[i][(i+2)%N] = true;
 	}
 
-	CliquerAdapter cliquer(conn);
-	QVector< QVector<int> > maxCliques = cliquer.getAllMaximumCliques();
+	QVector<double> weights;
+	for (int i = 0; i < N; i++) weights.push_back(i);
+	CliquerAdapter cliquer(conn, weights);
+	cliquer.computeWeightsOfAllMaxCliques();
+	QVector<int> q = cliquer.getMinWeightMaxClique();
 }
 
 

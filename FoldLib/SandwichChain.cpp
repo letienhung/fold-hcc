@@ -10,26 +10,40 @@ SandwichChain::SandwichChain( FdNode* part, PatchNode* panel1, PatchNode* panel2
 	createChain(2);
 }
 
-Geom::Rectangle2 SandwichChain::getFoldingArea(FoldingNode* fn)
+Geom::Rectangle2 SandwichChain::getFoldRegion(FoldingNode* fn)
 {
 	// axis and rightV
 	int hidx = fn->hingeIdx;
-	Geom::Segment axisSeg = rootJointSegs[hidx];
+	Geom::Segment axisSeg1 = rootJointSegs[hidx];
 	Vector3 rightV = rootRightVs[hidx];
 	if (!fn->rightSide) rightV *= -1;
 
+	// shrink along axisSeg
+	double t0 = fn->position;
+	double t1 = t0 + fn->scale;
+	axisSeg1.crop(t0, t1);
+	Geom::Segment axisSeg2 = axisSeg1;
+
 	// shift the axis along rightV
-	double width = getLength() / mParts.size();
-	Geom::Segment seg = axisSeg;
-	seg.translate(width * rightV);
+	if (fn->nbsplit == 2)
+	{
+		double width = getLength() * 0.5;
+		axisSeg2.translate(width * rightV);
+	}
+	else if (fn->nbsplit == 3)
+	{
+		double width = getLength() * 0.25;
+		axisSeg1.translate(-width * rightV);
+		axisSeg2.translate( width * rightV);
+	}
 
 	// conners of projected rectangle
 	QVector<Vector2> conners;
 	Geom::Rectangle& panel_rect = mPanels[0]->mPatch;
-	conners << panel_rect.getProjCoordinates(axisSeg.P0) 
-		<< panel_rect.getProjCoordinates(axisSeg.P1) 
-		<< panel_rect.getProjCoordinates(seg.P1) 
-		<< panel_rect.getProjCoordinates(seg.P0);
+	conners << panel_rect.getProjCoordinates(axisSeg1.P0) 
+		<< panel_rect.getProjCoordinates(axisSeg1.P1) 
+		<< panel_rect.getProjCoordinates(axisSeg2.P1) 
+		<< panel_rect.getProjCoordinates(axisSeg2.P0);
 
 	return Geom::Rectangle2(conners);
 }
@@ -49,38 +63,70 @@ Geom::Segment SandwichChain::getJointSegment( FoldingNode* fn )
 	return rootJointSegs[jidx];
 }
 
-void SandwichChain::resolveCollision( FoldingNode* fn )
+QVector<FoldingNode*> SandwichChain::generateFoldOptions()
 {
-	// folding areas
-	Geom::Rectangle2 fArea = fn->properties["fArea"].value<Geom::Rectangle2>();
-	Geom::Rectangle2 sfArea = fn->properties["sfArea"].value<Geom::Rectangle2>();
-	Geom::Segment2 axisSeg = getFoldingAxis2D(fn);
+	QVector<FoldingNode*> options;
 
-	// length (extent perp to axis seg) of folding areas
-	double length = fArea.getPerpExtent(axisSeg.Direction);
-	double slength = sfArea.getPerpExtent(axisSeg.Direction);
-
-	// impossible splits
-	// to do: resolve collision cooperatively
-	if (slength <= 0) return; 
-
-	// split
-	int nbPart = ceil( 2 * length / (slength + ZERO_TOLERANCE_LOW) );
-	if (nbPart % 2) nbPart++;
-	if (nbPart != mParts.size()) createChain(nbPart);
-
-	// shrink along axisSeg
-	int aid = sfArea.getAxisId(axisSeg.Direction);
-	Vector2 sEnd0 = sfArea.getEdgeCenter(aid, false);
-	Vector2 sEnd1 = sfArea.getEdgeCenter(aid, true);
-	Vector2 sEnd0Coord = fArea.getCoordinates(sEnd0);
-	Vector2 sEnd1Coord = fArea.getCoordinates(sEnd1);
-	double t0 = sEnd0Coord[aid];
-	double t1 = sEnd1Coord[aid];
-	if (t1 - t0 < 2 - ZERO_TOLERANCE_LOW)
+	// patch chain
+	if (mOrigPart->mType == FdNode::PATCH)
 	{
-		shrinkChainAlongJoint(t0, t1);
-		resetHingeLinks();
+		// #splits: 1 and 2
+		for (int n = 1; n <= 2; n++)
+		{
+			// shrink: scale level : 1 --> 5 : 20% --> 100%
+			int nbScales = 1;
+			for (int i = 1; i <= nbScales; i++)
+			{
+				double step = 1.0/double(nbScales);
+				double scale = step * i;
+
+				// position
+				for (int j = 0; j <= nbScales - i; j++)
+				{
+					double position = step * j;
+
+					// left
+					QString fnid1 = this->mID + "_" + QString::number(options.size());
+					FoldingNode* fn1 = new FoldingNode(0, false, scale, position, n, fnid1);
+					options.push_back(fn1);
+
+					// right
+					QString fnid2 = this->mID + "_" + QString::number(options.size());
+					FoldingNode* fn2 = new FoldingNode(0, true, scale, position, n, fnid2);
+					options.push_back(fn2);
+				}
+			}
+		}
 	}
+	// rod chain
+	else
+	{
+		// #splits: 1 and 2
+		for (int n = 1; n <= 2; n++)
+		{
+			// root segment id
+			for (int j = 0; j < 2; j++)
+			{
+				// left
+				QString fnid1 = this->mID + "_" + QString::number(options.size());
+				FoldingNode* fn1 = new FoldingNode(j, false, 1.0, 0.0, n, fnid1);
+				options.push_back(fn1);
+
+				// right
+				QString fnid2 = this->mID + "_" + QString::number(options.size());
+				FoldingNode* fn2 = new FoldingNode(j, true, 1.0, 0.0, n, fnid2);
+				options.push_back(fn2);
+			}
+		}
+	}
+
+	// fold area
+	foreach (FoldingNode* fn, options)
+	{
+		Geom::Rectangle2 fArea = this->getFoldRegion(fn);
+		fn->properties["fArea"].setValue(fArea);
+	}
+
+	return options;
 }
 

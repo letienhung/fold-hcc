@@ -15,13 +15,25 @@ public:
 class FoldingNode : public Structure::Node
 {
 public:
-	FoldingNode(int hIdx, bool right, QString id);
+	FoldingNode(int hIdx, bool right, double s, double p, int n, QString id);
 	FoldingNode(FoldingNode &other);
 	Node* clone();
 
-	// hinge info
+	// hinge info: idx of root segment
 	int hingeIdx;
+
+	// to which side to fold
 	bool rightSide;
+
+	// deformation
+	double scale;
+	double position;
+
+	// #splits
+	int nbsplit;
+
+	// cost
+	double getCost();
 };
 
 class BarrierNode : public Structure::Node

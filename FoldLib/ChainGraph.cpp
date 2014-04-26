@@ -23,10 +23,10 @@ ChainGraph::ChainGraph( FdNode* part, PatchNode* panel1, PatchNode* panel2)
 	}
 
 	// setup base orientations
-	setupBaseOrientations();
+	setupBasisOrientations();
 }
 
-void ChainGraph::setupBaseOrientations()
+void ChainGraph::setupBasisOrientations()
 {
 	// detect hinges
 	rootJointSegs = detectJointSegments(mOrigPart, mPanels[0]);
@@ -91,7 +91,7 @@ QVector<Geom::Plane> ChainGraph::generateCutPlanes( int N )
 	if (plane0.whichSide(mOrigPart->center()) < 0) plane0.flip();
 
 	// deltaV to shift up
-	double step = getHeight() / (N + 1);
+	double step = getLength() / (N + 1);
 
 	QVector<Geom::Plane> cutPlanes;
 	for (int i = 0; i < N; i++)
@@ -117,18 +117,6 @@ void ChainGraph::createChain( int N )
 	// reset hinge links
 	sortChainParts();
 	resetHingeLinks();
-}
-
-double ChainGraph::getHeight()
-{
-	int aid = mOrigPart->mBox.getAxisId(mPanels[0]->mPatch.Normal);
-	Geom::Segment sklt = mOrigPart->mBox.getSkeleton(aid);
-
-	Geom::Plane plane0 = mPanels[0]->mPatch.getPlane();
-	double dist1 = plane0.distanceTo(sklt.P0);
-	double dist2 = plane0.distanceTo(sklt.P1);
-
-	return Max(dist1, dist2);
 }
 
 double ChainGraph::getLength()

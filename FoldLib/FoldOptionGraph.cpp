@@ -29,8 +29,8 @@ Structure::Node* ChainNode::clone()
 
 //////////////////////////////////////////////////////////////////////////
 
-FoldingNode::FoldingNode(int hIdx, bool right, QString id )
-	: Node(id), hingeIdx(hIdx), rightSide(right)
+FoldingNode::FoldingNode( int hIdx, bool right, double s, double p, int n, QString id )
+	: Node(id), hingeIdx(hIdx), rightSide(right), scale(s), position(p), nbsplit(n)
 {
 }
 
@@ -39,11 +39,22 @@ FoldingNode::FoldingNode( FoldingNode &other )
 {
 	hingeIdx = other.hingeIdx;
 	rightSide = other.rightSide;
+	scale = other.scale;
+	position = other.scale;
+	nbsplit = other.nbsplit;
 }
 
 Structure::Node* FoldingNode::clone()
 {
 	return new FoldingNode(*this);
+}
+
+double FoldingNode::getCost()
+{
+	double cost1 = nbsplit;
+	double cost2 = 1 - scale;
+
+	return cost1 + cost2;
 }
 
 

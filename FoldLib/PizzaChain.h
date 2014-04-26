@@ -8,6 +8,8 @@ class PizzaChain : public ChainGraph
 public:
     PizzaChain(FdNode* part, PatchNode* panel);
 
+	QVector<FoldingNode*> generateFoldOptions();
+
 	Geom::SectorCylinder getFoldingVolume(FoldingNode* fn);
 
 	void resolveCollision(FoldingNode* fn);

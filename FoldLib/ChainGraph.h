@@ -7,23 +7,28 @@
 class ChainGraph : public FdGraph
 {
 public:
+	// constructor
     ChainGraph(FdNode* part, PatchNode* panel1, PatchNode* panel2);
-	
-	void setupBaseOrientations();
+	void setupBasisOrientations();
+
+	// fold options
+	virtual QVector<FoldingNode*> generateFoldOptions() = 0;
+
+
+	// Modify chain
 	void createChain(int N);
 	void sortChainParts();
 	void resetHingeLinks();
 	void shrinkChainAlongJoint(double t0, double t1);
 	void shrinkChainPerpJoint();
 
-	virtual void resolveCollision(FoldingNode* fn) = 0;
 	void setupActiveLinks(FoldingNode* fn);
 	void fold(double t);
 
+	// animation
 	QVector<Structure::Node*> getKeyframeParts(double t);
 	QVector<Structure::Node*> getKeyFramePanels(double t);
 
-	double getHeight();
 	double getLength();
 	QVector<Geom::Plane> generateCutPlanes(int N);
 

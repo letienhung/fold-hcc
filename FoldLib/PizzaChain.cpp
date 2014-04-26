@@ -34,3 +34,8 @@ void PizzaChain::resolveCollision( FoldingNode* fn )
 	int nbPart = ceil( getLength() / (sfVolume.Radius + ZERO_TOLERANCE_LOW) );
 	if (nbPart != mParts.size()) createChain(nbPart);
 }
+
+QVector<FoldingNode*> PizzaChain::generateFoldOptions()
+{
+	return QVector<FoldingNode*>();
+}

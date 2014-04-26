@@ -31,9 +31,6 @@ SandwichLayer::SandwichLayer( QVector<FdNode*> parts, PatchNode* panel1, PatchNo
 			chains.push_back(new SandwichChain(n, mPanel1, mPanel2));
 		}
 	}
-
-	// allocate space for solution
-	foldSolution.resize(chains.size());
 }
 
 void SandwichLayer::foldabilize()
@@ -54,7 +51,7 @@ void SandwichLayer::foldabilize()
 		// diagonal entry
 		conn[i][i] = false;
 
-		// other entries
+		// other fold options
 		for (int j = i+1; j < fns.size(); j++)
 		{
 			// the j-th node
@@ -70,9 +67,18 @@ void SandwichLayer::foldabilize()
 		}
 	}
 
-	// find all maximum cliques
-	CliquerAdapter cliquer(conn);
-	QVector< QVector<int> > maxCliques = cliquer.getAllMaximumCliques();
+	// find minimum cost maximum cliques
+	QVector<double> weights;
+	foreach(FoldingNode* fn, fns) weights.push_back(fn->getCost());
+	CliquerAdapter cliquer(conn, weights);
+	cliquer.computeWeightsOfAllMaxCliques();
+	QVector<int> q = cliquer.getMinWeightMaxClique();
+
+	// fold solution
+	foreach(int idx, q)
+		foldSolution.push_back(fns[idx]);
+
+	// apply modification
 
 }
 
@@ -90,35 +96,19 @@ void SandwichLayer::buildCollisionGraph()
 		ChainNode* cn = new ChainNode(i, chain->mID);
 		fog->addNode(cn);
 
-		for (int j = 0; j < chain->rootJointSegs.size(); j++)
+		// folding nodes and links
+		QVector<Geom::Segment> segs; // debug
+		foreach(FoldingNode* fn, chain->generateFoldOptions())
 		{
-			// folding nodes
-			QString fnid = chain->mID + "_" + QString::number(j);
-			// left
-			QString fnid1 = fnid + "_" + QString::number(false);
-			FoldingNode* fn1 = new FoldingNode(j, false, fnid1);
-			Geom::Rectangle2 fArea1 = chain->getFoldingArea(fn1);
-			fn1->properties["fArea"].setValue(fArea1);
-			fog->addNode(fn1);
-			// right
-			QString fnid2 = fnid + "_" + QString::number(true);
-			FoldingNode* fn2 = new FoldingNode(j, true, fnid2);
-			Geom::Rectangle2 fArea2 = chain->getFoldingArea(fn2);
-			fn2->properties["fArea"].setValue(fArea2);
-			fog->addNode(fn2);
-
-			// folding links
-			fog->addFoldingLink(cn, fn1);
-			fog->addFoldingLink(cn, fn2);
+			fog->addNode(fn);
+			fog->addFoldingLink(cn, fn);
 
 			// debug
-			Geom::Rectangle rect1 = mPanel1->mPatch.getRectangle(fArea1);
-			Geom::Rectangle rect2 = mPanel1->mPatch.getRectangle(fArea2);
-			QVector<Geom::Segment> segs;
-			segs += rect1.getEdgeSegments();
-			segs += rect2.getEdgeSegments();
-			addDebugSegments(segs);
+			Geom::Rectangle2 fArea = fn->properties["fArea"].value<Geom::Rectangle2>();
+			Geom::Rectangle rect = mPanel1->mPatch.getRectangle(fArea);
+			segs += rect.getEdgeSegments();
 		}
+		addDebugSegments(segs);	
 	}
 
 	// barrier nodes
