@@ -39,3 +39,8 @@ QVector<FoldingNode*> PizzaChain::generateFoldOptions()
 {
 	return QVector<FoldingNode*>();
 }
+
+void PizzaChain::modify( FoldingNode* fn )
+{
+
+}

@@ -19,7 +19,10 @@ void Geom::Segment::computeCenterDirectionExtent()
 	Vector3 d = P1 - P0;
 
 	this->Center = (P0 + P1) / 2;
-	this->Direction = d.normalized();
+	if (d.norm() == 0)
+		this->Direction = Vector3(0, 0, 0);
+	else
+		this->Direction = d.normalized();
 	this->Extent = d.norm()/2;
 }
 
@@ -99,6 +102,7 @@ bool Geom::Segment::overlaps( const Segment& other )
 		return true;
 	}
 }
+
 
 double Geom::Segment::getProjCoordinates( Vector3 p )
 {

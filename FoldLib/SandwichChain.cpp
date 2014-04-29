@@ -21,16 +21,16 @@ Geom::Rectangle2 SandwichChain::getFoldRegion(FoldingNode* fn)
 	// shrink along axisSeg
 	double t0 = fn->position;
 	double t1 = t0 + fn->scale;
-	axisSeg1.crop(t0, t1);
+	axisSeg1.crop(t0*2-1, t1*2-1); // [0,1] => [-1, 1]
 	Geom::Segment axisSeg2 = axisSeg1;
 
 	// shift the axis along rightV
-	if (fn->nbsplit == 2)
+	if (fn->nbsplit == 1)
 	{
 		double width = getLength() * 0.5;
 		axisSeg2.translate(width * rightV);
 	}
-	else if (fn->nbsplit == 3)
+	else if (fn->nbsplit == 2)
 	{
 		double width = getLength() * 0.25;
 		axisSeg1.translate(-width * rightV);
@@ -74,7 +74,7 @@ QVector<FoldingNode*> SandwichChain::generateFoldOptions()
 		for (int n = 1; n <= 2; n++)
 		{
 			// shrink: scale level : 1 --> 5 : 20% --> 100%
-			int nbScales = 1;
+			int nbScales = 5;
 			for (int i = 1; i <= nbScales; i++)
 			{
 				double step = 1.0/double(nbScales);
@@ -128,5 +128,10 @@ QVector<FoldingNode*> SandwichChain::generateFoldOptions()
 	}
 
 	return options;
+}
+
+void SandwichChain::modify( FoldingNode* fn )
+{
+
 }
 

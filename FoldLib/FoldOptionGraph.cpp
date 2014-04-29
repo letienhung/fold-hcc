@@ -57,6 +57,11 @@ double FoldingNode::getCost()
 	return cost1 + cost2;
 }
 
+QString FoldingNode::getInfo()
+{
+	return QString::number(getCost());
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -319,7 +324,7 @@ QString FoldOptionGraph::toGraphvizFormat( QString subcaption, QString caption )
 		if (type == "folding")
 		{
 			FoldingNode* fn = (FoldingNode*) node;
-			label = fn->mID;
+			label = fn->mID + ":" + fn->getInfo();
 		}
 		if (type == "barrier") label = "Barrier";
 

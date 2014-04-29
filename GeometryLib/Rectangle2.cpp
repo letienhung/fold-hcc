@@ -39,8 +39,16 @@ Geom::Rectangle2::Rectangle2(QVector<Vector2> &conners)
 	Vector2 e0 = conners[0] - conners[1];
 	Vector2 e1 = conners[0] - conners[3];
 
-	Axis.push_back(e0.normalized());
-	Axis.push_back(e1.normalized());
+	// axis: be careful if the rect is degenerated
+	if (e0.norm() == 0)
+		Axis.push_back(Vector2(0, 0));
+	else
+		Axis.push_back(e0.normalized());
+
+	if (e1.norm() == 0)
+		Axis.push_back(Vector2(0, 0));
+	else
+		Axis.push_back(e1.normalized());
 
 	Extent = Vector2(e0.norm(), e1.norm()) / 2;
 }

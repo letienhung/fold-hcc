@@ -75,11 +75,20 @@ void SandwichLayer::foldabilize()
 	QVector<int> q = cliquer.getMinWeightMaxClique();
 
 	// fold solution
+	foldSolution.clear();
+	foldSolution.resize(chains.size());
 	foreach(int idx, q)
-		foldSolution.push_back(fns[idx]);
+	{
+		FoldingNode* fn = fns[idx];
+		ChainNode* cn = fog->getChainNode(fn->mID);
+		foldSolution[cn->chainIdx] = fn;
+	}
 
 	// apply modification
-
+	for (int i = 0; i < chains.size(); i++)
+	{
+		chains[i]->modify(foldSolution[i]);
+	}
 }
 
 void SandwichLayer::buildCollisionGraph()

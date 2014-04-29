@@ -46,9 +46,9 @@ double CliquerAdapter::weightOf( const QVector<int> &clique )
 void CliquerAdapter::computeWeightsOfAllMaxCliques()
 {
 	// clique list
-	set_t s[1024];
+	set_t s[4096];
 	clique_default_options->clique_list = s;
-	clique_default_options->clique_list_length = 1024;
+	clique_default_options->clique_list_length = 4096;
 
 	// find all max cliques
 	int max_size = clique_max_weight(g, NULL);
@@ -57,7 +57,7 @@ void CliquerAdapter::computeWeightsOfAllMaxCliques()
 
 	// compute weight of each clique and store them
 	// in case there are too many max cliques, only the first 1024 are considerded.
-	int nn = (n > 1024)? 1024 : n;
+	int nn = (n > 4096)? 4096 : n;
 	for (int i = 0; i < nn; i++)
 	{
 		// get max clique

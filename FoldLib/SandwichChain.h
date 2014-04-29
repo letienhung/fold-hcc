@@ -10,6 +10,7 @@ public:
 
 	// fold options
 	QVector<FoldingNode*> generateFoldOptions();
+	void modify(FoldingNode* fn);
 
 	// fold region on master patch
 	Geom::Rectangle2 getFoldRegion(FoldingNode* fn);

@@ -41,12 +41,23 @@ Geom::Rectangle::Rectangle( QVector<Vector3>& conners )
 	Vector3 e0 = conners[1] - conners[0];
 	Vector3 e1 = conners[3] - conners[0];
 
-	Axis.push_back(e0.normalized());
-	Axis.push_back(e1.normalized());
+	if (e0.norm() == 0)
+		Axis.push_back(Vector3(0, 0, 0));
+	else
+		Axis.push_back(e0.normalized());
+
+	if (e1.norm() == 0)
+		Axis.push_back(Vector3(0, 0, 0));
+	else
+		Axis.push_back(e1.normalized());
 
 	Extent = Vector2(e0.norm()/2, e1.norm()/2);
 
-	Normal = cross(e0, e1).normalized();
+	Vector3 crosse0e1 = cross(e0, e1);
+	if (crosse0e1.norm() == 0)
+		Normal = Vector3(0, 0, 0);
+	else
+		Normal = crosse0e1.normalized();
 }
 
 Geom::Rectangle::Rectangle( Vector3& c, QVector<Vector3>& a, Vector2& e )

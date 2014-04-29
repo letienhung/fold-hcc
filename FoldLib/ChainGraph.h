@@ -13,7 +13,7 @@ public:
 
 	// fold options
 	virtual QVector<FoldingNode*> generateFoldOptions() = 0;
-
+	virtual void modify(FoldingNode* fn) = 0;
 
 	// Modify chain
 	void createChain(int N);

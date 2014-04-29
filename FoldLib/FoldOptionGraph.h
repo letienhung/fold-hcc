@@ -34,6 +34,9 @@ public:
 
 	// cost
 	double getCost();
+
+	// printable info
+	QString getInfo();
 };
 
 class BarrierNode : public Structure::Node
