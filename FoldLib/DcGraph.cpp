@@ -138,72 +138,72 @@ QVector<FdNode*> DcGraph::mergeCoplanarParts( QVector<FdNode*> ns, PatchNode* pa
 
 void DcGraph::createBlocks()
 {
-	// split parts by control panels
-	foreach (PatchNode* panel, masterPatches){
-		foreach(FdNode* n, getFdNodes()){
-			if (n->properties.contains("isCtrlPanel")) continue;
-			split(n->mID, panel->mPatch.getPlane());
-		}
-	}
+	//// split parts by control panels
+	//foreach (PatchNode* panel, masterPatches){
+	//	foreach(FdNode* n, getFdNodes()){
+	//		if (n->properties.contains("isCtrlPanel")) continue;
+	//		split(n->mID, panel->mPatch.getPlane());
+	//	}
+	//}
 
-	// cut positions along pushing skeleton
-	// append 1.0 to help group parts
-	Geom::Box box = computeAABB().box();
-	Geom::Segment pushSklt = box.getSkeleton(pushAId);
-	QVector<double> cutPos;
-	foreach (FdNode* cp, masterPatches)
-		cutPos.push_back(pushSklt.getProjCoordinates(cp->center()));
-	cutPos.push_back(1.0);
+	//// cut positions along pushing skeleton
+	//// append 1.0 to help group parts
+	//Geom::Box box = computeAABB().box();
+	//Geom::Segment pushSklt = box.getSkeleton(pushAId);
+	//QVector<double> cutPos;
+	//foreach (FdNode* cp, masterPatches)
+	//	cutPos.push_back(pushSklt.getProjCoordinates(cp->center()));
+	//cutPos.push_back(1.0);
 
-	// group parts into layers
-	FdNodeArray2D layerGroups(cutPos.size());
-	foreach (FdNode* n, getFdNodes())
-	{
-		if (n->properties.contains("isCtrlPanel")) continue;
-		double pos = pushSklt.getProjCoordinates(n->center());
-		for (int i = 0; i < cutPos.size(); i++)
-		{
-			if (pos < cutPos[i])
-			{
-				layerGroups[i].push_back(n);
-				break;
-			}
-		}
-	}
+	//// group parts into layers
+	//FdNodeArray2D layerGroups(cutPos.size());
+	//foreach (FdNode* n, getFdNodes())
+	//{
+	//	if (n->properties.contains("isCtrlPanel")) continue;
+	//	double pos = pushSklt.getProjCoordinates(n->center());
+	//	for (int i = 0; i < cutPos.size(); i++)
+	//	{
+	//		if (pos < cutPos[i])
+	//		{
+	//			layerGroups[i].push_back(n);
+	//			break;
+	//		}
+	//	}
+	//}
 
-	// merge coplanar parts within each layer 
-	//FdNodeArray2D mergedGroups;
-	//mergedGroups << mergeCoplanarParts(layerGroups[0], controlPanels[0]);
-	//for (int i = 1; i < layerGroups.size(); i++)
-	//	mergedGroups << mergeCoplanarParts(layerGroups[i], controlPanels[i-1]);
-	//layerGroups = mergedGroups;
-	
-	// clear layers
-	blocks.clear();
+	//// merge coplanar parts within each layer 
+	////FdNodeArray2D mergedGroups;
+	////mergedGroups << mergeCoplanarParts(layerGroups[0], controlPanels[0]);
+	////for (int i = 1; i < layerGroups.size(); i++)
+	////	mergedGroups << mergeCoplanarParts(layerGroups[i], controlPanels[i-1]);
+	////layerGroups = mergedGroups;
+	//
+	//// clear layers
+	//blocks.clear();
 
-	// barrier box
-	Geom::Box bBox = box.scaled(1.01);
+	//// barrier box
+	//Geom::Box bBox = box.scaled(1.01);
 
-	// first layer is pizza
-	QString id_first = "Pz-" + QString::number(blocks.size());
-	TBlock* pl_first = new TBlock(layerGroups.front(), masterPatches.front(), id_first, bBox);
-	pl_first->path = path;
-	blocks.push_back(pl_first); 
+	//// first layer is pizza
+	//QString id_first = "Pz-" + QString::number(blocks.size());
+	//TBlock* pl_first = new TBlock(layerGroups.front(), masterPatches.front(), id_first, bBox);
+	//pl_first->path = path;
+	//blocks.push_back(pl_first); 
 
-	// sandwiches
-	for (int i = 1; i < layerGroups.size()-1; i++)
-	{
-		QString id = "Sw-" + QString::number(blocks.size());
-		HBlock* sl = new HBlock(layerGroups[i], masterPatches[i-1], masterPatches[i], id, bBox);
-		sl->path = path;
-		blocks.push_back(sl);
-	}
+	//// sandwiches
+	//for (int i = 1; i < layerGroups.size()-1; i++)
+	//{
+	//	QString id = "Sw-" + QString::number(blocks.size());
+	//	HBlock* sl = new HBlock(layerGroups[i], masterPatches[i-1], masterPatches[i], id, bBox);
+	//	sl->path = path;
+	//	blocks.push_back(sl);
+	//}
 
-	// last layer is pizza
-	QString id_last = "Pz-" + QString::number(blocks.size());
-	TBlock* pl_last = new TBlock(layerGroups.last(), masterPatches.last(), id_last, bBox);
-	pl_last->path = path;
-	blocks.push_back(pl_last);
+	//// last layer is pizza
+	//QString id_last = "Pz-" + QString::number(blocks.size());
+	//TBlock* pl_last = new TBlock(layerGroups.last(), masterPatches.last(), id_last, bBox);
+	//pl_last->path = path;
+	//blocks.push_back(pl_last);
 }
 
 BlockGraph* DcGraph::getSelLayer()
@@ -252,105 +252,105 @@ void DcGraph::selectLayer( QString id )
 
 FdGraph* DcGraph::getKeyFrame( double t )
 {
-	// evenly distribute the time among layers
-	// if the end layer is empty, assign zero time interval to it
-	bool empty_front = (blocks.front()->nbNodes() == 1);
-	bool empty_back = (blocks.back()->nbNodes() == 1);
-	QVector<double> layerStarts;
-	if (empty_front && empty_back)
-	{
-		layerStarts = getEvenDivision(blocks.size() - 2);
-		layerStarts.insert(layerStarts.begin(), 0);
-		layerStarts.append(1);
-	}
-	else if (empty_front)
-	{
-		layerStarts = getEvenDivision(blocks.size() - 1);
-		layerStarts.insert(layerStarts.begin(), 0);
-	}
-	else if (empty_back)
-	{
-		layerStarts = getEvenDivision(blocks.size() - 1);
-		layerStarts.append(1);
-	}
-	else
-	{
-		layerStarts = getEvenDivision(blocks.size());
-	}
+	//// evenly distribute the time among layers
+	//// if the end layer is empty, assign zero time interval to it
+	//bool empty_front = (blocks.front()->nbNodes() == 1);
+	//bool empty_back = (blocks.back()->nbNodes() == 1);
+	//QVector<double> layerStarts;
+	//if (empty_front && empty_back)
+	//{
+	//	layerStarts = getEvenDivision(blocks.size() - 2);
+	//	layerStarts.insert(layerStarts.begin(), 0);
+	//	layerStarts.append(1);
+	//}
+	//else if (empty_front)
+	//{
+	//	layerStarts = getEvenDivision(blocks.size() - 1);
+	//	layerStarts.insert(layerStarts.begin(), 0);
+	//}
+	//else if (empty_back)
+	//{
+	//	layerStarts = getEvenDivision(blocks.size() - 1);
+	//	layerStarts.append(1);
+	//}
+	//else
+	//{
+	//	layerStarts = getEvenDivision(blocks.size());
+	//}
 
-	// get folded nodes of each layer
-	// the folding base is the first control panel
-	QVector< QVector<Structure::Node*> > knodes;
-	for (int i = 0; i < blocks.size(); i++)
-	{
-		double lt = getLocalTime(t, layerStarts[i], layerStarts[i+1]);
-		knodes << blocks[i]->getKeyFrameNodes(lt);
-	}
+	//// get folded nodes of each layer
+	//// the folding base is the first control panel
+	//QVector< QVector<Structure::Node*> > knodes;
+	//for (int i = 0; i < blocks.size(); i++)
+	//{
+	//	double lt = getLocalTime(t, layerStarts[i], layerStarts[i+1]);
+	//	knodes << blocks[i]->getKeyFrameNodes(lt);
+	//}
 
-	// compute offset of each control panel
-	// and remove redundant control panels
-	QVector<Vector3> panelDeltas;
-	for (int i = 0; i < masterPatches.size(); i++)
-	{
-		QString panel_id = masterPatches[i]->mID;
-		
-		// copy1 in layer[i]
-		FdNode* panelCopy1 = NULL;
-		int idx1 = -1;
-		QVector<Structure::Node*> &lnodes1 = knodes[i];
-		for(int j = 0; j < lnodes1.size(); j++)
-		{
-			if (lnodes1[j]->hasId(panel_id))
-			{
-				panelCopy1 = (FdNode*)lnodes1[j];
-				idx1 = j;
-			}
-		}
+	//// compute offset of each control panel
+	//// and remove redundant control panels
+	//QVector<Vector3> panelDeltas;
+	//for (int i = 0; i < masterPatches.size(); i++)
+	//{
+	//	QString panel_id = masterPatches[i]->mID;
+	//	
+	//	// copy1 in layer[i]
+	//	FdNode* panelCopy1 = NULL;
+	//	int idx1 = -1;
+	//	QVector<Structure::Node*> &lnodes1 = knodes[i];
+	//	for(int j = 0; j < lnodes1.size(); j++)
+	//	{
+	//		if (lnodes1[j]->hasId(panel_id))
+	//		{
+	//			panelCopy1 = (FdNode*)lnodes1[j];
+	//			idx1 = j;
+	//		}
+	//	}
 
-		// copy2 in layer[i+1]
-		FdNode* panelCopy2 = NULL;
-		int idx2 = -1;
-		QVector<Structure::Node*> &lnodes2 = knodes[i+1];
-		for(int j = 0; j < lnodes2.size(); j++)
-		{
-			if (lnodes2[j]->hasId(panel_id))
-			{
-				panelCopy2 = (FdNode*)lnodes2[j];
-				idx2 = j;
-			}
-		}
-		 
-		// delta
-		Vector3 delta(0, 0, 0);
-		if (panelCopy1 && panelCopy2) 
-			delta = panelCopy1->center() - panelCopy2->center();
-		panelDeltas << delta;
+	//	// copy2 in layer[i+1]
+	//	FdNode* panelCopy2 = NULL;
+	//	int idx2 = -1;
+	//	QVector<Structure::Node*> &lnodes2 = knodes[i+1];
+	//	for(int j = 0; j < lnodes2.size(); j++)
+	//	{
+	//		if (lnodes2[j]->hasId(panel_id))
+	//		{
+	//			panelCopy2 = (FdNode*)lnodes2[j];
+	//			idx2 = j;
+	//		}
+	//	}
+	//	 
+	//	// delta
+	//	Vector3 delta(0, 0, 0);
+	//	if (panelCopy1 && panelCopy2) 
+	//		delta = panelCopy1->center() - panelCopy2->center();
+	//	panelDeltas << delta;
 
-		// remove copy2
-		if (idx2 >= 0 && idx2 < lnodes2.size())
-			lnodes2.remove(idx2);
-	}
+	//	// remove copy2
+	//	if (idx2 >= 0 && idx2 < lnodes2.size())
+	//		lnodes2.remove(idx2);
+	//}
 
-	// shift layers and add nodes into scaffold
+	//// shift layers and add nodes into scaffold
 	FdGraph *key_graph = new FdGraph();
-	Vector3 offset(0, 0, 0);
-	for (int i = 0; i < knodes.size(); i++)
-	{
-		// keep the first layer but shift others
-		if (i > 0) offset += panelDeltas[i-1];
+	//Vector3 offset(0, 0, 0);
+	//for (int i = 0; i < knodes.size(); i++)
+	//{
+	//	// keep the first layer but shift others
+	//	if (i > 0) offset += panelDeltas[i-1];
 
-		QVector<Structure::Node*> &lnodes = knodes[i];
-		for (int j = 0; j < lnodes.size(); j++)
-		{
-			FdNode* n = (FdNode*)lnodes[j];
-			n->mBox.translate(offset);
-			n->createScaffold();
+	//	QVector<Structure::Node*> &lnodes = knodes[i];
+	//	for (int j = 0; j < lnodes.size(); j++)
+	//	{
+	//		FdNode* n = (FdNode*)lnodes[j];
+	//		n->mBox.translate(offset);
+	//		n->createScaffold();
 
-			key_graph->Structure::Graph::addNode(n);
-		}
-	}
+	//		key_graph->Structure::Graph::addNode(n);
+	//	}
+	//}
 
-	key_graph->properties["pushAId"] = pushAId;
+	//key_graph->properties["pushAId"] = pushAId;
 
 	return key_graph;
 }

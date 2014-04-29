@@ -71,8 +71,7 @@ void BlockGraph::snapshot( double t )
 		chain->fold(t);
 }
 
-void BlockGraph::exportFOG()
+void BlockGraph::foldabilize()
 {
-	QString filePath = path + "/" + mID;
-	fog->saveAsImage(filePath);
+
 }
