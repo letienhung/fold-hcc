@@ -3,27 +3,30 @@
 #include "FdGraph.h"
 #include "PatchNode.h"
 #include "Numeric.h"
-#include "LayerGraph.h"
+#include "BlockGraph.h"
 
-// DcGraph is the Decomposition graph of a Concertina
+// DcGraph encodes the decomposition of scaffold
 // including base patches and layers
 
 class DcGraph : public FdGraph
 {
 public:
-    DcGraph(FdGraph* scaffold, StrArray2D panelGroups, Vector3 pushV, QString id);
+    DcGraph(FdGraph* scaffold, StrArray2D masterGroups, QString id);
 	~DcGraph();
 
 public:
-	int pushAId;
-	QVector<PatchNode*> controlPanels;
+	QVector<PatchNode*> masterPatches;
 
-	int selId;
-	QVector<LayerGraph*> layers;
+	int selBlockIdx;
+	QVector<BlockGraph*> blocks;
+
+	// folding results
+	int keyfameIdx;
+	QVector<FdGraph*> keyframes;
 
 public:
-	// layers
-	void createLayers();
+	// blocks
+	void createBlocks();
 	QVector<FdNode*> mergeCoplanarParts(QVector<FdNode*> ns, PatchNode* panel);
 
 	// fold
@@ -34,7 +37,7 @@ public:
 
 public:
 	FdGraph* activeScaffold();
-	LayerGraph* getSelLayer();
+	BlockGraph* getSelLayer();
 
 	QStringList getLayerLabels();
 	void selectLayer(QString id);

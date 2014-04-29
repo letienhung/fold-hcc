@@ -1,7 +1,7 @@
-#include "SandwichChain.h"
+#include "HChain.h"
 #include "Numeric.h"
 
-SandwichChain::SandwichChain( FdNode* part, PatchNode* panel1, PatchNode* panel2)
+HChain::HChain( FdNode* part, PatchNode* panel1, PatchNode* panel2)
 	:ChainGraph(part, panel1, panel2)
 {
 	// type
@@ -10,7 +10,7 @@ SandwichChain::SandwichChain( FdNode* part, PatchNode* panel1, PatchNode* panel2
 	createChain(2);
 }
 
-Geom::Rectangle2 SandwichChain::getFoldRegion(FoldingNode* fn)
+Geom::Rectangle2 HChain::getFoldRegion(FoldingNode* fn)
 {
 	// axis and rightV
 	int hidx = fn->hingeIdx;
@@ -39,7 +39,7 @@ Geom::Rectangle2 SandwichChain::getFoldRegion(FoldingNode* fn)
 
 	// conners of projected rectangle
 	QVector<Vector2> conners;
-	Geom::Rectangle& panel_rect = mPanels[0]->mPatch;
+	Geom::Rectangle& panel_rect = mMasters[0]->mPatch;
 	conners << panel_rect.getProjCoordinates(axisSeg1.P0) 
 		<< panel_rect.getProjCoordinates(axisSeg1.P1) 
 		<< panel_rect.getProjCoordinates(axisSeg2.P1) 
@@ -48,22 +48,22 @@ Geom::Rectangle2 SandwichChain::getFoldRegion(FoldingNode* fn)
 	return Geom::Rectangle2(conners);
 }
 
-Geom::Segment2 SandwichChain::getFoldingAxis2D( FoldingNode* fn )
+Geom::Segment2 HChain::getFoldingAxis2D( FoldingNode* fn )
 {
 	Geom::Segment axisSeg = getJointSegment(fn);
-	Geom::Rectangle& panel_rect = mPanels[0]->mPatch;
+	Geom::Rectangle& panel_rect = mMasters[0]->mPatch;
 
 	return panel_rect.get2DSegment(axisSeg);
 }
 
-Geom::Segment SandwichChain::getJointSegment( FoldingNode* fn )
+Geom::Segment HChain::getJointSegment( FoldingNode* fn )
 {
 	int hidx = fn->hingeIdx;
 	int jidx = hidx / 2;
 	return rootJointSegs[jidx];
 }
 
-QVector<FoldingNode*> SandwichChain::generateFoldOptions()
+QVector<FoldingNode*> HChain::generateFoldOptions()
 {
 	QVector<FoldingNode*> options;
 
@@ -130,7 +130,7 @@ QVector<FoldingNode*> SandwichChain::generateFoldOptions()
 	return options;
 }
 
-void SandwichChain::modify( FoldingNode* fn )
+void HChain::modify( FoldingNode* fn )
 {
 
 }

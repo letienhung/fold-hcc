@@ -33,7 +33,7 @@ public:
 	QVector<Geom::Plane> generateCutPlanes(int N);
 
 public:
-	QVector<PatchNode*>		mPanels;		// two control panels
+	QVector<PatchNode*>		mMasters;		// one or two masters
 	FdNode*					mOrigPart;	// original part, which is split into chain parts
 	QVector<FdNode*>		mParts;			// sorted parts in the chain, from panels[0] to panels[1]
 

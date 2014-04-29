@@ -1,12 +1,12 @@
 #pragma once
-#include "LayerGraph.h"
+#include "BlockGraph.h"
 #include "SectorCylinder.h"
 
-class PizzaLayer : public LayerGraph
+class TBlock : public BlockGraph
 {
 public:
-    PizzaLayer(QVector<FdNode*> parts, PatchNode* panel, QString id, Geom::Box &bBox);
-	~PizzaLayer();
+    TBlock(QVector<FdNode*> parts, PatchNode* panel, QString id, Geom::Box &bBox);
+	~TBlock();
 
 	void foldabilize();
 	void buildDependGraph();

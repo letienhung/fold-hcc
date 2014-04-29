@@ -1,10 +1,10 @@
 #pragma once
-#include "LayerGraph.h"
+#include "BlockGraph.h"
 
-class SandwichLayer : public LayerGraph
+class HBlock : public BlockGraph
 {
 public:
-    SandwichLayer(QVector<FdNode*> parts, PatchNode* panel1, PatchNode* panel2, QString id, Geom::Box &bBox);
+    HBlock(QVector<FdNode*> parts, PatchNode* panel1, PatchNode* panel2, QString id, Geom::Box &bBox);
 
 	// collision graph
 	void foldabilize();

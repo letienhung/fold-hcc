@@ -3,10 +3,10 @@
 #include "ChainGraph.h"
 #include "SectorCylinder.h"
 
-class PizzaChain : public ChainGraph
+class TChain : public ChainGraph
 {
 public:
-    PizzaChain(FdNode* part, PatchNode* panel);
+    TChain(FdNode* part, PatchNode* panel);
 
 	QVector<FoldingNode*> generateFoldOptions();
 	void modify(FoldingNode* fn);

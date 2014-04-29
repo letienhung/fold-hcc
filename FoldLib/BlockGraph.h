@@ -2,14 +2,14 @@
 
 #include "ChainGraph.h"
 
-class LayerGraph : public FdGraph
+class BlockGraph : public FdGraph
 {
 public:
-	enum LAYER_TYPE{PIZZA, SANDWICH};
+	enum BLOCK_TYPE{T_BLOCK, H_BLOCK};
 
 public:
-    LayerGraph(QVector<FdNode*> parts, PatchNode* panel1, PatchNode* panel2, QString id, Geom::Box &bBox);
-	~LayerGraph();
+    BlockGraph(QVector<FdNode*> parts, QString id);
+	~BlockGraph();
 
 	// selection
 	ChainGraph* getSelChain();
@@ -21,7 +21,7 @@ public:
 	ChainGraph* getChain(QString cid);
 
 	// foldabilize
-	virtual void foldabilize() = 0;
+	void foldabilize();
 
 	// fold option graph
 	void exportFOG();
@@ -31,12 +31,8 @@ public:
 	virtual QVector<Structure::Node*> getKeyFrameNodes(double t) = 0;
 
 public:
-	LAYER_TYPE mType;
-	int selId;
+	BLOCK_TYPE mType;
+	int selChainIdx;
 	QVector<ChainGraph*> chains;
-
-	FoldOptionGraph* fog;
-	Geom::Box barrierBox;
-	QVector<FoldOptionGraph*> fogs;
 }; 
 

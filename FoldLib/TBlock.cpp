@@ -1,5 +1,5 @@
-#include "PizzaLayer.h"
-#include "PizzaChain.h"
+#include "TBlock.h"
+#include "TChain.h"
 #include "RodNode.h"
 #include "PatchNode.h"
 #include "FdUtility.h"
@@ -9,11 +9,11 @@
 #include <QDir>
 
 
-PizzaLayer::PizzaLayer( QVector<FdNode*> parts, PatchNode* panel, QString id, Geom::Box &bBox )
-	:LayerGraph(parts, NULL, panel, id, bBox)
+TBlock::TBlock( QVector<FdNode*> parts, PatchNode* panel, QString id, Geom::Box &bBox )
+	:BlockGraph(parts, NULL, panel, id, bBox)
 {
 	// type
-	mType = LayerGraph::PIZZA;
+	mType = BlockGraph::T_BLOCK;
 
 	// panel
 	mPanel = (PatchNode*)getNode(panel->mID);
@@ -27,22 +27,22 @@ PizzaLayer::PizzaLayer( QVector<FdNode*> parts, PatchNode* panel, QString id, Ge
 
 		if (getDistance(n, mPanel) < thr)
 		{
-			chains.push_back(new PizzaChain(n, mPanel));
+			chains.push_back(new TChain(n, mPanel));
 		}
 	}
 }
 
-PizzaLayer::~PizzaLayer()
+TBlock::~TBlock()
 {
 }
 
-void PizzaLayer::foldabilize()
+void TBlock::foldabilize()
 {
 	buildDependGraph();
 }
 
 
-void PizzaLayer::buildDependGraph()
+void TBlock::buildDependGraph()
 {
 	// clear
 	fog->clear();
@@ -53,7 +53,7 @@ void PizzaLayer::buildDependGraph()
 	// chain nodes and folding links
 	for(int i = 0; i < chains.size(); i++)
 	{
-		PizzaChain* chain = (PizzaChain*)chains[i];
+		TChain* chain = (TChain*)chains[i];
 
 		// chain nodes
 		ChainNode* cn = new ChainNode(i, chain->mID);
@@ -95,7 +95,7 @@ void PizzaLayer::buildDependGraph()
 	foreach (FoldingNode* fn, fog->getAllFoldingNodes())
 	{
 		ChainNode* cn = fog->getChainNode(fn->mID);
-		PizzaChain* chain = (PizzaChain*) getChain(cn->mID);
+		TChain* chain = (TChain*) getChain(cn->mID);
 		Geom::SectorCylinder fVolume = chain->getFoldingVolume(fn);
 
 		// with barriers 
@@ -113,7 +113,7 @@ void PizzaLayer::buildDependGraph()
 		{
 			if (cn == other_cn) continue;
 
-			PizzaChain* other_chain = (PizzaChain*) getChain(other_cn->mID);
+			TChain* other_chain = (TChain*) getChain(other_cn->mID);
 			FdNode* other_part = other_chain->mParts[0];
 
 			bool collide = false;
@@ -144,7 +144,7 @@ void PizzaLayer::buildDependGraph()
 	}
 }
 
-QVector<Structure::Node*> PizzaLayer::getKeyFrameNodes( double t )
+QVector<Structure::Node*> TBlock::getKeyFrameNodes( double t )
 {
 	QVector<Structure::Node*> knodes;
 
@@ -175,7 +175,7 @@ QVector<Structure::Node*> PizzaLayer::getKeyFrameNodes( double t )
 	return knodes;
 }
 
-Vector3 PizzaLayer::getClosestCoordinates(Geom::SectorCylinder& fVolume, FdNode* node)
+Vector3 TBlock::getClosestCoordinates(Geom::SectorCylinder& fVolume, FdNode* node)
 {
 	Geom::Segment axisSeg = fVolume.getAxisSegment();
 	Vector3 closestP;
@@ -195,7 +195,7 @@ Vector3 PizzaLayer::getClosestCoordinates(Geom::SectorCylinder& fVolume, FdNode*
 	return fVolume.getCoordinates(closestP);
 }
 
-Vector3 PizzaLayer::getClosestCoordinates( Geom::SectorCylinder& fVolume, Geom::Rectangle& rect )
+Vector3 TBlock::getClosestCoordinates( Geom::SectorCylinder& fVolume, Geom::Rectangle& rect )
 {
 	Geom::Segment axisSeg = fVolume.getAxisSegment();
 	Geom::DistSegRect dsr(axisSeg, rect);

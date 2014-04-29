@@ -1,16 +1,16 @@
-#include "SandwichLayer.h"
-#include "SandwichChain.h"
+#include "HBlock.h"
+#include "HChain.h"
 #include "PatchNode.h"
 #include "FdUtility.h"
 #include "IntrRect2Rect2.h"
 #include "Numeric.h"
 #include "CliquerAdapter.h"
 
-SandwichLayer::SandwichLayer( QVector<FdNode*> parts, PatchNode* panel1, PatchNode* panel2, 
+HBlock::HBlock( QVector<FdNode*> parts, PatchNode* panel1, PatchNode* panel2, 
 	QString id, Geom::Box &bBox )
-	:LayerGraph(parts, panel1, panel2, id, bBox)
+	:BlockGraph(parts, panel1, panel2, id, bBox)
 {
-	mType = LayerGraph::SANDWICH;
+	mType = BlockGraph::SANDWICH;
 
 	mPanel1 = (PatchNode*) getNode(panel1->mID);
 	mPanel2 = (PatchNode*) getNode(panel2->mID);
@@ -28,12 +28,12 @@ SandwichLayer::SandwichLayer( QVector<FdNode*> parts, PatchNode* panel1, PatchNo
 
 		if (getDistance(n, panels) < thr)
 		{
-			chains.push_back(new SandwichChain(n, mPanel1, mPanel2));
+			chains.push_back(new HChain(n, mPanel1, mPanel2));
 		}
 	}
 }
 
-void SandwichLayer::foldabilize()
+void HBlock::foldabilize()
 {
 	buildCollisionGraph();
 
@@ -91,7 +91,7 @@ void SandwichLayer::foldabilize()
 	}
 }
 
-void SandwichLayer::buildCollisionGraph()
+void HBlock::buildCollisionGraph()
 {
 	// clear
 	fog->clear();
@@ -99,7 +99,7 @@ void SandwichLayer::buildCollisionGraph()
 	// nodes and folding links
 	for(int i = 0; i < chains.size(); i++)
 	{
-		SandwichChain* chain = (SandwichChain*)chains[i];
+		HChain* chain = (HChain*)chains[i];
 
 		// chain nodes
 		ChainNode* cn = new ChainNode(i, chain->mID);
@@ -166,7 +166,7 @@ void SandwichLayer::buildCollisionGraph()
 	}
 }
 
-QVector<Structure::Node*> SandwichLayer::getKeyFrameNodes( double t )
+QVector<Structure::Node*> HBlock::getKeyFrameNodes( double t )
 {
 	QVector<Structure::Node*> knodes;
 

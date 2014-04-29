@@ -1,38 +1,35 @@
 #include "DcGraph.h"
 #include "PatchNode.h"
-#include "PizzaLayer.h"
-#include "SandwichLayer.h"
+#include "TBlock.h"
+#include "HBlock.h"
 #include <QFileInfo>
 #include "FdUtility.h"
 
 
-DcGraph::DcGraph( FdGraph* scaffold, StrArray2D panelGroups, Vector3 pushV, QString id)
+DcGraph::DcGraph( FdGraph* scaffold, StrArray2D masterGroups, QString id)
 	: FdGraph(*scaffold)
 {
 	path = QFileInfo(path).absolutePath();
-	mID = id;
-
-	pushAId = computeAABB().box().getAxisId(pushV);
 
 	// merge control panels
-	foreach( QVector<QString> panelGroup, panelGroups )
+	foreach( QVector<QString> panelGroup, masterGroups )
 	{
 		FdNode* mf = merge(panelGroup);
 		mf->properties["isCtrlPanel"] = true;
 
 		if (mf->mType != FdNode::PATCH)	changeNodeType(mf);
-		controlPanels.push_back((PatchNode*)mf);
+		masterPatches.push_back((PatchNode*)mf);
 	}
 
 	// create layers
-	createLayers();
+	createBlocks();
 
-	selId = -1;
+	selBlockIdx = -1;
 }
 
 DcGraph::~DcGraph()
 {
-	foreach (LayerGraph* l, layers)
+	foreach (BlockGraph* l, blocks)
 		delete l;
 }
 
@@ -139,10 +136,10 @@ QVector<FdNode*> DcGraph::mergeCoplanarParts( QVector<FdNode*> ns, PatchNode* pa
 	return mnodes;
 }
 
-void DcGraph::createLayers()
+void DcGraph::createBlocks()
 {
 	// split parts by control panels
-	foreach (PatchNode* panel, controlPanels){
+	foreach (PatchNode* panel, masterPatches){
 		foreach(FdNode* n, getFdNodes()){
 			if (n->properties.contains("isCtrlPanel")) continue;
 			split(n->mID, panel->mPatch.getPlane());
@@ -154,7 +151,7 @@ void DcGraph::createLayers()
 	Geom::Box box = computeAABB().box();
 	Geom::Segment pushSklt = box.getSkeleton(pushAId);
 	QVector<double> cutPos;
-	foreach (FdNode* cp, controlPanels)
+	foreach (FdNode* cp, masterPatches)
 		cutPos.push_back(pushSklt.getProjCoordinates(cp->center()));
 	cutPos.push_back(1.0);
 
@@ -182,44 +179,44 @@ void DcGraph::createLayers()
 	//layerGroups = mergedGroups;
 	
 	// clear layers
-	layers.clear();
+	blocks.clear();
 
 	// barrier box
 	Geom::Box bBox = box.scaled(1.01);
 
 	// first layer is pizza
-	QString id_first = "Pz-" + QString::number(layers.size());
-	PizzaLayer* pl_first = new PizzaLayer(layerGroups.front(), controlPanels.front(), id_first, bBox);
+	QString id_first = "Pz-" + QString::number(blocks.size());
+	TBlock* pl_first = new TBlock(layerGroups.front(), masterPatches.front(), id_first, bBox);
 	pl_first->path = path;
-	layers.push_back(pl_first); 
+	blocks.push_back(pl_first); 
 
 	// sandwiches
 	for (int i = 1; i < layerGroups.size()-1; i++)
 	{
-		QString id = "Sw-" + QString::number(layers.size());
-		SandwichLayer* sl = new SandwichLayer(layerGroups[i], controlPanels[i-1], controlPanels[i], id, bBox);
+		QString id = "Sw-" + QString::number(blocks.size());
+		HBlock* sl = new HBlock(layerGroups[i], masterPatches[i-1], masterPatches[i], id, bBox);
 		sl->path = path;
-		layers.push_back(sl);
+		blocks.push_back(sl);
 	}
 
 	// last layer is pizza
-	QString id_last = "Pz-" + QString::number(layers.size());
-	PizzaLayer* pl_last = new PizzaLayer(layerGroups.last(), controlPanels.last(), id_last, bBox);
+	QString id_last = "Pz-" + QString::number(blocks.size());
+	TBlock* pl_last = new TBlock(layerGroups.last(), masterPatches.last(), id_last, bBox);
 	pl_last->path = path;
-	layers.push_back(pl_last);
+	blocks.push_back(pl_last);
 }
 
-LayerGraph* DcGraph::getSelLayer()
+BlockGraph* DcGraph::getSelLayer()
 {
-	if (selId >= 0 && selId < layers.size())
-		return layers[selId];
+	if (selBlockIdx >= 0 && selBlockIdx < blocks.size())
+		return blocks[selBlockIdx];
 	else
 		return NULL;
 }
 
 FdGraph* DcGraph::activeScaffold()
 {
-	LayerGraph* selLayer = getSelLayer();
+	BlockGraph* selLayer = getSelLayer();
 	if (selLayer) return selLayer->activeScaffold();
 	else		  return this;
 }
@@ -227,7 +224,7 @@ FdGraph* DcGraph::activeScaffold()
 QStringList DcGraph::getLayerLabels()
 {
 	QStringList labels;
-	foreach(LayerGraph* l, layers)
+	foreach(BlockGraph* l, blocks)
 		labels.append(l->mID);
 
 	return labels;
@@ -236,12 +233,12 @@ QStringList DcGraph::getLayerLabels()
 void DcGraph::selectLayer( QString id )
 {
 	// select layer named id
-	selId = -1;
-	for (int i = 0; i < layers.size(); i++)
+	selBlockIdx = -1;
+	for (int i = 0; i < blocks.size(); i++)
 	{
-		if (layers[i]->mID == id)
+		if (blocks[i]->mID == id)
 		{
-			selId = i;
+			selBlockIdx = i;
 			break;
 		}
 	}
@@ -257,45 +254,45 @@ FdGraph* DcGraph::getKeyFrame( double t )
 {
 	// evenly distribute the time among layers
 	// if the end layer is empty, assign zero time interval to it
-	bool empty_front = (layers.front()->nbNodes() == 1);
-	bool empty_back = (layers.back()->nbNodes() == 1);
+	bool empty_front = (blocks.front()->nbNodes() == 1);
+	bool empty_back = (blocks.back()->nbNodes() == 1);
 	QVector<double> layerStarts;
 	if (empty_front && empty_back)
 	{
-		layerStarts = getEvenDivision(layers.size() - 2);
+		layerStarts = getEvenDivision(blocks.size() - 2);
 		layerStarts.insert(layerStarts.begin(), 0);
 		layerStarts.append(1);
 	}
 	else if (empty_front)
 	{
-		layerStarts = getEvenDivision(layers.size() - 1);
+		layerStarts = getEvenDivision(blocks.size() - 1);
 		layerStarts.insert(layerStarts.begin(), 0);
 	}
 	else if (empty_back)
 	{
-		layerStarts = getEvenDivision(layers.size() - 1);
+		layerStarts = getEvenDivision(blocks.size() - 1);
 		layerStarts.append(1);
 	}
 	else
 	{
-		layerStarts = getEvenDivision(layers.size());
+		layerStarts = getEvenDivision(blocks.size());
 	}
 
 	// get folded nodes of each layer
 	// the folding base is the first control panel
 	QVector< QVector<Structure::Node*> > knodes;
-	for (int i = 0; i < layers.size(); i++)
+	for (int i = 0; i < blocks.size(); i++)
 	{
 		double lt = getLocalTime(t, layerStarts[i], layerStarts[i+1]);
-		knodes << layers[i]->getKeyFrameNodes(lt);
+		knodes << blocks[i]->getKeyFrameNodes(lt);
 	}
 
 	// compute offset of each control panel
 	// and remove redundant control panels
 	QVector<Vector3> panelDeltas;
-	for (int i = 0; i < controlPanels.size(); i++)
+	for (int i = 0; i < masterPatches.size(); i++)
 	{
-		QString panel_id = controlPanels[i]->mID;
+		QString panel_id = masterPatches[i]->mID;
 		
 		// copy1 in layer[i]
 		FdNode* panelCopy1 = NULL;
@@ -360,6 +357,6 @@ FdGraph* DcGraph::getKeyFrame( double t )
 
 void DcGraph::foldabilize()
 {
-	foreach(LayerGraph* layer, layers)
+	foreach(BlockGraph* layer, blocks)
 		layer->foldabilize();
 }

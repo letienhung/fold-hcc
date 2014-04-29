@@ -46,11 +46,11 @@ HEADERS += \
     DcGraph.h \
     FoldManager.h \
     FdUtility.h \
-    LayerGraph.h \
-    SandwichLayer.h \
-    PizzaLayer.h \
-    PizzaChain.h \
-    SandwichChain.h \
+    BlockGraph.h \
+    HBlock.h \
+    TBlock.h \
+    TChain.h \
+    HChain.h \
     ChainGraph.h \
     Hinge.h \
     BundleNode.h \
@@ -66,11 +66,11 @@ SOURCES += \
     DcGraph.cpp \
     FoldManager.cpp \
     FdUtility.cpp \
-    LayerGraph.cpp \
-    SandwichLayer.cpp \
-    PizzaLayer.cpp \
-    PizzaChain.cpp \
-    SandwichChain.cpp \
+    BlockGraph.cpp \
+    HBlock.cpp \
+    TBlock.cpp \
+    TChain.cpp \
+    HChain.cpp \
     ChainGraph.cpp \
     Hinge.cpp \
     BundleNode.cpp \

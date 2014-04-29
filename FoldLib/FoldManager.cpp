@@ -8,12 +8,8 @@ FoldManager::FoldManager()
 {
 	scaffold = NULL;
 
-	selId = -1;
-	pushAxis = 0;
-
-	keyIndx = -1;
+	selDcIdx = -1;
 }
-
 
 FoldManager::~FoldManager()
 {
@@ -28,31 +24,7 @@ void FoldManager::clearDcGraphs()
 	dcGraphs.clear();
 }
 
-
-void FoldManager::clearResults()
-{
-	foreach (QVector<FdGraph*> res, results)
-		foreach(FdGraph* g, res) delete g;
-
-	results.clear();
-}
-
-
-DcGraph* FoldManager::getSelDcGraph()
-{
-	if (selId >= 0 && selId < dcGraphs.size())
-		return dcGraphs[selId];
-	else
-		return NULL;
-}
-
-FdGraph* FoldManager::activeScaffold()
-{
-	DcGraph* selLy = getSelDcGraph();
-	if (selLy)	return selLy->activeScaffold();
-	else		return scaffold;
-}
-
+// input
 void FoldManager::setScaffold( FdGraph* fdg )
 {
 	scaffold = fdg;
@@ -61,70 +33,8 @@ void FoldManager::setScaffold( FdGraph* fdg )
 	updateDcList();
 }
 
-void FoldManager::foldAlongAxis( int d )
-{
-	pushAxis = d;
-}
-
-void FoldManager::createDcGraphs()
-{
-	if (!scaffold) return;
-
-	clearDcGraphs();
-	clearResults();
-
-	if (pushAxis < 3)
-	{
-		Vector3 direct(0, 0, 0);
-		direct[pushAxis] = 1;;
-		createDcGraphs(direct);
-	}
-	else
-	{
-		createDcGraphs(Vector3(1,0,0));
-		createDcGraphs(Vector3(0,1,0));
-		createDcGraphs(Vector3(0,0,1));
-	}
-
-	// update ui
-	updateDcList();
-}
-
-void FoldManager::createDcGraphs(Vector3 pushDirect)
-{
-	// w\o virtual nodes
-	int N = createDcGraphs(pushDirect, -1);
-
-	// add virtual control panels
-	Geom::AABB aabb = scaffold->computeAABB();
-	Geom::Box box = aabb.box();
-	int pushAId = aabb.box().getAxisId(pushDirect);
-	Vector3 upV = box.Axis[pushAId];
-	double thk = aabb.radius() / 50;
-	MeshPtr emptyMesh(new SurfaceMeshModel("", "empty"));
-
-	Geom::Rectangle topPatch = box.getPatch(pushAId, 1);
-	Geom::Box topBox(topPatch, upV, thk);
-	FdNode* topVN = scaffold->addNode(emptyMesh, topBox);
-	topVN->mID = "topVirtual";
-	topVN->properties["virtual"] = true;
-
-	Geom::Rectangle bottomPatch = box.getPatch(pushAId, -1);
-	Geom::Box bottomBox(bottomPatch, -upV, thk);
-	FdNode* bottomVN = scaffold->addNode(emptyMesh, bottomBox);
-	bottomVN->mID = "bottomVirtual";
-	bottomVN->properties["virtual"] = true;
-
-	// with virtual nodes: must create more control panels
-	N = createDcGraphs(pushDirect, N);
-
-	// remove virtual nodes
-	scaffold->Structure::Graph::removeNode("topVirtual");
-	scaffold->Structure::Graph::removeNode("bottomVirtual");
-}
-
-
-int FoldManager::createDcGraphs( Vector3 pushDirect, int N )
+// masters
+void FoldManager::identifyMasters()
 {
 	Geom::AABB aabb = scaffold->computeAABB();
 	Geom::Box box = aabb.box();
@@ -202,54 +112,55 @@ int FoldManager::createDcGraphs( Vector3 pushDirect, int N )
 	}
 
 	return panelGroups.size();
+
 }
 
-void FoldManager::foldSelLayer()
+// decomposition
+void FoldManager::decompose()
 {
-	LayerGraph* lg = getSelLayer();
+
+}
+
+void FoldManager::foldbzSelBlock()
+{
+	BlockGraph* lg = getSelBlock();
 	if (lg) lg->foldabilize();
 }
 
 
-void FoldManager::snapshotSelLayer( double t )
+void FoldManager::snapshotSelBlock( double t )
 {
-	LayerGraph* lg = getSelLayer();
+	BlockGraph* lg = getSelBlock();
 	if (lg) lg->snapshot(t);
 
 	emit(sceneChanged());
 }
 
-void FoldManager::exportFOG()
-{
-	LayerGraph* lg = getSelLayer();
-	if (lg) lg->exportFOG();
-}
-
 void FoldManager::selectDcGraph( QString id )
 {
 	// selected lyGraph index
-	selId = -1;
+	selDcIdx = -1;
 	for (int i = 0; i < dcGraphs.size(); i++)
 	{
 		if (dcGraphs[i]->mID == id)
 		{	
-			selId = i;
+			selDcIdx = i;
 			break;
 		}
 	}
 
 	// disable selection on layer and chains
-	selectLayer("");
+	selectBlock("");
 
 	// update list
-	updateLayerList();
-	updateKeyFrameList();
+	updateBlockList();
+	updateKeyframeList();
 
 	// update scene
 	emit(sceneChanged());
 }
 
-void FoldManager::selectLayer( QString id )
+void FoldManager::selectBlock( QString id )
 {
 	if (getSelDcGraph()) 
 	{
@@ -263,9 +174,9 @@ void FoldManager::selectLayer( QString id )
 
 void FoldManager::selectChain( QString id )
 { 
-	if (getSelLayer())
+	if (getSelBlock())
 	{
-		getSelLayer()->selectChain(id);
+		getSelBlock()->selectChain(id);
 	}
 
 	emit(sceneChanged());
@@ -280,7 +191,7 @@ QStringList FoldManager::getDcGraphLabels()
 	return labels;
 }
 
-LayerGraph* FoldManager::getSelLayer()
+BlockGraph* FoldManager::getSelBlock()
 {
 	if (getSelDcGraph())
 	{
@@ -290,7 +201,7 @@ LayerGraph* FoldManager::getSelLayer()
 		return NULL;
 }
 
-void FoldManager::generateFdKeyFrames()
+void FoldManager::generateKeyframes()
 {
 	// clear
 	clearResults();
@@ -309,26 +220,41 @@ void FoldManager::generateFdKeyFrames()
 	}
 
 	emit(resultsGenerated());
-	updateKeyFrameList();
+	updateKeyframeList();
 }
 
 void FoldManager::selectKeyframe( int idx )
 {
-	keyIndx = idx;
+	keyfameIdx = idx;
 
 	emit(sceneChanged());
 }
 
-FdGraph* FoldManager::getKeyframe()
+FdGraph* FoldManager::getSelKeyframe()
 {
-	if (selId >= 0 && selId < results.size())
+	if (selDcIdx >= 0 && selDcIdx < results.size())
 	{
-		if (keyIndx >= 0 && keyIndx < results[selId].size())
+		if (keyfameIdx >= 0 && keyfameIdx < results[selDcIdx].size())
 		{
-			return results[selId][keyIndx];
+			return results[selDcIdx][keyfameIdx];
 		}
 	}
 	return NULL;
+}
+
+DcGraph* FoldManager::getSelDcGraph()
+{
+	if (selDcIdx >= 0 && selDcIdx < dcGraphs.size())
+		return dcGraphs[selDcIdx];
+	else
+		return NULL;
+}
+
+FdGraph* FoldManager::activeScaffold()
+{
+	DcGraph* selLy = getSelDcGraph();
+	if (selLy)	return selLy->activeScaffold();
+	else		return scaffold;
 }
 
 void FoldManager::foldabilize()
@@ -341,17 +267,17 @@ void FoldManager::updateDcList()
 {
 	emit(DcGraphsChanged(getDcGraphLabels()));
 
-	updateLayerList();
-	updateKeyFrameList();
+	updateBlockList();
+	updateKeyframeList();
 }
 
-void FoldManager::updateLayerList()
+void FoldManager::updateBlockList()
 {
 	QStringList layerLabels;
 	if (getSelDcGraph()) 
 		layerLabels = getSelDcGraph()->getLayerLabels();
 
-	emit(layersChanged(layerLabels));
+	emit(blocksChanged(layerLabels));
 
 	updateChainList();
 }
@@ -359,18 +285,18 @@ void FoldManager::updateLayerList()
 void FoldManager::updateChainList()
 {
 	QStringList chainLables;
-	if (getSelLayer())
-		chainLables = getSelLayer()->getChainLabels();
+	if (getSelBlock())
+		chainLables = getSelBlock()->getChainLabels();
 
 	emit(chainsChanged(chainLables));
 }
 
 
-void FoldManager::updateKeyFrameList()
+void FoldManager::updateKeyframeList()
 {
 	int nbFrames = 0;
-	if (selId >= 0 && selId < results.size())
-		nbFrames = results[selId].size();
+	if (selDcIdx >= 0 && selDcIdx < results.size())
+		nbFrames = results[selDcIdx].size();
 
 	emit(keyframesChanged(nbFrames));
 }

@@ -3,10 +3,10 @@
 #include "ChainGraph.h"
 #include "Rectangle2.h"
 
-class SandwichChain : public ChainGraph
+class HChain : public ChainGraph
 {
 public:
-    SandwichChain(FdNode* part, PatchNode* panel1, PatchNode* panel2);
+    HChain(FdNode* part, PatchNode* panel1, PatchNode* panel2);
 
 	// fold options
 	QVector<FoldingNode*> generateFoldOptions();

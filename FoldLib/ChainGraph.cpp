@@ -11,15 +11,15 @@ ChainGraph::ChainGraph( FdNode* part, PatchNode* panel1, PatchNode* panel2)
 	mParts << (FdNode*)mOrigPart->clone();
 	Structure::Graph::addNode(mParts[0]);
 
-	mPanels << (PatchNode*)panel1->clone();
-	mPanels[0]->properties["isCtrlPanel"] = true;
-	Graph::addNode(mPanels[0]);
+	mMasters << (PatchNode*)panel1->clone();
+	mMasters[0]->properties["isCtrlPanel"] = true;
+	Graph::addNode(mMasters[0]);
 
 	if (panel2)
 	{
-		mPanels << (PatchNode*)panel2->clone();
-		mPanels[1]->properties["isCtrlPanel"] = true;
-		Graph::addNode(mPanels[1]);
+		mMasters << (PatchNode*)panel2->clone();
+		mMasters[1]->properties["isCtrlPanel"] = true;
+		Graph::addNode(mMasters[1]);
 	}
 
 	// setup base orientations
@@ -29,7 +29,7 @@ ChainGraph::ChainGraph( FdNode* part, PatchNode* panel1, PatchNode* panel2)
 void ChainGraph::setupBasisOrientations()
 {
 	// detect hinges
-	rootJointSegs = detectJointSegments(mOrigPart, mPanels[0]);
+	rootJointSegs = detectJointSegments(mOrigPart, mMasters[0]);
 
 	// upSeg
 	Geom::Segment jointSeg = rootJointSegs[0];
@@ -51,7 +51,7 @@ void ChainGraph::setupBasisOrientations()
 	foreach (Geom::Segment rjs, rootJointSegs)
 	{
 		Vector3 crossAxisV1 = cross(rjs.Direction, chainUpSeg.Direction);
-		Vector3 rV = mPanels[0]->mPatch.getProjectedVector(crossAxisV1);
+		Vector3 rV = mMasters[0]->mPatch.getProjectedVector(crossAxisV1);
 
 		rootRightVs.push_back(rV.normalized());
 	}
@@ -77,7 +77,7 @@ QVector<Structure::Node*> ChainGraph::getKeyFramePanels( double t )
 
 	// clone nodes
 	QVector<Structure::Node*> knodes;
-	foreach(FdNode* n, mPanels)
+	foreach(FdNode* n, mMasters)
 		knodes << n->clone();
 
 	return knodes;
@@ -87,7 +87,7 @@ QVector<Structure::Node*> ChainGraph::getKeyFramePanels( double t )
 QVector<Geom::Plane> ChainGraph::generateCutPlanes( int N )
 {
 	// plane of panel0
-	Geom::Plane plane0 = mPanels[0]->mPatch.getPlane();
+	Geom::Plane plane0 = mMasters[0]->mPatch.getPlane();
 	if (plane0.whichSide(mOrigPart->center()) < 0) plane0.flip();
 
 	// deltaV to shift up
@@ -128,7 +128,7 @@ void ChainGraph::sortChainParts()
 {
 	QMap<double, FdNode*> distPartMap;
 
-	Geom::Plane panel_plane = mPanels[0]->mPatch.getPlane();
+	Geom::Plane panel_plane = mMasters[0]->mPatch.getPlane();
 	foreach(FdNode* n, mParts)
 	{
 		double dist = panel_plane.signedDistanceTo(n->center());
@@ -143,7 +143,7 @@ void ChainGraph::fold( double t )
 	// fix panels[0] but free all others
 	foreach (Structure::Node* n, nodes)
 		n->properties["fixed"] = false;
-	mPanels[0]->properties["fixed"] = true;
+	mMasters[0]->properties["fixed"] = true;
 
 	// hinge angle
 	foreach(FdLink* alink, activeLinks)
@@ -187,13 +187,13 @@ void ChainGraph::resetHingeLinks()
 		Vector3 upV = chainUpSeg.Direction;
 		Vector3 rV = rootRightVs[i];
 		Vector3 axisV = jseg.Direction;
-		Hinge* hingeR = new Hinge(mParts[0], mPanels[0], 
+		Hinge* hingeR = new Hinge(mParts[0], mMasters[0], 
 			jseg.P0, upV,  rV, axisV, jseg.length());
-		Hinge* hingeL = new Hinge(mParts[0], mPanels[0], 
+		Hinge* hingeL = new Hinge(mParts[0], mMasters[0], 
 			jseg.P1, upV, -rV, -axisV, jseg.length());
 
-		FdLink* linkR = new FdLink(mParts[0], mPanels[0], hingeR);
-		FdLink* linkL = new FdLink(mParts[0], mPanels[0], hingeL);
+		FdLink* linkR = new FdLink(mParts[0], mMasters[0], hingeR);
+		FdLink* linkL = new FdLink(mParts[0], mMasters[0], hingeL);
 		links << linkR << linkL;
 
 		Graph::addLink(linkR);
@@ -238,7 +238,7 @@ void ChainGraph::resetHingeLinks()
 	}
 
 	// create hinge links between mPanels[1] and mParts[1]
-	if (mPanels.size() == 2)
+	if (mMasters.size() == 2)
 	{
 		for (int i = 0; i < rootJointSegs.size(); i++)
 		{
@@ -246,13 +246,13 @@ void ChainGraph::resetHingeLinks()
 			Vector3 upV = chainUpSeg.Direction;
 			Vector3 rV = rootRightVs[i];
 			Vector3 axisV = jseg.Direction;
-			Hinge* hingeR = new Hinge(mParts.last(), mPanels[1], 
+			Hinge* hingeR = new Hinge(mParts.last(), mMasters[1], 
 				jseg.P1, -upV,  rV, -axisV, jseg.length());
-			Hinge* hingeL = new Hinge(mParts.last(), mPanels[1], 
+			Hinge* hingeL = new Hinge(mParts.last(), mMasters[1], 
 				jseg.P0, -upV, -rV, axisV, jseg.length());
 
-			FdLink* linkR = new FdLink(mParts.last(), mPanels[1], hingeR);
-			FdLink* linkL = new FdLink(mParts.last(), mPanels[1], hingeL);
+			FdLink* linkR = new FdLink(mParts.last(), mMasters[1], hingeR);
+			FdLink* linkL = new FdLink(mParts.last(), mMasters[1], hingeL);
 			links << linkR << linkL;
 
 			Graph::addLink(linkR);

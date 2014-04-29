@@ -1,8 +1,8 @@
-#include "PizzaChain.h"
+#include "TChain.h"
 #include "Hinge.h"
 #include "Numeric.h"
 
-PizzaChain::PizzaChain( FdNode* part, PatchNode* panel )
+TChain::TChain( FdNode* part, PatchNode* panel )
 	:ChainGraph(part, panel, NULL)
 {
 	// type
@@ -12,7 +12,7 @@ PizzaChain::PizzaChain( FdNode* part, PatchNode* panel )
 	createChain(1);
 }
 
-Geom::SectorCylinder PizzaChain::getFoldingVolume( FoldingNode* fn )
+Geom::SectorCylinder TChain::getFoldingVolume( FoldingNode* fn )
 {
 	// hinge axis and rightV
 	int hidx = fn->hingeIdx;
@@ -23,7 +23,7 @@ Geom::SectorCylinder PizzaChain::getFoldingVolume( FoldingNode* fn )
 	return Geom::SectorCylinder(axisSeg, chainUpSeg, rightV);
 }
 
-void PizzaChain::resolveCollision( FoldingNode* fn )
+void TChain::resolveCollision( FoldingNode* fn )
 {
 	Geom::SectorCylinder sfVolume = fn->properties["sfVolume"].value<Geom::SectorCylinder>();
 
@@ -35,12 +35,12 @@ void PizzaChain::resolveCollision( FoldingNode* fn )
 	if (nbPart != mParts.size()) createChain(nbPart);
 }
 
-QVector<FoldingNode*> PizzaChain::generateFoldOptions()
+QVector<FoldingNode*> TChain::generateFoldOptions()
 {
 	return QVector<FoldingNode*>();
 }
 
-void PizzaChain::modify( FoldingNode* fn )
+void TChain::modify( FoldingNode* fn )
 {
 
 }
