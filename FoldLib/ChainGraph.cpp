@@ -12,13 +12,13 @@ ChainGraph::ChainGraph( FdNode* part, PatchNode* panel1, PatchNode* panel2)
 	Structure::Graph::addNode(mParts[0]);
 
 	mMasters << (PatchNode*)panel1->clone();
-	mMasters[0]->properties["isCtrlPanel"] = true;
+	mMasters[0]->properties["isMaster"] = true;
 	Graph::addNode(mMasters[0]);
 
 	if (panel2)
 	{
 		mMasters << (PatchNode*)panel2->clone();
-		mMasters[1]->properties["isCtrlPanel"] = true;
+		mMasters[1]->properties["isMaster"] = true;
 		Graph::addNode(mMasters[1]);
 	}
 

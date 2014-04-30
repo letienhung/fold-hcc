@@ -14,8 +14,8 @@ HBlock::HBlock( QVector<FdNode*> parts, PatchNode* panel1, PatchNode* panel2,
 
 	mPanel1 = (PatchNode*) getNode(panel1->mID);
 	mPanel2 = (PatchNode*) getNode(panel2->mID);
-	mPanel1->properties["isCtrlPanel"] = true;
-	mPanel2->properties["isCtrlPanel"] = true;
+	mPanel1->properties["isMaster"] = true;
+	mPanel2->properties["isMaster"] = true;
 
 	// create chains
 	double thr = mPanel1->mBox.getExtent(mPanel1->mPatch.Normal) * 2;
@@ -24,7 +24,7 @@ HBlock::HBlock( QVector<FdNode*> parts, PatchNode* panel1, PatchNode* panel2,
 
 	foreach (FdNode* n, getFdNodes())
 	{
-		if (n->properties.contains("isCtrlPanel")) continue;
+		if (n->properties.contains("isMaster")) continue;
 
 		if (getDistance(n, panels) < thr)
 		{

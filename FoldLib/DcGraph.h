@@ -15,8 +15,14 @@ public:
 	~DcGraph();
 
 public:
+	// masters
 	QVector<PatchNode*> masterPatches;
 
+	// slaves
+	QVector<FdNode*> slaves;
+	QVector< QSet<int> > slaveSideProp;
+
+	// blocks
 	int selBlockIdx;
 	QVector<BlockGraph*> blocks;
 
@@ -25,7 +31,8 @@ public:
 	QVector<FdGraph*> keyframes;
 
 public:
-	// blocks
+	// decomposition
+	void createChains();
 	void createBlocks();
 	QVector<FdNode*> mergeCoplanarParts(QVector<FdNode*> ns, PatchNode* panel);
 

@@ -69,7 +69,6 @@ FdNodeArray2D clusterNodes( QVector<FdNode*> nodes, double disThr )
 	return clusters;
 }
 
-
 Geom::Segment getDistSegment( FdNode* n1, FdNode* n2 )
 {
 	Geom::Segment ds;
@@ -287,4 +286,35 @@ Geom::Box getBundleBox( const QVector<FdNode*>& nodes )
 	}
 
 	return fitBox(points);
+}
+
+bool hasIntersection( FdNode* n1, PatchNode* n2 )
+{
+	// patch - patch
+	if (n1->mType == FdNode::PATCH)
+	{
+		// two rectangles locate on both sides of each other
+		PatchNode* pn1 = (PatchNode*)n1;
+		Geom::Plane plane1 = pn1->mPatch.getPlane();
+		Geom::Plane plane2 = n2->mPatch.getPlane();
+		return (relationWithPlane(n1, plane2, 0.1) == ISCT_PLANE
+			&& relationWithPlane(n2, plane1, 0.1) == ISCT_PLANE);
+	}
+	// patch - rod
+	else
+	{
+		// the rod intersect the patch within the patch
+		RodNode* rn1 = (RodNode*)n1;
+		Geom::Segment sklt = rn1->mRod;
+
+		Geom::Plane plane2 = n2->mPatch.getPlane();
+		double dist0 = plane2.signedDistanceTo(sklt.P0);
+		double dist1 = plane2.signedDistanceTo(sklt.P1);
+
+		double alpha = dist0 / (dist0 - dist1);
+		Vector3 pi = sklt.P0 * alpha + sklt.P1 * (1 - alpha);
+
+		// coordinates of pi in patch
+		return n2->mPatch.getRectangle().contains(pi);
+	}
 }

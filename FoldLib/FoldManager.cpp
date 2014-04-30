@@ -34,91 +34,97 @@ void FoldManager::setScaffold( FdGraph* fdg )
 }
 
 // masters
-void FoldManager::identifyMasters()
+void FoldManager::identifyMasters(QString method, QString direct)
 {
-	//Geom::AABB aabb = scaffold->computeAABB();
-	//Geom::Box box = aabb.box();
-	//int pushAId = aabb.box().getAxisId(pushDirect);
+	if (method == "Parallel")
+	{
+		Vector3 sqzV(0, 0, 0);
+		if (direct == "X") sqzV[0] = 1;
+		if (direct == "Y") sqzV[1] = 1;
+		if (direct == "Z") sqzV[2] = 1;
 
-	//// threshold
-	//double perpThr = 0.1;
-	//double layerHeightThr = 0.15;
-	//double clusterDistThr = aabb.radius() * 0.1;
-	//double areaThr = box.getPatch(pushAId, 0).area() * 0.2;
+		identifyParallelMasters(sqzV);
+	}
+}
 
-	//// ==STEP 1==: nodes perp to pushing direction
-	//QVector<FdNode*> perpNodes;
-	//foreach (FdNode* n, scaffold->getFdNodes())
-	//{
-	//	if (n->isPerpTo(pushDirect, perpThr))	perpNodes.push_back(n);
-	//}
+void FoldManager::identifyParallelMasters( Vector3 sqzV )
+{
+	Geom::AABB aabb = scaffold->computeAABB();
+	Geom::Box box = aabb.box();
+	int sqzAId = aabb.box().getAxisId(sqzV);
 
-	//// perp positions
-	//Geom::Box shapeBox = scaffold->computeAABB().box();
-	//Geom::Segment skeleton = shapeBox.getSkeleton(pushAId);
-	//QMultiMap<double, FdNode*> posNodeMap;
-	//foreach (FdNode* n, perpNodes)
-	//{
-	//	posNodeMap.insert(skeleton.getProjCoordinates(n->mBox.Center), n);
-	//}
+	// threshold
+	double perpThr = 0.1;
+	double blockHeightThr = 0.15;
+	double adjacentThr = aabb.radius() * 0.05;
+	double areaThr = box.getPatch(sqzAId, 0).area() * 0.2;
 
-	//// ==STEP 2==: group perp nodes
-	//FdNodeArray2D perpGroups;
-	//QVector<FdNode*> perpGroup;
-	//double prePos = 0;
-	//foreach (double pos, posNodeMap.uniqueKeys())
-	//{
-	//	// create a new group
-	//	if (fabs(pos - prePos) > layerHeightThr && !perpGroup.isEmpty())
-	//	{
-	//		perpGroups.push_back(perpGroup);
-	//		perpGroup.clear();
-	//	}
+	// ==STEP 1==: nodes perp to squeezing direction
+	QVector<FdNode*> perpNodes;
+	foreach (FdNode* n, scaffold->getFdNodes())
+	{
+		if (n->isPerpTo(sqzV, perpThr))	perpNodes.push_back(n);
+	}
 
-	//	// add to current group
-	//	foreach(FdNode* n, posNodeMap.values(pos))	perpGroup.push_back(n);
+	// ==STEP 2==: group perp nodes
+	// perp positions
+	Geom::Box shapeBox = scaffold->computeAABB().box();
+	Geom::Segment skeleton = shapeBox.getSkeleton(sqzAId);
+	QMultiMap<double, FdNode*> posNodeMap;
+	foreach (FdNode* n, perpNodes)
+	{
+		posNodeMap.insert(skeleton.getProjCoordinates(n->mBox.Center), n);
+	}
 
-	//	prePos = pos;
-	//}
-	//// last group
-	//if (!perpGroup.isEmpty()) perpGroups.push_back(perpGroup);
+	// group
+	FdNodeArray2D perpGroups;
+	QVector<FdNode*> perpGroup;
+	double prePos = 0;
+	foreach (double pos, posNodeMap.uniqueKeys())
+	{
+		// create a new group
+		if (fabs(pos - prePos) > blockHeightThr && !perpGroup.isEmpty())
+		{
+			perpGroups.push_back(perpGroup);
+			perpGroup.clear();
+		}
 
-	//// ==STEP 3==: control panel group
-	//FdNodeArray2D panelGroups;
-	//foreach (QVector<FdNode*> pgroup, perpGroups)
-	//{
-	//	foreach(QVector<FdNode*> cluster, clusterNodes(pgroup, clusterDistThr))
-	//	{
-	//		// accept if size is nontrivial
-	//		Geom::AABB aabb;
-	//		foreach(FdNode* n, cluster)
-	//			aabb.add(n->computeAABB());
-	//		Geom::Box box = aabb.box();
-	//		int aid = box.getAxisId(pushDirect);
-	//		double area = box.getPatch(aid, 0).area();
+		// add to current group
+		foreach(FdNode* n, posNodeMap.values(pos))	perpGroup.push_back(n);
 
-	//		if (area > areaThr) panelGroups.push_back(cluster);
-	//	}
-	//}
-	//// don't create DcGraph if no more layers can be found
-	//if (panelGroups.size() <= N)	return 0;
+		prePos = pos;
+	}
+	// last group
+	if (!perpGroup.isEmpty()) perpGroups.push_back(perpGroup);
 
-	//// ==STEP 4==: create layer models
-	//// use all control panels
-	//if (!panelGroups.isEmpty())
-	//{
-	//	QString id = "Dc-" + QString::number(dcGraphs.size());
-	//	dcGraphs.push_back(new DcGraph(scaffold, getIds(panelGroups), pushDirect, id));
-	//}
+	// ==STEP 3==: master groups
+	FdNodeArray2D masterGroups;
+	foreach (QVector<FdNode*> pgroup, masterGroups)
+	{
+		// cluster based on adjacency
+		foreach(QVector<FdNode*> cluster, clusterNodes(pgroup, adjacentThr))
+		{
+			// accept if size is nontrivial
+			Geom::AABB aabb;
+			foreach(FdNode* n, cluster)
+				aabb.add(n->computeAABB());
+			Geom::Box box = aabb.box();
+			int aid = box.getAxisId(sqzV);
+			double area = box.getPatch(aid, 0).area();
 
-	//return panelGroups.size();
+			if (area > areaThr) masterGroups.push_back(cluster);
+		}
+	}
 
+	// store ids of master groups
+	masterIdGroups = getIds(masterGroups);
 }
 
 // decomposition
 void FoldManager::decompose()
 {
-
+	QString id = "Parallel_Dc";
+	dcGraphs.push_back(new DcGraph(scaffold, masterIdGroups, id));
 }
 
 void FoldManager::foldbzSelBlock()

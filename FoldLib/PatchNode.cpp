@@ -31,7 +31,7 @@ void PatchNode::drawScaffold()
 {
 	if (properties.contains("virtual")) return;
 
-	if (properties.contains("isCtrlPanel"))
+	if (properties.contains("isMaster"))
 		mPatchColor = Qt::red;
 
 	mPatch.drawFace(mPatchColor);

@@ -72,7 +72,7 @@ void FdNode::draw()
 		// wireframes
 		if(isSelected)	
 			mBox.drawWireframe(4.0, Qt::yellow);
-		else if (!properties.contains("isCtrlPanel"))
+		else if (!properties.contains("isMaster"))
 			mBox.drawWireframe();
 	}
 }

@@ -7,203 +7,31 @@
 
 
 DcGraph::DcGraph( FdGraph* scaffold, StrArray2D masterGroups, QString id)
-	: FdGraph(*scaffold)
+	: FdGraph(*scaffold) // clone the FdGraph
 {
 	path = QFileInfo(path).absolutePath();
+	mID = id;
 
-	// merge control panels
+	// merge master groups into patches
 	foreach( QVector<QString> panelGroup, masterGroups )
 	{
 		FdNode* mf = merge(panelGroup);
-		mf->properties["isCtrlPanel"] = true;
+		mf->addTag(IS_MASTER);
 
 		if (mf->mType != FdNode::PATCH)	changeNodeType(mf);
 		masterPatches.push_back((PatchNode*)mf);
 	}
 
-	// create layers
+	// create blocks
 	createBlocks();
 
+	// selection
 	selBlockIdx = -1;
 }
 
 DcGraph::~DcGraph()
 {
-	foreach (BlockGraph* l, blocks)
-		delete l;
-}
-
-QVector<FdNode*> DcGraph::mergeCoplanarParts( QVector<FdNode*> ns, PatchNode* panel )
-{
-	// classify
-	QVector<RodNode*>	rootRod;
-	QVector<PatchNode*> rootPatch;
-	double thr = panel->mBox.getExtent(panel->mPatch.Normal) * 2;
-	foreach (FdNode* n, ns)
-	{
-		if (getDistance(n, panel) < thr)
-		{
-			if (n->mType == FdNode::PATCH) 
-				rootPatch << (PatchNode*)n;
-			else rootRod << (RodNode*)n;
-		}
-	}
-
-	// RANSAC-like strategy: use a few samples to produce fitting model, which is a plane
-	// a plane is fitted by either one root patch or two coplanar root rods
-	QVector<Geom::Plane> fitPlanes;
-	foreach(PatchNode* pn, rootPatch) fitPlanes << pn->mPatch.getPlane();
-	for (int i = 0; i < rootRod.size(); i++){
-		for (int j = i+1; j< rootRod.size(); j++)
-		{
-			Vector3 v1 = rootRod[i]->mRod.Direction;
-			Vector3 v2 = rootRod[j]->mRod.Direction;
-			double dotProd = dot(v1, v2);
-			if (fabs(dotProd) > 0.9)
-			{
-				Vector3 v = v1 + v2; 
-				if (dotProd < 0) v = v1 - v2;
-				Vector3 u = rootRod[i]->mRod.Center - rootRod[j]->mRod.Center;
-				v.normalize(); u.normalize();
-				Vector3 normal = cross(u, v).normalized();
-				fitPlanes << Geom::Plane(rootRod[i]->mRod.Center, normal);
-			}
-		}
-	}
-
-	// search for coplanar parts for each fit plane
-	// add group them into connected components
-	QVector< QSet<QString> > copGroups;
-	double distThr = computeAABB().radius() * 0.1;
-	foreach(Geom::Plane plane, fitPlanes)
-	{
-		QVector<FdNode*> copNodes;
-		foreach(FdNode* n, ns)
-			if (onPlane(n, plane)) copNodes << n;
-
-		foreach(QVector<FdNode*> group, clusterNodes(copNodes, distThr))
-		{
-			QSet<QString> groupIds;
-			foreach(FdNode* n, group) groupIds << n->mID;
-			copGroups << groupIds;
-		}
-	}
-
-	// set cover: prefer large subsets
-	QVector<bool> deleted(copGroups.size(), false);
-	int count = copGroups.size(); 
-	QVector<int> subsetIndices;
-	while(count > 0)
-	{
-		// search for the largest group
-		int maxSize = -1;
-		int maxIdx = -1;
-		for (int i = 0; i < copGroups.size(); i++)
-		{
-			if (deleted[i]) continue;
-			if (copGroups[i].size() > maxSize)
-			{
-				maxSize = copGroups[i].size();
-				maxIdx = i;
-			}
-		}
-
-		// save selected subset
-		subsetIndices << maxIdx;
-		deleted[maxIdx] = true;
-		count--;
-
-		// delete overlapping subsets
-		for (int i = 0; i < copGroups.size(); i++)
-		{
-			if (deleted[i]) continue;
-
-			QSet<QString> maxGroup = copGroups[maxIdx];
-			maxGroup.intersect(copGroups[i]);
-			if (!maxGroup.isEmpty())
-			{
-				deleted[i] = true;
-				count--;
-			}
-		}
-	}
-
-	// merge each selected group
-	QVector<FdNode*> mnodes;
-	foreach(int i, subsetIndices)
-		mnodes << merge(copGroups[i].toList().toVector());
-
-	return mnodes;
-}
-
-void DcGraph::createBlocks()
-{
-	//// split parts by control panels
-	//foreach (PatchNode* panel, masterPatches){
-	//	foreach(FdNode* n, getFdNodes()){
-	//		if (n->properties.contains("isCtrlPanel")) continue;
-	//		split(n->mID, panel->mPatch.getPlane());
-	//	}
-	//}
-
-	//// cut positions along pushing skeleton
-	//// append 1.0 to help group parts
-	//Geom::Box box = computeAABB().box();
-	//Geom::Segment pushSklt = box.getSkeleton(pushAId);
-	//QVector<double> cutPos;
-	//foreach (FdNode* cp, masterPatches)
-	//	cutPos.push_back(pushSklt.getProjCoordinates(cp->center()));
-	//cutPos.push_back(1.0);
-
-	//// group parts into layers
-	//FdNodeArray2D layerGroups(cutPos.size());
-	//foreach (FdNode* n, getFdNodes())
-	//{
-	//	if (n->properties.contains("isCtrlPanel")) continue;
-	//	double pos = pushSklt.getProjCoordinates(n->center());
-	//	for (int i = 0; i < cutPos.size(); i++)
-	//	{
-	//		if (pos < cutPos[i])
-	//		{
-	//			layerGroups[i].push_back(n);
-	//			break;
-	//		}
-	//	}
-	//}
-
-	//// merge coplanar parts within each layer 
-	////FdNodeArray2D mergedGroups;
-	////mergedGroups << mergeCoplanarParts(layerGroups[0], controlPanels[0]);
-	////for (int i = 1; i < layerGroups.size(); i++)
-	////	mergedGroups << mergeCoplanarParts(layerGroups[i], controlPanels[i-1]);
-	////layerGroups = mergedGroups;
-	//
-	//// clear layers
-	//blocks.clear();
-
-	//// barrier box
-	//Geom::Box bBox = box.scaled(1.01);
-
-	//// first layer is pizza
-	//QString id_first = "Pz-" + QString::number(blocks.size());
-	//TBlock* pl_first = new TBlock(layerGroups.front(), masterPatches.front(), id_first, bBox);
-	//pl_first->path = path;
-	//blocks.push_back(pl_first); 
-
-	//// sandwiches
-	//for (int i = 1; i < layerGroups.size()-1; i++)
-	//{
-	//	QString id = "Sw-" + QString::number(blocks.size());
-	//	HBlock* sl = new HBlock(layerGroups[i], masterPatches[i-1], masterPatches[i], id, bBox);
-	//	sl->path = path;
-	//	blocks.push_back(sl);
-	//}
-
-	//// last layer is pizza
-	//QString id_last = "Pz-" + QString::number(blocks.size());
-	//TBlock* pl_last = new TBlock(layerGroups.last(), masterPatches.last(), id_last, bBox);
-	//pl_last->path = path;
-	//blocks.push_back(pl_last);
+	foreach (BlockGraph* l, blocks)	delete l;
 }
 
 BlockGraph* DcGraph::getSelLayer()
@@ -353,6 +181,210 @@ FdGraph* DcGraph::getKeyFrame( double t )
 	//key_graph->properties["pushAId"] = pushAId;
 
 	return key_graph;
+}
+
+void DcGraph::createChains()
+{
+	// split slave parts by master patches
+	foreach (PatchNode* master, masterPatches)
+	{
+		foreach(FdNode* n, getFdNodes())
+		{
+			if (n.hasTag(IS_MASTER)) continue;
+
+			// split slave if it intersects the master
+			if(hasIntersection(n, master))
+				split(n->mID, master->mPatch.getPlane());
+		}
+	}
+
+	// slave parts
+	
+	foreach (FdNode* n, getFdNodes())
+		if (!n->hasTag(IS_MASTER))
+			slaves.push_back(n);
+
+	// attach slave parts onto masters
+	slaveSideProp.clear();
+	slaveSideProp.resize(slaves.size());
+	double adjacentThr = 0.05 * getRadiusOfAABB();
+	for (int i = 0; i < slaves.size(); i++)
+	{
+		FdNode* slave = slaves[i];
+
+		// find adjacent master(s)
+		for (int j = 0; j < masterPatches.size(); j++)
+		{
+			PatchNode* master = masterPatches[j];
+
+			// distance to master
+			if (getDistance(slave, master) < adjacentThr)
+			{
+				// each master j has two sides: 2*j (positive) and 2*j+1 (negative)
+				Vector3 sc2mc = slave->center() - master->center(); 
+				int side = (dot(sc2mc, master->mPatch.Normal) > 0) ? 2*j : 2*j+1;
+				slaveSideProp[i]->insert(side);
+			}
+		}
+	}
+}
+
+
+QVector<FdNode*> DcGraph::mergeCoplanarParts( QVector<FdNode*> ns, PatchNode* panel )
+{
+	// classify
+	QVector<RodNode*>	rootRod;
+	QVector<PatchNode*> rootPatch;
+	double thr = panel->mBox.getExtent(panel->mPatch.Normal) * 2;
+	foreach (FdNode* n, ns)
+	{
+		if (getDistance(n, panel) < thr)
+		{
+			if (n->mType == FdNode::PATCH) 
+				rootPatch << (PatchNode*)n;
+			else rootRod << (RodNode*)n;
+		}
+	}
+
+	// RANSAC-like strategy: use a few samples to produce fitting model, which is a plane
+	// a plane is fitted by either one root patch or two coplanar root rods
+	QVector<Geom::Plane> fitPlanes;
+	foreach(PatchNode* pn, rootPatch) fitPlanes << pn->mPatch.getPlane();
+	for (int i = 0; i < rootRod.size(); i++){
+		for (int j = i+1; j< rootRod.size(); j++)
+		{
+			Vector3 v1 = rootRod[i]->mRod.Direction;
+			Vector3 v2 = rootRod[j]->mRod.Direction;
+			double dotProd = dot(v1, v2);
+			if (fabs(dotProd) > 0.9)
+			{
+				Vector3 v = v1 + v2; 
+				if (dotProd < 0) v = v1 - v2;
+				Vector3 u = rootRod[i]->mRod.Center - rootRod[j]->mRod.Center;
+				v.normalize(); u.normalize();
+				Vector3 normal = cross(u, v).normalized();
+				fitPlanes << Geom::Plane(rootRod[i]->mRod.Center, normal);
+			}
+		}
+	}
+
+	// search for coplanar parts for each fit plane
+	// add group them into connected components
+	QVector< QSet<QString> > copGroups;
+	double distThr = computeAABB().radius() * 0.1;
+	foreach(Geom::Plane plane, fitPlanes)
+	{
+		QVector<FdNode*> copNodes;
+		foreach(FdNode* n, ns)
+			if (onPlane(n, plane)) copNodes << n;
+
+		foreach(QVector<FdNode*> group, clusterNodes(copNodes, distThr))
+		{
+			QSet<QString> groupIds;
+			foreach(FdNode* n, group) groupIds << n->mID;
+			copGroups << groupIds;
+		}
+	}
+
+	// set cover: prefer large subsets
+	QVector<bool> deleted(copGroups.size(), false);
+	int count = copGroups.size(); 
+	QVector<int> subsetIndices;
+	while(count > 0)
+	{
+		// search for the largest group
+		int maxSize = -1;
+		int maxIdx = -1;
+		for (int i = 0; i < copGroups.size(); i++)
+		{
+			if (deleted[i]) continue;
+			if (copGroups[i].size() > maxSize)
+			{
+				maxSize = copGroups[i].size();
+				maxIdx = i;
+			}
+		}
+
+		// save selected subset
+		subsetIndices << maxIdx;
+		deleted[maxIdx] = true;
+		count--;
+
+		// delete overlapping subsets
+		for (int i = 0; i < copGroups.size(); i++)
+		{
+			if (deleted[i]) continue;
+
+			QSet<QString> maxGroup = copGroups[maxIdx];
+			maxGroup.intersect(copGroups[i]);
+			if (!maxGroup.isEmpty())
+			{
+				deleted[i] = true;
+				count--;
+			}
+		}
+	}
+
+	// merge each selected group
+	QVector<FdNode*> mnodes;
+	foreach(int i, subsetIndices)
+		mnodes << merge(copGroups[i].toList().toVector());
+
+	return mnodes;
+}
+
+void DcGraph::createBlocks()
+{
+	// cluster slaves
+	QVector<bool> valid(slaves.size(), true);
+
+	// T-blocks
+	QSet<int> T_idx;
+	for (int i = 0; i < slaves.size(); i++)
+	{
+		if (slaveSideProp[i]->size() == 1)
+		{
+			T_idx.insert(i);
+			valid[i] = false;
+		}
+	}
+
+	// H-blocks
+	QList< QSet<int> > sideClusters;
+	for (int i = 0; i < slaves.size(); i++)
+	{
+
+		if (valid[i])
+		{
+			for ()
+			{
+			}
+		}
+	}
+
+
+
+	
+	// clear layers
+	blocks.clear();
+
+	// barrier box
+	Geom::Box bBox = box.scaled(1.01);
+
+	// first layer is pizza
+	QString id_first = "Pz-" + QString::number(blocks.size());
+	TBlock* pl_first = new TBlock(layerGroups.front(), masterPatches.front(), id_first, bBox);
+	pl_first->path = path;
+	blocks.push_back(pl_first); 
+
+	// sandwiches
+	for (int i = 1; i < layerGroups.size()-1; i++)
+	{
+		QString id = "Sw-" + QString::number(blocks.size());
+		HBlock* sl = new HBlock(layerGroups[i], masterPatches[i-1], masterPatches[i], id, bBox);
+		sl->path = path;
+		blocks.push_back(sl);
+	}
 }
 
 void DcGraph::foldabilize()

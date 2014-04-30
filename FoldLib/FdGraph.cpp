@@ -456,3 +456,8 @@ void FdGraph::addDebugSegments( QVector<Geom::Segment>& segs )
 
 	properties["debugSegs"].setValue(debugSegs);
 }
+
+double FdGraph::getRadiusOfAABB()
+{
+	return computeAABB().radius();
+}

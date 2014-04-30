@@ -19,7 +19,7 @@ public:
 	FdGraph* scaffold; 
 
 	// decomposition
-	StrArray2D masterGroups;
+	StrArray2D masterIdGroups;
 	int selDcIdx;
 	QVector<DcGraph*> dcGraphs;
 
@@ -28,8 +28,8 @@ public:/// Main pipeline
 	void setScaffold(FdGraph* fdg);
 
 	// masters
-	void identifyMasters();
-	void identifyParallelMasters();
+	void identifyMasters(QString method, QString direct);
+	void identifyParallelMasters(Vector3 squeezeDirect);
 	
 	// decomposition
 	void decompose();

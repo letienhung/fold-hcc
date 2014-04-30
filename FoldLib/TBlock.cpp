@@ -17,13 +17,13 @@ TBlock::TBlock( QVector<FdNode*> parts, PatchNode* panel, QString id, Geom::Box 
 
 	// panel
 	mPanel = (PatchNode*)getNode(panel->mID);
-	mPanel->properties["isCtrlPanel"] = true;
+	mPanel->properties["isMaster"] = true;
 
 	// create chains
 	double thr = mPanel->mBox.getExtent(mPanel->mPatch.Normal) * 2;
 	foreach (FdNode* n, getFdNodes())
 	{
-		if (n->properties.contains("isCtrlPanel")) continue;
+		if (n->properties.contains("isMaster")) continue;
 
 		if (getDistance(n, mPanel) < thr)
 		{
