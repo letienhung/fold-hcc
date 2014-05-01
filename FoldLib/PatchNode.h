@@ -2,6 +2,8 @@
 
 #include "FdNode.h"
 
+class RodNode;
+
 class PatchNode : public FdNode
 {
 public:
@@ -10,11 +12,19 @@ public:
 	virtual Node* clone();
 
 public:
+	// create patch
 	void createScaffold();
-	bool isPerpTo(Vector3 v, double dotThreshold);
+
+	// visual
 	void drawScaffold();
 
+	// geometry
+	double getThickness();
+	bool isPerpTo(Vector3 v, double dotThreshold);
 	Geom::Plane getSurfacePlane(bool positive);
+
+	// edges
+	QVector<RodNode*> getEdgeRodNodes();
 
 public:
 	Geom::Rectangle mPatch;

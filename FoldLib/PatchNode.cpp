@@ -2,6 +2,7 @@
 #include "Segment.h"
 #include "Box.h"
 #include "CustomDrawObjects.h"
+#include "RodNode.h"
 
 PatchNode::PatchNode(QString id, Geom::Box &b, MeshPtr m)
 	: FdNode(id, b, m)
@@ -62,4 +63,28 @@ Geom::Plane PatchNode::getSurfacePlane( bool positive)
 	}
 
 	return plane;
+}
+
+QVector<RodNode*> PatchNode::getEdgeRodNodes()
+{
+	QVector<RodNode*> edgeRods;
+	double r = 0.5 * getThickness();
+	int i = 0;
+	foreach (Geom::Segment edge, mPatch.getEdgeSegments())
+	{
+		Geom::Frame frame(edge.Center, mPatch.Normal, edge.Direction);
+		Vector3 extent(r, edge.Extent, r);
+		Geom::Box box(frame, extent);
+
+		QString id = mID + "_" + QString::number(i++);
+		edgeRods << new RodNode(id, box, MeshPtr(NULL));
+	}
+
+	return edgeRods;
+}
+
+double PatchNode::getThickness()
+{
+	int aid = mBox.getAxisId(mPatch.Normal);
+	return 2 * mBox.getExtent(aid);
 }

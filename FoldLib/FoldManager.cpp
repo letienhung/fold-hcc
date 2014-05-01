@@ -56,14 +56,32 @@ void FoldManager::identifyParallelMasters( Vector3 sqzV )
 	// threshold
 	double perpThr = 0.1;
 	double blockHeightThr = 0.15;
-	double adjacentThr = aabb.radius() * 0.05;
+	double adjacentThr = aabb.radius() * 0.1;
 	double areaThr = box.getPatch(sqzAId, 0).area() * 0.2;
 
 	// ==STEP 1==: nodes perp to squeezing direction
 	QVector<FdNode*> perpNodes;
 	foreach (FdNode* n, scaffold->getFdNodes())
 	{
-		if (n->isPerpTo(sqzV, perpThr))	perpNodes.push_back(n);
+		if (n->isPerpTo(sqzV, perpThr))	perpNodes << n;
+
+		// virtual rod nodes from patch edges
+		if (n->mType == FdNode::PATCH)
+		{
+			PatchNode* pn = (PatchNode*)n;
+			foreach(RodNode* rn, pn->getEdgeRodNodes())
+			{
+				// add virtual rod nodes 
+				if (rn->isPerpTo(sqzV, perpThr)) 
+				{
+					perpNodes << rn;
+					scaffold->Structure::Graph::addNode(rn);
+				}
+				// delete if not need
+				else
+					delete rn;
+			}
+		}
 	}
 
 	// ==STEP 2==: group perp nodes
@@ -99,7 +117,7 @@ void FoldManager::identifyParallelMasters( Vector3 sqzV )
 
 	// ==STEP 3==: master groups
 	FdNodeArray2D masterGroups;
-	foreach (QVector<FdNode*> pgroup, masterGroups)
+	foreach (QVector<FdNode*> pgroup, perpGroups)
 	{
 		// cluster based on adjacency
 		foreach(QVector<FdNode*> cluster, clusterNodes(pgroup, adjacentThr))

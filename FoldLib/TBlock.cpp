@@ -8,16 +8,15 @@
 #include "Numeric.h"
 #include <QDir>
 
-
-TBlock::TBlock( QVector<FdNode*> parts, PatchNode* panel, QString id, Geom::Box &bBox )
-	:BlockGraph(parts, id)
+TBlock::TBlock( PatchNode* master, FdNode* slave, int side, QString id )
+	:BlockGraph(id)
 {
 	// type
 	mType = BlockGraph::T_BLOCK;
 
-	// panel
-	mPanel = (PatchNode*)getNode(panel->mID);
-	mPanel->properties["isMaster"] = true;
+	// clone parts
+	Structure::Graph::addNode(slave->clone());
+	Structure::Graph::addNode(master->clone());
 
 	// create chains
 	double thr = mPanel->mBox.getExtent(mPanel->mPatch.Normal) * 2;
@@ -38,12 +37,11 @@ TBlock::~TBlock()
 
 void TBlock::foldabilize()
 {
-	buildDependGraph();
 }
 
 
-void TBlock::buildDependGraph()
-{
+//void TBlock::buildDependGraph()
+//{
 	//// clear
 	//fog->clear();
 
@@ -142,7 +140,7 @@ void TBlock::buildDependGraph()
 	//		}
 	//	}
 	//}
-}
+//}
 
 QVector<Structure::Node*> TBlock::getKeyFrameNodes( double t )
 {

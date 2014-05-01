@@ -4,7 +4,7 @@
 class HBlock : public BlockGraph
 {
 public:
-    HBlock(QVector<FdNode*> parts, PatchNode* panel1, PatchNode* panel2, QString id, Geom::Box &bBox);
+    HBlock(QVector<PatchNode*> masters, QVector<FdNode*> slaves, const QVector< QSet<int> >& slaveEnds, QString id);
 
 	// collision graph
 	void foldabilize();
@@ -13,7 +13,6 @@ public:
 	QVector<Structure::Node*> getKeyFrameNodes( double t );
 
 public:
-	PatchNode *mPanel1, *mPanel2;
 	QVector<FoldingNode*> foldSolution;
 };
 

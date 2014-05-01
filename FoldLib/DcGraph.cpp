@@ -13,9 +13,9 @@ DcGraph::DcGraph( FdGraph* scaffold, StrArray2D masterGroups, QString id)
 	mID = id;
 
 	// merge master groups into patches
-	foreach( QVector<QString> panelGroup, masterGroups )
+	foreach( QVector<QString> masterGroup, masterGroups )
 	{
-		FdNode* mf = merge(panelGroup);
+		FdNode* mf = merge(masterGroup);
 		mf->addTag(IS_MASTER);
 
 		if (mf->mType != FdNode::PATCH)	changeNodeType(mf);
@@ -23,6 +23,8 @@ DcGraph::DcGraph( FdGraph* scaffold, StrArray2D masterGroups, QString id)
 	}
 
 	// create blocks
+	createSlaves();
+	clusterSlaves();
 	createBlocks();
 
 	// selection
@@ -32,6 +34,206 @@ DcGraph::DcGraph( FdGraph* scaffold, StrArray2D masterGroups, QString id)
 DcGraph::~DcGraph()
 {
 	foreach (BlockGraph* l, blocks)	delete l;
+}
+
+void DcGraph::createSlaves()
+{
+	// split slave parts by master patches
+	foreach (PatchNode* master, masterPatches)
+	{
+		foreach(FdNode* n, getFdNodes())
+		{
+			if (n->hasTag(IS_MASTER)) continue;
+
+			// split slave if it intersects the master
+			if(hasIntersection(n, master))
+				split(n->mID, master->mPatch.getPlane());
+		}
+	}
+
+	// slave parts
+	foreach (FdNode* n, getFdNodes())
+		if (!n->hasTag(IS_MASTER))
+			slaves.push_back(n);
+}
+
+void DcGraph::clusterSlaves()
+{
+	// to which side of which master a slave's end is attached
+	slaveEndProp.clear();
+	slaveEndProp.resize(slaves.size());
+	double adjacentThr = 0.05 * computeAABB().radius();
+	for (int i = 0; i < slaves.size(); i++)
+	{
+		// find adjacent master(s)
+		FdNode* slave = slaves[i];
+		for (int j = 0; j < masterPatches.size(); j++)
+		{
+			// distance to master
+			PatchNode* master = masterPatches[j];
+			if (getDistance(slave, master) < adjacentThr)
+			{
+				// each master j has two sides: 2*j (positive) and 2*j+1 (negative)
+				Vector3 sc2mc = slave->center() - master->center(); 
+				if (dot(sc2mc, master->mPatch.Normal) > 0)
+					slaveEndProp[i] << 2*j;
+				else
+					slaveEndProp[i] << 2*j+1;
+			}
+		}
+	}
+
+	// tags to avoid deleting/copying
+	QVector<bool> isHSlave(slaves.size(), true);
+
+	// T-slaves
+	for (int i = 0; i < slaves.size(); i++)
+	{
+		if (slaveEndProp[i].size() == 1)
+		{
+			// each T-slave is a cluster
+			TSlaves.push_back(i);
+			isHSlave[i] = false;
+		}
+	}
+
+	// cluster end props of H-slaves
+	for (int i = 0; i < slaves.size(); i++)
+	{
+		if (isHSlave[i])
+		{
+			// check whether belong to existed clusters
+			QVector<int> clusterIdx;
+			for (int j = 0; j < endClusters.size(); j++)
+			{
+				QSet<int> isct = slaveEndProp[i] & endClusters[j];
+				if (!isct.isEmpty()) clusterIdx.push_back(j);
+			}
+
+			// belong to none
+			switch (clusterIdx.size())
+			{
+			case 0: 
+				{
+					// create a new cluster
+					endClusters.push_back(slaveEndProp[i]);
+				}
+				break;
+			case 1:
+				{
+					// merge the slaveSideProp with the cluster
+					int idx = clusterIdx[0];
+					endClusters[idx] = endClusters[idx] + slaveEndProp[i];
+				}
+				break;
+			case 2:
+				{
+					// merge these two clusters
+					// slaveSideProp is already contained in their union
+					int idx0 = clusterIdx[0];
+					int idx1 = clusterIdx[1];
+					endClusters[idx0] = endClusters[idx0] + endClusters[idx1];
+					endClusters.removeAt(idx1);
+				}
+				break;
+			}
+		}
+	}
+
+	// H-slave clusters
+	HSlaveClusters.resize(endClusters.size());
+	for (int i = 0; i < slaves.size(); i++)
+	{
+		if (isHSlave[i])
+		{
+			for (int j = 0; j < endClusters.size(); j++)
+			{
+				if (endClusters[j].contains(slaveEndProp[i]))
+				{
+					HSlaveClusters[j] << i;
+				}
+			}
+		}
+	}
+}
+
+void DcGraph::createBlocks()
+{
+	// clear blocks
+	foreach (BlockGraph* b, blocks) delete b;
+	blocks.clear();
+
+	// T-blocks
+	for (int i = 0; i < TSlaves.size(); i++)
+	{
+		// master
+		PatchNode* m;
+		QList<int> endlist = slaveEndProp[i].toList();
+		int end = endlist.front();
+		int midx = end/2;
+		m = masterPatches[midx];
+
+		// slave
+		FdNode* s = slaves[i];
+
+		// end prop
+		int side = end%2;
+
+		// id
+		QString id = "TB_" + QString::number(i);
+
+		// create
+		blocks << new TBlock(m, s, side, id);
+	}
+
+	// H-blocks
+	for (int i = 0; i < HSlaveClusters.size(); i++)
+	{
+		// masters
+		QVector<PatchNode*> ms;
+		QSet<int> mIdxSet;
+		foreach (int end, endClusters[i]) mIdxSet << end/2;
+
+		QMap<int, int> masterIdxMap;
+		foreach (int midx, mIdxSet)
+		{
+			masterIdxMap[midx] = ms.size();
+			ms << masterPatches[midx];
+		}
+
+		// slaves
+		QVector<FdNode*> ss;
+		foreach (int sidx, HSlaveClusters[i])
+			ss << slaves[sidx];
+
+		// end props
+		QVector< QSet<int> > endprops;
+		foreach (int sidx, HSlaveClusters[i])
+		{
+			QSet<int> new_endprop;
+			foreach (int end, slaveEndProp[sidx])
+			{
+				int mid = end / 2;
+				int side = end % 2;
+				int new_mid = masterIdxMap[mid];
+				int new_end = 2 * new_mid + side;
+
+				new_endprop << new_end;
+			}
+
+			endprops << new_endprop;
+		}
+
+		//id
+		QString id = "HB_" + QString::number(i);
+
+		// create
+		blocks << new HBlock(ms, ss, endprops, id);
+	}
+
+	// set up path
+	foreach (BlockGraph* b, blocks)
+		b->path = path;
 }
 
 BlockGraph* DcGraph::getSelLayer()
@@ -183,53 +385,6 @@ FdGraph* DcGraph::getKeyFrame( double t )
 	return key_graph;
 }
 
-void DcGraph::createChains()
-{
-	// split slave parts by master patches
-	foreach (PatchNode* master, masterPatches)
-	{
-		foreach(FdNode* n, getFdNodes())
-		{
-			if (n.hasTag(IS_MASTER)) continue;
-
-			// split slave if it intersects the master
-			if(hasIntersection(n, master))
-				split(n->mID, master->mPatch.getPlane());
-		}
-	}
-
-	// slave parts
-	
-	foreach (FdNode* n, getFdNodes())
-		if (!n->hasTag(IS_MASTER))
-			slaves.push_back(n);
-
-	// attach slave parts onto masters
-	slaveSideProp.clear();
-	slaveSideProp.resize(slaves.size());
-	double adjacentThr = 0.05 * getRadiusOfAABB();
-	for (int i = 0; i < slaves.size(); i++)
-	{
-		FdNode* slave = slaves[i];
-
-		// find adjacent master(s)
-		for (int j = 0; j < masterPatches.size(); j++)
-		{
-			PatchNode* master = masterPatches[j];
-
-			// distance to master
-			if (getDistance(slave, master) < adjacentThr)
-			{
-				// each master j has two sides: 2*j (positive) and 2*j+1 (negative)
-				Vector3 sc2mc = slave->center() - master->center(); 
-				int side = (dot(sc2mc, master->mPatch.Normal) > 0) ? 2*j : 2*j+1;
-				slaveSideProp[i]->insert(side);
-			}
-		}
-	}
-}
-
-
 QVector<FdNode*> DcGraph::mergeCoplanarParts( QVector<FdNode*> ns, PatchNode* panel )
 {
 	// classify
@@ -331,60 +486,6 @@ QVector<FdNode*> DcGraph::mergeCoplanarParts( QVector<FdNode*> ns, PatchNode* pa
 		mnodes << merge(copGroups[i].toList().toVector());
 
 	return mnodes;
-}
-
-void DcGraph::createBlocks()
-{
-	// cluster slaves
-	QVector<bool> valid(slaves.size(), true);
-
-	// T-blocks
-	QSet<int> T_idx;
-	for (int i = 0; i < slaves.size(); i++)
-	{
-		if (slaveSideProp[i]->size() == 1)
-		{
-			T_idx.insert(i);
-			valid[i] = false;
-		}
-	}
-
-	// H-blocks
-	QList< QSet<int> > sideClusters;
-	for (int i = 0; i < slaves.size(); i++)
-	{
-
-		if (valid[i])
-		{
-			for ()
-			{
-			}
-		}
-	}
-
-
-
-	
-	// clear layers
-	blocks.clear();
-
-	// barrier box
-	Geom::Box bBox = box.scaled(1.01);
-
-	// first layer is pizza
-	QString id_first = "Pz-" + QString::number(blocks.size());
-	TBlock* pl_first = new TBlock(layerGroups.front(), masterPatches.front(), id_first, bBox);
-	pl_first->path = path;
-	blocks.push_back(pl_first); 
-
-	// sandwiches
-	for (int i = 1; i < layerGroups.size()-1; i++)
-	{
-		QString id = "Sw-" + QString::number(blocks.size());
-		HBlock* sl = new HBlock(layerGroups[i], masterPatches[i-1], masterPatches[i], id, bBox);
-		sl->path = path;
-		blocks.push_back(sl);
-	}
 }
 
 void DcGraph::foldabilize()

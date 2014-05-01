@@ -23,17 +23,21 @@ public:
 	int selDcIdx;
 	QVector<DcGraph*> dcGraphs;
 
-public:/// Main pipeline	
+	/// Main pipeline	
+public slots:
 	// input
 	void setScaffold(FdGraph* fdg);
 
+public:
 	// masters
 	void identifyMasters(QString method, QString direct);
 	void identifyParallelMasters(Vector3 squeezeDirect);
-	
+
+public slots:
 	// decomposition
 	void decompose();
 
+public:
 	// foldem
 	void foldabilize();
 

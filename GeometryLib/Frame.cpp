@@ -9,6 +9,14 @@ Geom::Frame::Frame()
 	t = Vec3d(0,0,1); 
 }
 
+Geom::Frame::Frame( const Vec3d& C,  const Vec3d& R, const Vec3d& S)
+{
+	c = C;
+	r = R.normalized(); 
+	s = S.normalized(); 
+	t = cross(r, s).normalized();
+}
+
 Geom::Frame::Frame( const Vec3d& C,  const Vec3d& R, const Vec3d& S, const Vec3d& T )
 {
 	c = C;

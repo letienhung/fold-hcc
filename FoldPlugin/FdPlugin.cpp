@@ -15,15 +15,18 @@ FdPlugin::FdPlugin()
 {
 	widget = NULL;
 
+	// graph manager
 	g_manager = new GraphManager();
 	this->connect(g_manager, SIGNAL(scaffoldChanged(FdGraph*)), SLOT(resetScene()));
 	this->connect(g_manager, SIGNAL(scaffoldModified()), SLOT(updateScene()));
 	this->connect(g_manager, SIGNAL(message(QString)), SLOT(showStatus(QString)));
 
+	// fold manager
 	f_manager = new FoldManager();
 	f_manager->connect(g_manager, SIGNAL(scaffoldChanged(FdGraph*)), SLOT(setScaffold(FdGraph*)));
 	this->connect(f_manager, SIGNAL(sceneChanged()), SLOT(updateScene()));
 	
+	// visual tags
 	drawKeyframe = false;
 	drawFolded = false;
 	drawAABB = false;
@@ -68,6 +71,7 @@ void FdPlugin::drawWithNames()
 
 void FdPlugin::updateScene()
 {
+	// update visual options
 	if (activeScaffold())
 	{
 		activeScaffold()->showAABB = drawAABB;
@@ -83,67 +87,23 @@ void FdPlugin::resetScene()
 {
 	if (activeScaffold())
 	{
+		// adjust scene to show entire shape
 		Geom::AABB aabb = activeScaffold()->computeAABB();
 		aabb.validate();
 
 		qglviewer::Vec bbmin(aabb.bbmin.data());
 		qglviewer::Vec bbmax(aabb.bbmax.data());
-		//Samuel added
-		//drawArea()->setSceneRadius(60);
-		/*drawArea()->setSceneCenter(qglviewer::Vec(aabb.center().x(), aabb.center().y(), aabb.center().z()));
-		drawArea()->camera()->setSceneRadius(30.0);
-		drawArea()->camera()->setUpVector(qglviewer::Vec(0,0,1));
-		drawArea()->camera()->setPosition(qglviewer::Vec(-10,0,0));
-		drawArea()->camera()->lookAt(qglviewer::Vec());*/
-
 		drawArea()->camera()->setSceneBoundingBox(bbmin, bbmax);
 		drawArea()->camera()->showEntireScene();
 	}
 	
+	// update visual options
 	updateScene();
 }
 
-
-void FdPlugin::test1()
-{
-	QVector<Vector2> conners;
-	conners << Vector2(1, 1) << Vector2(-1, 1) << Vector2(-1, -1) << Vector2(1, -1);
-	Geom::Rectangle2 rect(conners);
-	qDebug() << rect.toStrList();
-
-	Geom::Segment2 seg(Vector2(0.5, 0.5), Vector2(-0.5, -0.5));
-	QVector<Vector2> points = seg.getUniformSamples(10);
-	
-	Geom::Segment2 base(Vector2(1, 1), Vector2(1, -1));
-	rect.shrinkToAvoidPoints(points, base);
-	qDebug() << rect.toStrList();
-}
-
-#include "CliquerAdapter.h"
-void FdPlugin::test2()
-{
-	int N = 10;
-	QVector<bool> dumpy(N, false);
-	QVector< QVector<bool> > conn(N, dumpy);
-	for (int i = 0; i < N; i++)
-	{
-		conn[i][(i-2+N)%N] = true;
-		conn[i][(i-1+N)%N] = true;
-		conn[i][(i+1)%N] = true;
-		conn[i][(i+2)%N] = true;
-	}
-
-	QVector<double> weights;
-	for (int i = 0; i < N; i++) weights.push_back(i);
-	CliquerAdapter cliquer(conn, weights);
-	cliquer.computeWeightsOfAllMaxCliques();
-	QVector<int> q = cliquer.getMinWeightMaxClique();
-}
-
-
 FdGraph* FdPlugin::activeScaffold()
 {
-	if (drawKeyframe) return f_manager->getKeyframe();
+	if (drawKeyframe) return f_manager->getSelKeyframe();
 
 	return (drawFolded ? f_manager->activeScaffold() : g_manager->scaffold);
 }
@@ -186,7 +146,6 @@ void FdPlugin::showFolded( int state )
 	updateScene();
 }
 
-
 void FdPlugin::showAABB( int state )
 {
 	drawAABB = (state == Qt::Checked);
@@ -224,7 +183,40 @@ void FdPlugin::exportCurrent()
 	showMessage("Current mesh has been exported.");
 }
 
+void FdPlugin::test1()
+{
+	QVector<Vector2> conners;
+	conners << Vector2(1, 1) << Vector2(-1, 1) << Vector2(-1, -1) << Vector2(1, -1);
+	Geom::Rectangle2 rect(conners);
+	qDebug() << rect.toStrList();
 
+	Geom::Segment2 seg(Vector2(0.5, 0.5), Vector2(-0.5, -0.5));
+	QVector<Vector2> points = seg.getUniformSamples(10);
 
+	Geom::Segment2 base(Vector2(1, 1), Vector2(1, -1));
+	rect.shrinkToAvoidPoints(points, base);
+	qDebug() << rect.toStrList();
+}
+
+#include "CliquerAdapter.h"
+void FdPlugin::test2()
+{
+	int N = 10;
+	QVector<bool> dumpy(N, false);
+	QVector< QVector<bool> > conn(N, dumpy);
+	for (int i = 0; i < N; i++)
+	{
+		conn[i][(i-2+N)%N] = true;
+		conn[i][(i-1+N)%N] = true;
+		conn[i][(i+1)%N] = true;
+		conn[i][(i+2)%N] = true;
+	}
+
+	QVector<double> weights;
+	for (int i = 0; i < N; i++) weights.push_back(i);
+	CliquerAdapter cliquer(conn, weights);
+	cliquer.computeWeightsOfAllMaxCliques();
+	QVector<int> q = cliquer.getMinWeightMaxClique();
+}
 
 Q_EXPORT_PLUGIN(FdPlugin)

@@ -8,7 +8,7 @@ public:
 	enum BLOCK_TYPE{T_BLOCK, H_BLOCK};
 
 public:
-    BlockGraph(QVector<FdNode*> parts, QString id);
+    BlockGraph(QString id);
 	~BlockGraph();
 
 	// selection
@@ -26,7 +26,7 @@ public:
 	// fold option graph
 	void exportFOG();
 
-	// key frames
+	// keyframes
 	virtual void snapshot(double t);
 	virtual QVector<Structure::Node*> getKeyFrameNodes(double t) = 0;
 

@@ -1,15 +1,9 @@
 #include "BlockGraph.h"
 #include "FdUtility.h"
 
-BlockGraph::BlockGraph( QVector<FdNode*> parts, QString id)
-	:FdGraph(id)
+BlockGraph::BlockGraph( QString id )
+	: FdGraph(id)
 {
-	// clone nodes
-	foreach (FdNode* n, parts)
-	{
-		Structure::Graph::addNode(n->clone());
-	}
-
 	// selected chain
 	selChainIdx = -1;
 }

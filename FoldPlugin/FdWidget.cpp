@@ -8,12 +8,13 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
     ui->setupUi(this);
 	plugin = fp;
 
-	// connections
+	// selection
 	this->connect(ui->DcList, SIGNAL(itemSelectionChanged()), SLOT(selectDcGraph()));
 	this->connect(ui->layerList, SIGNAL(itemSelectionChanged()), SLOT(selectLayer()));
 	this->connect(ui->chainList, SIGNAL(itemSelectionChanged()), SLOT(selectChain()));
 	this->connect(ui->keyframeList, SIGNAL(itemSelectionChanged()), SLOT(selectKeyframe()));
 
+	/// structural abstraction
 	// creation and refine
 	this->connect(plugin->g_manager, SIGNAL(scaffoldChanged(FdGraph*)), SLOT(setScaffold(FdGraph*)));
 	plugin->connect(ui->createScaffold, SIGNAL(clicked()), SLOT(resetMesh()));
@@ -28,12 +29,13 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->g_manager->connect(ui->saveScaffold, SIGNAL(clicked()), SLOT(saveScaffold()));
 	plugin->g_manager->connect(ui->loadScaffold, SIGNAL(clicked()), SLOT(loadScaffold()));
 
-	// fold
-	plugin->f_manager->connect(ui->pushDirection, SIGNAL(currentIndexChanged(int)), SLOT(foldAlongAxis(int)));
-	plugin->f_manager->connect(ui->createDc, SIGNAL(clicked()), SLOT(createDcGraphs()));
+	/// foldabilization
+	// identify masters
+	this->connect(ui->identifyMasters, SIGNAL(clicked()), SLOT(identifyMasters()));
+	plugin->f_manager->connect(ui->decompose, SIGNAL(clicked()), SLOT(decompose()));
 
 	this->connect(plugin->f_manager, SIGNAL(DcGraphsChanged(QStringList)), SLOT(setDcGraphList(QStringList)));
-	this->connect(plugin->f_manager, SIGNAL(layersChanged(QStringList)), SLOT(setLayerList(QStringList)));
+	this->connect(plugin->f_manager, SIGNAL(blocksChanged(QStringList)), SLOT(setLayerList(QStringList)));
 	this->connect(plugin->f_manager, SIGNAL(chainsChanged(QStringList)), SLOT(setChainList(QStringList)));
 	this->connect(plugin->f_manager, SIGNAL(keyframesChanged(int)), SLOT(setKeyframeList(int)));
 	plugin->f_manager->connect(this, SIGNAL(dcGraphSelectionChanged(QString)), SLOT(selectDcGraph(QString)));
@@ -41,11 +43,11 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->f_manager->connect(this, SIGNAL(chainSelectionChanged(QString)), SLOT(selectChain(QString)));
 	plugin->f_manager->connect(this, SIGNAL(keyframeSelectionChanged(int)), SLOT(selectKeyframe(int)));
 
-	plugin->f_manager->connect(ui->foldLayer, SIGNAL(clicked()), SLOT(foldSelLayer()));
-	plugin->f_manager->connect(ui->snapshotTime, SIGNAL(valueChanged(double)), SLOT(snapshotSelLayer(double)));
+	plugin->f_manager->connect(ui->foldLayer, SIGNAL(clicked()), SLOT(foldbzSelBlock()));
+	plugin->f_manager->connect(ui->snapshotTime, SIGNAL(valueChanged(double)), SLOT(snapshotSelBlock(double)));
 	plugin->f_manager->connect(ui->exportFOG, SIGNAL(clicked()), SLOT(exportFOG()));
-	plugin->f_manager->connect(ui->fold, SIGNAL(clicked()), SLOT(foldAll()));
-	plugin->f_manager->connect(ui->generateKeyframes, SIGNAL(clicked()), SLOT(generateFdKeyFrames()));
+	plugin->f_manager->connect(ui->fold, SIGNAL(clicked()), SLOT(foldabilize()));
+	plugin->f_manager->connect(ui->generateKeyframes, SIGNAL(clicked()), SLOT(generateKeyframes()));
 
 	// visualization
 	plugin->connect(ui->showKeyframe, SIGNAL(stateChanged(int)), SLOT(showKeyframe(int)));
@@ -143,4 +145,12 @@ void FdWidget::selectKeyframe()
 		int idx = selItems.front()->text().toInt();
 		emit(keyframeSelectionChanged(idx));
 	}
+}
+
+void FdWidget::identifyMasters()
+{
+	QString direct = ui->squeezeDirection->currentText();
+	QString method = ui->masterType->currentText();
+
+	plugin->f_manager->identifyMasters(method, direct);
 }

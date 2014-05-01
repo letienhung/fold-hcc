@@ -10,6 +10,7 @@ struct Frame
 	Vector3 r, s, t;
 
 	Frame();
+	Frame(const Vector3& C, const Vector3& R, const Vector3& S);
 	Frame(const Vector3& C, const Vector3& R, const Vector3& S, const Vector3& T);
 
 	Vector3	getCoordinates(Vector3 p);

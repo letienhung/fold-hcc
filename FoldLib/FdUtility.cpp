@@ -315,6 +315,6 @@ bool hasIntersection( FdNode* n1, PatchNode* n2 )
 		Vector3 pi = sklt.P0 * alpha + sklt.P1 * (1 - alpha);
 
 		// coordinates of pi in patch
-		return n2->mPatch.getRectangle().contains(pi);
+		return n2->mPatch.contains(pi);
 	}
 }

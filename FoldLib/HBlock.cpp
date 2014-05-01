@@ -6,16 +6,16 @@
 #include "Numeric.h"
 #include "CliquerAdapter.h"
 
-HBlock::HBlock( QVector<FdNode*> parts, PatchNode* panel1, PatchNode* panel2, 
-	QString id, Geom::Box &bBox )
-	:BlockGraph(parts, id)
+HBlock::HBlock( QVector<PatchNode*> masters, QVector<FdNode*> slaves,  
+				QVector< QSet<int> >& slaveEnds, QString id )
+				:BlockGraph(id)
 {
+	// type
 	mType = BlockGraph::H_BLOCK;
 
-	mPanel1 = (PatchNode*) getNode(panel1->mID);
-	mPanel2 = (PatchNode*) getNode(panel2->mID);
-	mPanel1->properties["isMaster"] = true;
-	mPanel2->properties["isMaster"] = true;
+	// clone nodes
+	foreach (PatchNode* m, masters) Structure::Graph::addNode(m->clone());
+	foreach (FdNode* s, slaves) Structure::Graph::addNode(s->clone());
 
 	// create chains
 	double thr = mPanel1->mBox.getExtent(mPanel1->mPatch.Normal) * 2;

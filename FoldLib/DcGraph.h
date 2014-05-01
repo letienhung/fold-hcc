@@ -20,7 +20,10 @@ public:
 
 	// slaves
 	QVector<FdNode*> slaves;
-	QVector< QSet<int> > slaveSideProp;
+	QVector< QSet<int> > slaveEndProp; // each slave has one or two end props (master + side).
+	QList< QSet<int> > endClusters;
+	QVector<int> TSlaves;
+	QVector< QSet<int> > HSlaveClusters;// H-slaves sharing side prop belong to the same cluster.
 
 	// blocks
 	int selBlockIdx;
@@ -32,7 +35,8 @@ public:
 
 public:
 	// decomposition
-	void createChains();
+	void createSlaves();
+	void clusterSlaves();
 	void createBlocks();
 	QVector<FdNode*> mergeCoplanarParts(QVector<FdNode*> ns, PatchNode* panel);
 

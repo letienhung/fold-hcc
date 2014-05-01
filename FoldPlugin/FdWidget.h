@@ -26,6 +26,7 @@ public slots:
 	void selectLayer();
 	void selectChain();
 	void selectKeyframe();
+	void identifyMasters();
 
 	// to Ui
 	void setScaffold(FdGraph* fdg);
