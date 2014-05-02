@@ -568,14 +568,16 @@ void DcGraph::buildDepGraph()
 	{
 		FoldOption* fn = fns[i];
 		FoldEntity* bn = depFog->getFoldEntiry(fn->mID);
-		Geom::SectorCylinder fVolume = fn->properties.value<Geom::SectorCylinder>("fVolume");
+		Geom::SectorCylinder fVolume = fn->properties["fVolume"].value<Geom::SectorCylinder>();
 		
 		// with other fold entities
-		foreach(ChainNode* other_cn, fog->getAllChainNodes())
+		foreach(FoldEntity* other_bn, depFog->getAllFoldEntities())
 		{
-			if (cn == other_cn) continue;
+			// skip myself
+			if (bn == other_bn) continue;
 
-			TChain* other_chain = (TChain*) getChain(other_cn->mID);
+			// 
+			TBlock* other_chain = (TChain*) getChain(other_bn->mID);
 			FdNode* other_part = other_chain->mParts[0];
 
 			bool collide = false;
@@ -600,7 +602,7 @@ void DcGraph::buildDepGraph()
 			// add collision link
 			if (collide)
 			{
-				fog->addCollisionLink(fn, other_cn);
+				fog->addCollisionLink(fn, other_bn);
 			}
 		}
 	}

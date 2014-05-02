@@ -48,4 +48,4 @@ Geom::Box getBundleBox(const QVector<FdNode*>& nodes);
 // tags
 #define	IS_MASTER "isMasterPatch"
 #define IS_EDGE_ROD "isEdgeRodNode"
-#define IS_HBLOCK_ENTITY "isHBlockEntity"
+#define IS_HBLOCK_FOLD_OPTION "isHBlockFoldOption"

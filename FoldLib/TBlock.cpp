@@ -164,35 +164,6 @@ QVector<Structure::Node*> TBlock::getKeyFrameNodes( double t )
 	return knodes;
 }
 
-Vector3 TBlock::getClosestCoordinates(Geom::SectorCylinder& fVolume, FdNode* node)
-{
-	Geom::Segment axisSeg = fVolume.getAxisSegment();
-	Vector3 closestP;
-	if (node->mType == FdNode::PATCH)
-	{
-		PatchNode* pnode = (PatchNode*) node;
-		Geom::DistSegRect dsr(axisSeg, pnode->mPatch);
-		closestP = dsr.mClosestPoint1;
-	}
-	else
-	{
-		RodNode* rnode = (RodNode*) node;
-		Geom::DistSegSeg dss(axisSeg, rnode->mRod);
-		closestP = dss.mClosestPoint1;
-	}
-
-	return fVolume.getCoordinates(closestP);
-}
-
-Vector3 TBlock::getClosestCoordinates( Geom::SectorCylinder& fVolume, Geom::Rectangle& rect )
-{
-	Geom::Segment axisSeg = fVolume.getAxisSegment();
-	Geom::DistSegRect dsr(axisSeg, rect);
-
-	Vector3 closestP = dsr.mClosestPoint1;
-
-	return fVolume.getCoordinates(closestP);
-}
 
 QVector<FoldOption*> TBlock::generateFoldOptions()
 {

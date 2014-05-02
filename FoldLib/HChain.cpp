@@ -65,11 +65,11 @@ QVector<FoldOption*> HChain::generateFoldOptions()
 {
 	QVector<FoldOption*> options;
 
-	// patch chain
-	if (mOrigSlave->mType == FdNode::PATCH)
+	// #splits: 1 and 2
+	for (int n = 1; n <= 2; n++)
 	{
-		// #splits: 1 and 2
-		for (int n = 1; n <= 2; n++)
+		// patch chain
+		if (mOrigSlave->mType == FdNode::PATCH)
 		{
 			// shrink: scale level : 1 --> 5 : 20% --> 100%
 			int nbScales = 5;
@@ -77,12 +77,10 @@ QVector<FoldOption*> HChain::generateFoldOptions()
 			{
 				double step = 1.0/double(nbScales);
 				double scale = step * i;
-
 				// position
 				for (int j = 0; j <= nbScales - i; j++)
 				{
 					double position = step * j;
-
 					// left
 					QString fnid1 = this->mID + "_" + QString::number(options.size());
 					FoldOption* fn1 = new FoldOption(0, false, scale, position, n, fnid1);
@@ -95,12 +93,8 @@ QVector<FoldOption*> HChain::generateFoldOptions()
 				}
 			}
 		}
-	}
-	// rod chain
-	else
-	{
-		// #splits: 1 and 2
-		for (int n = 1; n <= 2; n++)
+		// rod chain
+		else
 		{
 			// root segment id
 			for (int j = 0; j < 2; j++)
@@ -115,8 +109,9 @@ QVector<FoldOption*> HChain::generateFoldOptions()
 				FoldOption* fn2 = new FoldOption(j, true, 1.0, 0.0, n, fnid2);
 				options.push_back(fn2);
 			}
-		}
+		}	
 	}
+
 
 	// fold area
 	foreach (FoldOption* fn, options)

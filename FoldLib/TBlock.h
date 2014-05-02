@@ -11,12 +11,11 @@ public:
 	// fold option
 	QVector<FoldOption*> generateFoldOptions();
 
+	// foldem
 	void foldabilize();
 
-	Vector3 getClosestCoordinates(Geom::SectorCylinder& fVolume, FdNode* node);
-	Vector3 getClosestCoordinates(Geom::SectorCylinder& fVolume, Geom::Rectangle& rect);
+	// results
 	QVector<Structure::Node*> getKeyFrameNodes( double t );
-
 public: 
 	PatchNode* mMaster; 
 };
