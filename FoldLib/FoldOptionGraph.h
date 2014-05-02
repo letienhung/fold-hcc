@@ -75,7 +75,7 @@ public:
 	// getters
 	FoldEntity*		getFoldEntiry(QString fnid);		// chain node of a folding node
 	BarrierNode*	getBarrierNode(int fIdx);		// barrier node with face index
-	QVector<FoldEntity*>		getAllChainNodes();		
+	QVector<FoldEntity*>		getAllFoldEntities();		
 	QVector<FoldOption*>	getAllFoldOptions();	
 	QVector<BarrierNode*>	getAllBarrierNodes();
 	QVector<FoldOption*>	getSiblings(QString fnid);		// siblings of folding node

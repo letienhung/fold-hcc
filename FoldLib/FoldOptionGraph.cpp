@@ -211,7 +211,7 @@ QVector<FoldOption*> FoldOptionGraph::getAllFoldOptions()
 	return fns;
 }
 
-QVector<FoldEntity*> FoldOptionGraph::getAllChainNodes()
+QVector<FoldEntity*> FoldOptionGraph::getAllFoldEntities()
 {
 	QVector<FoldEntity*> cns;
 	foreach(Structure::Node* n, nodes)
