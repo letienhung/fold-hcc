@@ -36,6 +36,8 @@ public:
 	Link*	getLink(QString nid1, QString nid2);
 	QVector<Link*> getLinks(QString nid);
 	QVector<Node*> getNeighbourNodes(Node* node);
+	QVector<Node*> getConnectedNodes(Node* seed);
+	QVector< QVector<Node*> > getNodesOfConnectedSubgraphs();
 
 	// Visualize
 	bool isDraw;

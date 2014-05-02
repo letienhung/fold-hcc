@@ -23,7 +23,7 @@ double getDistance( FdNode* n, QVector<FdNode*> nset);
 // relation among fd nodes
 FdNodeArray2D clusterNodes( QVector<FdNode*> nodes, double disThr );
 QVector<Geom::Segment> detectJointSegments(FdNode* part, PatchNode* panel);
-bool hasIntersection(FdNode* n1, PatchNode* n2);
+bool hasIntersection(FdNode* slave, PatchNode* master, double thr);
 
 // helpers
 StrArray2D getIds(FdNodeArray2D nodeArray);
@@ -47,3 +47,5 @@ Geom::Box getBundleBox(const QVector<FdNode*>& nodes);
 
 // tags
 #define	IS_MASTER "isMasterPatch"
+#define IS_EDGE_ROD "isEdgeRodNode"
+#define IS_CONNECTIVITY "isConnectivity"

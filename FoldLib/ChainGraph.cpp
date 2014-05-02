@@ -3,22 +3,20 @@
 #include "RodNode.h"
 #include "Numeric.h"
 
-ChainGraph::ChainGraph( FdNode* part, PatchNode* panel1, PatchNode* panel2)
-	: FdGraph(part->mID)
+ChainGraph::ChainGraph( FdNode* slave, PatchNode* master1, PatchNode* master2)
+	: FdGraph(slave->mID)
 {
 	// clone parts
-	mOrigPart = (FdNode*)part->clone();
-	mParts << (FdNode*)mOrigPart->clone();
+	mOrigSlave = (FdNode*)slave->clone();
+
+	mParts << (FdNode*)mOrigSlave->clone();
 	Structure::Graph::addNode(mParts[0]);
 
-	mMasters << (PatchNode*)panel1->clone();
-	mMasters[0]->properties["isMaster"] = true;
+	mMasters << (PatchNode*)master1->clone();
 	Graph::addNode(mMasters[0]);
-
-	if (panel2)
+	if (master2)
 	{
-		mMasters << (PatchNode*)panel2->clone();
-		mMasters[1]->properties["isMaster"] = true;
+		mMasters << (PatchNode*)master2->clone();
 		Graph::addNode(mMasters[1]);
 	}
 
@@ -29,20 +27,20 @@ ChainGraph::ChainGraph( FdNode* part, PatchNode* panel1, PatchNode* panel2)
 void ChainGraph::setupBasisOrientations()
 {
 	// detect hinges
-	rootJointSegs = detectJointSegments(mOrigPart, mMasters[0]);
+	rootJointSegs = detectJointSegments(mOrigSlave, mMasters[0]);
 
 	// upSeg
 	Geom::Segment jointSeg = rootJointSegs[0];
 	Vector3 origin = jointSeg.P0;
-	if (mOrigPart->mType == FdNode::PATCH)
+	if (mOrigSlave->mType == FdNode::PATCH)
 	{
-		PatchNode* partPatch = (PatchNode*)mOrigPart;
+		PatchNode* partPatch = (PatchNode*)mOrigSlave;
 		QVector<Geom::Segment> edges = partPatch->mPatch.getPerpEdges(jointSeg.Direction);
 		chainUpSeg = edges[0].contains(origin) ? edges[0] : edges[1];
 	}
 	else
 	{
-		RodNode* partRod = (RodNode*)mOrigPart;
+		RodNode* partRod = (RodNode*)mOrigSlave;
 		chainUpSeg = partRod->mRod;
 	}
 	if (chainUpSeg.getProjCoordinates(origin) > 0) chainUpSeg.flip();
@@ -88,7 +86,7 @@ QVector<Geom::Plane> ChainGraph::generateCutPlanes( int N )
 {
 	// plane of panel0
 	Geom::Plane plane0 = mMasters[0]->mPatch.getPlane();
-	if (plane0.whichSide(mOrigPart->center()) < 0) plane0.flip();
+	if (plane0.whichSide(mOrigSlave->center()) < 0) plane0.flip();
 
 	// deltaV to shift up
 	double step = getLength() / (N + 1);
@@ -110,9 +108,9 @@ void ChainGraph::createChain( int N )
 
 	// clone original part
 	// add to graph and split
-	FdNode* origPart = (FdNode*)mOrigPart->clone();
+	FdNode* origPart = (FdNode*)mOrigSlave->clone();
 	Structure::Graph::addNode(origPart);
-	mParts = FdGraph::split(mOrigPart->mID, generateCutPlanes(N - 1));
+	mParts = FdGraph::split(mOrigSlave->mID, generateCutPlanes(N - 1));
 	
 	// reset hinge links
 	sortChainParts();

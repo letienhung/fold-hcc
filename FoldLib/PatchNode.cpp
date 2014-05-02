@@ -30,9 +30,7 @@ void PatchNode::createScaffold()
 
 void PatchNode::drawScaffold()
 {
-	if (properties.contains("virtual")) return;
-
-	if (properties.contains("isMaster"))
+	if (hasTag(IS_MASTER))
 		mPatchColor = Qt::red;
 
 	mPatch.drawFace(mPatchColor);
@@ -68,11 +66,15 @@ Geom::Plane PatchNode::getSurfacePlane( bool positive)
 QVector<RodNode*> PatchNode::getEdgeRodNodes()
 {
 	QVector<RodNode*> edgeRods;
-	double r = 0.5 * getThickness();
+	double r = 0.25 * 0.5 * getThickness();
 	int i = 0;
 	foreach (Geom::Segment edge, mPatch.getEdgeSegments())
 	{
-		Geom::Frame frame(edge.Center, mPatch.Normal, edge.Direction);
+		// move edge inward by distance of r
+		Vector3 e2c = mPatch.Center - edge.Center;
+		Vector3 t = r * e2c.normalized();
+
+		Geom::Frame frame(edge.Center + t, mPatch.Normal, edge.Direction);
 		Vector3 extent(r, edge.Extent, r);
 		Geom::Box box(frame, extent);
 

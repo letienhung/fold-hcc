@@ -63,9 +63,6 @@ void FdNode::draw()
 
 	if (showCuboids)
 	{
-		if (properties.contains("virtual"))
-			mBox.draw(QColor(255, 255, 255, 30));
-
 		// faces
 		mBox.draw(mColor);
 

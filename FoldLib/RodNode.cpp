@@ -34,8 +34,6 @@ void RodNode::createScaffold()
 
 void RodNode::drawScaffold()
 {
-	if (properties.contains("virtual")) return;
-
 	mRod.draw(3.0, mRodColor);
 }
 

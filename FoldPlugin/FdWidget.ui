@@ -252,29 +252,8 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0" colspan="2">
-       <widget class="QPushButton" name="decompose">
-        <property name="text">
-         <string>Decompose</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="3">
-       <widget class="QCheckBox" name="showFolded">
-        <property name="text">
-         <string>Decomposition</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="4">
-       <widget class="QCheckBox" name="showKeyframe">
-        <property name="text">
-         <string>Keyframe</string>
-        </property>
-       </widget>
-      </item>
       <item row="7" column="3" colspan="2">
-       <widget class="QPushButton" name="foldLayer">
+       <widget class="QPushButton" name="foldBlock">
         <property name="text">
          <string>Fold selected block</string>
         </property>
@@ -301,7 +280,7 @@
        </widget>
       </item>
       <item row="8" column="3" colspan="2">
-       <widget class="QPushButton" name="generateKeyframes">
+       <widget class="QPushButton" name="genKeyframes">
         <property name="text">
          <string>Generate Keyframes</string>
         </property>
@@ -316,6 +295,34 @@
       </item>
       <item row="8" column="1">
        <widget class="QSpinBox" name="nbKeyframes"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QPushButton" name="decompose">
+        <property name="text">
+         <string>Decompose</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="clearDcList">
+        <property name="text">
+         <string>Clear</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QCheckBox" name="showFolded">
+        <property name="text">
+         <string>Decomposition</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="4">
+       <widget class="QCheckBox" name="showKeyframe">
+        <property name="text">
+         <string>Keyframe</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -374,7 +381,7 @@
       <item row="2" column="1">
        <widget class="QPushButton" name="identifyMasters">
         <property name="text">
-         <string>Identify</string>
+         <string>Identify Masters</string>
         </property>
        </widget>
       </item>

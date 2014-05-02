@@ -10,7 +10,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 
 	// selection
 	this->connect(ui->DcList, SIGNAL(itemSelectionChanged()), SLOT(selectDcGraph()));
-	this->connect(ui->layerList, SIGNAL(itemSelectionChanged()), SLOT(selectLayer()));
+	this->connect(ui->layerList, SIGNAL(itemSelectionChanged()), SLOT(selectBlock()));
 	this->connect(ui->chainList, SIGNAL(itemSelectionChanged()), SLOT(selectChain()));
 	this->connect(ui->keyframeList, SIGNAL(itemSelectionChanged()), SLOT(selectKeyframe()));
 
@@ -34,20 +34,23 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	this->connect(ui->identifyMasters, SIGNAL(clicked()), SLOT(identifyMasters()));
 	plugin->f_manager->connect(ui->decompose, SIGNAL(clicked()), SLOT(decompose()));
 
+	// decomposition and key frame lists
 	this->connect(plugin->f_manager, SIGNAL(DcGraphsChanged(QStringList)), SLOT(setDcGraphList(QStringList)));
 	this->connect(plugin->f_manager, SIGNAL(blocksChanged(QStringList)), SLOT(setLayerList(QStringList)));
 	this->connect(plugin->f_manager, SIGNAL(chainsChanged(QStringList)), SLOT(setChainList(QStringList)));
 	this->connect(plugin->f_manager, SIGNAL(keyframesChanged(int)), SLOT(setKeyframeList(int)));
 	plugin->f_manager->connect(this, SIGNAL(dcGraphSelectionChanged(QString)), SLOT(selectDcGraph(QString)));
-	plugin->f_manager->connect(this, SIGNAL(layerSelectionChanged(QString)), SLOT(selectLayer(QString)));
+	plugin->f_manager->connect(this, SIGNAL(blockSelectionChanged(QString)), SLOT(selectBlock(QString)));
 	plugin->f_manager->connect(this, SIGNAL(chainSelectionChanged(QString)), SLOT(selectChain(QString)));
 	plugin->f_manager->connect(this, SIGNAL(keyframeSelectionChanged(int)), SLOT(selectKeyframe(int)));
+	plugin->f_manager->connect(ui->clearDcList, SIGNAL(clicked()), SLOT(clearDcGraphs()));
 
-	plugin->f_manager->connect(ui->foldLayer, SIGNAL(clicked()), SLOT(foldbzSelBlock()));
+	// foldabilize and results
+	plugin->f_manager->connect(ui->foldBlock, SIGNAL(clicked()), SLOT(foldbzSelBlock()));
+	plugin->f_manager->connect(ui->fold, SIGNAL(clicked()), SLOT(foldabilize()));
+	plugin->f_manager->connect(ui->genKeyframes, SIGNAL(clicked()), SLOT(generateKeyframes()));
 	plugin->f_manager->connect(ui->snapshotTime, SIGNAL(valueChanged(double)), SLOT(snapshotSelBlock(double)));
 	plugin->f_manager->connect(ui->exportFOG, SIGNAL(clicked()), SLOT(exportFOG()));
-	plugin->f_manager->connect(ui->fold, SIGNAL(clicked()), SLOT(foldabilize()));
-	plugin->f_manager->connect(ui->generateKeyframes, SIGNAL(clicked()), SLOT(generateKeyframes()));
 
 	// visualization
 	plugin->connect(ui->showKeyframe, SIGNAL(stateChanged(int)), SLOT(showKeyframe(int)));
@@ -116,13 +119,13 @@ void FdWidget::selectDcGraph()
 	}
 }
 
-void FdWidget::selectLayer()
+void FdWidget::selectBlock()
 {
 	QList<QListWidgetItem *> selItems = ui->layerList->selectedItems();
 
 	if (!selItems.isEmpty())
 	{
-		emit(layerSelectionChanged(selItems.front()->text()));
+		emit(blockSelectionChanged(selItems.front()->text()));
 	}
 }
 

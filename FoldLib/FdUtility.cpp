@@ -288,33 +288,29 @@ Geom::Box getBundleBox( const QVector<FdNode*>& nodes )
 	return fitBox(points);
 }
 
-bool hasIntersection( FdNode* n1, PatchNode* n2 )
+bool hasIntersection( FdNode* slave, PatchNode* master, double thr )
 {
-	// patch - patch
-	if (n1->mType == FdNode::PATCH)
+	if (getDistance(slave, master) > thr) return false;
+
+	// check whether slave locates on both sides of master
+	double minDist = maxDouble();
+	double maxDist = -maxDouble();
+	foreach (Vector3 p, slave->mBox.getConnerPoints())
 	{
-		// two rectangles locate on both sides of each other
-		PatchNode* pn1 = (PatchNode*)n1;
-		Geom::Plane plane1 = pn1->mPatch.getPlane();
-		Geom::Plane plane2 = n2->mPatch.getPlane();
-		return (relationWithPlane(n1, plane2, 0.1) == ISCT_PLANE
-			&& relationWithPlane(n2, plane1, 0.1) == ISCT_PLANE);
+		double dist = master->mPatch.getPlane().signedDistanceTo(p);
+		if (dist < minDist) minDist = dist;
+		if (dist > maxDist) maxDist = dist;
 	}
-	// patch - rod
-	else
-	{
-		// the rod intersect the patch within the patch
-		RodNode* rn1 = (RodNode*)n1;
-		Geom::Segment sklt = rn1->mRod;
 
-		Geom::Plane plane2 = n2->mPatch.getPlane();
-		double dist0 = plane2.signedDistanceTo(sklt.P0);
-		double dist1 = plane2.signedDistanceTo(sklt.P1);
+	// one side
+	if (minDist * maxDist >= 0) return false;
 
-		double alpha = dist0 / (dist0 - dist1);
-		Vector3 pi = sklt.P0 * alpha + sklt.P1 * (1 - alpha);
+	// two sides
+	double a = fabs(minDist);
+	double b = fabs(maxDist);
+	double ratio = a / (a + b);
+	if (ratio > 0.5) ratio  = 1 - ratio;
 
-		// coordinates of pi in patch
-		return n2->mPatch.contains(pi);
-	}
+	// the slave must have one fifth on either side
+	return ratio > 0.2;
 }

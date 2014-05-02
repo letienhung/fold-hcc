@@ -12,13 +12,13 @@ class FoldManager : public QObject
 public:
     FoldManager();
 	~FoldManager();
-	void clearDcGraphs();
 
 public:
 	// input
 	FdGraph* scaffold; 
 
 	// decomposition
+	FdGraph* dcScaffold;
 	StrArray2D masterIdGroups;
 	int selDcIdx;
 	QVector<DcGraph*> dcGraphs;
@@ -65,6 +65,9 @@ public slots:
 	void selectBlock(QString id);
 	void selectChain(QString id);
 	void selectKeyframe(int idx);
+
+	// reset dc graphs
+	void clearDcGraphs();
 
 	// other signals from Ui
 	void foldbzSelBlock();

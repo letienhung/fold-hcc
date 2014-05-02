@@ -36,33 +36,17 @@ DcGraph::~DcGraph()
 	foreach (BlockGraph* l, blocks)	delete l;
 }
 
-void DcGraph::createSlaves()
+void DcGraph::computeSlaveMasterRelation()
 {
-	// split slave parts by master patches
-	foreach (PatchNode* master, masterPatches)
-	{
-		foreach(FdNode* n, getFdNodes())
-		{
-			if (n->hasTag(IS_MASTER)) continue;
-
-			// split slave if it intersects the master
-			if(hasIntersection(n, master))
-				split(n->mID, master->mPatch.getPlane());
-		}
-	}
-
 	// slave parts
+	slaves.clear();
 	foreach (FdNode* n, getFdNodes())
-		if (!n->hasTag(IS_MASTER))
-			slaves.push_back(n);
-}
+		if (!n->hasTag(IS_MASTER))	slaves << n;
 
-void DcGraph::clusterSlaves()
-{
 	// to which side of which master a slave's end is attached
-	slaveEndProp.clear();
-	slaveEndProp.resize(slaves.size());
-	double adjacentThr = 0.05 * computeAABB().radius();
+	slave2masterSide.clear();
+	slave2masterSide.resize(slaves.size());
+	double adjacentThr = getConnectivityThr();
 	for (int i = 0; i < slaves.size(); i++)
 	{
 		// find adjacent master(s)
@@ -76,20 +60,188 @@ void DcGraph::clusterSlaves()
 				// each master j has two sides: 2*j (positive) and 2*j+1 (negative)
 				Vector3 sc2mc = slave->center() - master->center(); 
 				if (dot(sc2mc, master->mPatch.Normal) > 0)
-					slaveEndProp[i] << 2*j;
+					slave2masterSide[i] << 2*j;
 				else
-					slaveEndProp[i] << 2*j+1;
+					slave2masterSide[i] << 2*j+1;
 			}
 		}
 	}
 
+}
+
+QVector<FdNode*> DcGraph::mergeConnectedCoplanarParts( QVector<FdNode*> ns )
+{
+	// classify rods and patches
+	QVector<RodNode*>	rootRod;
+	QVector<PatchNode*> rootPatch;
+	foreach (FdNode* n, ns)
+	{
+		if (n->mType == FdNode::PATCH) 
+			rootPatch << (PatchNode*)n;
+		else rootRod << (RodNode*)n;
+	}
+
+	// RANSAC-like strategy: use a few samples to produce fitting model, which is a plane
+	// a plane is fitted by either one root patch or two coplanar root rods
+	QVector<Geom::Plane> fitPlanes;
+	foreach(PatchNode* pn, rootPatch) fitPlanes << pn->mPatch.getPlane();
+	for (int i = 0; i < rootRod.size(); i++){
+		for (int j = i+1; j< rootRod.size(); j++)
+		{
+			Vector3 v1 = rootRod[i]->mRod.Direction;
+			Vector3 v2 = rootRod[j]->mRod.Direction;
+			double dotProd = dot(v1, v2);
+			if (fabs(dotProd) > 0.9)
+			{
+				Vector3 v = v1 + v2; 
+				if (dotProd < 0) v = v1 - v2;
+				Vector3 u = rootRod[i]->mRod.Center - rootRod[j]->mRod.Center;
+				v.normalize(); u.normalize();
+				Vector3 normal = cross(u, v).normalized();
+				fitPlanes << Geom::Plane(rootRod[i]->mRod.Center, normal);
+			}
+		}
+	}
+
+	// search for coplanar parts for each fit plane
+	// add group them into connected components
+	QVector< QSet<QString> > copConnGroups;
+	double distThr = getConnectivityThr();
+	foreach(Geom::Plane plane, fitPlanes)
+	{
+		QVector<FdNode*> copNodes;
+		foreach(FdNode* n, ns)
+			if (onPlane(n, plane)) copNodes << n;
+
+		foreach(QVector<FdNode*> group, clusterNodes(copNodes, distThr))
+		{
+			QSet<QString> groupIds;
+			foreach(FdNode* n, group) groupIds << n->mID;
+			copConnGroups << groupIds;
+		}
+	}
+
+	// set cover: prefer large subsets
+	QVector<bool> deleted(copConnGroups.size(), false);
+	int count = copConnGroups.size(); 
+	QVector<int> subsetIndices;
+	while(count > 0)
+	{
+		// search for the largest group
+		int maxSize = -1;
+		int maxIdx = -1;
+		for (int i = 0; i < copConnGroups.size(); i++)
+		{
+			if (deleted[i]) continue;
+			if (copConnGroups[i].size() > maxSize)
+			{
+				maxSize = copConnGroups[i].size();
+				maxIdx = i;
+			}
+		}
+
+		// save selected subset
+		subsetIndices << maxIdx;
+		deleted[maxIdx] = true;
+		count--;
+
+		// delete overlapping subsets
+		for (int i = 0; i < copConnGroups.size(); i++)
+		{
+			if (deleted[i]) continue;
+
+			QSet<QString> maxGroup = copConnGroups[maxIdx];
+			maxGroup.intersect(copConnGroups[i]);
+			if (!maxGroup.isEmpty())
+			{
+				deleted[i] = true;
+				count--;
+			}
+		}
+	}
+
+	// merge each selected group
+	QVector<FdNode*> mnodes;
+	foreach(int i, subsetIndices)
+		mnodes << merge(copConnGroups[i].toList().toVector());
+
+	return mnodes;
+}
+
+void DcGraph::createSlaves()
+{
+	// split slave parts by master patches
+	double adjacentThr = getConnectivityThr();
+	foreach (PatchNode* master, masterPatches)
+	{
+		foreach(FdNode* n, getFdNodes())
+		{
+			if (n->hasTag(IS_MASTER)) continue;
+
+			// split slave if it intersects the master
+			if(hasIntersection(n, master, adjacentThr))
+				split(n->mID, master->mPatch.getPlane());
+		}
+	}
+
+	// current slave-master relation
+	computeSlaveMasterRelation();
+
+	// connectivity among slave parts
+	for (int i = 0; i < slaves.size(); i++)
+	{
+		for (int j = i+1; j < slaves.size(); j++)
+		{
+			// skip slave parts connecting to the same master
+			QSet<int> s2m_i, s2m_j;
+			foreach (int msidx, slave2masterSide[i]) s2m_i << msidx/2;
+			foreach (int msidx, slave2masterSide[j]) s2m_j << msidx/2;
+			if (!(s2m_i & s2m_j).isEmpty()) continue;
+
+			// add connectivity
+			if (getDistance(slaves[i], slaves[j]) < adjacentThr)
+			{
+				FdLink* link = FdGraph::addLink(slaves[i], slaves[j]);
+			}
+		}
+	}
+
+	// merge connected and coplanar slave parts
+	foreach (QVector<Structure::Node*> connGroup, getNodesOfConnectedSubgraphs())
+	{
+		// skip single node
+		// two cases: master; T-slave that only connects to master
+		if (connGroup.size() == 1) continue;
+
+		// convert to fd Nodes
+		QVector<FdNode*> fdConnGroup;
+		foreach(Structure::Node* n, connGroup) fdConnGroup << (FdNode*)n;
+
+		mergeConnectedCoplanarParts(fdConnGroup);
+	}
+
+	// slave-master relation after merging
+	computeSlaveMasterRelation();
+	for (int i = 0; i < slaves.size();i++)
+	{
+		if (slave2masterSide[i].isEmpty())
+		{
+			slaves.remove(i);
+			slave2masterSide.remove(i);
+			i--;
+		}
+	}
+}
+
+void DcGraph::clusterSlaves()
+{
 	// tags to avoid deleting/copying
 	QVector<bool> isHSlave(slaves.size(), true);
 
 	// T-slaves
 	for (int i = 0; i < slaves.size(); i++)
 	{
-		if (slaveEndProp[i].size() == 1)
+		if (slave2masterSide[i].size() == 1)
 		{
 			// each T-slave is a cluster
 			TSlaves.push_back(i);
@@ -106,7 +258,7 @@ void DcGraph::clusterSlaves()
 			QVector<int> clusterIdx;
 			for (int j = 0; j < endClusters.size(); j++)
 			{
-				QSet<int> isct = slaveEndProp[i] & endClusters[j];
+				QSet<int> isct = slave2masterSide[i] & endClusters[j];
 				if (!isct.isEmpty()) clusterIdx.push_back(j);
 			}
 
@@ -116,14 +268,14 @@ void DcGraph::clusterSlaves()
 			case 0: 
 				{
 					// create a new cluster
-					endClusters.push_back(slaveEndProp[i]);
+					endClusters.push_back(slave2masterSide[i]);
 				}
 				break;
 			case 1:
 				{
 					// merge the slaveSideProp with the cluster
 					int idx = clusterIdx[0];
-					endClusters[idx] = endClusters[idx] + slaveEndProp[i];
+					endClusters[idx] = endClusters[idx] + slave2masterSide[i];
 				}
 				break;
 			case 2:
@@ -148,7 +300,7 @@ void DcGraph::clusterSlaves()
 		{
 			for (int j = 0; j < endClusters.size(); j++)
 			{
-				if (endClusters[j].contains(slaveEndProp[i]))
+				if (endClusters[j].contains(slave2masterSide[i]))
 				{
 					HSlaveClusters[j] << i;
 				}
@@ -166,24 +318,16 @@ void DcGraph::createBlocks()
 	// T-blocks
 	for (int i = 0; i < TSlaves.size(); i++)
 	{
-		// master
-		PatchNode* m;
-		QList<int> endlist = slaveEndProp[i].toList();
+		int sidx = TSlaves[i];
+		QList<int> endlist = slave2masterSide[sidx].toList();
 		int end = endlist.front();
 		int midx = end/2;
-		m = masterPatches[midx];
 
-		// slave
-		FdNode* s = slaves[i];
-
-		// end prop
-		int side = end%2;
-
-		// id
+		PatchNode* m = masterPatches[midx];
+		FdNode* s = slaves[sidx];
 		QString id = "TB_" + QString::number(i);
 
-		// create
-		blocks << new TBlock(m, s, side, id);
+		blocks << new TBlock(m, s, id);
 	}
 
 	// H-blocks
@@ -206,29 +350,27 @@ void DcGraph::createBlocks()
 		foreach (int sidx, HSlaveClusters[i])
 			ss << slaves[sidx];
 
-		// end props
-		QVector< QSet<int> > endprops;
+		// master pairs
+		QVector< QVector<int> > masterPairs;
 		foreach (int sidx, HSlaveClusters[i])
 		{
-			QSet<int> new_endprop;
-			foreach (int end, slaveEndProp[sidx])
+			QVector<int> new_pair;
+			foreach (int end, slave2masterSide[sidx])
 			{
 				int mid = end / 2;
-				int side = end % 2;
 				int new_mid = masterIdxMap[mid];
-				int new_end = 2 * new_mid + side;
 
-				new_endprop << new_end;
+				new_pair << new_mid;
 			}
 
-			endprops << new_endprop;
+			masterPairs << new_pair;
 		}
 
 		//id
 		QString id = "HB_" + QString::number(i);
 
 		// create
-		blocks << new HBlock(ms, ss, endprops, id);
+		blocks << new HBlock(ms, ss, masterPairs, id);
 	}
 
 	// set up path
@@ -236,7 +378,7 @@ void DcGraph::createBlocks()
 		b->path = path;
 }
 
-BlockGraph* DcGraph::getSelLayer()
+BlockGraph* DcGraph::getSelBlock()
 {
 	if (selBlockIdx >= 0 && selBlockIdx < blocks.size())
 		return blocks[selBlockIdx];
@@ -246,21 +388,24 @@ BlockGraph* DcGraph::getSelLayer()
 
 FdGraph* DcGraph::activeScaffold()
 {
-	BlockGraph* selLayer = getSelLayer();
+	BlockGraph* selLayer = getSelBlock();
 	if (selLayer) return selLayer->activeScaffold();
 	else		  return this;
 }
 
-QStringList DcGraph::getLayerLabels()
+QStringList DcGraph::getBlockLabels()
 {
 	QStringList labels;
 	foreach(BlockGraph* l, blocks)
 		labels.append(l->mID);
 
+	// append string to select none
+	labels << "--none--";
+
 	return labels;
 }
 
-void DcGraph::selectLayer( QString id )
+void DcGraph::selectBlock( QString id )
 {
 	// select layer named id
 	selBlockIdx = -1;
@@ -274,9 +419,9 @@ void DcGraph::selectLayer( QString id )
 	}
 
 	// disable selection on chains
-	if (getSelLayer())
+	if (getSelBlock())
 	{
-		getSelLayer()->selectChain("");
+		getSelBlock()->selectChain("");
 	}
 }
 
@@ -383,109 +528,6 @@ FdGraph* DcGraph::getKeyFrame( double t )
 	//key_graph->properties["pushAId"] = pushAId;
 
 	return key_graph;
-}
-
-QVector<FdNode*> DcGraph::mergeCoplanarParts( QVector<FdNode*> ns, PatchNode* panel )
-{
-	// classify
-	QVector<RodNode*>	rootRod;
-	QVector<PatchNode*> rootPatch;
-	double thr = panel->mBox.getExtent(panel->mPatch.Normal) * 2;
-	foreach (FdNode* n, ns)
-	{
-		if (getDistance(n, panel) < thr)
-		{
-			if (n->mType == FdNode::PATCH) 
-				rootPatch << (PatchNode*)n;
-			else rootRod << (RodNode*)n;
-		}
-	}
-
-	// RANSAC-like strategy: use a few samples to produce fitting model, which is a plane
-	// a plane is fitted by either one root patch or two coplanar root rods
-	QVector<Geom::Plane> fitPlanes;
-	foreach(PatchNode* pn, rootPatch) fitPlanes << pn->mPatch.getPlane();
-	for (int i = 0; i < rootRod.size(); i++){
-		for (int j = i+1; j< rootRod.size(); j++)
-		{
-			Vector3 v1 = rootRod[i]->mRod.Direction;
-			Vector3 v2 = rootRod[j]->mRod.Direction;
-			double dotProd = dot(v1, v2);
-			if (fabs(dotProd) > 0.9)
-			{
-				Vector3 v = v1 + v2; 
-				if (dotProd < 0) v = v1 - v2;
-				Vector3 u = rootRod[i]->mRod.Center - rootRod[j]->mRod.Center;
-				v.normalize(); u.normalize();
-				Vector3 normal = cross(u, v).normalized();
-				fitPlanes << Geom::Plane(rootRod[i]->mRod.Center, normal);
-			}
-		}
-	}
-
-	// search for coplanar parts for each fit plane
-	// add group them into connected components
-	QVector< QSet<QString> > copGroups;
-	double distThr = computeAABB().radius() * 0.1;
-	foreach(Geom::Plane plane, fitPlanes)
-	{
-		QVector<FdNode*> copNodes;
-		foreach(FdNode* n, ns)
-			if (onPlane(n, plane)) copNodes << n;
-
-		foreach(QVector<FdNode*> group, clusterNodes(copNodes, distThr))
-		{
-			QSet<QString> groupIds;
-			foreach(FdNode* n, group) groupIds << n->mID;
-			copGroups << groupIds;
-		}
-	}
-
-	// set cover: prefer large subsets
-	QVector<bool> deleted(copGroups.size(), false);
-	int count = copGroups.size(); 
-	QVector<int> subsetIndices;
-	while(count > 0)
-	{
-		// search for the largest group
-		int maxSize = -1;
-		int maxIdx = -1;
-		for (int i = 0; i < copGroups.size(); i++)
-		{
-			if (deleted[i]) continue;
-			if (copGroups[i].size() > maxSize)
-			{
-				maxSize = copGroups[i].size();
-				maxIdx = i;
-			}
-		}
-
-		// save selected subset
-		subsetIndices << maxIdx;
-		deleted[maxIdx] = true;
-		count--;
-
-		// delete overlapping subsets
-		for (int i = 0; i < copGroups.size(); i++)
-		{
-			if (deleted[i]) continue;
-
-			QSet<QString> maxGroup = copGroups[maxIdx];
-			maxGroup.intersect(copGroups[i]);
-			if (!maxGroup.isEmpty())
-			{
-				deleted[i] = true;
-				count--;
-			}
-		}
-	}
-
-	// merge each selected group
-	QVector<FdNode*> mnodes;
-	foreach(int i, subsetIndices)
-		mnodes << merge(copGroups[i].toList().toVector());
-
-	return mnodes;
 }
 
 void DcGraph::foldabilize()

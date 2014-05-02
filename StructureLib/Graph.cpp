@@ -1,5 +1,6 @@
 #include "Graph.h"
 #include <QtOpenGL/qgl.h>
+#include <QQueue>
 
 Structure::Graph::Graph(QString id)
 {
@@ -218,4 +219,55 @@ QVector<Structure::Node*> Structure::Graph::getNeighbourNodes( Node* node )
 		neighbours.push_back(l->getNodeOther(node->mID));
 
 	return neighbours;
+}
+
+QVector<Structure::Node*> Structure::Graph::getConnectedNodes( Node* seed )
+{
+	QVector<Node*> cnodes;
+	QQueue<Node*> activeNodes;
+	activeNodes << seed;
+
+	QString visitedTag = "hasVisited";
+	while (!activeNodes.isEmpty())
+	{
+		Node* curr = activeNodes.dequeue();
+		cnodes << curr;
+		curr->addTag(visitedTag);
+		
+		foreach (Node* nei, getNeighbourNodes(curr))
+		{
+			if (!nei->hasTag(visitedTag))
+			{
+				activeNodes.enqueue(nei);
+			}
+		}
+	}
+
+	// clear tags
+	foreach (Node* n, nodes) n->removeTag(visitedTag);
+
+	return cnodes;
+}
+
+QVector< QVector<Structure::Node*> > Structure::Graph::getNodesOfConnectedSubgraphs()
+{
+	QString visitedTag = "hasVisited";
+
+	QVector< QVector<Structure::Node*> > result;
+	foreach(Node* n, nodes)
+	{
+		if (n->hasTag(visitedTag)) continue;
+
+		// nodes connecting to n
+		QVector<Node*> cnodes = getConnectedNodes(n);
+		foreach (Node* cn, cnodes) cn->addTag(visitedTag);
+
+		// store
+		result << cnodes;
+	}
+
+	// clear tags
+	foreach (Node* n, nodes) n->removeTag(visitedTag);
+
+	return result;
 }

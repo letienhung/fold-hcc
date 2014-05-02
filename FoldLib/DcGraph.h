@@ -20,7 +20,7 @@ public:
 
 	// slaves
 	QVector<FdNode*> slaves;
-	QVector< QSet<int> > slaveEndProp; // each slave has one or two end props (master + side).
+	QVector< QSet<int> > slave2masterSide; // each slave has one or two end props (master + side).
 	QList< QSet<int> > endClusters;
 	QVector<int> TSlaves;
 	QVector< QSet<int> > HSlaveClusters;// H-slaves sharing side prop belong to the same cluster.
@@ -35,10 +35,11 @@ public:
 
 public:
 	// decomposition
+	void computeSlaveMasterRelation(); // slave2masterSide
 	void createSlaves();
 	void clusterSlaves();
 	void createBlocks();
-	QVector<FdNode*> mergeCoplanarParts(QVector<FdNode*> ns, PatchNode* panel);
+	QVector<FdNode*> mergeConnectedCoplanarParts(QVector<FdNode*> ns);
 
 	// fold
 	void foldabilize();
@@ -48,9 +49,9 @@ public:
 
 public:
 	FdGraph* activeScaffold();
-	BlockGraph* getSelLayer();
+	BlockGraph* getSelBlock();
 
-	QStringList getLayerLabels();
-	void selectLayer(QString id);
+	QStringList getBlockLabels();
+	void selectBlock(QString id);
 };
 

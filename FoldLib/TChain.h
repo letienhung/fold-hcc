@@ -6,7 +6,7 @@
 class TChain : public ChainGraph
 {
 public:
-    TChain(FdNode* part, PatchNode* panel);
+    TChain(PatchNode* master, FdNode* slave);
 
 	QVector<FoldingNode*> generateFoldOptions();
 	void modify(FoldingNode* fn);

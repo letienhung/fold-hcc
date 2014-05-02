@@ -6,8 +6,8 @@
 #include "Numeric.h"
 #include "CliquerAdapter.h"
 
-HBlock::HBlock( QVector<PatchNode*> masters, QVector<FdNode*> slaves,  
-				QVector< QSet<int> >& slaveEnds, QString id )
+HBlock::HBlock( QVector<PatchNode*>& masters, QVector<FdNode*>& slaves,  
+				QVector< QVector<int> >& masterPairs, QString id )
 				:BlockGraph(id)
 {
 	// type
@@ -18,18 +18,11 @@ HBlock::HBlock( QVector<PatchNode*> masters, QVector<FdNode*> slaves,
 	foreach (FdNode* s, slaves) Structure::Graph::addNode(s->clone());
 
 	// create chains
-	double thr = mPanel1->mBox.getExtent(mPanel1->mPatch.Normal) * 2;
-	QVector<FdNode*> panels;
-	panels << mPanel1 << mPanel2;
-
-	foreach (FdNode* n, getFdNodes())
+	for (int i = 0; i < slaves.size(); i++)
 	{
-		if (n->properties.contains("isMaster")) continue;
-
-		if (getDistance(n, panels) < thr)
-		{
-			chains.push_back(new HChain(n, mPanel1, mPanel2));
-		}
+		int midx1 = masterPairs[i].first();
+		int midx2 = masterPairs[i].last();
+		chains << new HChain(slaves[i], masters[midx1], masters[midx2]);
 	}
 }
 

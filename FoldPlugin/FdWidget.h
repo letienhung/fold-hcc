@@ -23,7 +23,7 @@ private:
 public slots:
 	// from Ui
 	void selectDcGraph();
-	void selectLayer();
+	void selectBlock();
 	void selectChain();
 	void selectKeyframe();
 	void identifyMasters();
@@ -37,7 +37,7 @@ public slots:
 
 signals:
 	void dcGraphSelectionChanged(QString id);
-	void layerSelectionChanged(QString id);
+	void blockSelectionChanged(QString id);
 	void chainSelectionChanged(QString id);
 	void keyframeSelectionChanged(int idx);
 };

@@ -48,6 +48,9 @@ QStringList BlockGraph::getChainLabels()
 	foreach(FdGraph* c, chains)
 		labels.push_back(c->mID);
 
+	// append string to select none
+	labels << "--none--";
+
 	return labels;
 }
 

@@ -5,7 +5,7 @@
 class TBlock : public BlockGraph
 {
 public:
-    TBlock(PatchNode* master, FdNode* slave, int side, QString id);
+    TBlock(PatchNode* master, FdNode* slave, QString id);
 	~TBlock();
 
 	void foldabilize();
@@ -15,5 +15,5 @@ public:
 	QVector<Structure::Node*> getKeyFrameNodes( double t );
 
 public: 
-	PatchNode* mPanel; 
+	PatchNode* mMaster; 
 };

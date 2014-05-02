@@ -5,9 +5,6 @@ Structure::Node::Node( QString nid )
 {
 	mID = nid;
 	isSelected = false;
-
-	properties["isSplittable"] = true;
-	properties["isScalable"] = true;
 }
 
 Structure::Node::Node(Node &other)
@@ -15,9 +12,6 @@ Structure::Node::Node(Node &other)
 	mID = other.mID;
 	isSelected = other.isSelected;
 	properties = other.properties;
-
-	properties["isSplittable"] = true;
-	properties["isScalable"] = true;
 }
 
 bool Structure::Node::hasId( QString id )
@@ -53,4 +47,9 @@ void Structure::Node::addTag( QString tag )
 bool Structure::Node::hasTag( QString tag )
 {
 	return properties.contains(tag);
+}
+
+void Structure::Node::removeTag( QString tag )
+{
+	properties.remove(tag);
 }

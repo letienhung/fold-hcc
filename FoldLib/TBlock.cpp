@@ -8,7 +8,7 @@
 #include "Numeric.h"
 #include <QDir>
 
-TBlock::TBlock( PatchNode* master, FdNode* slave, int side, QString id )
+TBlock::TBlock( PatchNode* master, FdNode* slave, QString id )
 	:BlockGraph(id)
 {
 	// type
@@ -18,17 +18,8 @@ TBlock::TBlock( PatchNode* master, FdNode* slave, int side, QString id )
 	Structure::Graph::addNode(slave->clone());
 	Structure::Graph::addNode(master->clone());
 
-	// create chains
-	double thr = mPanel->mBox.getExtent(mPanel->mPatch.Normal) * 2;
-	foreach (FdNode* n, getFdNodes())
-	{
-		if (n->properties.contains("isMaster")) continue;
-
-		if (getDistance(n, mPanel) < thr)
-		{
-			chains.push_back(new TChain(n, mPanel));
-		}
-	}
+	// create the chain
+	chains << new TChain(master, slave);
 }
 
 TBlock::~TBlock()

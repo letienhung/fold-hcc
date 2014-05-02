@@ -1,13 +1,11 @@
 #include "HChain.h"
 #include "Numeric.h"
 
-HChain::HChain( FdNode* part, PatchNode* panel1, PatchNode* panel2)
-	:ChainGraph(part, panel1, panel2)
+HChain::HChain( FdNode* slave, PatchNode* master1, PatchNode* master2)
+	:ChainGraph(slave, master1, master2)
 {
 	// type
 	properties["type"] = "sandwich";
-
-	createChain(2);
 }
 
 Geom::Rectangle2 HChain::getFoldRegion(FoldingNode* fn)
@@ -68,7 +66,7 @@ QVector<FoldingNode*> HChain::generateFoldOptions()
 	QVector<FoldingNode*> options;
 
 	// patch chain
-	if (mOrigPart->mType == FdNode::PATCH)
+	if (mOrigSlave->mType == FdNode::PATCH)
 	{
 		// #splits: 1 and 2
 		for (int n = 1; n <= 2; n++)

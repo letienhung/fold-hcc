@@ -7,6 +7,7 @@
 FoldManager::FoldManager()
 {
 	scaffold = NULL;
+	dcScaffold = NULL;
 
 	selDcIdx = -1;
 }
@@ -14,14 +15,18 @@ FoldManager::FoldManager()
 FoldManager::~FoldManager()
 {
 	clearDcGraphs();
+
+	if (dcScaffold) delete dcScaffold;
 }
 
 void FoldManager::clearDcGraphs()
 {
-	foreach(DcGraph* lm, dcGraphs)
-		delete lm;
+	foreach(DcGraph* dc, dcGraphs)
+		delete dc;
 
 	dcGraphs.clear();
+
+	updateDcList();
 }
 
 // input
@@ -45,13 +50,21 @@ void FoldManager::identifyMasters(QString method, QString direct)
 
 		identifyParallelMasters(sqzV);
 	}
+
+	// visualize virtual parts
+	emit(sceneChanged());
 }
 
 void FoldManager::identifyParallelMasters( Vector3 sqzV )
 {
+	// squeezing direction
 	Geom::AABB aabb = scaffold->computeAABB();
 	Geom::Box box = aabb.box();
 	int sqzAId = aabb.box().getAxisId(sqzV);
+
+	// clone scaffold for composition
+	if (dcScaffold) delete dcScaffold;
+	dcScaffold = (FdGraph*)scaffold->clone();
 
 	// threshold
 	double perpThr = 0.1;
@@ -61,12 +74,15 @@ void FoldManager::identifyParallelMasters( Vector3 sqzV )
 
 	// ==STEP 1==: nodes perp to squeezing direction
 	QVector<FdNode*> perpNodes;
-	foreach (FdNode* n, scaffold->getFdNodes())
+	foreach (FdNode* n, dcScaffold->getFdNodes())
 	{
-		if (n->isPerpTo(sqzV, perpThr))	perpNodes << n;
-
+		// perp node
+		if (n->isPerpTo(sqzV, perpThr))	
+		{
+			perpNodes << n;
+		}
 		// virtual rod nodes from patch edges
-		if (n->mType == FdNode::PATCH)
+		else if (n->mType == FdNode::PATCH)
 		{
 			PatchNode* pn = (PatchNode*)n;
 			foreach(RodNode* rn, pn->getEdgeRodNodes())
@@ -75,7 +91,8 @@ void FoldManager::identifyParallelMasters( Vector3 sqzV )
 				if (rn->isPerpTo(sqzV, perpThr)) 
 				{
 					perpNodes << rn;
-					scaffold->Structure::Graph::addNode(rn);
+					dcScaffold->Structure::Graph::addNode(rn);
+					rn->addTag(IS_EDGE_ROD);
 				}
 				// delete if not need
 				else
@@ -86,7 +103,7 @@ void FoldManager::identifyParallelMasters( Vector3 sqzV )
 
 	// ==STEP 2==: group perp nodes
 	// perp positions
-	Geom::Box shapeBox = scaffold->computeAABB().box();
+	Geom::Box shapeBox = dcScaffold->computeAABB().box();
 	Geom::Segment skeleton = shapeBox.getSkeleton(sqzAId);
 	QMultiMap<double, FdNode*> posNodeMap;
 	foreach (FdNode* n, perpNodes)
@@ -103,7 +120,7 @@ void FoldManager::identifyParallelMasters( Vector3 sqzV )
 		// create a new group
 		if (fabs(pos - prePos) > blockHeightThr && !perpGroup.isEmpty())
 		{
-			perpGroups.push_back(perpGroup);
+			perpGroups << perpGroup;
 			perpGroup.clear();
 		}
 
@@ -122,7 +139,6 @@ void FoldManager::identifyParallelMasters( Vector3 sqzV )
 		// cluster based on adjacency
 		foreach(QVector<FdNode*> cluster, clusterNodes(pgroup, adjacentThr))
 		{
-			// accept if size is nontrivial
 			Geom::AABB aabb;
 			foreach(FdNode* n, cluster)
 				aabb.add(n->computeAABB());
@@ -130,7 +146,18 @@ void FoldManager::identifyParallelMasters( Vector3 sqzV )
 			int aid = box.getAxisId(sqzV);
 			double area = box.getPatch(aid, 0).area();
 
-			if (area > areaThr) masterGroups.push_back(cluster);
+			// accept if size is nontrivial
+			if (area > areaThr) 
+			{
+				masterGroups.push_back(cluster);
+			}
+			// remove virtual edge rod nodes in rejected cluster
+			else
+			{
+				foreach(FdNode* n, cluster)
+					if (n->hasTag(IS_EDGE_ROD))
+						dcScaffold->removeNode(n->mID);
+			}
 		}
 	}
 
@@ -141,8 +168,11 @@ void FoldManager::identifyParallelMasters( Vector3 sqzV )
 // decomposition
 void FoldManager::decompose()
 {
-	QString id = "Parallel_Dc";
-	dcGraphs.push_back(new DcGraph(scaffold, masterIdGroups, id));
+	QString id = "Dc_" + QString::number(dcGraphs.size());
+	dcGraphs.push_back(new DcGraph(dcScaffold, masterIdGroups, id));
+
+	// update ui
+	updateDcList();
 }
 
 void FoldManager::foldbzSelBlock()
@@ -173,7 +203,7 @@ void FoldManager::selectDcGraph( QString id )
 		}
 	}
 
-	// disable selection on layer and chains
+	// disable selection on block and chains
 	selectBlock("");
 
 	// update list
@@ -188,7 +218,7 @@ void FoldManager::selectBlock( QString id )
 {
 	if (getSelDcGraph()) 
 	{
-		getSelDcGraph()->selectLayer(id);
+		getSelDcGraph()->selectBlock(id);
 	}
 
 	updateChainList();
@@ -209,8 +239,11 @@ void FoldManager::selectChain( QString id )
 QStringList FoldManager::getDcGraphLabels()
 {
 	QStringList labels;
-	foreach (DcGraph* ly, dcGraphs)	
-		labels.push_back(ly->mID);
+	foreach (DcGraph* dc, dcGraphs)	
+		labels << dc->mID;
+
+	// append string to select none
+	labels << "--none--";
 
 	return labels;
 }
@@ -219,7 +252,7 @@ BlockGraph* FoldManager::getSelBlock()
 {
 	if (getSelDcGraph())
 	{
-		return getSelDcGraph()->getSelLayer();
+		return getSelDcGraph()->getSelBlock();
 	}
 	else
 		return NULL;
@@ -299,7 +332,7 @@ void FoldManager::updateBlockList()
 {
 	QStringList layerLabels;
 	if (getSelDcGraph()) 
-		layerLabels = getSelDcGraph()->getLayerLabels();
+		layerLabels = getSelDcGraph()->getBlockLabels();
 
 	emit(blocksChanged(layerLabels));
 

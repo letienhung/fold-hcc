@@ -27,6 +27,7 @@ public:
 
 	// properties
 	void addTag(QString tag);
+	void removeTag(QString tag);
 	bool hasTag(QString tag);
 
 public:

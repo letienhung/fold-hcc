@@ -6,7 +6,7 @@
 class HChain : public ChainGraph
 {
 public:
-    HChain(FdNode* part, PatchNode* panel1, PatchNode* panel2);
+    HChain(FdNode* slave, PatchNode* master1, PatchNode* master2);
 
 	// fold options
 	QVector<FoldingNode*> generateFoldOptions();

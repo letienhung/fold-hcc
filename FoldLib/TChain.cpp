@@ -2,14 +2,11 @@
 #include "Hinge.h"
 #include "Numeric.h"
 
-TChain::TChain( FdNode* part, PatchNode* panel )
-	:ChainGraph(part, panel, NULL)
+TChain::TChain( PatchNode* master, FdNode* slave)
+	:ChainGraph(slave, master, NULL)// ChainGraph has cloned slave and master
 {
 	// type
-	properties["type"] = "pizza";
-
-	// create chain
-	createChain(1);
+	mType = T_CHAIN;
 }
 
 Geom::SectorCylinder TChain::getFoldingVolume( FoldingNode* fn )
