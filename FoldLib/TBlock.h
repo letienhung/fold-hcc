@@ -8,6 +8,9 @@ public:
     TBlock(PatchNode* master, FdNode* slave, QString id);
 	~TBlock();
 
+	// fold option
+	QVector<FoldOption*> generateFoldOptions();
+
 	void foldabilize();
 
 	Vector3 getClosestCoordinates(Geom::SectorCylinder& fVolume, FdNode* node);

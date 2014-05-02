@@ -4,6 +4,7 @@
 #include "PatchNode.h"
 #include "Numeric.h"
 #include "BlockGraph.h"
+#include "FoldOptionGraph.h"
 
 // DcGraph encodes the decomposition of scaffold
 // including base patches and layers
@@ -29,6 +30,9 @@ public:
 	int selBlockIdx;
 	QVector<BlockGraph*> blocks;
 
+	// dependency graph
+	FoldOptionGraph* depFog;
+
 	// folding results
 	int keyfameIdx;
 	QVector<FdGraph*> keyframes;
@@ -41,8 +45,9 @@ public:
 	void createBlocks();
 	QVector<FdNode*> mergeConnectedCoplanarParts(QVector<FdNode*> ns);
 
-	// fold
+	// foldem
 	void foldabilize();
+	void buildDepGraph();
 
 	// key frame
 	FdGraph* getKeyFrame(double t);

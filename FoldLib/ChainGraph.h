@@ -15,8 +15,8 @@ public:
 	void setupBasisOrientations();
 
 	// fold options
-	virtual QVector<FoldingNode*> generateFoldOptions() = 0;
-	virtual void modify(FoldingNode* fn) = 0;
+	virtual QVector<FoldOption*> generateFoldOptions() = 0;
+	virtual void modify(FoldOption* fn) = 0;
 
 	// Modify chain
 	void createChain(int N);
@@ -25,7 +25,7 @@ public:
 	void shrinkChainAlongJoint(double t0, double t1);
 	void shrinkChainPerpJoint();
 
-	void setupActiveLinks(FoldingNode* fn);
+	void setupActiveLinks(FoldOption* fn);
 	void fold(double t);
 
 	// animation

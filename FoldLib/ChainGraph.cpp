@@ -151,7 +151,7 @@ void ChainGraph::fold( double t )
 	restoreConfiguration();
 }
 
-void ChainGraph::setupActiveLinks( FoldingNode* fn )
+void ChainGraph::setupActiveLinks( FoldOption* fn )
 {
 	activeLinks.clear();
 

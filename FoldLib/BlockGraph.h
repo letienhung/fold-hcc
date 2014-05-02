@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ChainGraph.h"
+#include "FoldOptionGraph.h"
 
 class BlockGraph : public FdGraph
 {
@@ -20,11 +21,8 @@ public:
 	// getter
 	ChainGraph* getChain(QString cid);
 
-	// foldabilize
-	void foldabilize();
-
-	// fold option graph
-	void exportFOG();
+	// foldem
+	virtual QVector<FoldOption*> generateFoldOptions() = 0;
 
 	// keyframes
 	virtual void snapshot(double t);

@@ -193,3 +193,8 @@ Vector3 TBlock::getClosestCoordinates( Geom::SectorCylinder& fVolume, Geom::Rect
 
 	return fVolume.getCoordinates(closestP);
 }
+
+QVector<FoldOption*> TBlock::generateFoldOptions()
+{
+	return chains.front()->generateFoldOptions();
+}

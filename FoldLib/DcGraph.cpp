@@ -4,6 +4,7 @@
 #include "HBlock.h"
 #include <QFileInfo>
 #include "FdUtility.h"
+#include "SectorCylinder.h"
 
 
 DcGraph::DcGraph( FdGraph* scaffold, StrArray2D masterGroups, QString id)
@@ -29,6 +30,9 @@ DcGraph::DcGraph( FdGraph* scaffold, StrArray2D masterGroups, QString id)
 
 	// selection
 	selBlockIdx = -1;
+
+	// fold option graph
+	depFog = new FoldOptionGraph();
 }
 
 DcGraph::~DcGraph()
@@ -532,6 +536,73 @@ FdGraph* DcGraph::getKeyFrame( double t )
 
 void DcGraph::foldabilize()
 {
-	foreach(BlockGraph* layer, blocks)
-		layer->foldabilize();
+	// construct dependency graph
+	
+}
+
+void DcGraph::buildDepGraph()
+{
+	depFog->clear();
+
+	// nodes
+	for (int i = 0; i < blocks.size(); i++)
+	{
+		// to-do: H-block entity
+		if (blocks[i]->mType == BlockGraph::H_BLOCK) continue;
+
+		// fold entity
+		FoldEntity* bn = new FoldEntity(i, blocks[i]->mID);
+		depFog->addNode(bn);
+
+		// fold options and folding links
+		foreach (FoldOption* fn, blocks[i]->generateFoldOptions())
+		{
+			depFog->addNode(fn);
+			depFog->addFoldLink(bn, fn);
+		}
+	}
+
+	// collision links
+	QVector<FoldOption*> fns = depFog->getAllFoldOptions();
+	for (int i = 0; i < fns.size(); i++)
+	{
+		FoldOption* fn = fns[i];
+		FoldEntity* bn = depFog->getFoldEntiry(fn->mID);
+		Geom::SectorCylinder fVolume = fn->properties.value<Geom::SectorCylinder>("fVolume");
+		
+		// with other fold entities
+		foreach(ChainNode* other_cn, fog->getAllChainNodes())
+		{
+			if (cn == other_cn) continue;
+
+			TChain* other_chain = (TChain*) getChain(other_cn->mID);
+			FdNode* other_part = other_chain->mParts[0];
+
+			bool collide = false;
+			if (other_part->mType == FdNode::PATCH)
+			{
+				PatchNode* other_patch = (PatchNode*) other_part;
+				if (fVolume.intersects(other_patch->mPatch))
+				{
+					collide = true;
+					//debugSegs << Geom::Segment(fVCenter, other_patch->mPatch.Center);
+				}
+			}else
+			{
+				RodNode* other_rod = (RodNode*) other_part;
+				if (fVolume.intersects(other_rod->mRod))
+				{
+					collide = true;
+					//debugSegs << Geom::Segment(fVCenter, other_rod->mRod.Center);
+				}
+			}
+
+			// add collision link
+			if (collide)
+			{
+				fog->addCollisionLink(fn, other_cn);
+			}
+		}
+	}
+	
 }

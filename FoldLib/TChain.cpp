@@ -9,7 +9,7 @@ TChain::TChain( PatchNode* master, FdNode* slave)
 	mType = T_CHAIN;
 }
 
-Geom::SectorCylinder TChain::getFoldingVolume( FoldingNode* fn )
+Geom::SectorCylinder TChain::getFoldingVolume( FoldOption* fn )
 {
 	// hinge axis and rightV
 	int hidx = fn->hingeIdx;
@@ -20,7 +20,7 @@ Geom::SectorCylinder TChain::getFoldingVolume( FoldingNode* fn )
 	return Geom::SectorCylinder(axisSeg, chainUpSeg, rightV);
 }
 
-void TChain::resolveCollision( FoldingNode* fn )
+void TChain::resolveCollision( FoldOption* fn )
 {
 	Geom::SectorCylinder sfVolume = fn->properties["sfVolume"].value<Geom::SectorCylinder>();
 
@@ -32,12 +32,16 @@ void TChain::resolveCollision( FoldingNode* fn )
 	if (nbPart != mParts.size()) createChain(nbPart);
 }
 
-QVector<FoldingNode*> TChain::generateFoldOptions()
+QVector<FoldOption*> TChain::generateFoldOptions()
 {
-	return QVector<FoldingNode*>();
+	QVector<FoldOption*> options;
+
+
+
+	return options;
 }
 
-void TChain::modify( FoldingNode* fn )
+void TChain::modify( FoldOption* fn )
 {
 
 }

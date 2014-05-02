@@ -8,7 +8,7 @@ HChain::HChain( FdNode* slave, PatchNode* master1, PatchNode* master2)
 	properties["type"] = "sandwich";
 }
 
-Geom::Rectangle2 HChain::getFoldRegion(FoldingNode* fn)
+Geom::Rectangle2 HChain::getFoldRegion(FoldOption* fn)
 {
 	// axis and rightV
 	int hidx = fn->hingeIdx;
@@ -46,7 +46,7 @@ Geom::Rectangle2 HChain::getFoldRegion(FoldingNode* fn)
 	return Geom::Rectangle2(conners);
 }
 
-Geom::Segment2 HChain::getFoldingAxis2D( FoldingNode* fn )
+Geom::Segment2 HChain::getFoldingAxis2D( FoldOption* fn )
 {
 	Geom::Segment axisSeg = getJointSegment(fn);
 	Geom::Rectangle& panel_rect = mMasters[0]->mPatch;
@@ -54,16 +54,16 @@ Geom::Segment2 HChain::getFoldingAxis2D( FoldingNode* fn )
 	return panel_rect.get2DSegment(axisSeg);
 }
 
-Geom::Segment HChain::getJointSegment( FoldingNode* fn )
+Geom::Segment HChain::getJointSegment( FoldOption* fn )
 {
 	int hidx = fn->hingeIdx;
 	int jidx = hidx / 2;
 	return rootJointSegs[jidx];
 }
 
-QVector<FoldingNode*> HChain::generateFoldOptions()
+QVector<FoldOption*> HChain::generateFoldOptions()
 {
-	QVector<FoldingNode*> options;
+	QVector<FoldOption*> options;
 
 	// patch chain
 	if (mOrigSlave->mType == FdNode::PATCH)
@@ -85,12 +85,12 @@ QVector<FoldingNode*> HChain::generateFoldOptions()
 
 					// left
 					QString fnid1 = this->mID + "_" + QString::number(options.size());
-					FoldingNode* fn1 = new FoldingNode(0, false, scale, position, n, fnid1);
+					FoldOption* fn1 = new FoldOption(0, false, scale, position, n, fnid1);
 					options.push_back(fn1);
 
 					// right
 					QString fnid2 = this->mID + "_" + QString::number(options.size());
-					FoldingNode* fn2 = new FoldingNode(0, true, scale, position, n, fnid2);
+					FoldOption* fn2 = new FoldOption(0, true, scale, position, n, fnid2);
 					options.push_back(fn2);
 				}
 			}
@@ -107,19 +107,19 @@ QVector<FoldingNode*> HChain::generateFoldOptions()
 			{
 				// left
 				QString fnid1 = this->mID + "_" + QString::number(options.size());
-				FoldingNode* fn1 = new FoldingNode(j, false, 1.0, 0.0, n, fnid1);
+				FoldOption* fn1 = new FoldOption(j, false, 1.0, 0.0, n, fnid1);
 				options.push_back(fn1);
 
 				// right
 				QString fnid2 = this->mID + "_" + QString::number(options.size());
-				FoldingNode* fn2 = new FoldingNode(j, true, 1.0, 0.0, n, fnid2);
+				FoldOption* fn2 = new FoldOption(j, true, 1.0, 0.0, n, fnid2);
 				options.push_back(fn2);
 			}
 		}
 	}
 
 	// fold area
-	foreach (FoldingNode* fn, options)
+	foreach (FoldOption* fn, options)
 	{
 		Geom::Rectangle2 fArea = this->getFoldRegion(fn);
 		fn->properties["fArea"].setValue(fArea);
@@ -128,7 +128,7 @@ QVector<FoldingNode*> HChain::generateFoldOptions()
 	return options;
 }
 
-void HChain::modify( FoldingNode* fn )
+void HChain::modify( FoldOption* fn )
 {
 
 }

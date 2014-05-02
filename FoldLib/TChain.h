@@ -8,10 +8,10 @@ class TChain : public ChainGraph
 public:
     TChain(PatchNode* master, FdNode* slave);
 
-	QVector<FoldingNode*> generateFoldOptions();
-	void modify(FoldingNode* fn);
+	QVector<FoldOption*> generateFoldOptions();
+	void modify(FoldOption* fn);
 
-	Geom::SectorCylinder getFoldingVolume(FoldingNode* fn);
+	Geom::SectorCylinder getFoldingVolume(FoldOption* fn);
 
-	void resolveCollision(FoldingNode* fn);
+	void resolveCollision(FoldOption* fn);
 };

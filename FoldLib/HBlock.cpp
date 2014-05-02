@@ -178,3 +178,8 @@ QVector<Structure::Node*> HBlock::getKeyFrameNodes( double t )
 
 	return knodes;
 }
+
+QVector<FoldOption*> HBlock::generateFoldOptions()
+{
+	return QVector<FoldOption*>() << new FoldOption(mID);
+}

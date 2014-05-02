@@ -1,22 +1,23 @@
 #pragma once
 #include "Graph.h"
 
-class ChainNode : public Structure::Node
+class FoldEntity : public Structure::Node
 {
 public:
-	ChainNode(int cIdx, QString id);
-	ChainNode(ChainNode &other);
+	FoldEntity(int cIdx, QString id);
+	FoldEntity(FoldEntity &other);
 	Node* clone();
 
-	// chain index
-	int chainIdx; 
+	// entity index
+	int entityIdx; 
 };
 
-class FoldingNode : public Structure::Node
+class FoldOption : public Structure::Node
 {
 public:
-	FoldingNode(int hIdx, bool right, double s, double p, int n, QString id);
-	FoldingNode(FoldingNode &other);
+	FoldOption(QString id);
+	FoldOption(int hIdx, bool right, double s, double p, int n, QString id);
+	FoldOption(FoldOption &other);
 	Node* clone();
 
 	// hinge info: idx of root segment
@@ -60,10 +61,10 @@ public:
 	Graph* clone();
 
 	// modifier
-	void addNode(ChainNode* cn);
-	void addNode(FoldingNode* fn);
+	void addNode(FoldEntity* cn);
+	void addNode(FoldOption* fn);
 	void addNode(BarrierNode* bn);
-	void addFoldingLink(Structure::Node* n1, Structure::Node* n2);
+	void addFoldLink(Structure::Node* n1, Structure::Node* n2);
 	void addCollisionLink(Structure::Node* n1, Structure::Node* n2);
 
 	// verifier
@@ -72,13 +73,13 @@ public:
 	bool areSiblings(QString nid1, QString nid2);
 
 	// getters
-	ChainNode*		getChainNode(QString fnid);		// chain node of a folding node
+	FoldEntity*		getFoldEntiry(QString fnid);		// chain node of a folding node
 	BarrierNode*	getBarrierNode(int fIdx);		// barrier node with face index
-	QVector<ChainNode*>		getAllChainNodes();		
-	QVector<FoldingNode*>	getAllFoldingNodes();	
+	QVector<FoldEntity*>		getAllChainNodes();		
+	QVector<FoldOption*>	getAllFoldOptions();	
 	QVector<BarrierNode*>	getAllBarrierNodes();
-	QVector<FoldingNode*>	getSiblings(QString fnid);		// siblings of folding node
-	QVector<FoldingNode*>	getFoldingNodes(QString cnid);	// folding nodes of a chain node
+	QVector<FoldOption*>	getSiblings(QString fnid);		// siblings of folding node
+	QVector<FoldOption*>	getFoldingNodes(QString cnid);	// folding nodes of a chain node
 	QVector<Structure::Node*> getFamilyNodes(QString nid);
 
 	QVector<Structure::Link*> getFoldinglinks(QString nid);

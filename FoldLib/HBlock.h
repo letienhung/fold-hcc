@@ -6,6 +6,9 @@ class HBlock : public BlockGraph
 public:
     HBlock(QVector<PatchNode*>& masters, QVector<FdNode*>& slaves, QVector< QVector<int> >& masterPairs, QString id);
 
+	// fold option
+	QVector<FoldOption*> generateFoldOptions();
+
 	// collision graph
 	void foldabilize();
 	void buildCollisionGraph();
@@ -16,6 +19,6 @@ public:
 	// time interval
 	double start, end;
 
-	QVector<FoldingNode*> foldSolution;
+	QVector<FoldOption*> foldSolution;
 };
 
