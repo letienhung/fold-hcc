@@ -22,8 +22,8 @@ public:
 	ChainGraph* getChain(QString cid);
 
 	// foldem
-	void foldabilize();
 	virtual QVector<FoldOption*> generateFoldOptions() = 0;
+	virtual void applyFoldOption(FoldOption* fn) = 0;
 
 	// keyframes
 	virtual void snapshot(double t);

@@ -571,6 +571,12 @@ void DcGraph::foldabilize()
 		// update best fold option
 		best_fn = getMinCostFreeFoldOption();
 	}
+
+	// apply modification in selected fold options
+	for (int i = 0; i < blockSequence.size(); i++)
+	{
+		blockSequence[i]->applyFoldOption(foldOptionSequence[i]);
+	}
 }
 
 void DcGraph::buildDepGraph()
@@ -580,7 +586,6 @@ void DcGraph::buildDepGraph()
 	// nodes
 	for (int i = 0; i < blocks.size(); i++)
 	{
-
 		// fold entity
 		FoldEntity* bn = new FoldEntity(i, blocks[i]->mID);
 		depFog->addNode(bn);

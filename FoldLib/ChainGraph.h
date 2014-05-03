@@ -17,7 +17,8 @@ public:
 	// fold options
 	virtual QVector<FoldOption*> generateFoldOptions() = 0;
 	QVector<FoldOption*> generateFoldOptions(int nbSplit0, int nbSplit1, int nbScales);
-	virtual void modify(FoldOption* fn) = 0;
+	virtual void applyFoldOption(FoldOption* fn) = 0;
+	void setupActiveLinks(FoldOption* fn);
 
 	// Modify chain
 	void createChain(int N);
@@ -26,10 +27,9 @@ public:
 	void shrinkChainAlongJoint(double t0, double t1);
 	void shrinkChainPerpJoint();
 
-	void setupActiveLinks(FoldOption* fn);
-	void fold(double t);
 
 	// animation
+	void fold(double t);
 	QVector<Structure::Node*> getKeyframeParts(double t);
 	QVector<Structure::Node*> getKeyFramePanels(double t);
 

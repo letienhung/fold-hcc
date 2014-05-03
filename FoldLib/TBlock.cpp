@@ -26,9 +26,6 @@ TBlock::~TBlock()
 {
 }
 
-void TBlock::foldabilize()
-{
-}
 
 QVector<Structure::Node*> TBlock::getKeyFrameNodes( double t )
 {
@@ -65,4 +62,9 @@ QVector<Structure::Node*> TBlock::getKeyFrameNodes( double t )
 QVector<FoldOption*> TBlock::generateFoldOptions()
 {
 	return chains.front()->generateFoldOptions();
+}
+
+void TBlock::applyFoldOption( FoldOption* fn )
+{
+
 }

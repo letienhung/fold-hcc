@@ -75,7 +75,7 @@ QVector<FoldOption*> HChain::generateFoldOptions()
 	return options;
 }
 
-void HChain::modify( FoldOption* fn )
+void HChain::applyFoldOption( FoldOption* fn )
 {
 
 }

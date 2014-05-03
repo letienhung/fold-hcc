@@ -4,6 +4,8 @@
 #include <QFileDialog>
 #include <QDir>
 
+#include "HBlock.h"
+
 FoldManager::FoldManager()
 {
 	scaffold = NULL;
@@ -193,8 +195,12 @@ void FoldManager::decompose()
 
 void FoldManager::foldbzSelBlock()
 {
-	BlockGraph* lg = getSelBlock();
-	if (lg) lg->foldabilize();
+	BlockGraph* block = getSelBlock();
+	if (block->mType == BlockGraph::H_BLOCK) 
+	{
+		HBlock* hblock = (HBlock*)block;
+		hblock->foldabilize();
+	}
 }
 
 

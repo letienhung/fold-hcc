@@ -8,9 +8,9 @@ class HChain : public ChainGraph
 public:
     HChain(FdNode* slave, PatchNode* master1, PatchNode* master2);
 
-	// fold options
+	// foldem
 	QVector<FoldOption*> generateFoldOptions();
-	void modify(FoldOption* fn);
+	void applyFoldOption(FoldOption* fn);
 
 	// fold region on master patch
 	Geom::Rectangle2 getFoldRegion(FoldOption* fn);

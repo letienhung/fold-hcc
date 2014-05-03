@@ -10,11 +10,9 @@ public:
     TBlock(PatchNode* master, FdNode* slave, QString id);
 	~TBlock();
 
-	// fold option
-	QVector<FoldOption*> generateFoldOptions();
-
 	// foldem
-	void foldabilize();
+	QVector<FoldOption*> generateFoldOptions();
+	void applyFoldOption(FoldOption* fn);
 
 	// results
 	QVector<Structure::Node*> getKeyFrameNodes( double t );

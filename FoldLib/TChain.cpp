@@ -55,7 +55,7 @@ QVector<FoldOption*> TChain::generateFoldOptions()
 	return options;
 }
 
-void TChain::modify( FoldOption* fn )
+void TChain::applyFoldOption( FoldOption* fn )
 {
 
 }

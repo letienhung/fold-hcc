@@ -68,7 +68,3 @@ void BlockGraph::snapshot( double t )
 		chain->fold(t);
 }
 
-void BlockGraph::foldabilize()
-{
-
-}

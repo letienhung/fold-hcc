@@ -183,3 +183,8 @@ QVector<FoldOption*> HBlock::generateFoldOptions()
 {
 	return QVector<FoldOption*>() << new FoldOption(mID);
 }
+
+void HBlock::applyFoldOption( FoldOption* fn )
+{
+	foldabilize();
+}
