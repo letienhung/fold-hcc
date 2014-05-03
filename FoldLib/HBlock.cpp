@@ -181,8 +181,5 @@ QVector<Structure::Node*> HBlock::getKeyFrameNodes( double t )
 
 QVector<FoldOption*> HBlock::generateFoldOptions()
 {
-	FoldOption* fn = new FoldOption(mID);
-	fn->addTag(IS_HBLOCK_FOLD_OPTION);
-
-	return QVector<FoldOption*>() << fn;
+	return QVector<FoldOption*>() << new FoldOption(mID);
 }

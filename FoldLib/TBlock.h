@@ -2,6 +2,8 @@
 #include "BlockGraph.h"
 #include "SectorCylinder.h"
 
+class TChain;
+
 class TBlock : public BlockGraph
 {
 public:

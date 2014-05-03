@@ -16,6 +16,7 @@ public:
 
 	// fold options
 	virtual QVector<FoldOption*> generateFoldOptions() = 0;
+	QVector<FoldOption*> generateFoldOptions(int nbSplit0, int nbSplit1, int nbScales);
 	virtual void modify(FoldOption* fn) = 0;
 
 	// Modify chain

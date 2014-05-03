@@ -197,10 +197,15 @@ QVector<Vector3> Geom::Segment::getUniformSamples( int N )
 	return samples;
 }
 
-void Geom::Segment::crop( double t0, double t1 )
+void Geom::Segment::cropRange_11( double t0, double t1 )
 {
 	Vector3 p0 = getPosition(t0);
 	Vector3 p1 = getPosition(t1);
 
 	this->set(p0, p1);
+}
+
+void Geom::Segment::cropRange01( double t0, double t1 )
+{
+	cropRange_11(2*t0-1, 2*t1-1);
 }

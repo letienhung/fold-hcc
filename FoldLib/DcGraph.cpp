@@ -5,6 +5,7 @@
 #include <QFileInfo>
 #include "FdUtility.h"
 #include "SectorCylinder.h"
+#include "TChain.h"
 
 
 DcGraph::DcGraph( FdGraph* scaffold, StrArray2D masterGroups, QString id)
@@ -117,7 +118,7 @@ QVector<FdNode*> DcGraph::mergeConnectedCoplanarParts( QVector<FdNode*> ns )
 		foreach(FdNode* n, ns)
 			if (onPlane(n, plane)) copNodes << n;
 
-		foreach(QVector<FdNode*> group, clusterNodes(copNodes, distThr))
+		foreach(QVector<FdNode*> group, getConnectedGroups(copNodes, distThr))
 		{
 			QSet<QString> groupIds;
 			foreach(FdNode* n, group) groupIds << n->mID;
@@ -536,8 +537,40 @@ FdGraph* DcGraph::getKeyFrame( double t )
 
 void DcGraph::foldabilize()
 {
+	// clear
+	blockSequence.clear();
+	foldOptionSequence.clear();
+	foreach(FoldOptionGraph* df, depFogSequence) delete df;
+	depFogSequence.clear();
+
 	// construct dependency graph
-	
+	buildDepGraph();
+	depFogSequence << (FoldOptionGraph*)depFog->clone();
+
+	// choose best free fold options in a greedy manner
+	FoldOption* best_fn = getMinCostFreeFoldOption();
+	while (best_fn)
+	{
+		// selected block and fold option
+		FoldEntity* bn = depFog->getFoldEntity(best_fn->mID);
+		blockSequence << blocks[bn->entityIdx];
+		foldOptionSequence << best_fn;
+		best_fn->addTag(SELECTED_FOLD_OPTION);
+
+		// exclude family nodes
+		foreach(Structure::Node* n, depFog->getFamilyNodes(best_fn->mID))
+			n->addTag(DELETED_TAG);
+
+		// remove collision links incident to the family
+		foreach(Structure::Link* clink, depFog->getFamilyCollisionLinks(bn->mID))
+			depFog->removeLink(clink);
+
+		// a copy of current depFog
+		depFogSequence << (FoldOptionGraph*)depFog->clone();
+
+		// update best fold option
+		best_fn = getMinCostFreeFoldOption();
+	}
 }
 
 void DcGraph::buildDepGraph()
@@ -547,64 +580,138 @@ void DcGraph::buildDepGraph()
 	// nodes
 	for (int i = 0; i < blocks.size(); i++)
 	{
-		// to-do: H-block entity
-		if (blocks[i]->mType == BlockGraph::H_BLOCK) continue;
 
 		// fold entity
 		FoldEntity* bn = new FoldEntity(i, blocks[i]->mID);
 		depFog->addNode(bn);
+		// tag for HBlock entity
+		if (blocks[i]->mType == BlockGraph::H_BLOCK)
+			bn->addTag(IS_HBLOCK_FOLD_ENTITY);
 
 		// fold options and folding links
 		foreach (FoldOption* fn, blocks[i]->generateFoldOptions())
 		{
 			depFog->addNode(fn);
 			depFog->addFoldLink(bn, fn);
+
+			// tag for HBlock option
+			if (blocks[i]->mType == BlockGraph::H_BLOCK)
+				bn->addTag(IS_HBLOCK_FOLD_OPTION);
 		}
 	}
 
-	// collision links
-	QVector<FoldOption*> fns = depFog->getAllFoldOptions();
-	for (int i = 0; i < fns.size(); i++)
+	// links
+	// collision/dependency between fold option and entity
+	foreach (FoldOption* fn, depFog->getAllFoldOptions())
 	{
-		FoldOption* fn = fns[i];
-		FoldEntity* bn = depFog->getFoldEntiry(fn->mID);
-		Geom::SectorCylinder fVolume = fn->properties["fVolume"].value<Geom::SectorCylinder>();
-		
-		// with other fold entities
+		FoldEntity* bn = depFog->getFoldEntity(fn->mID);
 		foreach(FoldEntity* other_bn, depFog->getAllFoldEntities())
 		{
-			// skip myself
+			// skip itself
 			if (bn == other_bn) continue;
 
-			// 
-			TBlock* other_chain = (TChain*) getChain(other_bn->mID);
-			FdNode* other_part = other_chain->mParts[0];
-
-			bool collide = false;
-			if (other_part->mType == FdNode::PATCH)
+			// H option
+			if (fn->hasTag(IS_HBLOCK_FOLD_OPTION))
 			{
-				PatchNode* other_patch = (PatchNode*) other_part;
-				if (fVolume.intersects(other_patch->mPatch))
-				{
-					collide = true;
-					//debugSegs << Geom::Segment(fVCenter, other_patch->mPatch.Center);
-				}
-			}else
-			{
-				RodNode* other_rod = (RodNode*) other_part;
-				if (fVolume.intersects(other_rod->mRod))
-				{
-					collide = true;
-					//debugSegs << Geom::Segment(fVCenter, other_rod->mRod.Center);
-				}
+				// H entity
+				if (other_bn->hasTag(IS_HBLOCK_FOLD_ENTITY))
+					addDepLinkHOptionHEntity(fn, other_bn);
+				// T entity
+				else addDepLinkHOptionTEntity(fn, other_bn);
 			}
-
-			// add collision link
-			if (collide)
-			{
-				fog->addCollisionLink(fn, other_bn);
+			// T option
+			else{
+				// H entity
+				if (other_bn->hasTag(IS_HBLOCK_FOLD_ENTITY))
+					addDepLinkTOptionHEntity(fn, other_bn);
+				// entity
+				else addDepLinkTOptionTEntity(fn, other_bn);
 			}
 		}
 	}
-	
+}
+
+void DcGraph::addDepLinkTOptionTEntity( FoldOption* fn, FoldEntity* other_bn )
+{
+	Geom::SectorCylinder fVolume = fn->properties["fVolume"].value<Geom::SectorCylinder>();
+
+	BlockGraph* other_block = blocks[other_bn->entityIdx];
+	TChain* other_chain = (TChain*)other_block->chains.front();
+	FdNode* other_part = other_chain->mOrigSlave;
+
+	bool collide = false;
+	if (other_part->mType == FdNode::PATCH)
+	{
+		PatchNode* other_patch = (PatchNode*) other_part;
+		if (fVolume.intersects(other_patch->mPatch))
+		{
+			collide = true;
+			//debugSegs << Geom::Segment(fVCenter, other_patch->mPatch.Center);
+		}
+	}
+	else
+	{
+		RodNode* other_rod = (RodNode*) other_part;
+		if (fVolume.intersects(other_rod->mRod))
+		{
+			collide = true;
+			//debugSegs << Geom::Segment(fVCenter, other_rod->mRod.Center);
+		}
+	}
+
+	// add collision link
+	if (collide)
+	{
+		depFog->addCollisionLink(fn, other_bn);
+	}
+}
+
+void DcGraph::addDepLinkTOptionHEntity( FoldOption* fn, FoldEntity* other_bn )
+{
+
+}
+
+void DcGraph::addDepLinkHOptionTEntity( FoldOption* fn, FoldEntity* other_bn )
+{
+
+}
+
+void DcGraph::addDepLinkHOptionHEntity( FoldOption* fn, FoldEntity* other_bn )
+{
+
+}
+
+void DcGraph::exportDepFOG()
+{
+	for (int i = 0; i < depFogSequence.size(); i++)
+	{
+		QString filePath = path + "/" + mID + "_dep_" + QString::number(i);
+		depFogSequence[i]->saveAsImage(filePath);
+	}
+}
+
+FoldOption* DcGraph::getMinCostFreeFoldOption()
+{
+	FoldOption* min_fn = NULL;
+	double min_cost = maxDouble();
+	foreach (FoldOption* fn, depFog->getAllFoldOptions())
+	{
+		// skip deleted fold options
+		if (fn->hasTag(DELETED_TAG)) continue;
+
+		// free fold option
+		QVector<Structure::Link*> links = depFog->getCollisionLinks(fn->mID);
+		if (links.isEmpty())
+		{
+			// cost
+			double cost = fn->getCost();
+			if (cost < min_cost)
+			{
+				min_cost = cost;
+				min_fn = fn;
+			}
+		}
+	}
+
+	return min_fn;
 }

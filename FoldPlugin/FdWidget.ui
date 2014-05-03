@@ -246,16 +246,16 @@
        <widget class="QListWidget" name="layerList"/>
       </item>
       <item row="7" column="0" colspan="2">
-       <widget class="QPushButton" name="fold">
+       <widget class="QPushButton" name="foldabilize">
         <property name="text">
-         <string>Fold</string>
+         <string>Foldabilize</string>
         </property>
        </widget>
       </item>
       <item row="7" column="3" colspan="2">
        <widget class="QPushButton" name="foldBlock">
         <property name="text">
-         <string>Fold selected block</string>
+         <string>Foldbz selected block</string>
         </property>
        </widget>
       </item>
@@ -402,9 +402,9 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QPushButton" name="exportFOG">
+       <widget class="QPushButton" name="exportDepFOG">
         <property name="text">
-         <string>Export FOG</string>
+         <string>Export depFOG</string>
         </property>
        </widget>
       </item>

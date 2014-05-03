@@ -45,12 +45,14 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->f_manager->connect(this, SIGNAL(keyframeSelectionChanged(int)), SLOT(selectKeyframe(int)));
 	plugin->f_manager->connect(ui->clearDcList, SIGNAL(clicked()), SLOT(clearDcGraphs()));
 
-	// foldabilize and results
+	// foldabilize
+	plugin->f_manager->connect(ui->foldabilize, SIGNAL(clicked()), SLOT(foldabilize()));
+	plugin->f_manager->connect(ui->exportDepFOG, SIGNAL(clicked()), SLOT(exportDepFOG()));
+
+	// foldabilize selected block
 	plugin->f_manager->connect(ui->foldBlock, SIGNAL(clicked()), SLOT(foldbzSelBlock()));
-	plugin->f_manager->connect(ui->fold, SIGNAL(clicked()), SLOT(foldabilize()));
 	plugin->f_manager->connect(ui->genKeyframes, SIGNAL(clicked()), SLOT(generateKeyframes()));
 	plugin->f_manager->connect(ui->snapshotTime, SIGNAL(valueChanged(double)), SLOT(snapshotSelBlock(double)));
-	plugin->f_manager->connect(ui->exportFOG, SIGNAL(clicked()), SLOT(exportFOG()));
 
 	// visualization
 	plugin->connect(ui->showKeyframe, SIGNAL(stateChanged(int)), SLOT(showKeyframe(int)));

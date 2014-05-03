@@ -11,9 +11,18 @@ TChain::TChain( PatchNode* master, FdNode* slave)
 
 Geom::SectorCylinder TChain::getFoldingVolume( FoldOption* fn )
 {
-	// hinge axis and rightV
+	// shrink hinge axis
 	int hidx = fn->hingeIdx;
 	Geom::Segment axisSeg = rootJointSegs[hidx];
+	double t0 = fn->position;
+	double t1 = t0 + fn->scale;
+	axisSeg.cropRange01(t0, t1);
+
+	// chain up segment
+	Geom::Segment upseg = chainUpSeg;
+	upseg.cropRange01(0, 1.0/fn->nbsplit);
+
+	// rightV
 	Vector3 rightV = rootRightVs[hidx];
 	if (!fn->rightSide) rightV *= -1;
 
@@ -34,57 +43,7 @@ void TChain::resolveCollision( FoldOption* fn )
 
 QVector<FoldOption*> TChain::generateFoldOptions()
 {
-	QVector<FoldOption*> options;
-
-	// #splits: 0 --> 2
-	for (int n = 0; n <= 2; n++)
-	{
-		// patch chain
-		if (mOrigSlave->mType == FdNode::PATCH)
-		{
-			// shrink: scale level : 1 --> 5 : 20% --> 100%
-			int nbScales = 5;
-			for (int i = 1; i <= nbScales; i++)
-			{
-				double step = 1.0/double(nbScales);
-				double scale = step * i;
-
-				// position
-				for (int j = 0; j <= nbScales - i; j++)
-				{
-					double position = step * j;
-
-					// left
-					QString fnid1 = this->mID + "_" + QString::number(options.size());
-					FoldOption* fn1 = new FoldOption(0, false, scale, position, n, fnid1);
-					options.push_back(fn1);
-
-					// right
-					QString fnid2 = this->mID + "_" + QString::number(options.size());
-					FoldOption* fn2 = new FoldOption(0, true, scale, position, n, fnid2);
-					options.push_back(fn2);
-				}
-			}
-		}
-		// rod chain
-		else
-		{
-			// root segment id
-			for (int j = 0; j < 2; j++)
-			{
-				// left
-				QString fnid1 = this->mID + "_" + QString::number(options.size());
-				FoldOption* fn1 = new FoldOption(j, false, 1.0, 0.0, n, fnid1);
-				options.push_back(fn1);
-
-				// right
-				QString fnid2 = this->mID + "_" + QString::number(options.size());
-				FoldOption* fn2 = new FoldOption(j, true, 1.0, 0.0, n, fnid2);
-				options.push_back(fn2);
-			}
-
-		}
-	}
+	QVector<FoldOption*> options = ChainGraph::generateFoldOptions(0, 1, 3);
 
 	// fold volume
 	foreach (FoldOption* fn, options)

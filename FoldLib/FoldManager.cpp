@@ -137,27 +137,43 @@ void FoldManager::identifyParallelMasters( Vector3 sqzV )
 	foreach (QVector<FdNode*> pgroup, perpGroups)
 	{
 		// cluster based on adjacency
-		foreach(QVector<FdNode*> cluster, clusterNodes(pgroup, adjacentThr))
+		foreach(QVector<FdNode*> cgroup, getConnectedGroups(pgroup, adjacentThr))
 		{
-			Geom::AABB aabb;
-			foreach(FdNode* n, cluster)
-				aabb.add(n->computeAABB());
-			Geom::Box box = aabb.box();
-			int aid = box.getAxisId(sqzV);
-			double area = box.getPatch(aid, 0).area();
-
-			// accept if size is nontrivial
-			if (area > areaThr) 
+			bool rejected = false;
+			
+			// reject if contains only edge rods
+			bool allEdgeRods = true;
+			foreach(FdNode* n, cgroup)
 			{
-				masterGroups.push_back(cluster);
+				if (!n->hasTag(IS_EDGE_ROD))
+				{
+					allEdgeRods = false;
+					break;
+				}
 			}
-			// remove virtual edge rod nodes in rejected cluster
-			else
+			if (allEdgeRods) rejected = true;
+
+			// reject if has trivial size
+			if (!rejected)
 			{
-				foreach(FdNode* n, cluster)
+				Geom::AABB aabb;
+				foreach(FdNode* n, cgroup)
+					aabb.add(n->computeAABB());
+				Geom::Box box = aabb.box();
+				int aid = box.getAxisId(sqzV);
+				double area = box.getPatch(aid, 0).area();
+				if (area < areaThr) rejected = true;
+			}
+
+			// rejected
+			if (rejected)
+			{// remove virtual edge rod nodes
+				foreach(FdNode* n, cgroup)
 					if (n->hasTag(IS_EDGE_ROD))
 						dcScaffold->removeNode(n->mID);
 			}
+			else // accept
+				masterGroups << cgroup;
 		}
 	}
 
@@ -377,4 +393,13 @@ void FoldManager::exportResultMesh()
 	//		results[i][j]->exportMesh(filename);
 	//	}
 	//}
+}
+
+void FoldManager::exportDepFOG()
+{
+	DcGraph* selDc = getSelDcGraph();
+	if (selDc)
+	{
+		selDc->exportDepFOG();
+	}
 }

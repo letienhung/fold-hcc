@@ -9,6 +9,7 @@
 #include "UtilityGlobal.h"
 #include <QQueue>
 #include "Numeric.h"
+#include "FdUtility.h"
 
 
 FoldEntity::FoldEntity( int cIdx, QString id )
@@ -67,7 +68,7 @@ double FoldOption::getCost()
 
 QString FoldOption::getInfo()
 {
-	return QString::number(getCost());
+	return "cost = " + QString::number(getCost());
 }
 
 
@@ -164,13 +165,13 @@ bool FoldOptionGraph::areSiblings( QString nid1, QString nid2 )
 		return false;
 
 	// share the same chain node
-	FoldEntity* cn1 = getFoldEntiry(nid1);
-	FoldEntity* cn2 = getFoldEntiry(nid2);
+	FoldEntity* cn1 = getFoldEntity(nid1);
+	FoldEntity* cn2 = getFoldEntity(nid2);
 	return cn1->mID == cn2->mID;
 }
 
 
-FoldEntity* FoldOptionGraph::getFoldEntiry( QString fnid )
+FoldEntity* FoldOptionGraph::getFoldEntity( QString fnid )
 {
 	if (!verifyNodeType(fnid, "option")) return NULL;
 
@@ -178,7 +179,7 @@ FoldEntity* FoldOptionGraph::getFoldEntiry( QString fnid )
 	return (FoldEntity*)l->getNodeOther(fnid);
 }
 
-QVector<FoldOption*> FoldOptionGraph::getFoldingNodes( QString cnid )
+QVector<FoldOption*> FoldOptionGraph::getFoldOptions( QString cnid )
 {
 	QVector<FoldOption*> fns;
 	if (!verifyNodeType(cnid, "entity")) return fns;
@@ -194,7 +195,7 @@ QVector<FoldOption*> FoldOptionGraph::getFoldingNodes( QString cnid )
 QVector<FoldOption*> FoldOptionGraph::getSiblings( QString fnid )
 {
 	if (verifyNodeType(fnid, "entity")) 
-		return getFoldingNodes(getFoldEntiry(fnid)->mID);
+		return getFoldOptions(getFoldEntity(fnid)->mID);
 	else
 		return QVector<FoldOption*>();
 }
@@ -269,10 +270,10 @@ QVector<Structure::Node*> FoldOptionGraph::getFamilyNodes( QString nid )
 
 	Structure::Node* node = getNode(nid);
 	FoldEntity* cnode = (node->properties["type"] == "entity") ? 
-		(FoldEntity*)node : getFoldEntiry(nid);
+		(FoldEntity*)node : getFoldEntity(nid);
 
 	family << cnode;
-	foreach(FoldOption* fn, getFoldingNodes(cnode->mID))
+	foreach(FoldOption* fn, getFoldOptions(cnode->mID))
 		family << fn;
 
 	return family;
@@ -332,7 +333,7 @@ QString FoldOptionGraph::toGraphvizFormat( QString subcaption, QString caption )
 		if (type == "option")
 		{
 			FoldOption* fn = (FoldOption*) node;
-			label = fn->mID + ":" + fn->getInfo();
+			label = fn->mID + "[" + fn->getInfo() + "]";
 		}
 		if (type == "barrier") label = "Barrier";
 
@@ -350,7 +351,7 @@ QString FoldOptionGraph::toGraphvizFormat( QString subcaption, QString caption )
 
 		// highlight by filling colors
 		QString other;
-		if (node->hasTag("selected")) other = "style = filled";
+		if (node->hasTag(SELECTED_FOLD_OPTION)) other = "style = filled";
 
 		out << "\t" << QString("%1 [label = \"%2\", color = \"%3\", shape = %4, %5];").arg(i).arg(label).arg(colorHex).arg(shape).arg(other) << "\n";
 

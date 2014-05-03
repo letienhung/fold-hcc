@@ -37,9 +37,11 @@ public slots:
 	// decomposition
 	void decompose();
 
-public:
 	// foldem
 	void foldabilize();
+	void exportDepFOG();
+
+public:
 
 	// output
 	void generateKeyframes();

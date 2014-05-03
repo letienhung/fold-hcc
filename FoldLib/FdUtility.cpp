@@ -10,7 +10,7 @@
 #include "MinOBB.h"
 #include "PcaOBB.h"
 
-FdNodeArray2D clusterNodes( QVector<FdNode*> nodes, double disThr )
+FdNodeArray2D getConnectedGroups( QVector<FdNode*> nodes, double disThr )
 {
 	FdNodeArray2D clusters;
 	if (nodes.isEmpty()) return clusters;

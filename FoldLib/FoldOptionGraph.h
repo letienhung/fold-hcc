@@ -73,13 +73,13 @@ public:
 	bool areSiblings(QString nid1, QString nid2);
 
 	// getters
-	FoldEntity*		getFoldEntiry(QString fnid);		// chain node of a folding node
+	FoldEntity*		getFoldEntity(QString fnid);		// chain node of a folding node
 	BarrierNode*	getBarrierNode(int fIdx);		// barrier node with face index
-	QVector<FoldEntity*>		getAllFoldEntities();		
+	QVector<FoldEntity*>	getAllFoldEntities();		
 	QVector<FoldOption*>	getAllFoldOptions();	
 	QVector<BarrierNode*>	getAllBarrierNodes();
 	QVector<FoldOption*>	getSiblings(QString fnid);		// siblings of folding node
-	QVector<FoldOption*>	getFoldingNodes(QString cnid);	// folding nodes of a chain node
+	QVector<FoldOption*>	getFoldOptions(QString cnid);	// fold options of a chain node
 	QVector<Structure::Node*> getFamilyNodes(QString nid);
 
 	QVector<Structure::Link*> getFoldinglinks(QString nid);

@@ -24,7 +24,8 @@ public:
 	void flip();
 	void translate(Vector3 t);
 	Segment translated(Vector3 t);
-	void crop(double t0, double t1);
+	void cropRange_11(double t0, double t1);
+	void cropRange01(double t0, double t1);
 
 	// coordinates
 	double	getProjCoordinates(Vector3 p);
