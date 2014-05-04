@@ -81,25 +81,7 @@ QVector<Structure::Node*> ChainGraph::getKeyFramePanels( double t )
 	return knodes;
 }
 
-// N is the number of cut planes
-QVector<Geom::Plane> ChainGraph::generateCutPlanes( int N )
-{
-	// plane of panel0
-	Geom::Plane plane0 = mMasters[0]->mPatch.getPlane();
-	if (plane0.whichSide(mOrigSlave->center()) < 0) plane0.flip();
 
-	// deltaV to shift up
-	double step = getLength() / (N + 1);
-
-	QVector<Geom::Plane> cutPlanes;
-	for (int i = 0; i < N; i++)
-	{
-		Vector3 deltaV = (i+1) * step * plane0.Normal;
-		cutPlanes << plane0.translated(deltaV);
-	}
-
-	return cutPlanes;
-}
 
 void ChainGraph::createChain( int N )
 {

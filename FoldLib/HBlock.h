@@ -1,5 +1,6 @@
 #pragma once
 #include "BlockGraph.h"
+#include "FoldOptionGraph.h"
 
 class HBlock : public BlockGraph
 {
@@ -16,6 +17,7 @@ public:
 	QVector<Structure::Node*> getKeyFrameNodes( double t );
 	
 public:
+	FoldOptionGraph* collFog;
 	QVector<FoldOption*> foldSolution;
 };
 

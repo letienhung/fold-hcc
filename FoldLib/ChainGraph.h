@@ -14,27 +14,26 @@ public:
     ChainGraph(FdNode* slave, PatchNode* master1, PatchNode* master2);
 	void setupBasisOrientations();
 
-	// fold options
+	// foldem
 	virtual QVector<FoldOption*> generateFoldOptions() = 0;
 	QVector<FoldOption*> generateFoldOptions(int nbSplit0, int nbSplit1, int nbScales);
 	virtual void applyFoldOption(FoldOption* fn) = 0;
 	void setupActiveLinks(FoldOption* fn);
 
-	// Modify chain
+	// modify chain
 	void createChain(int N);
+	virtual QVector<Geom::Plane> generateCutPlanes( int N ) = 0;
 	void sortChainParts();
 	void resetHingeLinks();
 	void shrinkChainAlongJoint(double t0, double t1);
-	void shrinkChainPerpJoint();
-
 
 	// animation
 	void fold(double t);
 	QVector<Structure::Node*> getKeyframeParts(double t);
 	QVector<Structure::Node*> getKeyFramePanels(double t);
 
+	// getter
 	double getLength();
-	QVector<Geom::Plane> generateCutPlanes(int N);
 
 public:
 	CHAIN_TYPE mType;

@@ -28,7 +28,7 @@ HBlock::HBlock( QVector<PatchNode*>& masters, QVector<FdNode*>& slaves,
 
 void HBlock::foldabilize()
 {
-	//buildCollisionGraph();
+	buildCollisionGraph();
 
 	//// get all folding nodes
 	//QVector<FoldingNode*> fns = fog->getAllFoldingNodes();

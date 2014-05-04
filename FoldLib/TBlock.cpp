@@ -66,5 +66,6 @@ QVector<FoldOption*> TBlock::generateFoldOptions()
 
 void TBlock::applyFoldOption( FoldOption* fn )
 {
-
+	// forward message to the only T-chain
+	chains.first()->applyFoldOption(fn);
 }

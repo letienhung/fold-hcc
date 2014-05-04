@@ -29,18 +29,6 @@ Geom::SectorCylinder TChain::getFoldingVolume( FoldOption* fn )
 	return Geom::SectorCylinder(axisSeg, chainUpSeg, rightV);
 }
 
-void TChain::resolveCollision( FoldOption* fn )
-{
-	Geom::SectorCylinder sfVolume = fn->properties["sfVolume"].value<Geom::SectorCylinder>();
-
-	// impossible splits
-	// to do: resolve collision cooperatively
-	if (sfVolume.Radius <= 0) return;  
-
-	int nbPart = ceil( getLength() / (sfVolume.Radius + ZERO_TOLERANCE_LOW) );
-	if (nbPart != mParts.size()) createChain(nbPart);
-}
-
 QVector<FoldOption*> TChain::generateFoldOptions()
 {
 	QVector<FoldOption*> options = ChainGraph::generateFoldOptions(0, 1, 3);
@@ -57,5 +45,25 @@ QVector<FoldOption*> TChain::generateFoldOptions()
 
 void TChain::applyFoldOption( FoldOption* fn )
 {
+	createChain(fn->nbsplit);
+	ChainGraph::setupActiveLinks(fn);
+}
 
+QVector<Geom::Plane> TChain::generateCutPlanes( int nbSplit )
+{
+	// plane of master
+	Geom::Plane master = mMasters[0]->mPatch.getPlane();
+	if (master.whichSide(mOrigSlave->center()) < 0) master.flip();
+
+	// deltaV to shift up
+	double step = getLength() / (nbSplit + 1);
+
+	QVector<Geom::Plane> cutPlanes;
+	for (int i = 0; i < nbSplit; i++)
+	{
+		Vector3 deltaV = (i+1) * step * master.Normal;
+		cutPlanes << master.translated(deltaV);
+	}
+
+	return cutPlanes;
 }

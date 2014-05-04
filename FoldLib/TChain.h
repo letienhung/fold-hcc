@@ -10,10 +10,11 @@ public:
 
 	// foldem
 	QVector<FoldOption*> generateFoldOptions();
-
 	void applyFoldOption(FoldOption* fn);
 
+	// fold info
 	Geom::SectorCylinder getFoldingVolume(FoldOption* fn);
 
-	void resolveCollision(FoldOption* fn);
+	// modifier
+	QVector<Geom::Plane> generateCutPlanes( int nbSplit );
 };

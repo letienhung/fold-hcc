@@ -46,21 +46,6 @@ Geom::Rectangle2 HChain::getFoldRegion(FoldOption* fn)
 	return Geom::Rectangle2(conners);
 }
 
-Geom::Segment2 HChain::getFoldingAxis2D( FoldOption* fn )
-{
-	Geom::Segment axisSeg = getJointSegment(fn);
-	Geom::Rectangle& panel_rect = mMasters[0]->mPatch;
-
-	return panel_rect.get2DSegment(axisSeg);
-}
-
-Geom::Segment HChain::getJointSegment( FoldOption* fn )
-{
-	int hidx = fn->hingeIdx;
-	int jidx = hidx / 2;
-	return rootJointSegs[jidx];
-}
-
 QVector<FoldOption*> HChain::generateFoldOptions()
 {
 	QVector<FoldOption*> options = ChainGraph::generateFoldOptions(1, 2, 3);
@@ -80,3 +65,24 @@ void HChain::applyFoldOption( FoldOption* fn )
 
 }
 
+// N is the number of cut planes
+QVector<Geom::Plane> HChain::generateCutPlanes( int N )
+{
+	// plane of master0
+	Geom::Plane master0 = mMasters[0]->mPatch.getPlane();
+	if (master0.whichSide(mOrigSlave->center()) < 0) master0.flip();
+
+	// deltaV to shift up
+	double step = getLength() / (N + 1);
+
+	QVector<Geom::Plane> cutPlanes;
+	for (int i = 0; i < N; i++)
+	{
+		Vector3 deltaV = (i+1) * step * master0.Normal;
+		cutPlanes << master0.translated(deltaV);
+	}
+
+	// to-do: is N is odd, cutting will be different
+
+	return cutPlanes;
+}
