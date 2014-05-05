@@ -325,3 +325,74 @@ QVector<PatchNode*> getAllMasters( FdGraph* scaffold )
 
 	return masters;
 }
+
+FdGraph* combineDecomposition( QVector<FdGraph*> decmps, QString baseMid, 
+								QMap<QString, QSet<int> >& masterDecmpMap )
+{
+	FdGraph* keyframeScaffold;
+
+	// combined tags
+	QMap<QString, bool> masterCombined;
+	foreach (QString mid, masterDecmpMap.keys()) 
+		masterCombined[mid] = false;
+	QVector<bool> decmpCombined(decmps.size(), false);
+
+	// start from base mid
+	int base_decmp_id = masterDecmpMap[baseMid].toList().front();
+	FdGraph* base_decmp = decmps[base_decmp_id];
+	PatchNode* baseMaster = (PatchNode*)base_decmp->getNode(baseMid);
+	keyframeScaffold->Structure::Graph::addNode(baseMaster);
+	masterCombined[baseMid] = true;
+
+	// prorogation
+	QQueue<QString> activeMids;
+	activeMids.enqueue( baseMid );
+	while (!activeMids.isEmpty())
+	{
+		// set current to an active master
+		QString curr_mid = activeMids.dequeue();
+		PatchNode* currMaster = (PatchNode*)keyframeScaffold->getNode(curr_mid);
+		Vector3 currPos = currMaster->center();
+
+		// combine decompositions containing current master
+		foreach (int decmp_id, masterDecmpMap[curr_mid])
+		{
+			// skip combined decmp
+			if (decmpCombined[decmp_id]) continue;
+
+			// translate
+			FdGraph* decmp = decmps[decmp_id];
+			PatchNode* oldMaster = (PatchNode*)decmp->getNode(curr_mid);
+			Vector3 delta = currPos - oldMaster->center();
+			decmp->translate(delta);
+
+			// combine parts from decomposition
+			foreach (Structure::Node* n, decmp->nodes)
+			{
+				// master nodes
+				if (n->hasTag(IS_MASTER))
+				{
+					if (!masterCombined[n->mID])
+					{
+						// combine unvisited masters
+						keyframeScaffold->Structure::Graph::addNode(n->clone());
+						masterCombined[n->mID] = true;
+
+						// store as active
+						activeMids.enqueue(n->mID);
+					}
+				}
+				// clone slave nodes
+				else 
+				{
+					keyframeScaffold->Structure::Graph::addNode(n->clone());
+				}
+			}
+
+			// mark current decmp
+			decmpCombined[decmp_id] = true;
+		}
+	}
+
+	return keyframeScaffold;
+}

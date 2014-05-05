@@ -60,3 +60,5 @@ double getLocalTime(double globalT, TimeInterval itv);
 
 // masters
 QVector<PatchNode*> getAllMasters(FdGraph* scaffold);
+FdGraph* combineDecomposition(QVector<FdGraph*> decmps, QString baseMid, 
+	QMap<QString, QSet<int> >& masterDecmpMap);

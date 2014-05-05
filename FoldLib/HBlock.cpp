@@ -22,6 +22,9 @@ HBlock::HBlock( QVector<PatchNode*>& masters, QVector<FdNode*>& slaves,
 	// sort masters
 	assignMasterTimeStamps();
 
+	// base master
+	baseMid = masters.front()->mID;
+
 	// create chains
 	for (int i = 0; i < slaves.size(); i++)
 	{
@@ -199,9 +202,7 @@ int HBlock::nbTimeUnits()
 
 FdGraph* HBlock::getKeyframeScaffold( double t )
 {
-	FdGraph* keyframeScaffold;
-
-	// folded chains
+	// scaffolds from folded chains
 	QVector<FdGraph*> foldedChains;
 	for (int i = 0; i < chains.size(); i++)
 	{
@@ -209,38 +210,11 @@ FdGraph* HBlock::getKeyframeScaffold( double t )
 		foldedChains << chains[i]->getKeyframeScaffold(t);
 	}
 
-	// combine folded chains
-	QMap<QString, bool> visited;
-	foreach (PatchNode* m, getAllMasters(this)) 
-		visited[m->mID] = false;
+	// combine 
+	FdGraph* keyframeScaffold = combineDecomposition(foldedChains, baseMid, masterChainsMap);
 
-	// start from any master in chains[0]
-	PatchNode* startMaster = getAllMasters(foldedChains.front()).front();
-	keyframeScaffold->Structure::Graph::addNode(startMaster);
-
-	// fix position of all other parts
-	QQueue<QString> activeMasters;
-	activeMasters.enqueue( startMaster->mID );
-	while (!activeMasters.isEmpty())
-	{
-		// dequeue
-		QString curr_mid = activeMasters.dequeue();
-		visited[curr_mid] = true;
-
-		// chains also contains current master
-		foreach (int cid, masterChainsMap[curr_mid])
-		{
-			FdGraph* fdChain = foldedChains[cid];
-
-			// offset
-
-			// translate
-
-			// add all parts in fd chain except for current master
-		}
-	}
-
-	
+	// delete folded chains
+	foreach (FdGraph* c, foldedChains) delete c;
 
 	return keyframeScaffold;
 }
