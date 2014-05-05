@@ -55,9 +55,9 @@ void ChainGraph::setupBasisOrientations()
 	}
 }
 
-QVector<Structure::Node*> ChainGraph::getKeyframeParts( double t )
+FdGraph* ChainGraph::getKeyframeScaffold( double t )
 {
-	// fix panels[0] but free all others
+	// fix masters[0] but free all others
 	foreach (Structure::Node* n, nodes)
 		n->properties["fixed"] = false;
 	mMasters[0]->properties["fixed"] = true;
@@ -69,12 +69,7 @@ QVector<Structure::Node*> ChainGraph::getKeyframeParts( double t )
 	// restore configuration
 	restoreConfiguration();
 
-	// nodes
-	QVector<Structure::Node*> knodes;
-	foreach(FdNode* sn, mParts) knodes << sn;
-	foreach(PatchNode* mn, mMasters) knodes << mn;
-
-	return knodes;
+	return (FdGraph*)this->clone();
 }
 
 void ChainGraph::createChain( int nbSplit )

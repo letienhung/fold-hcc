@@ -27,7 +27,14 @@ public:
 	virtual void applyFoldOption(FoldOption* fn) = 0;
 
 	// keyframes
-	virtual QVector<Structure::Node*> getKeyFrameParts(double t) = 0;
+	/** a stand-alone scaffold representing the folded block at given time
+		this scaffold can be requested for position of folded master and slave parts
+		this scaffold need be translated to combine with key frame scaffold from other blocks
+		to form the final folded scaffold
+		this scaffold has to be deleted by whoever calls this function
+	**/
+	virtual FdGraph* getKeyframeScaffold(double t) = 0;
+	
 
 public:
 	BLOCK_TYPE mType;

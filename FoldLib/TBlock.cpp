@@ -27,12 +27,6 @@ TBlock::~TBlock()
 }
 
 
-QVector<Structure::Node*> TBlock::getKeyFrameParts( double t )
-{
-	return chains.front()->getKeyframeParts(t);
-}
-
-
 QVector<FoldOption*> TBlock::generateFoldOptions()
 {
 	return chains.front()->generateFoldOptions();
@@ -47,4 +41,9 @@ void TBlock::applyFoldOption( FoldOption* fn )
 int TBlock::nbTimeUnits()
 {
 	return 1;
+}
+
+FdGraph* TBlock::getKeyframeScaffold( double t )
+{
+	return chains.front()->getKeyframeScaffold(t);
 }

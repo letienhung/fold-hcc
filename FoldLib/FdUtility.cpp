@@ -2,6 +2,7 @@
 
 #include "RodNode.h"
 #include "PatchNode.h"
+#include "FdGraph.h"
 
 #include "DistSegSeg.h"
 #include "DistSegRect.h"
@@ -191,23 +192,14 @@ QVector<Geom::Segment> detectJointSegments( FdNode* part, PatchNode* panel )
 	return jointSegs;
 }
 
-double getLocalTime( double globalT, double localStart, double localEnd )
+double getLocalTime( double globalT, TimeInterval itv )
 {
-	if (globalT < localStart) return 0;
-	else if(globalT >= localStart && globalT < localEnd)
-		return (globalT - localStart) / (localEnd - localStart);
+	if (globalT <= itv.first) return 0;
+	else if(globalT > itv.first && globalT < itv.second)
+		return (globalT - itv.first) / (itv.second - itv.first);
 	else return 1;
 }
 
-QVector<double> getEvenDivision( int n, double start /*= 0*/, double end /*= 1*/ )
-{
-	QVector<double> cp;
-	double step = (end - start) / n;
-	for (int i = 0; i <= n; i++)
-		cp << i * step;
-
-	return cp;
-}
 
 Geom::Box fitBox( QVector<Vector3>& pnts, BOX_FIT_METHOD method )
 {
@@ -323,4 +315,13 @@ bool overlap( TimeInterval itv1, TimeInterval itv2 )
 bool within( double t, TimeInterval itv )
 {
 	return inRange(t, itv.first, itv.second);
+}
+
+QVector<PatchNode*> getAllMasters( FdGraph* scaffold )
+{
+	QVector<PatchNode*> masters;
+	foreach(Structure::Node* n, scaffold->getNodesWithTag(IS_MASTER))
+		masters << (PatchNode*)n;
+
+	return masters;
 }

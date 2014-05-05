@@ -271,3 +271,11 @@ QVector< QVector<Structure::Node*> > Structure::Graph::getNodesOfConnectedSubgra
 
 	return result;
 }
+
+QVector<Structure::Node*> Structure::Graph::getNodesWithTag( QString tag )
+{
+	QVector<Node*> ns;
+	foreach (Node* n, nodes)
+		if (n->hasTag(tag)) ns << n;
+	return ns;
+}

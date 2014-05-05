@@ -17,15 +17,14 @@ public:
 	void foldabilize();
 	void buildCollisionGraph();
 
-	// animation
-	QVector<Structure::Node*> getKeyFrameParts( double t );
+	// key frames
+	FdGraph* getKeyframeScaffold( double t );
 	
 	// getter
 	int nbTimeUnits();
-	PatchNode* getMaster(QString mid);
-	QVector<PatchNode*> getAllMasters();
 
 public:
+	QMap<QString, QSet<int> > masterChainsMap;
 	QMap<QString, double> masterTimeStamps;
 	QVector<TimeInterval> chainTimeIntervals;
 

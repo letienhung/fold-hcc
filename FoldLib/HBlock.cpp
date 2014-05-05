@@ -27,32 +27,24 @@ HBlock::HBlock( QVector<PatchNode*>& masters, QVector<FdNode*>& slaves,
 	{
 		QString mid1 = masterPairs[i].front();
 		QString mid2 = masterPairs[i].last();
-		chains << new HChain(slaves[i], getMaster(mid1), getMaster(mid2));
+		
+		// create chain
+		chains << new HChain(slaves[i], (PatchNode*)getNode(mid1), (PatchNode*)getNode(mid2));
+
+		// chain time interval
 		chainTimeIntervals << TIME_INTERVAL(masterTimeStamps[mid1], masterTimeStamps[mid2]);
+
+		// map from master id to chain idx set
+		masterChainsMap[mid1] << i;
+		masterChainsMap[mid2] << i;
 	}
 }
 
-
-PatchNode* HBlock::getMaster( QString mid )
-{
-	return (PatchNode*)getNode(mid);
-}
-
-
-QVector<PatchNode*> HBlock::getAllMasters()
-{
-	QVector<PatchNode*> ms;
-	foreach (FdNode* n, getFdNodes())
-		if (n->hasTag(IS_MASTER)) 
-			ms << (PatchNode*)n;
-
-	return ms;
-}
-
-
 void HBlock::assignMasterTimeStamps()
 {
-	QVector<PatchNode*> masters = getAllMasters();
+	QVector<PatchNode*> masters;
+	foreach(Structure::Node* n, getNodesWithTag(IS_MASTER))
+		masters << (PatchNode*)n;
 
 	// squeezing line
 	Geom::Rectangle rect0 = masters[0]->mPatch;
@@ -126,7 +118,7 @@ void HBlock::foldabilize()
 		foldSolution[cn->entityIdx] = fn;
 	}
 
-	// apply modification
+	// apply fold options
 	for (int i = 0; i < chains.size(); i++)
 	{
 		chains[i]->applyFoldOption(foldSolution[i]);
@@ -190,26 +182,6 @@ void HBlock::buildCollisionGraph()
 	}
 }
 
-QVector<Structure::Node*> HBlock::getKeyFrameParts( double t )
-{
-	QVector<Structure::Node*> knodes;
-
-	//// chain parts
-	//// fold all chains simultaneously
-	//for (int i = 0; i < chains.size(); i++)
-	//	knodes += chains[i]->getKeyframeParts(t);
-
-	//// control panels
-	//if (chains.isEmpty())
-	//	// empty layer: panel is the only part
-	//	knodes += nodes.front()->clone(); 
-	//else
-	//	// layer with chains: get panels from first chain
-	//	knodes += chains.front()->getKeyFramePanels(t);
-
-	return knodes;
-}
-
 QVector<FoldOption*> HBlock::generateFoldOptions()
 {
 	return QVector<FoldOption*>() << new FoldOption(mID);
@@ -222,5 +194,53 @@ void HBlock::applyFoldOption( FoldOption* fn )
 
 int HBlock::nbTimeUnits()
 {
-	return getAllMasters().size() - 1;
+	return getAllMasters(this).size() - 1;
+}
+
+FdGraph* HBlock::getKeyframeScaffold( double t )
+{
+	FdGraph* keyframeScaffold;
+
+	// folded chains
+	QVector<FdGraph*> foldedChains;
+	for (int i = 0; i < chains.size(); i++)
+	{
+		double localT = getLocalTime(t, chainTimeIntervals[i]);
+		foldedChains << chains[i]->getKeyframeScaffold(t);
+	}
+
+	// combine folded chains
+	QMap<QString, bool> visited;
+	foreach (PatchNode* m, getAllMasters(this)) 
+		visited[m->mID] = false;
+
+	// start from any master in chains[0]
+	PatchNode* startMaster = getAllMasters(foldedChains.front()).front();
+	keyframeScaffold->Structure::Graph::addNode(startMaster);
+
+	// fix position of all other parts
+	QQueue<QString> activeMasters;
+	activeMasters.enqueue( startMaster->mID );
+	while (!activeMasters.isEmpty())
+	{
+		// dequeue
+		QString curr_mid = activeMasters.dequeue();
+		visited[curr_mid] = true;
+
+		// chains also contains current master
+		foreach (int cid, masterChainsMap[curr_mid])
+		{
+			FdGraph* fdChain = foldedChains[cid];
+
+			// offset
+
+			// translate
+
+			// add all parts in fd chain except for current master
+		}
+	}
+
+	
+
+	return keyframeScaffold;
 }

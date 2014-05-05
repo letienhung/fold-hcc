@@ -428,8 +428,8 @@ FdGraph* DcGraph::getKeyFrame( double t )
 	QVector< QVector<Structure::Node*> > knodes;
 	for (int i = 0; i < blocks.size(); i++)
 	{
-		double lt = getLocalTime(t, blockStarts[i], blockStarts[i+1]);
-		knodes << blocks[i]->getKeyFrameParts(lt);
+		double lt = getLocalTime(t, blockTimeIntervals[i]);
+		//knodes << blocks[i]->getKeyFrameParts(lt);
 	}
 
 	//// compute offset of each control panel
@@ -551,15 +551,14 @@ void DcGraph::foldabilize()
 	}
 
 	// assign time interval
-	QVector<int> accumTimeUnits;
-	accumTimeUnits << 0; // start
+	QVector<double> accumTime;
+	accumTime << .0; // start
 	foreach (BlockGraph* block, blockSequence)
-		accumTimeUnits << block->nbTimeUnits() + accumTimeUnits.last();
-
-	int totalUnits = accumTimeUnits.last();
-	blockStarts.clear();
-	for (int i = 0; i < accumTimeUnits.size(); i++)
-		blockStarts << double(accumTimeUnits[i]) / totalUnits;
+		accumTime << block->nbTimeUnits() + accumTime.last();
+	for (int i = 0; i < accumTime.size(); i++)
+		accumTime[i] /= accumTime.last();
+	for (int i = 0; i < accumTime.size()-1; i++)
+		blockTimeIntervals << TIME_INTERVAL(accumTime[i], accumTime[i+1]);
 }
 
 void DcGraph::buildDepGraph()
@@ -589,10 +588,10 @@ void DcGraph::buildDepGraph()
 	}
 
 	// links
-	computeDenpendency();
+	computeDepLinks();
 }
 
-void DcGraph::computeDenpendency()
+void DcGraph::computeDepLinks()
 {
 	// collision/dependency between fold option and entity
 	foreach (FoldOption* fn, depFog->getAllFoldOptions())

@@ -28,7 +28,7 @@ public:
 	void shrinkChainAlongJoint(double t0, double t1);
 
 	// animation
-	QVector<Structure::Node*> getKeyframeParts(double t);
+	FdGraph* getKeyframeScaffold(double t);
 
 	// getter
 	double getLength();

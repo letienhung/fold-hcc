@@ -7,6 +7,7 @@
 
 class FdNode;
 class PatchNode;
+class FdGraph;
 
 // typedef
 typedef QVector< QVector<FdNode*> > FdNodeArray2D;
@@ -39,10 +40,6 @@ bool hasIntersection(FdNode* slave, PatchNode* master, double thr);
 // helpers
 StrArray2D getIds(FdNodeArray2D nodeArray);
 
-// temporal relations
-double getLocalTime(double globalT, double localStart, double localEnd);
-QVector<double> getEvenDivision(int n, double start = 0, double end = 1);
-
 // relation with plan
 enum PLANE_RELATION{ON_PLANE, POS_PLANE, NEG_PLANE, ISCT_PLANE};
 PLANE_RELATION relationWithPlane(FdNode* n, Geom::Plane plane, double thr);
@@ -59,3 +56,7 @@ Geom::Box getBundleBox(const QVector<FdNode*>& nodes);
 // time intervals
 bool overlap(TimeInterval itv1, TimeInterval itv2);
 bool within(double t, TimeInterval itv);
+double getLocalTime(double globalT, TimeInterval itv);
+
+// masters
+QVector<PatchNode*> getAllMasters(FdGraph* scaffold);

@@ -14,8 +14,8 @@ public:
 	QVector<FoldOption*> generateFoldOptions();
 	void applyFoldOption(FoldOption* fn);
 
-	// results
-	QVector<Structure::Node*> getKeyFrameParts( double t );
+	// key frame
+	FdGraph* getKeyframeScaffold(double t);
 
 	// getters
 	int nbTimeUnits();
