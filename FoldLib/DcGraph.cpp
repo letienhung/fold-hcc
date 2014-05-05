@@ -342,13 +342,7 @@ void DcGraph::createBlocks()
 		QVector<PatchNode*> ms;
 		QSet<int> mIdxSet;
 		foreach (int end, endClusters[i]) mIdxSet << end/2;
-
-		QMap<int, int> masterIdxMap;
-		foreach (int midx, mIdxSet)
-		{
-			masterIdxMap[midx] = ms.size();
-			ms << masterPatches[midx];
-		}
+		foreach (int midx, mIdxSet)	ms << masterPatches[midx];
 
 		// slaves
 		QVector<FdNode*> ss;
@@ -356,16 +350,14 @@ void DcGraph::createBlocks()
 			ss << slaves[sidx];
 
 		// master pairs
-		QVector< QVector<int> > masterPairs;
+		QVector< QVector<QString> > masterPairs;
 		foreach (int sidx, HSlaveClusters[i])
 		{
-			QVector<int> new_pair;
+			QVector<QString> new_pair;
 			foreach (int end, slave2masterSide[sidx])
 			{
 				int mid = end / 2;
-				int new_mid = masterIdxMap[mid];
-
-				new_pair << new_mid;
+				new_pair << masterPatches[mid]->mID;
 			}
 
 			masterPairs << new_pair;
@@ -432,40 +424,13 @@ void DcGraph::selectBlock( QString id )
 
 FdGraph* DcGraph::getKeyFrame( double t )
 {
-	//// evenly distribute the time among layers
-	//// if the end layer is empty, assign zero time interval to it
-	//bool empty_front = (blocks.front()->nbNodes() == 1);
-	//bool empty_back = (blocks.back()->nbNodes() == 1);
-	//QVector<double> layerStarts;
-	//if (empty_front && empty_back)
-	//{
-	//	layerStarts = getEvenDivision(blocks.size() - 2);
-	//	layerStarts.insert(layerStarts.begin(), 0);
-	//	layerStarts.append(1);
-	//}
-	//else if (empty_front)
-	//{
-	//	layerStarts = getEvenDivision(blocks.size() - 1);
-	//	layerStarts.insert(layerStarts.begin(), 0);
-	//}
-	//else if (empty_back)
-	//{
-	//	layerStarts = getEvenDivision(blocks.size() - 1);
-	//	layerStarts.append(1);
-	//}
-	//else
-	//{
-	//	layerStarts = getEvenDivision(blocks.size());
-	//}
-
-	//// get folded nodes of each layer
-	//// the folding base is the first control panel
-	//QVector< QVector<Structure::Node*> > knodes;
-	//for (int i = 0; i < blocks.size(); i++)
-	//{
-	//	double lt = getLocalTime(t, layerStarts[i], layerStarts[i+1]);
-	//	knodes << blocks[i]->getKeyFrameNodes(lt);
-	//}
+	// get folded nodes of each block
+	QVector< QVector<Structure::Node*> > knodes;
+	for (int i = 0; i < blocks.size(); i++)
+	{
+		double lt = getLocalTime(t, blockStarts[i], blockStarts[i+1]);
+		knodes << blocks[i]->getKeyFrameParts(lt);
+	}
 
 	//// compute offset of each control panel
 	//// and remove redundant control panels
@@ -511,26 +476,24 @@ FdGraph* DcGraph::getKeyFrame( double t )
 	//		lnodes2.remove(idx2);
 	//}
 
-	//// shift layers and add nodes into scaffold
+	// shift layers and add nodes into scaffold
 	FdGraph *key_graph = new FdGraph();
-	//Vector3 offset(0, 0, 0);
-	//for (int i = 0; i < knodes.size(); i++)
-	//{
-	//	// keep the first layer but shift others
-	//	if (i > 0) offset += panelDeltas[i-1];
+	Vector3 offset(0, 0, 0);
+	for (int i = 0; i < knodes.size(); i++)
+	{
+		// keep the first layer but shift others
+		//if (i > 0) offset += panelDeltas[i-1];
 
-	//	QVector<Structure::Node*> &lnodes = knodes[i];
-	//	for (int j = 0; j < lnodes.size(); j++)
-	//	{
-	//		FdNode* n = (FdNode*)lnodes[j];
-	//		n->mBox.translate(offset);
-	//		n->createScaffold();
+		QVector<Structure::Node*> &bnodes = knodes[i];
+		for (int j = 0; j < bnodes.size(); j++)
+		{
+			FdNode* n = (FdNode*)bnodes[j];
+			n->mBox.translate(offset);
+			n->createScaffold();
 
-	//		key_graph->Structure::Graph::addNode(n);
-	//	}
-	//}
-
-	//key_graph->properties["pushAId"] = pushAId;
+			key_graph->Structure::Graph::addNode(n);
+		}
+	}
 
 	return key_graph;
 }
@@ -568,6 +531,15 @@ void DcGraph::foldabilize()
 		// a copy of current depFog
 		depFogSequence << (FoldOptionGraph*)depFog->clone();
 
+		// update dependency graph if a H-block is foldabilized in this step
+		// because folding of H-block move masters and also 
+		// whose movement might change the dependency among folding volumes 
+		if (bn->hasTag(IS_HBLOCK_FOLD_ENTITY))
+		{
+			depFog->clearLinks();
+
+		}
+
 		// update best fold option
 		best_fn = getMinCostFreeFoldOption();
 	}
@@ -577,6 +549,17 @@ void DcGraph::foldabilize()
 	{
 		blockSequence[i]->applyFoldOption(foldOptionSequence[i]);
 	}
+
+	// assign time interval
+	QVector<int> accumTimeUnits;
+	accumTimeUnits << 0; // start
+	foreach (BlockGraph* block, blockSequence)
+		accumTimeUnits << block->nbTimeUnits() + accumTimeUnits.last();
+
+	int totalUnits = accumTimeUnits.last();
+	blockStarts.clear();
+	for (int i = 0; i < accumTimeUnits.size(); i++)
+		blockStarts << double(accumTimeUnits[i]) / totalUnits;
 }
 
 void DcGraph::buildDepGraph()
@@ -593,7 +576,7 @@ void DcGraph::buildDepGraph()
 		if (blocks[i]->mType == BlockGraph::H_BLOCK)
 			bn->addTag(IS_HBLOCK_FOLD_ENTITY);
 
-		// fold options and folding links
+		// fold options and fold links
 		foreach (FoldOption* fn, blocks[i]->generateFoldOptions())
 		{
 			depFog->addNode(fn);
@@ -606,6 +589,11 @@ void DcGraph::buildDepGraph()
 	}
 
 	// links
+	computeDenpendency();
+}
+
+void DcGraph::computeDenpendency()
+{
 	// collision/dependency between fold option and entity
 	foreach (FoldOption* fn, depFog->getAllFoldOptions())
 	{
@@ -719,4 +707,13 @@ FoldOption* DcGraph::getMinCostFreeFoldOption()
 	}
 
 	return min_fn;
+}
+
+void DcGraph::generateKeyframes( int N )
+{
+	double step = 1.0 / (N-1);
+	for (int i = 0; i < N; i++)
+	{
+		keyframes << getKeyFrame(i * step);
+	}
 }

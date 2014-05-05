@@ -8,7 +8,18 @@
 class FdNode;
 class PatchNode;
 
+// typedef
 typedef QVector< QVector<FdNode*> > FdNodeArray2D;
+typedef QPair<double, double> TimeInterval;
+#define	TIME_INTERVAL(a, b) qMakePair<double, double>(a, b)
+
+// tags
+#define	IS_MASTER "isMasterPatch"
+#define IS_EDGE_ROD "isEdgeRodNode"
+#define IS_HBLOCK_FOLD_ENTITY "isHBlockFoldEntity"
+#define IS_HBLOCK_FOLD_OPTION "isHBlockFoldOption"
+#define SELECTED_FOLD_OPTION "selectedFoldOption"
+#define DELETED_TAG "hasdeleted"
 
 // Qt meta type
 Q_DECLARE_METATYPE(Geom::SectorCylinder)
@@ -45,10 +56,6 @@ Geom::Box fitBox(QVector<Vector3>& pnts, BOX_FIT_METHOD method = FIT_PCA);
 QString getBundleName(const QVector<FdNode*>& nodes);
 Geom::Box getBundleBox(const QVector<FdNode*>& nodes);
 
-// tags
-#define	IS_MASTER "isMasterPatch"
-#define IS_EDGE_ROD "isEdgeRodNode"
-#define IS_HBLOCK_FOLD_ENTITY "isHBlockFoldEntity"
-#define IS_HBLOCK_FOLD_OPTION "isHBlockFoldOption"
-#define SELECTED_FOLD_OPTION "selectedFoldOption"
-#define DELETED_TAG "hasdeleted"
+// time intervals
+bool overlap(TimeInterval itv1, TimeInterval itv2);
+bool within(double t, TimeInterval itv);

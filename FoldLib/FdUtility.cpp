@@ -314,3 +314,13 @@ bool hasIntersection( FdNode* slave, PatchNode* master, double thr )
 	// the slave must have one fifth on either side
 	return ratio > 0.2;
 }
+
+bool overlap( TimeInterval itv1, TimeInterval itv2 )
+{
+	return within(itv1.first, itv2) || within(itv1.second, itv2);
+}
+
+bool within( double t, TimeInterval itv )
+{
+	return inRange(t, itv.first, itv.second);
+}

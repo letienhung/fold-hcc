@@ -57,33 +57,27 @@ void ChainGraph::setupBasisOrientations()
 
 QVector<Structure::Node*> ChainGraph::getKeyframeParts( double t )
 {
-	// apply fold
-	fold(t);
+	// fix panels[0] but free all others
+	foreach (Structure::Node* n, nodes)
+		n->properties["fixed"] = false;
+	mMasters[0]->properties["fixed"] = true;
 
-	// clone nodes
+	// hinge angle
+	foreach(FdLink* alink, activeLinks)
+		alink->hinge->setAngleByTime(t);
+
+	// restore configuration
+	restoreConfiguration();
+
+	// nodes
 	QVector<Structure::Node*> knodes;
-	foreach(FdNode* n, mParts)
-		knodes << n->clone();
+	foreach(FdNode* sn, mParts) knodes << sn;
+	foreach(PatchNode* mn, mMasters) knodes << mn;
 
 	return knodes;
 }
 
-QVector<Structure::Node*> ChainGraph::getKeyFramePanels( double t )
-{
-	// apply fold
-	fold(t);
-
-	// clone nodes
-	QVector<Structure::Node*> knodes;
-	foreach(FdNode* n, mMasters)
-		knodes << n->clone();
-
-	return knodes;
-}
-
-
-
-void ChainGraph::createChain( int N )
+void ChainGraph::createChain( int nbSplit )
 {
 	// remove original chain parts
 	foreach (FdNode* n, mParts) removeNode(n->mID);
@@ -92,7 +86,7 @@ void ChainGraph::createChain( int N )
 	// add to graph and split
 	FdNode* origPart = (FdNode*)mOrigSlave->clone();
 	Structure::Graph::addNode(origPart);
-	mParts = FdGraph::split(mOrigSlave->mID, generateCutPlanes(N - 1));
+	mParts = FdGraph::split(mOrigSlave->mID, generateCutPlanes(nbSplit));
 	
 	// reset hinge links
 	sortChainParts();
@@ -116,21 +110,6 @@ void ChainGraph::sortChainParts()
 	}
 
 	mParts = distPartMap.values().toVector();
-}
-
-void ChainGraph::fold( double t )
-{
-	// fix panels[0] but free all others
-	foreach (Structure::Node* n, nodes)
-		n->properties["fixed"] = false;
-	mMasters[0]->properties["fixed"] = true;
-
-	// hinge angle
-	foreach(FdLink* alink, activeLinks)
-		alink->hinge->setAngleByTime(t);
-
-	// apply folding
-	restoreConfiguration();
 }
 
 void ChainGraph::setupActiveLinks( FoldOption* fn )

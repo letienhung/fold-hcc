@@ -21,16 +21,14 @@ public:
 	void setupActiveLinks(FoldOption* fn);
 
 	// modify chain
-	void createChain(int N);
-	virtual QVector<Geom::Plane> generateCutPlanes( int N ) = 0;
+	void createChain(int nbSplit);
+	virtual QVector<Geom::Plane> generateCutPlanes( int nbSplit ) = 0;
 	void sortChainParts();
 	void resetHingeLinks();
 	void shrinkChainAlongJoint(double t0, double t1);
 
 	// animation
-	void fold(double t);
 	QVector<Structure::Node*> getKeyframeParts(double t);
-	QVector<Structure::Node*> getKeyFramePanels(double t);
 
 	// getter
 	double getLength();

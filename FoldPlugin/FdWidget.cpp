@@ -47,11 +47,10 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 
 	// foldabilize
 	plugin->f_manager->connect(ui->foldabilize, SIGNAL(clicked()), SLOT(foldabilize()));
-	plugin->f_manager->connect(ui->exportDepFOG, SIGNAL(clicked()), SLOT(exportDepFOG()));
+	this->connect(ui->genKeyframes, SIGNAL(clicked()), SLOT(genKeyframes()));
 
 	// foldabilize selected block
 	plugin->f_manager->connect(ui->foldBlock, SIGNAL(clicked()), SLOT(foldbzSelBlock()));
-	plugin->f_manager->connect(ui->genKeyframes, SIGNAL(clicked()), SLOT(generateKeyframes()));
 	plugin->f_manager->connect(ui->snapshotTime, SIGNAL(valueChanged(double)), SLOT(snapshotSelBlock(double)));
 
 	// visualization
@@ -63,6 +62,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->connect(ui->showAABB, SIGNAL(stateChanged(int)), SLOT(showAABB(int)));
 
 	// export
+	plugin->f_manager->connect(ui->exportDepFOG, SIGNAL(clicked()), SLOT(exportDepFOG()));
 	plugin->connect(ui->exportCurrent, SIGNAL(clicked()), SLOT(exportCurrent()));
 
 	// test
@@ -158,4 +158,10 @@ void FdWidget::identifyMasters()
 	QString method = ui->masterType->currentText();
 
 	plugin->f_manager->identifyMasters(method, direct);
+}
+
+void FdWidget::genKeyframes()
+{
+	int nbKeyframes = ui->nbKeyframes->value();
+	plugin->f_manager->generateKeyframes(nbKeyframes);
 }

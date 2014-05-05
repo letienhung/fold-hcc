@@ -5,7 +5,11 @@
 class HBlock : public BlockGraph
 {
 public:
-    HBlock(QVector<PatchNode*>& masters, QVector<FdNode*>& slaves, QVector< QVector<int> >& masterPairs, QString id);
+    HBlock(QVector<PatchNode*>& masters, QVector<FdNode*>& slaves, 
+		QVector< QVector<QString> >& masterPairs, QString id);
+
+	// assign master time stamps
+	void assignMasterTimeStamps();
 
 	// foldem
 	QVector<FoldOption*> generateFoldOptions();
@@ -14,9 +18,17 @@ public:
 	void buildCollisionGraph();
 
 	// animation
-	QVector<Structure::Node*> getKeyFrameNodes( double t );
+	QVector<Structure::Node*> getKeyFrameParts( double t );
 	
+	// getter
+	int nbTimeUnits();
+	PatchNode* getMaster(QString mid);
+	QVector<PatchNode*> getAllMasters();
+
 public:
+	QMap<QString, double> masterTimeStamps;
+	QVector<TimeInterval> chainTimeIntervals;
+
 	FoldOptionGraph* collFog;
 	QVector<FoldOption*> foldSolution;
 };

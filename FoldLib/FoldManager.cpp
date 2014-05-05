@@ -12,6 +12,7 @@ FoldManager::FoldManager()
 	dcScaffold = NULL;
 
 	selDcIdx = -1;
+	nbKeyframes = 15;
 }
 
 FoldManager::~FoldManager()
@@ -207,7 +208,7 @@ void FoldManager::foldbzSelBlock()
 void FoldManager::snapshotSelBlock( double t )
 {
 	BlockGraph* lg = getSelBlock();
-	if (lg) lg->snapshot(t);
+	//if (lg) lg->snapshot(t);
 
 	emit(sceneChanged());
 }
@@ -280,26 +281,21 @@ BlockGraph* FoldManager::getSelBlock()
 		return NULL;
 }
 
-void FoldManager::generateKeyframes()
+void FoldManager::generateKeyframes(int N)
 {
-	//// clear
-	//clearResults();
+	// generate key frames
+	nbKeyframes = N;
+	double step = 1.0 / nbKeyframes;
 
-	//// generate key frames
-	//int nbFrames = 10;
-	//double step = 1.0 / nbFrames;
+	// selected dc graph
+	DcGraph* selDc = getSelDcGraph();
+	if (!selDc) return;
 
-	//// selected dc graph
-	//foreach (DcGraph* dc_graph, dcGraphs)
-	//{
-	//	QVector<FdGraph*> dc_results;
-	//	for (int i = 0; i <= nbFrames; i++)
-	//		dc_results << dc_graph->getKeyFrame(i * step);
-	//	results << dc_results;
-	//}
+	// forward message
+	selDc->generateKeyframes(nbKeyframes);
 
-	//emit(resultsGenerated());
-	//updateKeyframeList();
+	// emit signals
+	updateKeyframeList();
 }
 
 void FoldManager::selectKeyframe( int idx )

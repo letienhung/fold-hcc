@@ -15,7 +15,11 @@ public:
 	void applyFoldOption(FoldOption* fn);
 
 	// results
-	QVector<Structure::Node*> getKeyFrameNodes( double t );
+	QVector<Structure::Node*> getKeyFrameParts( double t );
+
+	// getters
+	int nbTimeUnits();
+
 public: 
 	PatchNode* mMaster; 
 };

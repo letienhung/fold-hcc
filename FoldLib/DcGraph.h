@@ -35,6 +35,7 @@ public:
 	QVector<FoldOptionGraph*> depFogSequence;
 	QVector<BlockGraph*> blockSequence;
 	QVector<FoldOption*> foldOptionSequence;
+	QVector<double> blockStarts;
 
 	// folding results
 	int keyfameIdx;
@@ -51,6 +52,7 @@ public:
 	// foldem
 	void foldabilize();
 	void buildDepGraph();
+	void computeDenpendency();
 	void addDepLinkTOptionTEntity(FoldOption* fn, FoldEntity* other_bn);
 	void addDepLinkTOptionHEntity(FoldOption* fn, FoldEntity* other_bn);
 	void addDepLinkHOptionTEntity(FoldOption* fn, FoldEntity* other_bn);
@@ -60,6 +62,7 @@ public:
 	void exportDepFOG();
 
 	// key frame
+	void generateKeyframes(int N);
 	FdGraph* getKeyFrame(double t);
 
 public:

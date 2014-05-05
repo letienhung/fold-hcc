@@ -23,6 +23,9 @@ public:
 	int selDcIdx;
 	QVector<DcGraph*> dcGraphs;
 
+	// animation
+	int nbKeyframes;
+
 	/// Main pipeline	
 public slots:
 	// input
@@ -42,9 +45,8 @@ public slots:
 	void exportDepFOG();
 
 public:
-
 	// output
-	void generateKeyframes();
+	void generateKeyframes(int nbKeyframes);
 	void exportResultMesh();
 
 public:
@@ -82,6 +84,5 @@ signals:
 	void blocksChanged(QStringList labels);
 	void chainsChanged(QStringList labels);
 	void keyframesChanged(int N);
-	void resultsGenerated();
 };
 

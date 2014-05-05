@@ -20,14 +20,14 @@ public:
 
 	// getter
 	ChainGraph* getChain(QString cid);
+	virtual int nbTimeUnits() = 0;
 
 	// foldem
 	virtual QVector<FoldOption*> generateFoldOptions() = 0;
 	virtual void applyFoldOption(FoldOption* fn) = 0;
 
 	// keyframes
-	virtual void snapshot(double t);
-	virtual QVector<Structure::Node*> getKeyFrameNodes(double t) = 0;
+	virtual QVector<Structure::Node*> getKeyFrameParts(double t) = 0;
 
 public:
 	BLOCK_TYPE mType;

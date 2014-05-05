@@ -4,7 +4,7 @@
 class FoldEntity : public Structure::Node
 {
 public:
-	FoldEntity(int cIdx, QString id);
+	FoldEntity(int idx, QString id);
 	FoldEntity(FoldEntity &other);
 	Node* clone();
 

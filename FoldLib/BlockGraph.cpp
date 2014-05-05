@@ -61,10 +61,3 @@ ChainGraph* BlockGraph::getChain( QString cid )
 
 	return NULL;
 }
-
-void BlockGraph::snapshot( double t )
-{
-	foreach(ChainGraph* chain, chains)
-		chain->fold(t);
-}
-

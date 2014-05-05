@@ -23,3 +23,9 @@ bool Geom::Line::contains( Vector3 p )
 	return areCollinear(this->Direction, p - Origin);
 }
 
+double Geom::Line::getProjTime( Vector3 p )
+{
+	Vector3 o2p = p - Origin;
+	return dot(Direction, o2p);
+}
+

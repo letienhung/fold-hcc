@@ -12,8 +12,8 @@
 #include "FdUtility.h"
 
 
-FoldEntity::FoldEntity( int cIdx, QString id )
-	: Node(id), entityIdx(cIdx)
+FoldEntity::FoldEntity( int idx, QString id )
+	: Node(id), entityIdx(idx)
 {
 }
 
