@@ -24,7 +24,7 @@ public:
 	int nbTimeUnits();
 
 public:
-	QString baseMid;
+	QString baseMasterId;
 	QMap<QString, QSet<int> > masterChainsMap;
 	QMap<QString, double> masterTimeStamps;
 	QVector<TimeInterval> chainTimeIntervals;

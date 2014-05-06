@@ -44,6 +44,12 @@ void FoldManager::setScaffold( FdGraph* fdg )
 // masters
 void FoldManager::identifyMasters(QString method, QString direct)
 {
+	if (scaffold == NULL)
+	{
+		emit(message("There is no input: load scaffold first."));
+		return;
+	}
+
 	if (method == "Parallel")
 	{
 		Vector3 sqzV(0, 0, 0);
@@ -300,21 +306,20 @@ void FoldManager::generateKeyframes(int N)
 
 void FoldManager::selectKeyframe( int idx )
 {
-	//keyfameIdx = idx;
+	DcGraph* selDc = getSelDcGraph();
+	if (!selDc) return;
 
-	//emit(sceneChanged());
+	selDc->keyfameIdx = idx;
+
+	emit(sceneChanged());
 }
 
 FdGraph* FoldManager::getSelKeyframe()
 {
-	//if (selDcIdx >= 0 && selDcIdx < results.size())
-	//{
-	//	if (keyfameIdx >= 0 && keyfameIdx < results[selDcIdx].size())
-	//	{
-	//		return results[selDcIdx][keyfameIdx];
-	//	}
-	//}
-	return NULL;
+	DcGraph* selDc = getSelDcGraph();
+	if (!selDc) return NULL;
+
+	return selDc->getSelKeyframe();
 }
 
 DcGraph* FoldManager::getSelDcGraph()
@@ -369,11 +374,11 @@ void FoldManager::updateChainList()
 
 void FoldManager::updateKeyframeList()
 {
-	//int nbFrames = 0;
-	//if (selDcIdx >= 0 && selDcIdx < results.size())
-	//	nbFrames = results[selDcIdx].size();
+	// selected dc graph
+	DcGraph* selDc = getSelDcGraph();
+	if (!selDc) return;
 
-	//emit(keyframesChanged(nbFrames));
+	emit(keyframesChanged(selDc->keyframes.size()));
 }
 
 void FoldManager::exportResultMesh()

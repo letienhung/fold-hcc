@@ -329,7 +329,7 @@ QVector<PatchNode*> getAllMasters( FdGraph* scaffold )
 FdGraph* combineDecomposition( QVector<FdGraph*> decmps, QString baseMid, 
 								QMap<QString, QSet<int> >& masterDecmpMap )
 {
-	FdGraph* keyframeScaffold;
+	FdGraph* keyframeScaffold = new FdGraph();
 
 	// combined tags
 	QMap<QString, bool> masterCombined;
@@ -337,7 +337,7 @@ FdGraph* combineDecomposition( QVector<FdGraph*> decmps, QString baseMid,
 		masterCombined[mid] = false;
 	QVector<bool> decmpCombined(decmps.size(), false);
 
-	// start from base mid
+	// start from base master
 	int base_decmp_id = masterDecmpMap[baseMid].toList().front();
 	FdGraph* base_decmp = decmps[base_decmp_id];
 	PatchNode* baseMaster = (PatchNode*)base_decmp->getNode(baseMid);

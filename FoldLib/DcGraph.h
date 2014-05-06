@@ -17,6 +17,7 @@ public:
 
 public:
 	// masters
+	QString baseMasterId;
 	QVector<PatchNode*> masterPatches;
 
 	// slaves
@@ -29,13 +30,19 @@ public:
 	// blocks
 	int selBlockIdx;
 	QVector<BlockGraph*> blocks;
+	QMap<QString, QSet<int> > masterBlockMap;
 
 	// dependency graph
 	FoldOptionGraph* depFog;
 	QVector<FoldOptionGraph*> depFogSequence;
+
+	// fold solution
 	QVector<BlockGraph*> blockSequence;
 	QVector<FoldOption*> foldOptionSequence;
-	QVector<TimeInterval> blockTimeIntervals;
+
+	// time intervals
+	double timeScale;
+	QVector<TimeInterval> blockTimeIntervals; // the same order as fold solution
 
 	// folding results
 	int keyfameIdx;
@@ -43,6 +50,7 @@ public:
 
 public:
 	// decomposition
+	void createMasters(StrArray2D& masterGroups);
 	void computeSlaveMasterRelation(); // slave2masterSide
 	void createSlaves();
 	void clusterSlaves();
@@ -71,5 +79,7 @@ public:
 
 	QStringList getBlockLabels();
 	void selectBlock(QString id);
+
+	FdGraph* getSelKeyframe();
 };
 

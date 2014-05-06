@@ -84,5 +84,6 @@ signals:
 	void blocksChanged(QStringList labels);
 	void chainsChanged(QStringList labels);
 	void keyframesChanged(int N);
+	void message(QString msg);
 };
 

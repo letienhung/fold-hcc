@@ -23,7 +23,7 @@ HBlock::HBlock( QVector<PatchNode*>& masters, QVector<FdNode*>& slaves,
 	assignMasterTimeStamps();
 
 	// base master
-	baseMid = masters.front()->mID;
+	baseMasterId = masters.front()->mID;
 
 	// create chains
 	for (int i = 0; i < slaves.size(); i++)
@@ -211,7 +211,7 @@ FdGraph* HBlock::getKeyframeScaffold( double t )
 	}
 
 	// combine 
-	FdGraph* keyframeScaffold = combineDecomposition(foldedChains, baseMid, masterChainsMap);
+	FdGraph* keyframeScaffold = combineDecomposition(foldedChains, baseMasterId, masterChainsMap);
 
 	// delete folded chains
 	foreach (FdGraph* c, foldedChains) delete c;

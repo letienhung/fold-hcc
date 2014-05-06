@@ -14,20 +14,14 @@ DcGraph::DcGraph( FdGraph* scaffold, StrArray2D masterGroups, QString id)
 	path = QFileInfo(path).absolutePath();
 	mID = id;
 
-	// merge master groups into patches
-	foreach( QVector<QString> masterGroup, masterGroups )
-	{
-		FdNode* mf = merge(masterGroup);
-		mf->addTag(IS_MASTER);
-
-		if (mf->mType != FdNode::PATCH)	changeNodeType(mf);
-		masterPatches.push_back((PatchNode*)mf);
-	}
-
-	// create blocks
+	// decomposition
+	createMasters(masterGroups);
 	createSlaves();
 	clusterSlaves();
 	createBlocks();
+
+	// time scale
+
 
 	// selection
 	selBlockIdx = -1;
@@ -39,6 +33,22 @@ DcGraph::DcGraph( FdGraph* scaffold, StrArray2D masterGroups, QString id)
 DcGraph::~DcGraph()
 {
 	foreach (BlockGraph* l, blocks)	delete l;
+}
+
+void DcGraph::createMasters(StrArray2D& masterGroups)
+{
+	// merge master groups into patches
+	foreach( QVector<QString> masterGroup, masterGroups )
+	{
+		FdNode* mf = merge(masterGroup);
+		mf->addTag(IS_MASTER);
+
+		if (mf->mType != FdNode::PATCH)	changeNodeType(mf);
+		masterPatches.push_back((PatchNode*)mf);
+	}
+
+	// base master
+	baseMasterId = masterPatches.front()->mID;
 }
 
 void DcGraph::computeSlaveMasterRelation()
@@ -319,6 +329,7 @@ void DcGraph::createBlocks()
 	// clear blocks
 	foreach (BlockGraph* b, blocks) delete b;
 	blocks.clear();
+	masterBlockMap.clear();
 
 	// T-blocks
 	for (int i = 0; i < TSlaves.size(); i++)
@@ -332,6 +343,7 @@ void DcGraph::createBlocks()
 		FdNode* s = slaves[sidx];
 		QString id = "TB_" + QString::number(i);
 
+		masterBlockMap[m->mID] << blocks.size();
 		blocks << new TBlock(m, s, id);
 	}
 
@@ -367,6 +379,8 @@ void DcGraph::createBlocks()
 		QString id = "HB_" + QString::number(i);
 
 		// create
+		foreach (PatchNode* m, ms) 
+			masterBlockMap[m->mID] << blocks.size();
 		blocks << new HBlock(ms, ss, masterPairs, id);
 	}
 
@@ -424,76 +438,19 @@ void DcGraph::selectBlock( QString id )
 
 FdGraph* DcGraph::getKeyFrame( double t )
 {
-	// get folded nodes of each block
-	QVector< QVector<Structure::Node*> > knodes;
+	// folded blocks
+	QVector<FdGraph*> foldedBlocks;
 	for (int i = 0; i < blocks.size(); i++)
 	{
 		double lt = getLocalTime(t, blockTimeIntervals[i]);
-		//knodes << blocks[i]->getKeyFrameParts(lt);
+		foldedBlocks << blocks[i]->getKeyframeScaffold(lt);
 	}
-
-	//// compute offset of each control panel
-	//// and remove redundant control panels
-	//QVector<Vector3> panelDeltas;
-	//for (int i = 0; i < masterPatches.size(); i++)
-	//{
-	//	QString panel_id = masterPatches[i]->mID;
-	//	
-	//	// copy1 in layer[i]
-	//	FdNode* panelCopy1 = NULL;
-	//	int idx1 = -1;
-	//	QVector<Structure::Node*> &lnodes1 = knodes[i];
-	//	for(int j = 0; j < lnodes1.size(); j++)
-	//	{
-	//		if (lnodes1[j]->hasId(panel_id))
-	//		{
-	//			panelCopy1 = (FdNode*)lnodes1[j];
-	//			idx1 = j;
-	//		}
-	//	}
-
-	//	// copy2 in layer[i+1]
-	//	FdNode* panelCopy2 = NULL;
-	//	int idx2 = -1;
-	//	QVector<Structure::Node*> &lnodes2 = knodes[i+1];
-	//	for(int j = 0; j < lnodes2.size(); j++)
-	//	{
-	//		if (lnodes2[j]->hasId(panel_id))
-	//		{
-	//			panelCopy2 = (FdNode*)lnodes2[j];
-	//			idx2 = j;
-	//		}
-	//	}
-	//	 
-	//	// delta
-	//	Vector3 delta(0, 0, 0);
-	//	if (panelCopy1 && panelCopy2) 
-	//		delta = panelCopy1->center() - panelCopy2->center();
-	//	panelDeltas << delta;
-
-	//	// remove copy2
-	//	if (idx2 >= 0 && idx2 < lnodes2.size())
-	//		lnodes2.remove(idx2);
-	//}
 
 	// shift layers and add nodes into scaffold
-	FdGraph *key_graph = new FdGraph();
-	Vector3 offset(0, 0, 0);
-	for (int i = 0; i < knodes.size(); i++)
-	{
-		// keep the first layer but shift others
-		//if (i > 0) offset += panelDeltas[i-1];
+	FdGraph *key_graph = combineDecomposition(foldedBlocks, baseMasterId, masterBlockMap);
 
-		QVector<Structure::Node*> &bnodes = knodes[i];
-		for (int j = 0; j < bnodes.size(); j++)
-		{
-			FdNode* n = (FdNode*)bnodes[j];
-			n->mBox.translate(offset);
-			n->createScaffold();
-
-			key_graph->Structure::Graph::addNode(n);
-		}
-	}
+	// delete folded blocks
+	foreach (FdGraph* b, foldedBlocks) delete b;
 
 	return key_graph;
 }
@@ -533,11 +490,12 @@ void DcGraph::foldabilize()
 
 		// update dependency graph if a H-block is foldabilized in this step
 		// because folding of H-block move masters and also 
-		// whose movement might change the dependency among folding volumes 
+		// might change the dependency among folding volumes 
 		if (bn->hasTag(IS_HBLOCK_FOLD_ENTITY))
 		{
 			depFog->clearLinks();
-
+			double t; // the current time stamp
+			FdGraph* currFolded = getKeyFrame(t);
 		}
 
 		// update best fold option
@@ -710,9 +668,18 @@ FoldOption* DcGraph::getMinCostFreeFoldOption()
 
 void DcGraph::generateKeyframes( int N )
 {
+	keyframes.clear();
+
 	double step = 1.0 / (N-1);
 	for (int i = 0; i < N; i++)
 	{
 		keyframes << getKeyFrame(i * step);
 	}
+}
+
+FdGraph* DcGraph::getSelKeyframe()
+{
+	if (keyfameIdx >= 0 && keyfameIdx < keyframes.size())
+		return keyframes[keyfameIdx];
+	else return NULL;
 }
