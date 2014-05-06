@@ -410,3 +410,14 @@ void FoldOptionGraph::saveAsImage( QString fname )
 	qDebug() << "Executing: "  << command;
 	system(qPrintable(command));
 }
+
+void FoldOptionGraph::clearCollisionLinks()
+{
+	foreach (Structure::Link* link, links)
+	{
+		if (link->properties["type"] == "collision")
+		{
+			Structure::Graph::removeLink(link);
+		}
+	}
+}

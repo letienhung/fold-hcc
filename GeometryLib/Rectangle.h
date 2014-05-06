@@ -62,6 +62,9 @@ public:
 	void drawBackFace(QColor color = Qt::red);
 	void drawEdges(double width = 2.0, QColor color = Qt::red);
 
+	// modifier
+	void translate(Vector3 t);
+
 	// to string
 	QStringList toStrList();
 

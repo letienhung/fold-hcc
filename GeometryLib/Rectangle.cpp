@@ -356,3 +356,8 @@ QVector<Vector3> Geom::Rectangle::getEdgeSamples( int N )
 
 	return samples;
 }
+
+void Geom::Rectangle::translate( Vector3 t )
+{
+	Center += t;
+}

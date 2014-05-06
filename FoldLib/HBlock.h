@@ -21,7 +21,8 @@ public:
 	FdGraph* getKeyframeScaffold( double t );
 	
 	// getter
-	int nbTimeUnits();
+	double getTimeLength();
+	PatchNode* getBaseMaster();
 
 public:
 	QString baseMasterId;

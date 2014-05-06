@@ -38,12 +38,17 @@ void TBlock::applyFoldOption( FoldOption* fn )
 	chains.first()->applyFoldOption(fn);
 }
 
-int TBlock::nbTimeUnits()
+double TBlock::getTimeLength()
 {
-	return 1;
+	return 1.0;
 }
 
 FdGraph* TBlock::getKeyframeScaffold( double t )
 {
 	return chains.front()->getKeyframeScaffold(t);
+}
+
+PatchNode* TBlock::getBaseMaster()
+{
+	return mMaster;
 }

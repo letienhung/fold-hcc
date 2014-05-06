@@ -18,7 +18,8 @@ public:
 	FdGraph* getKeyframeScaffold(double t);
 
 	// getters
-	int nbTimeUnits();
+	double getTimeLength();
+	PatchNode* getBaseMaster();
 
 public: 
 	PatchNode* mMaster; 

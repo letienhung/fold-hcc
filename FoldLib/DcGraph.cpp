@@ -21,7 +21,9 @@ DcGraph::DcGraph( FdGraph* scaffold, StrArray2D masterGroups, QString id)
 	createBlocks();
 
 	// time scale
-
+	double totalUnits = 0;
+	foreach (BlockGraph* b, blocks) totalUnits += b->getTimeLength();
+	timeScale = 1.0 / totalUnits;
 
 	// selection
 	selBlockIdx = -1;
@@ -442,7 +444,7 @@ FdGraph* DcGraph::getKeyFrame( double t )
 	QVector<FdGraph*> foldedBlocks;
 	for (int i = 0; i < blocks.size(); i++)
 	{
-		double lt = getLocalTime(t, blockTimeIntervals[i]);
+		double lt = getLocalTime(t, blocks[i]->mFoldDuration);
 		foldedBlocks << blocks[i]->getKeyframeScaffold(lt);
 	}
 
@@ -457,66 +459,11 @@ FdGraph* DcGraph::getKeyFrame( double t )
 
 void DcGraph::foldabilize()
 {
-	// clear
-	blockSequence.clear();
-	foldOptionSequence.clear();
-	foreach(FoldOptionGraph* df, depFogSequence) delete df;
-	depFogSequence.clear();
-
 	// construct dependency graph
 	buildDepGraph();
-	depFogSequence << (FoldOptionGraph*)depFog->clone();
 
-	// choose best free fold options in a greedy manner
-	FoldOption* best_fn = getMinCostFreeFoldOption();
-	while (best_fn)
-	{
-		// selected block and fold option
-		FoldEntity* bn = depFog->getFoldEntity(best_fn->mID);
-		blockSequence << blocks[bn->entityIdx];
-		foldOptionSequence << best_fn;
-		best_fn->addTag(SELECTED_FOLD_OPTION);
-
-		// exclude family nodes
-		foreach(Structure::Node* n, depFog->getFamilyNodes(best_fn->mID))
-			n->addTag(DELETED_TAG);
-
-		// remove collision links incident to the family
-		foreach(Structure::Link* clink, depFog->getFamilyCollisionLinks(bn->mID))
-			depFog->removeLink(clink);
-
-		// a copy of current depFog
-		depFogSequence << (FoldOptionGraph*)depFog->clone();
-
-		// update dependency graph if a H-block is foldabilized in this step
-		// because folding of H-block move masters and also 
-		// might change the dependency among folding volumes 
-		if (bn->hasTag(IS_HBLOCK_FOLD_ENTITY))
-		{
-			depFog->clearLinks();
-			double t; // the current time stamp
-			FdGraph* currFolded = getKeyFrame(t);
-		}
-
-		// update best fold option
-		best_fn = getMinCostFreeFoldOption();
-	}
-
-	// apply modification in selected fold options
-	for (int i = 0; i < blockSequence.size(); i++)
-	{
-		blockSequence[i]->applyFoldOption(foldOptionSequence[i]);
-	}
-
-	// assign time interval
-	QVector<double> accumTime;
-	accumTime << .0; // start
-	foreach (BlockGraph* block, blockSequence)
-		accumTime << block->nbTimeUnits() + accumTime.last();
-	for (int i = 0; i < accumTime.size(); i++)
-		accumTime[i] /= accumTime.last();
-	for (int i = 0; i < accumTime.size()-1; i++)
-		blockTimeIntervals << TIME_INTERVAL(accumTime[i], accumTime[i+1]);
+	// find fold order
+	findFoldOrderGreedy();
 }
 
 void DcGraph::buildDepGraph()
@@ -529,6 +476,8 @@ void DcGraph::buildDepGraph()
 		// fold entity
 		FoldEntity* bn = new FoldEntity(i, blocks[i]->mID);
 		depFog->addNode(bn);
+		bn->properties["offset"].setValue(Vector3(0,0,0));
+
 		// tag for HBlock entity
 		if (blocks[i]->mType == BlockGraph::H_BLOCK)
 			bn->addTag(IS_HBLOCK_FOLD_ENTITY);
@@ -538,10 +487,11 @@ void DcGraph::buildDepGraph()
 		{
 			depFog->addNode(fn);
 			depFog->addFoldLink(bn, fn);
+			fn->properties["offset"].setValue(Vector3(0,0,0));
 
 			// tag for HBlock option
 			if (blocks[i]->mType == BlockGraph::H_BLOCK)
-				bn->addTag(IS_HBLOCK_FOLD_OPTION);
+				fn->addTag(IS_HBLOCK_FOLD_OPTION);
 		}
 	}
 
@@ -551,14 +501,23 @@ void DcGraph::buildDepGraph()
 
 void DcGraph::computeDepLinks()
 {
+	// remove all collision links
+	depFog->clearCollisionLinks(); 
+
 	// collision/dependency between fold option and entity
 	foreach (FoldOption* fn, depFog->getAllFoldOptions())
 	{
+		// skip deleted
+		if (fn->hasTag(DELETED_TAG)) continue;
+
 		FoldEntity* bn = depFog->getFoldEntity(fn->mID);
 		foreach(FoldEntity* other_bn, depFog->getAllFoldEntities())
 		{
 			// skip itself
 			if (bn == other_bn) continue;
+
+			// skip deleted
+			if (other_bn->hasTag(DELETED_TAG)) continue;
 
 			// H option
 			if (fn->hasTag(IS_HBLOCK_FOLD_OPTION))
@@ -584,16 +543,20 @@ void DcGraph::computeDepLinks()
 void DcGraph::addDepLinkTOptionTEntity( FoldOption* fn, FoldEntity* other_bn )
 {
 	Geom::SectorCylinder fVolume = fn->properties["fVolume"].value<Geom::SectorCylinder>();
+	Vector3 offset = fn->properties["offset"].value<Vector3>();
+	fVolume.translate(offset);
 
 	BlockGraph* other_block = blocks[other_bn->entityIdx];
 	TChain* other_chain = (TChain*)other_block->chains.front();
 	FdNode* other_part = other_chain->mOrigSlave;
+	Vector3 other_offset = other_bn->properties["offset"].value<Vector3>();
 
 	bool collide = false;
 	if (other_part->mType == FdNode::PATCH)
 	{
-		PatchNode* other_patch = (PatchNode*) other_part;
-		if (fVolume.intersects(other_patch->mPatch))
+		Geom::Rectangle other_patch = ((PatchNode*) other_part)->mPatch;
+		other_patch.translate(other_offset);
+		if (fVolume.intersects(other_patch))
 		{
 			collide = true;
 			//debugSegs << Geom::Segment(fVCenter, other_patch->mPatch.Center);
@@ -601,8 +564,9 @@ void DcGraph::addDepLinkTOptionTEntity( FoldOption* fn, FoldEntity* other_bn )
 	}
 	else
 	{
-		RodNode* other_rod = (RodNode*) other_part;
-		if (fVolume.intersects(other_rod->mRod))
+		Geom::Segment other_rod = ((RodNode*) other_part)->mRod;
+		other_rod.translate(other_offset);
+		if (fVolume.intersects(other_rod))
 		{
 			collide = true;
 			//debugSegs << Geom::Segment(fVCenter, other_rod->mRod.Center);
@@ -611,9 +575,7 @@ void DcGraph::addDepLinkTOptionTEntity( FoldOption* fn, FoldEntity* other_bn )
 
 	// add collision link
 	if (collide)
-	{
 		depFog->addCollisionLink(fn, other_bn);
-	}
 }
 
 void DcGraph::addDepLinkTOptionHEntity( FoldOption* fn, FoldEntity* other_bn )
@@ -665,6 +627,94 @@ FoldOption* DcGraph::getMinCostFreeFoldOption()
 
 	return min_fn;
 }
+
+
+void DcGraph::updateDepLinks(double t)
+{
+	FdGraph* keyframe = getKeyFrame(t);
+
+	// offset of fold volumes
+	foreach (FoldEntity* bn, depFog->getAllFoldEntities())
+	{
+		// skip deleted fold entity
+		if (bn->hasTag(DELETED_TAG)) continue;
+
+		// old position
+		BlockGraph* block = blocks[bn->entityIdx];
+		PatchNode* old_baseMaster = block->getBaseMaster();
+		Vector3 old_pos = old_baseMaster->center();
+
+		// new position
+		PatchNode* new_baseMaster = (PatchNode*)keyframe->getNode(old_baseMaster->mID);
+		Vector3 new_pos = new_baseMaster->center();
+
+		// the offset of fold volume
+		Vector3 delta = new_pos - old_pos;
+		bn->properties["offset"].setValue(delta);
+		foreach (FoldOption* fn, depFog->getFoldOptions(bn->mID))
+			fn->properties["offset"].setValue(delta);
+	}
+
+	// update dependency links
+	computeDepLinks();
+}
+
+
+void DcGraph::findFoldOrderGreedy()
+{
+	// clear
+	blockSequence.clear();
+	foreach (FoldOptionGraph* df, depFogSequence) delete df;
+	depFogSequence.clear();
+
+	// initial time intervals
+	// greater than 1.0 means never be folded
+	foreach (BlockGraph* b, blocks) 
+		b->mFoldDuration = TIME_INTERVAL(1.0, 2.0);
+
+	// keep track of dependency graph
+	depFogSequence << (FoldOptionGraph*)depFog->clone();
+
+	// choose best free fold options in a greedy manner
+	double currTime = 0.0;
+	FoldOption* sel_fn = getMinCostFreeFoldOption();
+	while (sel_fn)
+	{
+		// mark for visualization
+		sel_fn->addTag(SELECTED_FOLD_OPTION);
+
+		// selected block
+		FoldEntity* sel_bn = depFog->getFoldEntity(sel_fn->mID);
+		BlockGraph* sel_block = blocks[sel_bn->entityIdx];
+		blockSequence << sel_block;
+
+		// apply fold option and set up time interval
+		sel_block->applyFoldOption(sel_fn);
+		double timeLength = sel_block->getTimeLength();
+		double start = currTime * timeScale;
+		currTime += timeLength;
+		double end = currTime * timeScale;
+		sel_block->mFoldDuration = TIME_INTERVAL(start, end);
+
+		// exclude family nodes
+		foreach(Structure::Node* n, depFog->getFamilyNodes(sel_fn->mID))
+			n->addTag(DELETED_TAG);
+
+		// update dependency graph if a H-block is foldabilized at this step
+		// because folding of H-block move masters 
+		// and also might change the dependency among folding volumes 
+		if (sel_bn->hasTag(IS_HBLOCK_FOLD_ENTITY))
+			updateDepLinks(currTime);
+
+		// a copy of current depFog
+		depFogSequence << (FoldOptionGraph*)depFog->clone();
+
+		// update best fold option
+		sel_fn = getMinCostFreeFoldOption();
+	}
+
+}
+
 
 void DcGraph::generateKeyframes( int N )
 {

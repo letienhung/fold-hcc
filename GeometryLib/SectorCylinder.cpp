@@ -119,3 +119,8 @@ bool Geom::SectorCylinder::contains( Vector3 p )
 		&& (coord[1] > -ZERO_TOLERANCE_LOW && coord[1] < 1 + ZERO_TOLERANCE_LOW)  // phi
 		&& (coord[2] > -ZERO_TOLERANCE_LOW && coord[2] < 1 + ZERO_TOLERANCE_LOW); // z
 }
+
+void Geom::SectorCylinder::translate( Vector3 t )
+{
+	Origin += t;
+}

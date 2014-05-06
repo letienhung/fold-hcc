@@ -396,3 +396,8 @@ FdGraph* combineDecomposition( QVector<FdGraph*> decmps, QString baseMid,
 
 	return keyframeScaffold;
 }
+
+int nbMasters( FdGraph* scaffold )
+{
+	return getAllMasters(scaffold).size();
+}

@@ -20,7 +20,8 @@ public:
 
 	// getter
 	ChainGraph* getChain(QString cid);
-	virtual int nbTimeUnits() = 0;
+	virtual double getTimeLength() = 0;
+	virtual PatchNode* getBaseMaster() = 0;
 
 	// foldem
 	virtual QVector<FoldOption*> generateFoldOptions() = 0;
@@ -38,6 +39,7 @@ public:
 
 public:
 	BLOCK_TYPE mType;
+	TimeInterval mFoldDuration;
 	int selChainIdx;
 	QVector<ChainGraph*> chains;
 }; 

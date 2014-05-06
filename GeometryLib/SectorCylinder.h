@@ -21,6 +21,8 @@ public:
 	bool intersects(Segment& seg);
 	bool intersects(Rectangle& rect);
 
+	void translate(Vector3 t);
+
 	QStringList toStrList();
 
 public:

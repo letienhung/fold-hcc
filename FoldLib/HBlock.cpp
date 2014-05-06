@@ -195,9 +195,9 @@ void HBlock::applyFoldOption( FoldOption* fn )
 	foldabilize();
 }
 
-int HBlock::nbTimeUnits()
+double HBlock::getTimeLength()
 {
-	return getAllMasters(this).size() - 1;
+	return nbMasters(this) - 1;
 }
 
 FdGraph* HBlock::getKeyframeScaffold( double t )
@@ -217,4 +217,9 @@ FdGraph* HBlock::getKeyframeScaffold( double t )
 	foreach (FdGraph* c, foldedChains) delete c;
 
 	return keyframeScaffold;
+}
+
+PatchNode* HBlock::getBaseMaster()
+{
+	return (PatchNode*)getNode(baseMasterId);
 }

@@ -20,6 +20,10 @@ public:
 	FoldOption(FoldOption &other);
 	Node* clone();
 
+	double getCost();// cost
+	QString getInfo();// printable info
+
+public:
 	// hinge info: idx of root segment
 	int hingeIdx;
 
@@ -32,12 +36,6 @@ public:
 
 	// #splits
 	int nbsplit;
-
-	// cost
-	double getCost();
-
-	// printable info
-	QString getInfo();
 };
 
 class BarrierNode : public Structure::Node
@@ -66,6 +64,8 @@ public:
 	void addNode(BarrierNode* bn);
 	void addFoldLink(Structure::Node* n1, Structure::Node* n2);
 	void addCollisionLink(Structure::Node* n1, Structure::Node* n2);
+
+	void clearCollisionLinks();
 
 	// verifier
 	bool verifyNodeType(QString nid, QString type);

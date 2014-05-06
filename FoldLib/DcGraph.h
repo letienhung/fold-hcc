@@ -36,13 +36,11 @@ public:
 	FoldOptionGraph* depFog;
 	QVector<FoldOptionGraph*> depFogSequence;
 
-	// fold solution
+	// fold order
 	QVector<BlockGraph*> blockSequence;
-	QVector<FoldOption*> foldOptionSequence;
 
-	// time intervals
-	double timeScale;
-	QVector<TimeInterval> blockTimeIntervals; // the same order as fold solution
+	// time scale
+	double timeScale; // timeScale * block.timeUnits = normalized time
 
 	// folding results
 	int keyfameIdx;
@@ -59,6 +57,7 @@ public:
 
 	// foldem
 	void foldabilize();
+
 	void buildDepGraph();
 	void computeDepLinks();
 	void addDepLinkTOptionTEntity(FoldOption* fn, FoldEntity* other_bn);
@@ -66,7 +65,11 @@ public:
 	void addDepLinkHOptionTEntity(FoldOption* fn, FoldEntity* other_bn);
 	void addDepLinkHOptionHEntity(FoldOption* fn, FoldEntity* other_bn);
 
+	void findFoldOrderGreedy();
 	FoldOption* getMinCostFreeFoldOption();
+	void updateDepLinks(double t);
+
+	// export
 	void exportDepFOG();
 
 	// key frame

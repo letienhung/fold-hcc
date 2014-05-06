@@ -23,6 +23,7 @@ typedef QPair<double, double> TimeInterval;
 #define DELETED_TAG "hasdeleted"
 
 // Qt meta type
+Q_DECLARE_METATYPE(Vector3)
 Q_DECLARE_METATYPE(Geom::SectorCylinder)
 Q_DECLARE_METATYPE(Geom::Rectangle2)
 Q_DECLARE_METATYPE(QVector<Geom::Segment>)
@@ -60,5 +61,8 @@ double getLocalTime(double globalT, TimeInterval itv);
 
 // masters
 QVector<PatchNode*> getAllMasters(FdGraph* scaffold);
+int nbMasters(FdGraph* scaffold);
+
+// combination
 FdGraph* combineDecomposition(QVector<FdGraph*> decmps, QString baseMid, 
 	QMap<QString, QSet<int> >& masterDecmpMap);
