@@ -19,11 +19,11 @@ HBlock::HBlock( QVector<PatchNode*>& masters, QVector<FdNode*>& slaves,
 	foreach (FdNode* s, slaves) 
 		Structure::Graph::addNode(s->clone());
 
-	// sort masters
-	assignMasterTimeStamps();
-
 	// base master
 	baseMasterId = masters.front()->mID;
+
+	// sort masters
+	assignMasterTimeStamps();
 
 	// create chains
 	for (int i = 0; i < slaves.size(); i++)
@@ -32,15 +32,17 @@ HBlock::HBlock( QVector<PatchNode*>& masters, QVector<FdNode*>& slaves,
 		QString mid2 = masterPairs[i].last();
 		
 		// create chain
-		chains << new HChain(slaves[i], (PatchNode*)getNode(mid1), (PatchNode*)getNode(mid2));
-
-		// chain time interval
-		chainTimeIntervals << TIME_INTERVAL(masterTimeStamps[mid1], masterTimeStamps[mid2]);
+		HChain* hc = new HChain(slaves[i], (PatchNode*)getNode(mid1), (PatchNode*)getNode(mid2));
+		hc->mFoldDuration = TIME_INTERVAL(masterTimeStamps[mid1], masterTimeStamps[mid2]);
+		chains << hc;
 
 		// map from master id to chain idx set
 		masterChainsMap[mid1] << i;
 		masterChainsMap[mid2] << i;
 	}
+
+	// initial collision graph
+	collFog = new FoldOptionGraph();
 }
 
 void HBlock::assignMasterTimeStamps()
@@ -160,7 +162,7 @@ void HBlock::buildCollisionGraph()
 		FoldOption* fn = fns[i];
 		FoldEntity* cn = collFog->getFoldEntity(fn->mID);
 		Geom::Rectangle2 fArea = fn->properties["fArea"].value<Geom::Rectangle2>();
-		TimeInterval tInterval = chainTimeIntervals[cn->entityIdx];
+		TimeInterval tInterval = chains[cn->entityIdx]->mFoldDuration;
 
 		// with other fold options
 		for (int j = i+1; j < fns.size(); j++)
@@ -172,7 +174,7 @@ void HBlock::buildCollisionGraph()
 
 			// skip if time interval don't overlap
 			FoldEntity* other_cn = collFog->getFoldEntity(other_fn->mID);
-			TimeInterval other_tInterval = chainTimeIntervals[other_cn->entityIdx];
+			TimeInterval other_tInterval = chains[other_cn->entityIdx]->mFoldDuration;
 			if (!overlap(tInterval, other_tInterval)) continue;
 
 			// collision test using fold region
@@ -187,7 +189,7 @@ void HBlock::buildCollisionGraph()
 
 QVector<FoldOption*> HBlock::generateFoldOptions()
 {
-	return QVector<FoldOption*>() << new FoldOption(mID);
+	return QVector<FoldOption*>() << new FoldOption(mID + "_dummy");
 }
 
 void HBlock::applyFoldOption( FoldOption* fn )
@@ -206,7 +208,7 @@ FdGraph* HBlock::getKeyframeScaffold( double t )
 	QVector<FdGraph*> foldedChains;
 	for (int i = 0; i < chains.size(); i++)
 	{
-		double localT = getLocalTime(t, chainTimeIntervals[i]);
+		double localT = getLocalTime(t, chains[i]->mFoldDuration);
 		foldedChains << chains[i]->getKeyframeScaffold(t);
 	}
 

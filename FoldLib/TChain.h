@@ -10,7 +10,6 @@ public:
 
 	// foldem
 	QVector<FoldOption*> generateFoldOptions();
-	void applyFoldOption(FoldOption* fn);
 
 	// fold info
 	Geom::SectorCylinder getFoldingVolume(FoldOption* fn);

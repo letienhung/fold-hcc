@@ -21,9 +21,9 @@ DcGraph::DcGraph( FdGraph* scaffold, StrArray2D masterGroups, QString id)
 	createBlocks();
 
 	// time scale
-	double totalUnits = 0;
-	foreach (BlockGraph* b, blocks) totalUnits += b->getTimeLength();
-	timeScale = 1.0 / totalUnits;
+	double totalDuration = 0;
+	foreach (BlockGraph* b, blocks) totalDuration += b->getTimeLength();
+	timeScale = 1.0 / totalDuration;
 
 	// selection
 	selBlockIdx = -1;

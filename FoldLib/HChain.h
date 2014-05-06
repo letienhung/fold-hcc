@@ -10,7 +10,6 @@ public:
 
 	// foldem
 	QVector<FoldOption*> generateFoldOptions();
-	void applyFoldOption(FoldOption* fn);
 
 	// fold region
 	Geom::Rectangle2 getFoldRegion(FoldOption* fn);

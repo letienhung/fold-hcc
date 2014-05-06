@@ -22,6 +22,10 @@ ChainGraph::ChainGraph( FdNode* slave, PatchNode* master1, PatchNode* master2)
 
 	// setup base orientations
 	setupBasisOrientations();
+
+	// fold duration
+	// this time interval stops this chain from being folded
+	mFoldDuration = TIME_INTERVAL(1, 2);
 }
 
 void ChainGraph::setupBasisOrientations()
@@ -233,13 +237,13 @@ QVector<FoldOption*> ChainGraph::generateFoldOptions( int nbSplit0, int nbSplit1
 {
 	QVector<FoldOption*> options;
 
-	// #splits: 1 and 2
+	// #splits
 	for (int n = nbSplit0; n <= nbSplit1; n++)
 	{
 		// patch chain
 		if (mOrigSlave->mType == FdNode::PATCH)
 		{
-			// shrink: scale level : 1 --> 5 : 20% --> 100%
+			// shrink
 			for (int i = 1; i <= nbScales; i++)
 			{
 				double step = 1.0/double(nbScales);
@@ -281,4 +285,10 @@ QVector<FoldOption*> ChainGraph::generateFoldOptions( int nbSplit0, int nbSplit1
 
 
 	return options;
+}
+
+void ChainGraph::applyFoldOption( FoldOption* fn )
+{
+	createChain(fn->nbsplit);
+	setupActiveLinks(fn);
 }

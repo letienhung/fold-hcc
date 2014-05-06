@@ -43,12 +43,6 @@ QVector<FoldOption*> TChain::generateFoldOptions()
 	return options;
 }
 
-void TChain::applyFoldOption( FoldOption* fn )
-{
-	createChain(fn->nbsplit);
-	ChainGraph::setupActiveLinks(fn);
-}
-
 QVector<Geom::Plane> TChain::generateCutPlanes( int nbSplit )
 {
 	// plane of master

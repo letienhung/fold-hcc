@@ -17,14 +17,16 @@ public:
 	// foldem
 	virtual QVector<FoldOption*> generateFoldOptions() = 0;
 	QVector<FoldOption*> generateFoldOptions(int nbSplit0, int nbSplit1, int nbScales);
-	virtual void applyFoldOption(FoldOption* fn) = 0;
-	void setupActiveLinks(FoldOption* fn);
 
 	// modify chain
+	virtual void applyFoldOption(FoldOption* fn);
 	void createChain(int nbSplit);
 	virtual QVector<Geom::Plane> generateCutPlanes( int nbSplit ) = 0;
 	void sortChainParts();
 	void resetHingeLinks();
+	void setupActiveLinks(FoldOption* fn);
+
+	// modifier
 	void shrinkChainAlongJoint(double t0, double t1);
 
 	// animation
@@ -51,4 +53,5 @@ public:
 	//		2nd dimension: hinge pairs [2*i, 2*i+1] for each jointSeg[i]
 	QVector< QVector<FdLink*> > hingeLinks;
 	QVector<FdLink*> activeLinks;
+	TimeInterval mFoldDuration;
 };

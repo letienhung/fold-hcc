@@ -28,7 +28,6 @@ public:
 	QString baseMasterId;
 	QMap<QString, QSet<int> > masterChainsMap;
 	QMap<QString, double> masterTimeStamps;
-	QVector<TimeInterval> chainTimeIntervals;
 
 	FoldOptionGraph* collFog;
 	QVector<FoldOption*> foldSolution;

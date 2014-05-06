@@ -329,6 +329,11 @@ QVector<PatchNode*> getAllMasters( FdGraph* scaffold )
 FdGraph* combineDecomposition( QVector<FdGraph*> decmps, QString baseMid, 
 								QMap<QString, QSet<int> >& masterDecmpMap )
 {
+	// trivial combination
+	if (decmps.size() == 1)
+		return (FdGraph*)decmps.front()->clone();
+
+	// create scaffold for combination
 	FdGraph* keyframeScaffold = new FdGraph();
 
 	// combined tags

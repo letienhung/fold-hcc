@@ -48,7 +48,7 @@ Geom::Rectangle2 HChain::getFoldRegion(FoldOption* fn)
 
 QVector<FoldOption*> HChain::generateFoldOptions()
 {
-	QVector<FoldOption*> options = ChainGraph::generateFoldOptions(1, 2, 3);
+	QVector<FoldOption*> options = ChainGraph::generateFoldOptions(1, 1, 2);
 
 	// fold area
 	foreach (FoldOption* fn, options)
@@ -58,11 +58,6 @@ QVector<FoldOption*> HChain::generateFoldOptions()
 	}
 
 	return options;
-}
-
-void HChain::applyFoldOption( FoldOption* fn )
-{
-
 }
 
 // N is the number of cut planes
