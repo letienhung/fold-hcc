@@ -8,8 +8,8 @@
 #include "CliquerAdapter.h"
 
 HBlock::HBlock( QVector<PatchNode*>& masters, QVector<FdNode*>& slaves,  
-				QVector< QVector<QString> >& masterPairs, QString id )
-				:BlockGraph(id)
+				QVector< QVector<QString> >& masterPairs, Geom::Box bb, QString id )
+				:BlockGraph(id, bb)
 {
 	// type
 	mType = BlockGraph::H_BLOCK;
@@ -148,9 +148,29 @@ void HBlock::buildCollisionGraph()
 		// fold options and links
 		foreach(FoldOption* fn, chain->generateFoldOptions())
 		{
-			// to-do: reject if collide with other masters
-			// whose time stamp is within the time interval of fn
+			// reject if goes out of barrier box
+			Geom::Rectangle fArea = fn->properties["fArea"].value<Geom::Rectangle>();
+			if (!barrierBox.containsAll(fArea.getConners())) 
+				continue;
 
+			// reject if collide with other masters
+			// whose time stamp is within the time interval of fn
+			bool reject = false;
+			foreach (QString mid, masterTimeStamps.keys())
+			{
+				double mstamp = masterTimeStamps[mid];
+				if (!within(mstamp, chain->mFoldDuration)) continue;
+
+				Geom::Rectangle m_rect = ((PatchNode*)getNode(mid))->mPatch;
+				if (fAreasIntersect(fArea, m_rect))
+				{
+					reject = true;
+					break;
+				}
+			}
+			if (reject) continue;
+
+			// accept
 			collFog->addNode(fn);
 			collFog->addFoldLink(cn, fn);
 		}
@@ -162,7 +182,7 @@ void HBlock::buildCollisionGraph()
 	{
 		FoldOption* fn = fns[i];
 		FoldEntity* cn = collFog->getFoldEntity(fn->mID);
-		Geom::Rectangle2 fArea = fn->properties["fArea"].value<Geom::Rectangle2>();
+		Geom::Rectangle fArea = fn->properties["fArea"].value<Geom::Rectangle>();
 		TimeInterval tInterval = chains[cn->entityIdx]->mFoldDuration;
 
 		// with other fold options
@@ -179,8 +199,8 @@ void HBlock::buildCollisionGraph()
 			if (!overlap(tInterval, other_tInterval)) continue;
 
 			// collision test using fold region
-			Geom::Rectangle2 other_fArea = other_fn->properties["fArea"].value<Geom::Rectangle2>();
-			if (Geom::IntrRect2Rect2::test(fArea, other_fArea))
+			Geom::Rectangle other_fArea = other_fn->properties["fArea"].value<Geom::Rectangle>();
+			if (fAreasIntersect(fArea, other_fArea))
 			{
 				collFog->addCollisionLink(fn, other_fn);
 			}
@@ -286,4 +306,14 @@ FdGraph* HBlock::getKeyframeScaffold( double t )
 	foreach (FdGraph* c, foldedChains) delete c;
 
 	return keyframeScaffold;
+}
+
+bool HBlock::fAreasIntersect( Geom::Rectangle& rect1, Geom::Rectangle& rect2 )
+{
+	Geom::Rectangle base_rect = getBaseMaster()->mPatch;
+	
+	Geom::Rectangle2 r1 = base_rect.get2DRectangle(rect1);
+	Geom::Rectangle2 r2 = base_rect.get2DRectangle(rect2);
+
+	return Geom::IntrRect2Rect2::test(r1, r2);
 }

@@ -8,8 +8,8 @@
 #include "Numeric.h"
 #include <QDir>
 
-TBlock::TBlock( PatchNode* master, FdNode* slave, QString id )
-	:BlockGraph(id)
+TBlock::TBlock( PatchNode* master, FdNode* slave, Geom::Box bb, QString id )
+	:BlockGraph(id, bb)
 {
 	// type
 	mType = BlockGraph::T_BLOCK;
@@ -32,7 +32,18 @@ TBlock::~TBlock()
 
 QVector<FoldOption*> TBlock::generateFoldOptions()
 {
-	return chains.front()->generateFoldOptions();
+	QVector<FoldOption*> options;
+	foreach (FoldOption* fn, chains.front()->generateFoldOptions())
+	{
+		// barrier box should contain the folding volume
+		Geom::SectorCylinder fV = fn->properties["fVolume"].value<Geom::SectorCylinder>();
+		if (barrierBox.containsAll(fV.getConners()))
+			options << fn;
+
+		addDebugPoints(fV.getConners());
+	}
+
+	return options;
 }
 
 void TBlock::applyFoldOption( FoldOption* fn )

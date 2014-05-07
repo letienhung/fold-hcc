@@ -96,6 +96,7 @@ public:
 	// relation with  other objects
 	bool hasFaceCoplanarWith(Line line);
 	bool contains(Vector3 p);
+	bool containsAll(QVector<Vector3> pnts);
 
 	// frontier
 	double calcFrontierWidth(int fid, const QVector<Vector3>& pnts, bool two_side = false);

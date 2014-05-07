@@ -8,7 +8,7 @@ HChain::HChain( FdNode* slave, PatchNode* master1, PatchNode* master2)
 	properties["type"] = "sandwich";
 }
 
-Geom::Rectangle2 HChain::getFoldRegion(FoldOption* fn)
+Geom::Rectangle HChain::getFoldRegion(FoldOption* fn)
 {
 	// axis and rightV
 	int hidx = fn->hingeIdx;
@@ -35,15 +35,9 @@ Geom::Rectangle2 HChain::getFoldRegion(FoldOption* fn)
 		axisSeg2.translate( width * rightV);
 	}
 
-	// conners of projected rectangle
-	QVector<Vector2> conners;
-	Geom::Rectangle& panel_rect = mMasters[0]->mPatch;
-	conners << panel_rect.getProjCoordinates(axisSeg1.P0) 
-		<< panel_rect.getProjCoordinates(axisSeg1.P1) 
-		<< panel_rect.getProjCoordinates(axisSeg2.P1) 
-		<< panel_rect.getProjCoordinates(axisSeg2.P0);
-
-	return Geom::Rectangle2(conners);
+	return Geom::Rectangle(QVector<Vector3>() 
+		<< axisSeg1.P0	<< axisSeg1.P1
+		<< axisSeg2.P1  << axisSeg2.P0 );
 }
 
 QVector<FoldOption*> HChain::generateFoldOptions()
@@ -53,7 +47,7 @@ QVector<FoldOption*> HChain::generateFoldOptions()
 	// fold area
 	foreach (FoldOption* fn, options)
 	{
-		Geom::Rectangle2 fArea = this->getFoldRegion(fn);
+		Geom::Rectangle fArea = this->getFoldRegion(fn);
 		fn->properties["fArea"].setValue(fArea);
 	}
 

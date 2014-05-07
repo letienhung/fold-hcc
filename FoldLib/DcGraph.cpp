@@ -357,6 +357,7 @@ void DcGraph::createBlocks()
 	blocks.clear();
 	masterBlockMap.clear();
 
+	Geom::Box aabb = computeAABB().box();
 	// T-blocks
 	for (int i = 0; i < TSlaves.size(); i++)
 	{
@@ -370,7 +371,7 @@ void DcGraph::createBlocks()
 		QString id = "TB_" + QString::number(i);
 
 		masterBlockMap[m->mID] << blocks.size();
-		blocks << new TBlock(m, s, id);
+		blocks << new TBlock(m, s, aabb, id);
 	}
 
 	// H-blocks
@@ -407,7 +408,7 @@ void DcGraph::createBlocks()
 		// create
 		foreach (PatchNode* m, ms) 
 			masterBlockMap[m->mID] << blocks.size();
-		blocks << new HBlock(ms, ss, masterPairs, id);
+		blocks << new HBlock(ms, ss, masterPairs, aabb, id);
 	}
 
 	// set up path
@@ -494,6 +495,9 @@ void DcGraph::buildDepGraph()
 {
 	depFog->clear();
 
+	// AABB
+	Geom::AABB aabb = computeAABB();
+
 	// nodes
 	for (int i = 0; i < blocks.size(); i++)
 	{
@@ -509,6 +513,8 @@ void DcGraph::buildDepGraph()
 		// fold options and fold links
 		foreach (FoldOption* fn, blocks[i]->generateFoldOptions())
 		{
+
+
 			depFog->addNode(fn);
 			depFog->addFoldLink(bn, fn);
 			fn->properties["offset"].setValue(Vector3(0,0,0));
@@ -516,13 +522,6 @@ void DcGraph::buildDepGraph()
 			// tag for HBlock option
 			if (blocks[i]->mType == BlockGraph::H_BLOCK)
 				fn->addTag(IS_HBLOCK_FOLD_OPTION);
-
-			// debug
-			if (blocks[i]->mType == BlockGraph::H_BLOCK)
-			{
-				QVector<Geom::Box> fvboxes = fn->properties["fVolume"].value<QVector<Geom::Box>>();
-				this->addDebugBoxes(fvboxes);
-			}
 		}
 	}
 
@@ -619,7 +618,8 @@ void DcGraph::addDepLinkTOptionHEntity( FoldOption* fn, FoldEntity* other_bn )
 			Geom::Rectangle other_patch = ((PatchNode*) other_part)->mPatch;
 			other_patch.translate(other_offset);
 
-			if (fVolume.intersects(other_patch)) collide = true;
+			if (fVolume.intersects(other_patch)) 
+				collide = true;
 		}
 		// rod part
 		else
@@ -627,7 +627,8 @@ void DcGraph::addDepLinkTOptionHEntity( FoldOption* fn, FoldEntity* other_bn )
 			Geom::Segment other_rod = ((RodNode*) other_part)->mRod;
 			other_rod.translate(other_offset);
 
-			if (fVolume.intersects(other_rod))	collide = true;
+			if (fVolume.intersects(other_rod))	
+				collide = true;
 		}
 
 		// break the loop if collision happens
@@ -712,7 +713,7 @@ FoldOption* DcGraph::getMinCostFreeFoldOption()
 			// give H-block fold option high cost 
 			// such that they have lower priority among free options
 			if (fn->hasTag(IS_HBLOCK_FOLD_OPTION))
-				cost = 999;
+				cost = -1;
 			else
 				cost = fn->getCost();
 

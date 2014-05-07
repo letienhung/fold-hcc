@@ -6,7 +6,7 @@ class HBlock : public BlockGraph
 {
 public:
     HBlock(QVector<PatchNode*>& masters, QVector<FdNode*>& slaves, 
-		QVector< QVector<QString> >& masterPairs, QString id);
+		QVector< QVector<QString> >& masterPairs, Geom::Box bb, QString id);
 
 	// assign master time stamps
 	void assignMasterTimeStamps();
@@ -20,6 +20,9 @@ public:
 
 	// key frames
 	FdGraph* getKeyframeScaffold( double t );
+
+	// helper
+	bool fAreasIntersect(Geom::Rectangle& rect1, Geom::Rectangle& rect2);
 	
 	// getter
 	double getTimeLength();

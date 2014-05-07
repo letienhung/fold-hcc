@@ -26,7 +26,10 @@ Geom::SectorCylinder TChain::getFoldingVolume( FoldOption* fn )
 	Vector3 rightV = rootRightVs[hidx];
 	if (!fn->rightSide) rightV *= -1;
 
-	return Geom::SectorCylinder(axisSeg, chainUpSeg, rightV);
+	// fold volume
+	Geom::SectorCylinder fv(axisSeg, chainUpSeg, rightV);
+	fv.shrinkEpsilon();
+	return fv;
 }
 
 QVector<FoldOption*> TChain::generateFoldOptions()

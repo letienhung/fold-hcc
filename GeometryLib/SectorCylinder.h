@@ -25,6 +25,12 @@ public:
 
 	QStringList toStrList();
 
+	// shrink the epsilon from the boundary
+	void shrinkEpsilon();
+
+	// conner
+	QVector<Vector3> getConners();
+
 public:
 	// (Origin, V1, V2) forms the bottom sector
 	// Axis is up

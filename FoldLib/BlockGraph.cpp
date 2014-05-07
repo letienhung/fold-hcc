@@ -1,11 +1,14 @@
 #include "BlockGraph.h"
 #include "FdUtility.h"
 
-BlockGraph::BlockGraph( QString id )
+BlockGraph::BlockGraph( QString id, Geom::Box bb )
 	: FdGraph(id)
 {
 	// selected chain
 	selChainIdx = -1;
+
+	// aabb
+	barrierBox = bb;
 }
 
 BlockGraph::~BlockGraph()

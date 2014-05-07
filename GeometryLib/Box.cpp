@@ -685,3 +685,16 @@ Geom::Plane Geom::Box::getFacePlane( int fid )
 {
 	return getFaceRectangle(fid).getPlane();
 }
+
+bool Geom::Box::containsAll( QVector<Vector3> pnts )
+{
+	bool cnt_all = true;
+	foreach (Vector3 p, pnts){
+		if (!contains(p)){
+			cnt_all = false;
+			break;
+		}
+	}
+
+	return cnt_all;
+}

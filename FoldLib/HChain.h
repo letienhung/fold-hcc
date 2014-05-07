@@ -12,7 +12,7 @@ public:
 	QVector<FoldOption*> generateFoldOptions();
 
 	// fold region
-	Geom::Rectangle2 getFoldRegion(FoldOption* fn);
+	Geom::Rectangle getFoldRegion(FoldOption* fn);
 
 	// modifier
 	QVector<Geom::Plane> generateCutPlanes( int N );

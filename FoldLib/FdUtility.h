@@ -24,8 +24,9 @@ typedef QPair<double, double> TimeInterval;
 
 // Qt meta type
 Q_DECLARE_METATYPE(Vector3)
+Q_DECLARE_METATYPE(QVector<Vector3>)
 Q_DECLARE_METATYPE(Geom::SectorCylinder)
-Q_DECLARE_METATYPE(Geom::Rectangle2)
+Q_DECLARE_METATYPE(Geom::Rectangle)
 Q_DECLARE_METATYPE(QVector<Geom::Segment>)
 Q_DECLARE_METATYPE(QVector<Geom::Box>)
 

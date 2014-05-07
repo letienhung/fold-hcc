@@ -9,7 +9,7 @@ public:
 	enum BLOCK_TYPE{T_BLOCK, H_BLOCK};
 
 public:
-    BlockGraph(QString id);
+    BlockGraph(QString id, Geom::Box bb);
 	~BlockGraph();
 
 	// selection
@@ -43,5 +43,6 @@ public:
 	int selChainIdx;
 	QVector<ChainGraph*> chains;
 	QString baseMasterId;
+	Geom::Box barrierBox;
 }; 
 

@@ -124,3 +124,24 @@ void Geom::SectorCylinder::translate( Vector3 t )
 {
 	Origin += t;
 }
+
+void Geom::SectorCylinder::shrinkEpsilon()
+{
+	double delta = ZERO_TOLERANCE_LOW * Radius;
+	Origin += delta * V1 + delta * V2 + delta * Axis;
+
+	double scale = 1 - 2 * ZERO_TOLERANCE_LOW;
+	Radius *= scale;
+	Height *= scale;
+}
+
+QVector<Vector3> Geom::SectorCylinder::getConners()
+{
+	return QVector<Vector3>()
+		<< Origin 
+		<< Origin + Height * Axis
+		<< Origin + Radius * V1
+		<< Origin + Radius * V1 + Height * Axis
+		<< Origin + Radius * V1
+		<< Origin + Radius * V1 + Height * Axis;
+}

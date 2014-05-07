@@ -431,6 +431,15 @@ void FdGraph::translate(Vector3 v)
 void FdGraph::drawDebug()
 {
 	// debug segments
+	if (properties.contains("debugPoints"))
+	{
+		QVector<Vector3> debugPoints = properties["debugPoints"].value<QVector<Vector3> >();
+		PointSoup ps;
+		foreach (Vector3 p, debugPoints) ps.addPoint(p);
+		ps.draw();
+	}
+
+	// debug segments
 	if (properties.contains("debugSegs"))
 	{
 		QVector<Geom::Segment> debugSegs = properties["debugSegs"].value< QVector<Geom::Segment> >();
@@ -480,4 +489,14 @@ void FdGraph::addDebugBoxes( QVector<Geom::Box>& boxes )
 
 	debugBoxes += boxes;
 	properties["debugBoxes"].setValue(debugBoxes);
+}
+
+void FdGraph::addDebugPoints( QVector<Vector3>& pnts )
+{
+	QVector<Vector3> debugPoints;
+	if (properties.contains("debugPoints"))
+		debugPoints = properties["debugPoints"].value<QVector<Vector3> >();
+
+	debugPoints += pnts;
+	properties["debugPoints"].setValue(debugPoints);
 }
