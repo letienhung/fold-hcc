@@ -18,12 +18,14 @@ public:
 public:
 	// masters
 	QString baseMasterId;
-	QVector<PatchNode*> masterPatches;
+	QVector<PatchNode*> masters;
 
 	// slaves
 	QVector<FdNode*> slaves;
+	QVector< QSet<int> > slave2master;
 	QVector< QSet<int> > slave2masterSide; // each slave has one or two end props (master + side).
-	QList< QSet<int> > endClusters;
+	QList< QSet<int> > slaveEndClusters;  // cluster of slave ends
+
 	QVector<int> TSlaves;
 	QVector< QSet<int> > HSlaveClusters;// H-slaves sharing side prop belong to the same cluster.
 
@@ -49,11 +51,14 @@ public:
 public:
 	// decomposition
 	void createMasters(StrArray2D& masterGroups);
-	void computeSlaveMasterRelation(); // slave2masterSide
-	void createSlaves();
+
+	void createSlaves(); 
+	void updateSlaves(); // collect current slaves and store into \p slaves
+	QVector<FdNode*> mergeConnectedCoplanarParts(QVector<FdNode*> ns);
+
+	void computeSlaveMasterRelation();
 	void clusterSlaves();
 	void createBlocks();
-	QVector<FdNode*> mergeConnectedCoplanarParts(QVector<FdNode*> ns);
 
 	// foldem
 	void foldabilize();
@@ -63,7 +68,6 @@ public:
 	void addDepLinkTOptionTEntity(FoldOption* fn, FoldEntity* other_bn);
 	void addDepLinkTOptionHEntity(FoldOption* fn, FoldEntity* other_bn);
 	void addDepLinkHOptionTEntity(FoldOption* fn, FoldEntity* other_bn);
-	void addDepLinkHOptionHEntity(FoldOption* fn, FoldEntity* other_bn);
 
 	void findFoldOrderGreedy();
 	FoldOption* getMinCostFreeFoldOption();

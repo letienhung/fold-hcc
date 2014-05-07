@@ -48,7 +48,7 @@ Geom::Rectangle2 HChain::getFoldRegion(FoldOption* fn)
 
 QVector<FoldOption*> HChain::generateFoldOptions()
 {
-	QVector<FoldOption*> options = ChainGraph::generateFoldOptions(1, 1, 2);
+	QVector<FoldOption*> options = ChainGraph::generateFoldOptions(1, 1, 1);
 
 	// fold area
 	foreach (FoldOption* fn, options)

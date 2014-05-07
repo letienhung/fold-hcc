@@ -61,3 +61,8 @@ ChainGraph* BlockGraph::getChain( QString cid )
 
 	return NULL;
 }
+
+PatchNode* BlockGraph::getBaseMaster()
+{
+	return (PatchNode*)getNode(baseMasterId);
+}

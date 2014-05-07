@@ -46,35 +46,45 @@ void DcGraph::createMasters(StrArray2D& masterGroups)
 		mf->addTag(IS_MASTER);
 
 		if (mf->mType != FdNode::PATCH)	changeNodeType(mf);
-		masterPatches.push_back((PatchNode*)mf);
+		masters.push_back((PatchNode*)mf);
 	}
 
 	// base master
-	baseMasterId = masterPatches.front()->mID;
+	baseMasterId = masters.front()->mID;
 }
 
-void DcGraph::computeSlaveMasterRelation()
+void DcGraph::updateSlaves()
 {
 	// slave parts
 	slaves.clear();
 	foreach (FdNode* n, getFdNodes())
 		if (!n->hasTag(IS_MASTER))	slaves << n;
+}
 
-	// to which side of which master a slave's end is attached
+void DcGraph::computeSlaveMasterRelation()
+{
+	// initial
+	slave2master.clear();
+	slave2master.resize(slaves.size());
 	slave2masterSide.clear();
 	slave2masterSide.resize(slaves.size());
+
+	// to which side of which master a slave's end is attached
 	double adjacentThr = getConnectivityThr();
 	for (int i = 0; i < slaves.size(); i++)
 	{
 		// find adjacent master(s)
 		FdNode* slave = slaves[i];
-		for (int j = 0; j < masterPatches.size(); j++)
+		for (int j = 0; j < masters.size(); j++)
 		{
 			// distance to master
-			PatchNode* master = masterPatches[j];
+			PatchNode* master = masters[j];
 			if (getDistance(slave, master) < adjacentThr)
 			{
-				// each master j has two sides: 2*j (positive) and 2*j+1 (negative)
+				// master id
+				slave2master[i] << j;
+
+				// master side: 2*j (positive) and 2*j+1 (negative)
 				Vector3 sc2mc = slave->center() - master->center(); 
 				if (dot(sc2mc, master->mPatch.Normal) > 0)
 					slave2masterSide[i] << 2*j;
@@ -189,7 +199,7 @@ void DcGraph::createSlaves()
 {
 	// split slave parts by master patches
 	double adjacentThr = getConnectivityThr();
-	foreach (PatchNode* master, masterPatches)
+	foreach (PatchNode* master, masters)
 	{
 		foreach(FdNode* n, getFdNodes())
 		{
@@ -201,7 +211,13 @@ void DcGraph::createSlaves()
 		}
 	}
 
+	// slave parts
+	slaves.clear();
+	foreach (FdNode* n, getFdNodes())
+		if (!n->hasTag(IS_MASTER))	slaves << n;
+
 	// current slave-master relation
+	updateSlaves();
 	computeSlaveMasterRelation();
 
 	// connectivity among slave parts
@@ -238,7 +254,10 @@ void DcGraph::createSlaves()
 	}
 
 	// slave-master relation after merging
+	updateSlaves();
 	computeSlaveMasterRelation();
+
+	// remove slaves that are still flying: unlikely to happen
 	for (int i = 0; i < slaves.size();i++)
 	{
 		if (slave2masterSide[i].isEmpty())
@@ -248,6 +267,11 @@ void DcGraph::createSlaves()
 			i--;
 		}
 	}
+
+	// deform each slave slightly so that it attaches to masters perfectly
+	for (int i = 0; i < slaves.size(); i++)
+		foreach (int mid, slave2master[i])
+			slaves[i]->deformToAttach(masters[mid]->mPatch.getPlane());
 }
 
 void DcGraph::clusterSlaves()
@@ -273,9 +297,9 @@ void DcGraph::clusterSlaves()
 		{
 			// check whether belong to existed clusters
 			QVector<int> clusterIdx;
-			for (int j = 0; j < endClusters.size(); j++)
+			for (int j = 0; j < slaveEndClusters.size(); j++)
 			{
-				QSet<int> isct = slave2masterSide[i] & endClusters[j];
+				QSet<int> isct = slave2masterSide[i] & slaveEndClusters[j];
 				if (!isct.isEmpty()) clusterIdx.push_back(j);
 			}
 
@@ -285,14 +309,14 @@ void DcGraph::clusterSlaves()
 			case 0: 
 				{
 					// create a new cluster
-					endClusters.push_back(slave2masterSide[i]);
+					slaveEndClusters.push_back(slave2masterSide[i]);
 				}
 				break;
 			case 1:
 				{
 					// merge the slaveSideProp with the cluster
 					int idx = clusterIdx[0];
-					endClusters[idx] = endClusters[idx] + slave2masterSide[i];
+					slaveEndClusters[idx] = slaveEndClusters[idx] + slave2masterSide[i];
 				}
 				break;
 			case 2:
@@ -301,8 +325,8 @@ void DcGraph::clusterSlaves()
 					// slaveSideProp is already contained in their union
 					int idx0 = clusterIdx[0];
 					int idx1 = clusterIdx[1];
-					endClusters[idx0] = endClusters[idx0] + endClusters[idx1];
-					endClusters.removeAt(idx1);
+					slaveEndClusters[idx0] = slaveEndClusters[idx0] + slaveEndClusters[idx1];
+					slaveEndClusters.removeAt(idx1);
 				}
 				break;
 			}
@@ -310,14 +334,14 @@ void DcGraph::clusterSlaves()
 	}
 
 	// H-slave clusters
-	HSlaveClusters.resize(endClusters.size());
+	HSlaveClusters.resize(slaveEndClusters.size());
 	for (int i = 0; i < slaves.size(); i++)
 	{
 		if (isHSlave[i])
 		{
-			for (int j = 0; j < endClusters.size(); j++)
+			for (int j = 0; j < slaveEndClusters.size(); j++)
 			{
-				if (endClusters[j].contains(slave2masterSide[i]))
+				if (slaveEndClusters[j].contains(slave2masterSide[i]))
 				{
 					HSlaveClusters[j] << i;
 				}
@@ -341,7 +365,7 @@ void DcGraph::createBlocks()
 		int end = endlist.front();
 		int midx = end/2;
 
-		PatchNode* m = masterPatches[midx];
+		PatchNode* m = masters[midx];
 		FdNode* s = slaves[sidx];
 		QString id = "TB_" + QString::number(i);
 
@@ -355,8 +379,8 @@ void DcGraph::createBlocks()
 		// masters
 		QVector<PatchNode*> ms;
 		QSet<int> mIdxSet;
-		foreach (int end, endClusters[i]) mIdxSet << end/2;
-		foreach (int midx, mIdxSet)	ms << masterPatches[midx];
+		foreach (int end, slaveEndClusters[i]) mIdxSet << end/2;
+		foreach (int midx, mIdxSet)	ms << masters[midx];
 
 		// slaves
 		QVector<FdNode*> ss;
@@ -371,7 +395,7 @@ void DcGraph::createBlocks()
 			foreach (int end, slave2masterSide[sidx])
 			{
 				int mid = end / 2;
-				new_pair << masterPatches[mid]->mID;
+				new_pair << masters[mid]->mID;
 			}
 
 			masterPairs << new_pair;
@@ -492,6 +516,13 @@ void DcGraph::buildDepGraph()
 			// tag for HBlock option
 			if (blocks[i]->mType == BlockGraph::H_BLOCK)
 				fn->addTag(IS_HBLOCK_FOLD_OPTION);
+
+			// debug
+			if (blocks[i]->mType == BlockGraph::H_BLOCK)
+			{
+				QVector<Geom::Box> fvboxes = fn->properties["fVolume"].value<QVector<Geom::Box>>();
+				this->addDebugBoxes(fvboxes);
+			}
 		}
 	}
 
@@ -519,23 +550,11 @@ void DcGraph::computeDepLinks()
 			// skip deleted
 			if (other_bn->hasTag(DELETED_TAG)) continue;
 
-			// H option
-			if (fn->hasTag(IS_HBLOCK_FOLD_OPTION))
-			{
-				// H entity
-				if (other_bn->hasTag(IS_HBLOCK_FOLD_ENTITY))
-					addDepLinkHOptionHEntity(fn, other_bn);
-				// T entity
-				else addDepLinkHOptionTEntity(fn, other_bn);
-			}
-			// T option
-			else{
-				// H entity
-				if (other_bn->hasTag(IS_HBLOCK_FOLD_ENTITY))
-					addDepLinkTOptionHEntity(fn, other_bn);
-				// entity
-				else addDepLinkTOptionTEntity(fn, other_bn);
-			}
+			// H option vs. T entity
+			if (fn->hasTag(IS_HBLOCK_FOLD_OPTION) && !other_bn->hasTag(IS_HBLOCK_FOLD_ENTITY))
+				addDepLinkHOptionTEntity(fn, other_bn);
+			// T option vs. T/H entity
+			else addDepLinkTOptionHEntity(fn, other_bn);
 		}
 	}
 }
@@ -559,7 +578,6 @@ void DcGraph::addDepLinkTOptionTEntity( FoldOption* fn, FoldEntity* other_bn )
 		if (fVolume.intersects(other_patch))
 		{
 			collide = true;
-			//debugSegs << Geom::Segment(fVCenter, other_patch->mPatch.Center);
 		}
 	}
 	else
@@ -569,7 +587,6 @@ void DcGraph::addDepLinkTOptionTEntity( FoldOption* fn, FoldEntity* other_bn )
 		if (fVolume.intersects(other_rod))
 		{
 			collide = true;
-			//debugSegs << Geom::Segment(fVCenter, other_rod->mRod.Center);
 		}
 	}
 
@@ -580,17 +597,93 @@ void DcGraph::addDepLinkTOptionTEntity( FoldOption* fn, FoldEntity* other_bn )
 
 void DcGraph::addDepLinkTOptionHEntity( FoldOption* fn, FoldEntity* other_bn )
 {
+	Geom::SectorCylinder fVolume = fn->properties["fVolume"].value<Geom::SectorCylinder>();
+	Vector3 offset = fn->properties["offset"].value<Vector3>();
+	fVolume.translate(offset);
+	FoldEntity* bn = depFog->getFoldEntity(fn->mID);
+	BlockGraph* block = blocks[bn->entityIdx];
+	
+	BlockGraph* other_block = blocks[other_bn->entityIdx];
+	Vector3 other_offset = other_bn->properties["offset"].value<Vector3>();
 
+	// check whether \p fVolume intersects any part from \p other_block except for the master of T
+	bool collide = false;
+	foreach (FdNode* other_part, other_block->getFdNodes())
+	{
+		// skip the shared master
+		if (other_part->mID == block->baseMasterId) continue;
+
+		// patch part
+		if (other_part->mType == FdNode::PATCH)
+		{
+			Geom::Rectangle other_patch = ((PatchNode*) other_part)->mPatch;
+			other_patch.translate(other_offset);
+
+			if (fVolume.intersects(other_patch)) collide = true;
+		}
+		// rod part
+		else
+		{
+			Geom::Segment other_rod = ((RodNode*) other_part)->mRod;
+			other_rod.translate(other_offset);
+
+			if (fVolume.intersects(other_rod))	collide = true;
+		}
+
+		// break the loop if collision happens
+		if (collide) break;
+	}
+
+	// add collision link
+	if (collide)
+		depFog->addCollisionLink(fn, other_bn);
 }
 
 void DcGraph::addDepLinkHOptionTEntity( FoldOption* fn, FoldEntity* other_bn )
 {
+	QVector<Geom::Box> fVBoxes = fn->properties["fVolume"].value<QVector<Geom::Box>>();
+	Vector3 offset = fn->properties["offset"].value<Vector3>();
+	foreach (Geom::Box box, fVBoxes) box.translate(offset);
+	FoldEntity* bn = depFog->getFoldEntity(fn->mID);
+	BlockGraph* block = blocks[bn->entityIdx];
 
-}
+	BlockGraph* other_block = blocks[other_bn->entityIdx];
+	TChain* other_chain = (TChain*)other_block->chains.front();
+	FdNode* other_part = other_chain->mOrigSlave;
+	Vector3 other_offset = other_bn->properties["offset"].value<Vector3>();
+	QVector<Vector3> other_samples;
+	if (other_part->mType == FdNode::PATCH)
+	{
+		Geom::Rectangle other_rect = ((PatchNode*)other_part)->mPatch;
+		other_rect.translate(other_offset);
+		other_samples = other_rect.getEdgeSamples(100);
+	}
+	else
+	{
+		Geom::Segment other_seg = ((RodNode*)other_part)->mRod;
+		other_seg.translate(other_offset);
+		other_samples = other_seg.getUniformSamples(20);
+	}
 
-void DcGraph::addDepLinkHOptionHEntity( FoldOption* fn, FoldEntity* other_bn )
-{
+	// check whether \p other_part intersects any box in the \fVBoxes
+	bool collide = false;
+	foreach(Geom::Box box, fVBoxes)
+	{
+		foreach (Vector3 other_p, other_samples)
+		{
+			if (box.contains(other_p))
+			{
+				collide = true;
+				break;
+			}
+		}
 
+		if (collide) break;
+	}
+
+	// add collision link
+	if (collide)
+		depFog->addCollisionLink(fn, other_bn);
 }
 
 void DcGraph::exportDepFOG()
@@ -615,8 +708,14 @@ FoldOption* DcGraph::getMinCostFreeFoldOption()
 		QVector<Structure::Link*> links = depFog->getCollisionLinks(fn->mID);
 		if (links.isEmpty())
 		{
-			// cost
-			double cost = fn->getCost();
+			double cost;
+			// give H-block fold option high cost 
+			// such that they have lower priority among free options
+			if (fn->hasTag(IS_HBLOCK_FOLD_OPTION))
+				cost = 999;
+			else
+				cost = fn->getCost();
+
 			if (cost < min_cost)
 			{
 				min_cost = cost;
@@ -627,7 +726,6 @@ FoldOption* DcGraph::getMinCostFreeFoldOption()
 
 	return min_fn;
 }
-
 
 void DcGraph::updateDepLinks(double t)
 {
@@ -658,7 +756,6 @@ void DcGraph::updateDepLinks(double t)
 	// update dependency links
 	computeDepLinks();
 }
-
 
 void DcGraph::findFoldOrderGreedy()
 {
@@ -697,8 +794,12 @@ void DcGraph::findFoldOrderGreedy()
 		sel_block->mFoldDuration = TIME_INTERVAL(start, end);
 
 		// exclude family nodes
-		foreach(Structure::Node* n, depFog->getFamilyNodes(sel_fn->mID))
+		foreach (Structure::Node* n, depFog->getFamilyNodes(sel_fn->mID))
 			n->addTag(DELETED_TAG);
+
+		// remove collision links from family nodes
+		foreach (Structure::Link* l, depFog->getFamilyCollisionLinks(sel_fn->mID))
+			depFog->removeLink(l);
 
 		// update dependency graph if a H-block is foldabilized at this step
 		// because folding of H-block move masters 
@@ -714,7 +815,6 @@ void DcGraph::findFoldOrderGreedy()
 	}
 
 }
-
 
 void DcGraph::generateKeyframes( int N )
 {

@@ -21,7 +21,7 @@ public:
 	// getter
 	ChainGraph* getChain(QString cid);
 	virtual double getTimeLength() = 0;
-	virtual PatchNode* getBaseMaster() = 0;
+	PatchNode* getBaseMaster();
 
 	// foldem
 	virtual QVector<FoldOption*> generateFoldOptions() = 0;
@@ -42,5 +42,6 @@ public:
 	TimeInterval mFoldDuration;
 	int selChainIdx;
 	QVector<ChainGraph*> chains;
+	QString baseMasterId;
 }; 
 

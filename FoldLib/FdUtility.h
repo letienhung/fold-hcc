@@ -27,6 +27,7 @@ Q_DECLARE_METATYPE(Vector3)
 Q_DECLARE_METATYPE(Geom::SectorCylinder)
 Q_DECLARE_METATYPE(Geom::Rectangle2)
 Q_DECLARE_METATYPE(QVector<Geom::Segment>)
+Q_DECLARE_METATYPE(QVector<Geom::Box>)
 
 // distance between fd nodes
 Geom::Segment getDistSegment( FdNode* n1, FdNode* n2 );
@@ -61,6 +62,7 @@ double getLocalTime(double globalT, TimeInterval itv);
 
 // masters
 QVector<PatchNode*> getAllMasters(FdGraph* scaffold);
+QSet<QString> getAllMasterIds(FdGraph* scaffold);
 int nbMasters(FdGraph* scaffold);
 
 // combination

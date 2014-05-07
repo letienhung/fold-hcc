@@ -19,8 +19,4 @@ public:
 
 	// getters
 	double getTimeLength();
-	PatchNode* getBaseMaster();
-
-public: 
-	PatchNode* mMaster; 
 };

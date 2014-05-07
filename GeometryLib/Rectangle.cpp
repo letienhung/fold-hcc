@@ -334,7 +334,7 @@ int Geom::Rectangle::getPerpAxisId( Vector3 v )
 	return (dotVAxis0 > dotVAxis1) ? 1 : 0;
 }
 
-Geom::Rectangle Geom::Rectangle::getRectangle( Rectangle2 &rect2 )
+Geom::Rectangle Geom::Rectangle::get3DRectangle( Rectangle2 &rect2 )
 {
 	QVector<Vector3> conners;
 	foreach(Vector2 p2, rect2.getConners()) 
@@ -342,6 +342,17 @@ Geom::Rectangle Geom::Rectangle::getRectangle( Rectangle2 &rect2 )
 
 	return Rectangle(conners);
 }
+
+
+Geom::Rectangle2 Geom::Rectangle::get2DRectangle( Rectangle& rect )
+{
+	QVector<Vector2> conners;
+	foreach (Vector3 p3, rect.getConners())
+		conners << getProjCoordinates(p3);
+
+	return Rectangle2(conners);
+}
+
 
 double Geom::Rectangle::radius()
 {

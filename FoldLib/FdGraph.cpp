@@ -439,6 +439,16 @@ void FdGraph::drawDebug()
 			seg.draw();
 		}
 	}
+
+	// draw boxes
+	if (properties.contains("debugBoxes"))
+	{
+		QVector<Geom::Box> debugBoxes = properties["debugBoxes"].value<QVector<Geom::Box> >();
+		foreach (Geom::Box box, debugBoxes)
+		{
+			box.draw();
+		}
+	}
 }
 
 void FdGraph::addDebugSegment( Geom::Segment seg )
@@ -460,4 +470,14 @@ void FdGraph::addDebugSegments( QVector<Geom::Segment>& segs )
 double FdGraph::getConnectivityThr()
 {
 	return 0.1 * computeAABB().radius();
+}
+
+void FdGraph::addDebugBoxes( QVector<Geom::Box>& boxes )
+{
+	QVector<Geom::Box> debugBoxes;
+	if (properties.contains("debugBoxes"))
+		debugBoxes = properties["debugBoxes"].value<QVector<Geom::Box> >();
+
+	debugBoxes += boxes;
+	properties["debugBoxes"].setValue(debugBoxes);
 }

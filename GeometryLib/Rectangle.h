@@ -32,7 +32,6 @@ public:
 	Plane   getPlane();
 	int		getClosestAxisId(Vector3 v);
 	int		getPerpAxisId(Vector3 v);
-	Rectangle getRectangle(Rectangle2 &rect2);
 	QVector<Segment>  getEdgeSegments();
 	QVector<Segment>  getPerpEdges(Vector3 v);
 	QVector<Vector2>  get2DConners();
@@ -41,6 +40,8 @@ public:
 	QVector<Vector3>  getConnersReverse();
 
 	// projection
+	Rectangle2 get2DRectangle(Rectangle& rect);
+	Rectangle get3DRectangle(Rectangle2 &rect2);
 	Segment2 get2DSegment(Segment& s);
 	Segment get3DSegment(Segment2& s);
 	Vector3 getProjection(Vector3 p);

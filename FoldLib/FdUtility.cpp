@@ -406,3 +406,12 @@ int nbMasters( FdGraph* scaffold )
 {
 	return getAllMasters(scaffold).size();
 }
+
+QSet<QString> getAllMasterIds( FdGraph* scaffold )
+{
+	QSet<QString> mids;
+	foreach (PatchNode* m, getAllMasters(scaffold))
+		mids << m->mID;
+
+	return mids;
+}

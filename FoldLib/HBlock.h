@@ -13,6 +13,7 @@ public:
 
 	// foldem
 	QVector<FoldOption*> generateFoldOptions();
+	QVector<Geom::Box> getFoldVolume();
 	void applyFoldOption(FoldOption* fn);
 	void foldabilize();
 	void buildCollisionGraph();
@@ -22,10 +23,8 @@ public:
 	
 	// getter
 	double getTimeLength();
-	PatchNode* getBaseMaster();
 
 public:
-	QString baseMasterId;
 	QMap<QString, QSet<int> > masterChainsMap;
 	QMap<QString, double> masterTimeStamps;
 

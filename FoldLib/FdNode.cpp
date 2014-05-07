@@ -259,3 +259,30 @@ void FdNode::exportMesh(QFile &file, int &v_offset)
 
 	v_offset += mMesh->n_vertices();
 }
+
+void FdNode::deformToAttach( Geom::Plane& plane )
+{
+	int aid = mBox.getAxisId(plane.Normal);
+	Geom::Segment sklt = mBox.getSkeleton(aid);
+
+	double d0 = plane.signedDistanceTo(sklt.P0);
+	double d1 = - plane.signedDistanceTo(sklt.P1);
+	double a = d0 / (d0 + d1);
+	double b = d1 / (d0 + d1);
+	Vector3 p = a * sklt.P1 + b * sklt.P0;
+	
+	if (fabs(a) > fabs(b))
+	{// p0 - p
+		mBox.Center = 0.5 * (sklt.P0 + p);
+		mBox.Extent[aid] = 0.5 * (sklt.P0 - p).norm();
+	}
+	else
+	{// p1 - p
+		mBox.Center = 0.5 * (sklt.P1 + p);
+		mBox.Extent[aid] = 0.5 * (sklt.P1 - p).norm();
+	}
+
+	// deform
+	createScaffold();
+	deformMesh();
+}

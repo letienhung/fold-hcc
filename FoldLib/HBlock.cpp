@@ -2,6 +2,7 @@
 #include "HChain.h"
 #include "PatchNode.h"
 #include "FdUtility.h"
+#include "IntrRectRect.h"
 #include "IntrRect2Rect2.h"
 #include "Numeric.h"
 #include "CliquerAdapter.h"
@@ -187,9 +188,75 @@ void HBlock::buildCollisionGraph()
 	}
 }
 
+
+QVector<Geom::Box> HBlock::getFoldVolume()
+{
+	// get master pairs
+	QVector<QVector<QString> > mid_pairs;
+	QList<QString> mids = masterTimeStamps.keys();
+	for (int i = 0; i < mids.size(); i++)
+	{
+		for (int j = i + 1; j < mids.size(); j++)
+		{
+			bool connected = false;
+			foreach (ChainGraph* c, chains)
+			{
+				if (c->getNode(mids[i]) && c->getNode(mids[j]))
+				{
+					connected = true;
+					break;
+				}
+			}
+
+			if (connected)
+				mid_pairs << (QVector<QString>() << mids[i] << mids[j]);
+		}
+	}
+
+	// each pair of masters connected by chains form a folding box
+	QVector<Geom::Box> fV;
+	Geom::IntrRectRect RR;
+	foreach (QVector<QString> mid_pair, mid_pairs)
+	{
+		QString mid1 = mid_pair.front();
+		QString mid2 = mid_pair.last();
+
+		Geom::Rectangle rect1 = ((PatchNode*)getNode(mid1))->mPatch;
+		Geom::Rectangle rect2 = ((PatchNode*)getNode(mid2))->mPatch;
+
+		// make sure two rectangles are coplanar
+		Geom::Rectangle rect2on1 = rect1.get3DRectangle(rect1.get2DRectangle(rect2));
+
+		// intersection
+		QVector<Vector3> intrPnts = RR.test(rect1, rect2on1);
+		if (intrPnts.size() != 4) continue;
+
+		// base rectangle
+		Geom::Rectangle base_rect(intrPnts);
+		
+		// upright and height
+		Vector3 n = base_rect.Normal;
+		Vector3 c2c = rect2.Center - rect1.Center;
+		double height = dot(n, c2c);
+		if (height < 0) { n *= -1; height *= -1;}
+
+		// box
+		fV << Geom::Box(base_rect, n, height);
+	}
+
+	return fV;
+}
+
+
 QVector<FoldOption*> HBlock::generateFoldOptions()
 {
-	return QVector<FoldOption*>() << new FoldOption(mID + "_dummy");
+	// fold option
+	FoldOption* fn = new FoldOption(mID + "_00");
+
+	// fold volume
+	fn->properties["fVolume"].setValue(getFoldVolume());
+
+	return QVector<FoldOption*>() << fn;
 }
 
 void HBlock::applyFoldOption( FoldOption* fn )
@@ -219,9 +286,4 @@ FdGraph* HBlock::getKeyframeScaffold( double t )
 	foreach (FdGraph* c, foldedChains) delete c;
 
 	return keyframeScaffold;
-}
-
-PatchNode* HBlock::getBaseMaster()
-{
-	return (PatchNode*)getNode(baseMasterId);
 }

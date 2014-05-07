@@ -54,9 +54,10 @@ public:
 	void restoreConfiguration();
 
 	// debug
+	void drawDebug();
 	void addDebugSegment(Geom::Segment seg);
 	void addDebugSegments(QVector<Geom::Segment>& segs);
-	void drawDebug();
+	void addDebugBoxes(QVector<Geom::Box>& boxes);
 
 public:
 	QString path;

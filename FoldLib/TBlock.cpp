@@ -20,6 +20,9 @@ TBlock::TBlock( PatchNode* master, FdNode* slave, QString id )
 
 	// create the chain
 	chains << new TChain(master, slave);
+
+	// base master
+	baseMasterId = master->mID;
 }
 
 TBlock::~TBlock()
@@ -46,9 +49,4 @@ double TBlock::getTimeLength()
 FdGraph* TBlock::getKeyframeScaffold( double t )
 {
 	return chains.front()->getKeyframeScaffold(t);
-}
-
-PatchNode* TBlock::getBaseMaster()
-{
-	return mMaster;
 }

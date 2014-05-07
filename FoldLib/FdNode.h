@@ -52,6 +52,7 @@ public:
 	FdNode* cloneChopped(Geom::Box& chopBox);
 	virtual FdNode* cloneChopped(Geom::Plane& chopper);
 	virtual FdNode* cloneChopped(Geom::Plane& chopper1, Geom::Plane& chopper2);
+	void deformToAttach(Geom::Plane& plane);
 	 
 	// relation with direction
 	virtual bool isPerpTo(Vector3 v, double dotThreshold);

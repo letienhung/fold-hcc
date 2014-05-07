@@ -31,7 +31,7 @@ Geom::SectorCylinder TChain::getFoldingVolume( FoldOption* fn )
 
 QVector<FoldOption*> TChain::generateFoldOptions()
 {
-	QVector<FoldOption*> options = ChainGraph::generateFoldOptions(0, 1, 3);
+	QVector<FoldOption*> options = ChainGraph::generateFoldOptions(0, 0, 1);
 
 	// fold volume
 	foreach (FoldOption* fn, options)
