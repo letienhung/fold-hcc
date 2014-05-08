@@ -59,6 +59,7 @@ public:
 	void addDebugSegment(Geom::Segment seg);
 	void addDebugSegments(QVector<Geom::Segment>& segs);
 	void addDebugBoxes(QVector<Geom::Box>& boxes);
+	void addDebugSectorCylinders(QVector<Geom::SectorCylinder>& scs);
 
 public:
 	QString path;

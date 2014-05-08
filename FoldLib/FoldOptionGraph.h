@@ -24,8 +24,8 @@ public:
 	QString getInfo();// printable info
 
 public:
-	// hinge info: idx of root segment
-	int hingeIdx;
+	// idx of root segment
+	int jointAxisIdx;
 
 	// to which side to fold
 	bool rightSide;

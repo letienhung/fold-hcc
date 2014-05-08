@@ -358,6 +358,8 @@ void DcGraph::createBlocks()
 	masterBlockMap.clear();
 
 	Geom::Box aabb = computeAABB().box();
+	aabb.scale(1.1);
+
 	// T-blocks
 	for (int i = 0; i < TSlaves.size(); i++)
 	{
@@ -482,8 +484,12 @@ FdGraph* DcGraph::getKeyFrame( double t )
 	return key_graph;
 }
 
-void DcGraph::foldabilize()
+void DcGraph::foldabilize(bool withinAABB)
 {
+	// set barrier tag
+	foreach (BlockGraph* b, blocks)
+		b->withinAABB = withinAABB;
+
 	// construct dependency graph
 	buildDepGraph();
 
@@ -494,9 +500,6 @@ void DcGraph::foldabilize()
 void DcGraph::buildDepGraph()
 {
 	depFog->clear();
-
-	// AABB
-	Geom::AABB aabb = computeAABB();
 
 	// nodes
 	for (int i = 0; i < blocks.size(); i++)
@@ -513,8 +516,6 @@ void DcGraph::buildDepGraph()
 		// fold options and fold links
 		foreach (FoldOption* fn, blocks[i]->generateFoldOptions())
 		{
-
-
 			depFog->addNode(fn);
 			depFog->addFoldLink(bn, fn);
 			fn->properties["offset"].setValue(Vector3(0,0,0));
@@ -695,6 +696,17 @@ void DcGraph::exportDepFOG()
 		depFogSequence[i]->saveAsImage(filePath);
 	}
 }
+
+void DcGraph::exportCollFOG()
+{
+	BlockGraph* selBlock = getSelBlock();
+	if (selBlock && selBlock->mType == BlockGraph::H_BLOCK)
+	{
+		HBlock* hblock = (HBlock*)selBlock;
+		hblock->exportCollFOG();
+	}
+}
+
 
 FoldOption* DcGraph::getMinCostFreeFoldOption()
 {

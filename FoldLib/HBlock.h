@@ -12,11 +12,12 @@ public:
 	void assignMasterTimeStamps();
 
 	// foldem
+	void foldabilize();
+	void buildCollisionGraph();
+	void findOptimalSolution();
 	QVector<FoldOption*> generateFoldOptions();
 	QVector<Geom::Box> getFoldVolume();
 	void applyFoldOption(FoldOption* fn);
-	void foldabilize();
-	void buildCollisionGraph();
 
 	// key frames
 	FdGraph* getKeyframeScaffold( double t );
@@ -27,11 +28,15 @@ public:
 	// getter
 	double getTimeLength();
 
+	// export
+	void exportCollFOG();
+
 public:
 	QMap<QString, QSet<int> > masterChainsMap;
 	QMap<QString, double> masterTimeStamps;
 
 	FoldOptionGraph* collFog;
+	FoldOptionGraph* collFogOrig;
 	QVector<FoldOption*> foldSolution;
 };
 

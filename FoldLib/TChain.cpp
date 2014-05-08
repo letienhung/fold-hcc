@@ -12,7 +12,7 @@ TChain::TChain( PatchNode* master, FdNode* slave)
 Geom::SectorCylinder TChain::getFoldingVolume( FoldOption* fn )
 {
 	// shrink hinge axis
-	int hidx = fn->hingeIdx;
+	int hidx = fn->jointAxisIdx;
 	Geom::Segment axisSeg = rootJointSegs[hidx];
 	double t0 = fn->position;
 	double t1 = t0 + fn->scale;

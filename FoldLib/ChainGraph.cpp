@@ -76,22 +76,6 @@ FdGraph* ChainGraph::getKeyframeScaffold( double t )
 	return (FdGraph*)this->clone();
 }
 
-void ChainGraph::createChain( int nbSplit )
-{
-	// remove original chain parts
-	foreach (FdNode* n, mParts) removeNode(n->mID);
-
-	// clone original part
-	// add to graph and split
-	FdNode* origPart = (FdNode*)mOrigSlave->clone();
-	Structure::Graph::addNode(origPart);
-	mParts = FdGraph::split(mOrigSlave->mID, generateCutPlanes(nbSplit));
-	
-	// reset hinge links
-	sortChainParts();
-	resetHingeLinks();
-}
-
 double ChainGraph::getLength()
 {
 	return chainUpSeg.length();
@@ -113,17 +97,26 @@ void ChainGraph::sortChainParts()
 
 void ChainGraph::setupActiveLinks( FoldOption* fn )
 {
+	// clear
 	activeLinks.clear();
 
-	int hidx_m = fn->hingeIdx;
-	int hidx_v = (hidx_m % 2) ? hidx_m - 1 : hidx_m + 1;
+	// hinge index for given joint axis
+	int hidx_right = 2 * fn->jointAxisIdx;
+	int hidx_left = hidx_right + 1;
+
+	// right side: even(right) odd(left)
+	// left side: reverse
+	int hidx_even = (fn->rightSide)? hidx_right : hidx_left;
+	int hidx_odd = (fn->rightSide)? hidx_left : hidx_right;
+
+	// set hinge for each joint
 	for (int i = 0; i < hingeLinks.size(); i++)
 	{
-		// activate corresponding hinges
+		// inactive all hinges
 		foreach(FdLink* l, hingeLinks[i])
 			l->properties["active"] = false;
 
-		int hidx = (i % 2) ? hidx_v : hidx_m;
+		int hidx = (i % 2) ? hidx_odd : hidx_even;
 		FdLink* activeLink = hingeLinks[i][hidx];
 		activeLink->properties["active"] = true;
 		activeLinks << activeLink;
@@ -137,7 +130,7 @@ void ChainGraph::resetHingeLinks()
 		Structure::Graph::removeLink(link);
 	hingeLinks.clear();
 
-	// create hinge links between mPanels[0] and mParts[0]
+	// create hinge links between mMaster[0] and mParts[0]
 	QVector<FdLink*> links;
 	for (int i = 0; i < rootJointSegs.size(); i++)
 	{
@@ -195,7 +188,7 @@ void ChainGraph::resetHingeLinks()
 		links.clear();
 	}
 
-	// create hinge links between mPanels[1] and mParts[1]
+	// create hinge links between mMasters[1] and mParts.last()
 	if (mMasters.size() == 2)
 	{
 		for (int i = 0; i < rootJointSegs.size(); i++)
@@ -218,18 +211,6 @@ void ChainGraph::resetHingeLinks()
 		}
 
 		hingeLinks << links;
-	}
-}
-
-void ChainGraph::shrinkChainAlongJoint(double t0, double t1)
-{
-	Vector3 jointV = rootJointSegs.front().Direction;
-	foreach(FdNode* part, mParts)
-	{
-		int aid = part->mBox.getAxisId(jointV);
-		part->mBox.scale(aid, t0, t1);
-		part->deformMesh();
-		part->createScaffold();
 	}
 }
 
@@ -289,6 +270,30 @@ QVector<FoldOption*> ChainGraph::generateFoldOptions( int nbSplit0, int nbSplit1
 
 void ChainGraph::applyFoldOption( FoldOption* fn )
 {
-	createChain(fn->nbsplit);
+	// remove original chain parts
+	foreach (FdNode* n, mParts) removeNode(n->mID);
+
+	// clone original part
+	FdNode* origPart = (FdNode*)mOrigSlave->clone();
+	Structure::Graph::addNode(origPart);
+
+	// shrink
+	if (fn->scale < 1.0 - ZERO_TOLERANCE_LOW)
+	{
+		Vector3 jointV = rootJointSegs[fn->jointAxisIdx].Direction;
+		int aid = origPart->mBox.getAxisId(jointV);
+		origPart->mBox.scaleRand01(aid, fn->position, fn->position + fn->scale);
+		origPart->deformMesh();
+		origPart->createScaffold();
+	}
+
+	// split
+	mParts = FdGraph::split(mOrigSlave->mID, generateCutPlanes(fn->nbsplit));
+
+	// sort
+	sortChainParts();
+
+	// reset hinge links
+	resetHingeLinks();
 	setupActiveLinks(fn);
 }

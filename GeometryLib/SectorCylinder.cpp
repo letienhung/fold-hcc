@@ -3,6 +3,7 @@
 #include "DistSegRect.h"
 #include "Plane.h"
 #include "Numeric.h"
+#include "CustomDrawObjects.h"
 
 Geom::SectorCylinder::SectorCylinder()
 {
@@ -138,10 +139,20 @@ void Geom::SectorCylinder::shrinkEpsilon()
 QVector<Vector3> Geom::SectorCylinder::getConners()
 {
 	return QVector<Vector3>()
-		<< Origin 
-		<< Origin + Height * Axis
-		<< Origin + Radius * V1
-		<< Origin + Radius * V1 + Height * Axis
-		<< Origin + Radius * V1
-		<< Origin + Radius * V1 + Height * Axis;
+		<< Origin									//0
+		<< Origin + Height * Axis					//1
+		<< Origin + Radius * V1						//2
+		<< Origin + Radius * V1 + Height * Axis		//3
+		<< Origin + Radius * V2						//4
+		<< Origin + Radius * V2 + Height * Axis;	//5
+}
+
+void Geom::SectorCylinder::draw()
+{
+	QVector<Vector3> conners = getConners();
+
+	LineSegments segs;
+	segs.addLine(conners[0], conners[1]);
+
+	segs.draw();
 }

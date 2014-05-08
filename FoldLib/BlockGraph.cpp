@@ -8,6 +8,7 @@ BlockGraph::BlockGraph( QString id, Geom::Box bb )
 	selChainIdx = -1;
 
 	// aabb
+	withinAABB = false;
 	barrierBox = bb;
 }
 

@@ -65,6 +65,7 @@ public:
 
 	// modifier
 	void translate(Vector3 t);
+	void scale(double s);
 
 	// to string
 	QStringList toStrList();

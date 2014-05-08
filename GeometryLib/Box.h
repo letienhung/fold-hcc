@@ -46,6 +46,7 @@ public:
 	void scale(double s);
 	void scale(Vector3 s);
 	void scale(int axisId, double s);
+	void scaleRand01(int axisId, double t0, double t1);
 	void scale(int axisId, double t0, double t1);
 	Box  scaled(double s);
 	void scaleAsPart(double f, Vector3 c);

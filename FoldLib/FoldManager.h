@@ -41,8 +41,9 @@ public slots:
 	void decompose();
 
 	// foldem
-	void foldabilize();
+	void foldabilize(bool withinAABB);
 	void exportDepFOG();
+	void exportCollFOG();
 
 public:
 	// output

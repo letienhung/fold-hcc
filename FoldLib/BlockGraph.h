@@ -43,6 +43,7 @@ public:
 	int selChainIdx;
 	QVector<ChainGraph*> chains;
 	QString baseMasterId;
+	bool withinAABB;
 	Geom::Box barrierBox;
 }; 
 

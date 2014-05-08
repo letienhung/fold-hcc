@@ -20,14 +20,10 @@ public:
 
 	// modify chain
 	virtual void applyFoldOption(FoldOption* fn);
-	void createChain(int nbSplit);
 	virtual QVector<Geom::Plane> generateCutPlanes( int nbSplit ) = 0;
 	void sortChainParts();
 	void resetHingeLinks();
 	void setupActiveLinks(FoldOption* fn);
-
-	// modifier
-	void shrinkChainAlongJoint(double t0, double t1);
 
 	// animation
 	FdGraph* getKeyframeScaffold(double t);
@@ -46,11 +42,11 @@ public:
 	Geom::Segment			chainUpSeg;		// perp segment on mOrigPart
 	QVector<Vector3>		rootRightVs;	// perp direction on masters[0] to the right
 
-	// each joint corresponds to one(patch) or two(rod) joint segments
-	// for each joint segment, there are two hinge links
+	// each joint has one(patch) or two(rod) joint axis
+	// for each joint axis, there are two hinge links
 	// \hingeLinks: 
 	//		1st dimension: joint
-	//		2nd dimension: hinge pairs [2*i, 2*i+1] for each jointSeg[i]
+	//		2nd dimension: hinge pairs [right: 2*j, left: 2*j+1] for joint axis j
 	QVector< QVector<FdLink*> > hingeLinks;
 	QVector<FdLink*> activeLinks;
 	TimeInterval mFoldDuration;

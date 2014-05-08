@@ -372,3 +372,8 @@ void Geom::Rectangle::translate( Vector3 t )
 {
 	Center += t;
 }
+
+void Geom::Rectangle::scale( double s )
+{
+	Extent *= s;
+}

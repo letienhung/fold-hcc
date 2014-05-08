@@ -35,12 +35,16 @@ QVector<FoldOption*> TBlock::generateFoldOptions()
 	QVector<FoldOption*> options;
 	foreach (FoldOption* fn, chains.front()->generateFoldOptions())
 	{
-		// barrier box should contain the folding volume
-		Geom::SectorCylinder fV = fn->properties["fVolume"].value<Geom::SectorCylinder>();
-		if (barrierBox.containsAll(fV.getConners()))
-			options << fn;
+		bool reject = false;
+		if (withinAABB)
+		{
+			// barrier box should contain the folding volume
+			Geom::SectorCylinder fV = fn->properties["fVolume"].value<Geom::SectorCylinder>();
+			if (!barrierBox.containsAll(fV.getConners()))
+				reject = true; 
+		}
 
-		addDebugPoints(fV.getConners());
+		if (!reject) options << fn;
 	}
 
 	return options;

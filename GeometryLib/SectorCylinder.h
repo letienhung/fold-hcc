@@ -31,6 +31,9 @@ public:
 	// conner
 	QVector<Vector3> getConners();
 
+	// visual
+	void draw();
+
 public:
 	// (Origin, V1, V2) forms the bottom sector
 	// Axis is up

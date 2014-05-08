@@ -61,7 +61,7 @@ public:
 	void createBlocks();
 
 	// foldem
-	void foldabilize();
+	void foldabilize(bool withinAABB);
 
 	void buildDepGraph();
 	void computeDepLinks();
@@ -75,6 +75,7 @@ public:
 
 	// export
 	void exportDepFOG();
+	void exportCollFOG();
 
 	// key frame
 	void generateKeyframes(int N);

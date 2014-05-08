@@ -46,7 +46,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->f_manager->connect(ui->clearDcList, SIGNAL(clicked()), SLOT(clearDcGraphs()));
 
 	// foldabilize
-	plugin->f_manager->connect(ui->foldabilize, SIGNAL(clicked()), SLOT(foldabilize()));
+	this->connect(ui->foldabilize, SIGNAL(clicked()), SLOT(foldabilize()));
 	this->connect(ui->genKeyframes, SIGNAL(clicked()), SLOT(genKeyframes()));
 
 	// foldabilize selected block
@@ -63,6 +63,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 
 	// export
 	plugin->f_manager->connect(ui->exportDepFOG, SIGNAL(clicked()), SLOT(exportDepFOG()));
+	plugin->f_manager->connect(ui->exportCollFOG, SIGNAL(clicked()), SLOT(exportCollFOG()));
 	plugin->connect(ui->exportCurrent, SIGNAL(clicked()), SLOT(exportCurrent()));
 
 	// test
@@ -164,4 +165,9 @@ void FdWidget::genKeyframes()
 {
 	int nbKeyframes = ui->nbKeyframes->value();
 	plugin->f_manager->generateKeyframes(nbKeyframes);
+}
+
+void FdWidget::foldabilize()
+{
+	plugin->f_manager->foldabilize(ui->withinAABB->isChecked());
 }

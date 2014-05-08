@@ -1,3 +1,4 @@
+
 #include "FoldOptionGraph.h"
 #include <QFile>
 #include <QStringList>
@@ -31,14 +32,14 @@ Structure::Node* FoldEntity::clone()
 //////////////////////////////////////////////////////////////////////////
 
 FoldOption::FoldOption( int hIdx, bool right, double s, double p, int n, QString id )
-	: Node(id), hingeIdx(hIdx), rightSide(right), scale(s), position(p), nbsplit(n)
+	: Node(id), jointAxisIdx(hIdx), rightSide(right), scale(s), position(p), nbsplit(n)
 {
 }
 
 FoldOption::FoldOption( FoldOption &other )
 	: Node(other)
 {
-	hingeIdx = other.hingeIdx;
+	jointAxisIdx = other.jointAxisIdx;
 	rightSide = other.rightSide;
 	scale = other.scale;
 	position = other.scale;
@@ -68,7 +69,10 @@ double FoldOption::getCost()
 
 QString FoldOption::getInfo()
 {
-	return "cost = " + QString::number(getCost());
+	return QString("%1;(%2,%3);%4")
+		.arg(rightSide)
+		.arg(position).arg(position + scale)
+		.arg(getCost());
 }
 
 

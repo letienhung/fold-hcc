@@ -11,7 +11,7 @@ HChain::HChain( FdNode* slave, PatchNode* master1, PatchNode* master2)
 Geom::Rectangle HChain::getFoldRegion(FoldOption* fn)
 {
 	// axis and rightV
-	int hidx = fn->hingeIdx;
+	int hidx = fn->jointAxisIdx;
 	Geom::Segment axisSeg1 = rootJointSegs[hidx];
 	Vector3 rightV = rootRightVs[hidx];
 	if (!fn->rightSide) rightV *= -1;
@@ -35,14 +35,17 @@ Geom::Rectangle HChain::getFoldRegion(FoldOption* fn)
 		axisSeg2.translate( width * rightV);
 	}
 
-	return Geom::Rectangle(QVector<Vector3>() 
+	// shrink epsilon
+	Geom::Rectangle rect(QVector<Vector3>() 
 		<< axisSeg1.P0	<< axisSeg1.P1
 		<< axisSeg2.P1  << axisSeg2.P0 );
+	rect.scale(1 - ZERO_TOLERANCE_LOW);
+	return rect;
 }
 
 QVector<FoldOption*> HChain::generateFoldOptions()
 {
-	QVector<FoldOption*> options = ChainGraph::generateFoldOptions(1, 1, 1);
+	QVector<FoldOption*> options = ChainGraph::generateFoldOptions(1, 1, 2);
 
 	// fold area
 	foreach (FoldOption* fn, options)

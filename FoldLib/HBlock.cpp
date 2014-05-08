@@ -43,6 +43,7 @@ HBlock::HBlock( QVector<PatchNode*>& masters, QVector<FdNode*>& slaves,
 	}
 
 	// initial collision graph
+	collFogOrig = NULL;
 	collFog = new FoldOptionGraph();
 }
 
@@ -76,53 +77,13 @@ void HBlock::assignMasterTimeStamps()
 	}
 }
 
-
 void HBlock::foldabilize()
 {
+	// collision graph
 	buildCollisionGraph();
 
-	// get all folding nodes
-	QVector<FoldOption*> fns = collFog->getAllFoldOptions();
-
-	// the dual adjacent matrix
-	QVector<bool> dumpy(fns.size(), true);
-	QVector< QVector<bool> > conn(fns.size(), dumpy);
-	for (int i = 0; i < fns.size(); i++){
-		// the i-th node
-		FoldOption* fn = fns[i];
-
-		// diagonal entry
-		conn[i][i] = false;
-
-		// other fold options
-		for (int j = i+1; j < fns.size(); j++){
-			// the j-th node
-			FoldOption* other_fn = fns[j];
-
-			// connect siblings and colliding folding options
-			if (collFog->areSiblings(fn->mID, other_fn->mID) ||
-				collFog->verifyLinkType(fn->mID, other_fn->mID, "collision")){
-				conn[i][j] = false;	conn[j][i] = false;
-			}
-		}
-	}
-
-	// find minimum cost maximum cliques
-	QVector<double> weights;
-	foreach(FoldOption* fn, fns) weights.push_back(fn->getCost());
-	CliquerAdapter cliquer(conn, weights);
-	cliquer.computeWeightsOfAllMaxCliques();
-	QVector<int> q = cliquer.getMinWeightMaxClique();
-
-	// fold solution
-	foldSolution.clear();
-	foldSolution.resize(chains.size());
-	foreach(int idx, q)
-	{
-		FoldOption* fn = fns[idx];
-		FoldEntity* cn = collFog->getFoldEntity(fn->mID);
-		foldSolution[cn->entityIdx] = fn;
-	}
+	// find optimal solution
+	findOptimalSolution();
 
 	// apply fold options
 	for (int i = 0; i < chains.size(); i++)
@@ -146,29 +107,35 @@ void HBlock::buildCollisionGraph()
 		collFog->addNode(cn);
 
 		// fold options and links
+		// debug
+		properties.remove("debugSegments");
+
 		foreach(FoldOption* fn, chain->generateFoldOptions())
 		{
-			// reject if goes out of barrier box
 			Geom::Rectangle fArea = fn->properties["fArea"].value<Geom::Rectangle>();
-			if (!barrierBox.containsAll(fArea.getConners())) 
+
+			// reject if goes out of barrier box
+			if (withinAABB && !barrierBox.containsAll(fArea.getConners()))
 				continue;
+
+			addDebugSegments(fArea.getEdgeSegments());
 
 			// reject if collide with other masters
 			// whose time stamp is within the time interval of fn
-			bool reject = false;
-			foreach (QString mid, masterTimeStamps.keys())
-			{
-				double mstamp = masterTimeStamps[mid];
-				if (!within(mstamp, chain->mFoldDuration)) continue;
+			//bool reject = false;
+			//foreach (QString mid, masterTimeStamps.keys())
+			//{
+			//	double mstamp = masterTimeStamps[mid];
+			//	if (!within(mstamp, chain->mFoldDuration)) continue;
 
-				Geom::Rectangle m_rect = ((PatchNode*)getNode(mid))->mPatch;
-				if (fAreasIntersect(fArea, m_rect))
-				{
-					reject = true;
-					break;
-				}
-			}
-			if (reject) continue;
+			//	Geom::Rectangle m_rect = ((PatchNode*)getNode(mid))->mPatch;
+			//	if (fAreasIntersect(fArea, m_rect))
+			//	{
+			//		reject = true;
+			//		break;
+			//	}
+			//}
+			//if (reject) continue;
 
 			// accept
 			collFog->addNode(fn);
@@ -208,6 +175,54 @@ void HBlock::buildCollisionGraph()
 	}
 }
 
+void HBlock::findOptimalSolution()
+{
+	// get all folding nodes
+	QVector<FoldOption*> fns = collFog->getAllFoldOptions();
+
+	// the dual adjacent matrix
+	QVector<bool> dumpy(fns.size(), true);
+	QVector< QVector<bool> > conn(fns.size(), dumpy);
+	for (int i = 0; i < fns.size(); i++){
+		// the i-th node
+		FoldOption* fn = fns[i];
+
+		// diagonal entry
+		conn[i][i] = false;
+
+		// other fold options
+		for (int j = i+1; j < fns.size(); j++){
+			// the j-th node
+			FoldOption* other_fn = fns[j];
+
+			// connect siblings and colliding folding options
+			if (collFog->areSiblings(fn->mID, other_fn->mID) ||
+				collFog->verifyLinkType(fn->mID, other_fn->mID, "collision")){
+					conn[i][j] = false;	conn[j][i] = false;
+			}
+		}
+	}
+
+	// find minimum cost maximum cliques
+	QVector<double> weights;
+	foreach(FoldOption* fn, fns) weights.push_back(fn->getCost());
+	CliquerAdapter cliquer(conn, weights);
+	cliquer.computeWeightsOfAllMaxCliques();
+	QVector<int> q = cliquer.getMinWeightMaxClique();
+
+	// fold solution
+	foldSolution.clear();
+	foldSolution.resize(chains.size());
+	if (collFogOrig) delete collFogOrig;
+	collFogOrig = (FoldOptionGraph*)collFog->clone();
+	foreach(int idx, q)
+	{
+		FoldOption* fn = fns[idx];
+		fn->addTag(SELECTED_FOLD_OPTION);
+		FoldEntity* cn = collFog->getFoldEntity(fn->mID);
+		foldSolution[cn->entityIdx] = fn;
+	}
+}
 
 QVector<Geom::Box> HBlock::getFoldVolume()
 {
@@ -267,7 +282,6 @@ QVector<Geom::Box> HBlock::getFoldVolume()
 	return fV;
 }
 
-
 QVector<FoldOption*> HBlock::generateFoldOptions()
 {
 	// fold option
@@ -316,4 +330,11 @@ bool HBlock::fAreasIntersect( Geom::Rectangle& rect1, Geom::Rectangle& rect2 )
 	Geom::Rectangle2 r2 = base_rect.get2DRectangle(rect2);
 
 	return Geom::IntrRect2Rect2::test(r1, r2);
+}
+
+void HBlock::exportCollFOG()
+{
+	QString filePath = path + "/" + mID + "_collision";
+	collFogOrig->saveAsImage(filePath + "_Orig");
+	collFog->saveAsImage(filePath);
 }

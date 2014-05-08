@@ -458,6 +458,16 @@ void FdGraph::drawDebug()
 			box.draw();
 		}
 	}
+
+	// sector cylinders
+	if (properties.contains("debugBoxes"))
+	{
+		QVector<Geom::SectorCylinder> debugScs = properties["debugSectorCyliners"].value<QVector<Geom::SectorCylinder> >();
+		foreach (Geom::SectorCylinder sc, debugScs)
+		{
+			sc.draw();
+		}
+	}
 }
 
 void FdGraph::addDebugSegment( Geom::Segment seg )
@@ -499,4 +509,14 @@ void FdGraph::addDebugPoints( QVector<Vector3>& pnts )
 
 	debugPoints += pnts;
 	properties["debugPoints"].setValue(debugPoints);
+}
+
+void FdGraph::addDebugSectorCylinders( QVector<Geom::SectorCylinder>& scs )
+{
+	QVector<Geom::SectorCylinder> debugScs;
+	if (properties.contains("debugSectorCyliners"))
+		debugScs = properties["debugSectorCyliners"].value<QVector<Geom::SectorCylinder> >();
+
+	debugScs += scs;
+	properties["debugSectorCyliners"].setValue(debugScs);
 }

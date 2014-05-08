@@ -151,16 +151,16 @@ void FoldManager::identifyParallelMasters( Vector3 sqzV )
 			bool rejected = false;
 			
 			// reject if contains only edge rods
-			bool allEdgeRods = true;
-			foreach(FdNode* n, cgroup)
-			{
-				if (!n->hasTag(IS_EDGE_ROD))
-				{
-					allEdgeRods = false;
-					break;
-				}
-			}
-			if (allEdgeRods) rejected = true;
+			//bool allEdgeRods = true;
+			//foreach(FdNode* n, cgroup)
+			//{
+			//	if (!n->hasTag(IS_EDGE_ROD))
+			//	{
+			//		allEdgeRods = false;
+			//		break;
+			//	}
+			//}
+			//if (allEdgeRods) rejected = true;
 
 			// reject if has trivial size
 			if (!rejected)
@@ -337,10 +337,10 @@ FdGraph* FoldManager::activeScaffold()
 	else		return scaffold;
 }
 
-void FoldManager::foldabilize()
+void FoldManager::foldabilize(bool withinAABB)
 {
 	foreach (DcGraph* dcg, dcGraphs)
-		dcg->foldabilize();
+		dcg->foldabilize(withinAABB);
 }
 
 void FoldManager::updateDcList()
@@ -408,5 +408,14 @@ void FoldManager::exportDepFOG()
 	if (selDc)
 	{
 		selDc->exportDepFOG();
+	}
+}
+
+void FoldManager::exportCollFOG()
+{
+	DcGraph* selDc = getSelDcGraph();
+	if (selDc)
+	{
+		selDc->exportCollFOG();
 	}
 }
