@@ -12,7 +12,7 @@ public:
 
 	double weightOf(const QVector<int> &clique);
 	void computeWeightsOfAllMaxCliques();
-	QVector<int> getMinWeightMaxClique();
+	QVector<QVector<int> > getMinWeightMaxCliques();
 	
 private:
 	graph_t* g;

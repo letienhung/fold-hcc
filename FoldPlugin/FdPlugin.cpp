@@ -186,38 +186,10 @@ void FdPlugin::exportCurrent()
 
 void FdPlugin::test1()
 {
-	QVector<Vector2> conners;
-	conners << Vector2(1, 1) << Vector2(-1, 1) << Vector2(-1, -1) << Vector2(1, -1);
-	Geom::Rectangle2 rect(conners);
-	qDebug() << rect.toStrList();
-
-	Geom::Segment2 seg(Vector2(0.5, 0.5), Vector2(-0.5, -0.5));
-	QVector<Vector2> points = seg.getUniformSamples(10);
-
-	Geom::Segment2 base(Vector2(1, 1), Vector2(1, -1));
-	rect.shrinkToAvoidPoints(points, base);
-	qDebug() << rect.toStrList();
 }
 
-#include "CliquerAdapter.h"
 void FdPlugin::test2()
 {
-	int N = 10;
-	QVector<bool> dumpy(N, false);
-	QVector< QVector<bool> > conn(N, dumpy);
-	for (int i = 0; i < N; i++)
-	{
-		conn[i][(i-2+N)%N] = true;
-		conn[i][(i-1+N)%N] = true;
-		conn[i][(i+1)%N] = true;
-		conn[i][(i+2)%N] = true;
-	}
-
-	QVector<double> weights;
-	for (int i = 0; i < N; i++) weights.push_back(i);
-	CliquerAdapter cliquer(conn, weights);
-	cliquer.computeWeightsOfAllMaxCliques();
-	QVector<int> q = cliquer.getMinWeightMaxClique();
 }
 
 Q_EXPORT_PLUGIN(FdPlugin)

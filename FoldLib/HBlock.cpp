@@ -208,14 +208,14 @@ void HBlock::findOptimalSolution()
 	foreach(FoldOption* fn, fns) weights.push_back(fn->getCost());
 	CliquerAdapter cliquer(conn, weights);
 	cliquer.computeWeightsOfAllMaxCliques();
-	QVector<int> q = cliquer.getMinWeightMaxClique();
+	QVector<QVector<int> > qs = cliquer.getMinWeightMaxCliques();
 
 	// fold solution
 	foldSolution.clear();
 	foldSolution.resize(chains.size());
 	if (collFogOrig) delete collFogOrig;
 	collFogOrig = (FoldOptionGraph*)collFog->clone();
-	foreach(int idx, q)
+	foreach(int idx, qs[1])
 	{
 		FoldOption* fn = fns[idx];
 		fn->addTag(SELECTED_FOLD_OPTION);

@@ -56,7 +56,7 @@ void CliquerAdapter::computeWeightsOfAllMaxCliques()
 	clique_default_options->clique_list = NULL;
 
 	// compute weight of each clique and store them
-	// in case there are too many max cliques, only the first 1024 are considerded.
+	// in case there are too many max cliques, only the first 4096 are considerded.
 	int nn = (n > 4096)? 4096 : n;
 	for (int i = 0; i < nn; i++)
 	{
@@ -74,8 +74,8 @@ void CliquerAdapter::computeWeightsOfAllMaxCliques()
 	}
 }
 
-QVector<int> CliquerAdapter::getMinWeightMaxClique()
+QVector<QVector<int> > CliquerAdapter::getMinWeightMaxCliques()
 {
-	return *(weight_clique_map.begin());
+	return weight_clique_map.values(weight_clique_map.uniqueKeys().front()).toVector();
 }
 

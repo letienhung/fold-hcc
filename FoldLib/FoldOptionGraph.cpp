@@ -42,7 +42,7 @@ FoldOption::FoldOption( FoldOption &other )
 	jointAxisIdx = other.jointAxisIdx;
 	rightSide = other.rightSide;
 	scale = other.scale;
-	position = other.scale;
+	position = other.position;
 	nbsplit = other.nbsplit;
 }
 

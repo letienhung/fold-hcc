@@ -225,9 +225,9 @@ QVector<FoldOption*> ChainGraph::generateFoldOptions( int nbSplit0, int nbSplit1
 		if (mOrigSlave->mType == FdNode::PATCH)
 		{
 			// shrink
+			double step = 1.0/double(nbScales);
 			for (int i = 1; i <= nbScales; i++)
 			{
-				double step = 1.0/double(nbScales);
 				double scale = step * i;
 				// position
 				for (int j = 0; j <= nbScales - i; j++)
