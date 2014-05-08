@@ -50,8 +50,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	this->connect(ui->genKeyframes, SIGNAL(clicked()), SLOT(genKeyframes()));
 
 	// foldabilize selected block
-	plugin->f_manager->connect(ui->foldBlock, SIGNAL(clicked()), SLOT(foldbzSelBlock()));
-	plugin->f_manager->connect(ui->snapshotTime, SIGNAL(valueChanged(double)), SLOT(snapshotSelBlock(double)));
+	plugin->f_manager->connect(ui->snapshotTime, SIGNAL(valueChanged(double)), SLOT(snapshotSelChain(double)));
 
 	// visualization
 	plugin->connect(ui->showKeyframe, SIGNAL(stateChanged(int)), SLOT(showKeyframe(int)));

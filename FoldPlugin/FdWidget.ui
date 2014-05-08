@@ -320,13 +320,6 @@
         </property>
        </widget>
       </item>
-      <item row="13" column="3" colspan="2">
-       <widget class="QPushButton" name="foldBlock">
-        <property name="text">
-         <string>Foldbz selected block</string>
-        </property>
-       </widget>
-      </item>
       <item row="8" column="3" colspan="2">
        <widget class="QPushButton" name="foldabilize">
         <property name="text">

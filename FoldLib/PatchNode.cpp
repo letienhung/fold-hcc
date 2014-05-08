@@ -66,20 +66,31 @@ Geom::Plane PatchNode::getSurfacePlane( bool positive)
 QVector<RodNode*> PatchNode::getEdgeRodNodes()
 {
 	QVector<RodNode*> edgeRods;
-	double r = 0.25 * 0.5 * getThickness();
+	double r = 0.5 * getThickness();
 	int i = 0;
+	Geom::Box mBox_copy = mBox;
 	foreach (Geom::Segment edge, mPatch.getEdgeSegments())
 	{
 		// move edge inward by distance of r
 		Vector3 e2c = mPatch.Center - edge.Center;
 		Vector3 t = r * e2c.normalized();
 
+		// box
 		Geom::Frame frame(edge.Center + t, mPatch.Normal, edge.Direction);
 		Vector3 extent(r, edge.Extent, r);
 		Geom::Box box(frame, extent);
 
+		// deform mesh
+		mBox = box;
+		deformMesh();
+
+		// create rod node
 		QString id = mID + "_" + QString::number(i++);
-		edgeRods << new RodNode(id, box, MeshPtr(NULL));
+		edgeRods << new RodNode(id, box, mMesh);
+
+		// restore mesh
+		mBox = mBox_copy;
+		deformMesh();
 	}
 
 	return edgeRods;

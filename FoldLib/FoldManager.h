@@ -76,7 +76,7 @@ public slots:
 
 	// other signals from Ui
 	void foldbzSelBlock();
-	void snapshotSelBlock(double t);
+	void snapshotSelChain(double t);
 
 signals:
 	// notify others about changes

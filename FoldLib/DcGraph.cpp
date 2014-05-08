@@ -707,7 +707,6 @@ void DcGraph::exportCollFOG()
 	}
 }
 
-
 FoldOption* DcGraph::getMinCostFreeFoldOption()
 {
 	FoldOption* min_fn = NULL;

@@ -211,10 +211,14 @@ void FoldManager::foldbzSelBlock()
 }
 
 
-void FoldManager::snapshotSelBlock( double t )
+void FoldManager::snapshotSelChain( double t )
 {
-	BlockGraph* lg = getSelBlock();
-	//if (lg) lg->snapshot(t);
+	BlockGraph* selBlock = getSelBlock();
+	if (selBlock)
+	{
+		ChainGraph* selChain = selBlock->getSelChain();
+		if (selChain) selChain->fold(t);
+	}
 
 	emit(sceneChanged());
 }

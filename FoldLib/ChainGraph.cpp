@@ -59,7 +59,8 @@ void ChainGraph::setupBasisOrientations()
 	}
 }
 
-FdGraph* ChainGraph::getKeyframeScaffold( double t )
+
+void ChainGraph::fold( double t )
 {
 	// fix masters[0] but free all others
 	foreach (Structure::Node* n, nodes)
@@ -72,7 +73,12 @@ FdGraph* ChainGraph::getKeyframeScaffold( double t )
 
 	// restore configuration
 	restoreConfiguration();
+}
 
+
+FdGraph* ChainGraph::getKeyframeScaffold( double t )
+{
+	fold(t);
 	return (FdGraph*)this->clone();
 }
 
@@ -274,17 +280,17 @@ void ChainGraph::applyFoldOption( FoldOption* fn )
 	foreach (FdNode* n, mParts) removeNode(n->mID);
 
 	// clone original part
-	FdNode* origPart = (FdNode*)mOrigSlave->clone();
-	Structure::Graph::addNode(origPart);
+	FdNode* slave = (FdNode*)mOrigSlave->clone();
+	Structure::Graph::addNode(slave);
 
 	// shrink
 	if (fn->scale < 1.0 - ZERO_TOLERANCE_LOW)
 	{
 		Vector3 jointV = rootJointSegs[fn->jointAxisIdx].Direction;
-		int aid = origPart->mBox.getAxisId(jointV);
-		origPart->mBox.scaleRand01(aid, fn->position, fn->position + fn->scale);
-		origPart->deformMesh();
-		origPart->createScaffold();
+		int aid = slave->mBox.getAxisId(jointV);
+		slave->mBox.scaleRand01(aid, fn->position, fn->position + fn->scale);
+		slave->deformMesh();
+		slave->createScaffold();
 	}
 
 	// split

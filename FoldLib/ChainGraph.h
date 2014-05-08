@@ -26,6 +26,7 @@ public:
 	void setupActiveLinks(FoldOption* fn);
 
 	// animation
+	void fold(double t);
 	FdGraph* getKeyframeScaffold(double t);
 
 	// getter
