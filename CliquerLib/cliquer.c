@@ -889,6 +889,59 @@ static int sub_weighted_all(int *table, int size, int weight,
 
 /***** Helper functions *****/
 
+/*
+ * store_clique()
+ *
+ * Stores a clique according to given user options.
+ *
+ *   clique - the clique to store
+ *   opts   - storage options
+ *
+ * Returns FALSE if opts->user_function() returned FALSE; otherwise
+ * returns TRUE.
+ */
+
+static 
+
+
+static boolean store_clique_min_cost(set_t clique, graph_t *g) {
+
+
+
+
+
+
+
+	clique_list_count++;
+
+	/* clique_list[] */
+	if (opts->clique_list) {
+		/*
+		 * This has been a major source of bugs:
+		 * Has clique_list_count been set to 0 before calling
+		 * the recursions? 
+		 */
+		if (clique_list_count <= 0) {
+			fprintf(stderr,"CLIQUER INTERNAL ERROR: "
+				"clique_list_count has negative value!\n");
+			fprintf(stderr,"Please report as a bug.\n");
+			abort();
+		}
+		if (clique_list_count <= opts->clique_list_length)
+			opts->clique_list[clique_list_count-1] =
+				set_duplicate(clique);
+	}
+
+	/* user_function() */
+	if (opts->user_function) {
+		if (!opts->user_function(clique,g,opts)) {
+			/* User function requested abort. */
+			return FALSE;
+		}
+	}
+
+	return TRUE;
+}
 
 /*
  * store_clique()
@@ -901,6 +954,8 @@ static int sub_weighted_all(int *table, int size, int weight,
  * Returns FALSE if opts->user_function() returned FALSE; otherwise
  * returns TRUE.
  */
+
+
 static boolean store_clique(set_t clique, graph_t *g, clique_options *opts) {
 
 	clique_list_count++;

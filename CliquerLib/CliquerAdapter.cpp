@@ -18,14 +18,10 @@ CliquerAdapter::CliquerAdapter( const QVector< QVector<bool> > &m, const QVector
 			if (m[i][j]) GRAPH_ADD_EDGE(g, i, j);
 	}
 
-	// fake weights for graph
-	// nodes in unweighted graph have the same weight
+	// weights
 	g->weights = (int*)calloc(g->n,sizeof(int));
 	for (int i = 0; i < g->n; i++)
-		g->weights[i] = 1;
-
-	// real weights
-	weights = w;
+		g->weights[i] = w[i];
 }
 
 CliquerAdapter::~CliquerAdapter()
@@ -46,9 +42,10 @@ double CliquerAdapter::weightOf( const QVector<int> &clique )
 void CliquerAdapter::computeWeightsOfAllMaxCliques()
 {
 	// clique list
-	set_t s[4096];
+	int N = 16392;
+	set_t s[16392];
 	clique_default_options->clique_list = s;
-	clique_default_options->clique_list_length = 4096;
+	clique_default_options->clique_list_length = N;
 
 	// find all max cliques
 	int max_size = clique_max_weight(g, NULL);
@@ -56,8 +53,8 @@ void CliquerAdapter::computeWeightsOfAllMaxCliques()
 	clique_default_options->clique_list = NULL;
 
 	// compute weight of each clique and store them
-	// in case there are too many max cliques, only the first 4096 are considerded.
-	int nn = (n > 4096)? 4096 : n;
+	// in case there are too many max cliques, only the first N are considered.
+	int nn = (n > N)? N : n;
 	for (int i = 0; i < nn; i++)
 	{
 		// get max clique
