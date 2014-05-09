@@ -79,8 +79,6 @@ memcpy(&realtimer,&old_realtimer,sizeof(struct timeval));
 static int clocks_per_sec=0;
 
 
-
-
 /* Recursion and helper functions */
 static boolean sub_unweighted_single(int *table, int size, int min_size,
 				     graph_t *g);
@@ -886,61 +884,94 @@ static int sub_weighted_all(int *table, int size, int weight,
 
 
 
+// code used for finding min_cost_max_clique
+int min_mcmc_weight;
+int mcmc_list_count;
+int mcmc_list_length;
+set_t* mcmc_list = new set_t[mcmc_list_length];
+
 
 /***** Helper functions *****/
 
 /*
- * store_clique()
+ * weight_of_clique(set_t clique, graph_t *g)
  *
- * Stores a clique according to given user options.
+ * Computes the sum weight of clique
  *
- *   clique - the clique to store
- *   opts   - storage options
+ *   clique - the clique
+ *   g - the graph with weights
  *
- * Returns FALSE if opts->user_function() returned FALSE; otherwise
- * returns TRUE.
+ * Returns the sum weight of the clique.
  */
 
-static 
+static int weight_of_clique(set_t clique, graph_t *g)
+{
+	int w = 0;
 
-
-static boolean store_clique_min_cost(set_t clique, graph_t *g) {
-
-
-
-
-
-
-
-	clique_list_count++;
-
-	/* clique_list[] */
-	if (opts->clique_list) {
-		/*
-		 * This has been a major source of bugs:
-		 * Has clique_list_count been set to 0 before calling
-		 * the recursions? 
-		 */
-		if (clique_list_count <= 0) {
-			fprintf(stderr,"CLIQUER INTERNAL ERROR: "
-				"clique_list_count has negative value!\n");
-			fprintf(stderr,"Please report as a bug.\n");
-			abort();
-		}
-		if (clique_list_count <= opts->clique_list_length)
-			opts->clique_list[clique_list_count-1] =
-				set_duplicate(clique);
+	// iterate through all values of s
+	int i=-1;
+	while ((i=set_return_next(clique,i))>=0) {
+		// i is in set s
+		w += g->weights[i];
 	}
 
-	/* user_function() */
-	if (opts->user_function) {
-		if (!opts->user_function(clique,g,opts)) {
-			/* User function requested abort. */
-			return FALSE;
-		}
-	}
+	return w;
+}
 
-	return TRUE;
+/*
+ * store_clique_min_weight(set_t clique, graph_t *g) 
+ *
+ * Stores clique to mcmc_list if its weight is less or equal to min_mcmc_weight
+ *
+ *   clique - the clique
+ *   g - the graph with weights
+ *
+ * Returns the sum weight of the clique.
+ */
+
+static boolean store_clique_min_weight(set_t clique, graph_t *g) 
+{
+	// weight of clique
+	int w = weight_of_clique(clique, g);
+
+	// reject
+	if (w > min_mcmc_weight)
+	{
+		return false;
+	}
+	// clear mcmc_list and save this one
+	else if (w < min_mcmc_weight)
+	{
+		min_mcmc_weight = w;
+		mcmc_list[0] = clique;
+		mcmc_list_count = 1;
+		return true;
+	}
+	// append this one to mcmc_list
+	else
+	{
+		// double the capacity of mcmc_list
+		if (mcmc_list_count >= mcmc_list_length)
+		{
+			// double the size
+			mcmc_list_length *= 2;
+			set_t* new_list = new set_t[mcmc_list_length];
+
+			// copy
+			for (int i = 0; i < mcmc_list_count; i++)
+				new_list[i] = mcmc_list[c];
+
+			
+			// replace with new_list
+			delete mcmc_list;
+			mcmc_list = new_list;
+		}
+
+		// append clique
+		mcmc_list[mcmc_list_count] = clique;
+		mcmc_list_count++;
+		return true;
+	}
 }
 
 /*

@@ -19,9 +19,11 @@ CliquerAdapter::CliquerAdapter( const QVector< QVector<bool> > &m, const QVector
 	}
 
 	// weights
+	// in order to store weights in the graph, we need convert int to double
+	// by multiplying a constant 100. 
 	g->weights = (int*)calloc(g->n,sizeof(int));
 	for (int i = 0; i < g->n; i++)
-		g->weights[i] = w[i];
+		g->weights[i] = w[i] * 100;
 }
 
 CliquerAdapter::~CliquerAdapter()
@@ -33,9 +35,7 @@ CliquerAdapter::~CliquerAdapter()
 
 double CliquerAdapter::weightOf( const QVector<int> &clique )
 {
-	double w = 0;
-	foreach(int id, clique) w += weights[id];
-	return w;
+
 }
 
 
