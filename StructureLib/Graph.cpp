@@ -1,6 +1,8 @@
 #include "Graph.h"
 #include <QtOpenGL/qgl.h>
 #include <QQueue>
+#include <QStack>
+#include <QSet>
 
 Structure::Graph::Graph(QString id)
 {
@@ -278,4 +280,69 @@ QVector<Structure::Node*> Structure::Graph::getNodesWithTag( QString tag )
 	foreach (Node* n, nodes)
 		if (n->hasTag(tag)) ns << n;
 	return ns;
+}
+
+QVector<QVector<QString> > Structure::Graph::findCycleBase()
+{
+	QMap<QString, QSet<QString>> used;
+	QMap<QString, QString> parent;
+	QStack<QString> stack;
+	QVector<QVector<QString>> cycles;
+
+	foreach (Node* root_node, nodes) {
+		QString root = root_node->mID;
+		// Loop over the connected
+		// components of the graph.
+		if (parent.contains(root)) {
+			continue;
+		}
+		// Free some memory in case of
+		// multiple connected components.
+		used.clear();
+		// Prepare to walk the spanning tree.
+		parent[root] = root;
+		used[root] = QSet<QString>();
+		stack.push(root);
+		// Do the walk. It is a BFS with
+		// a LIFO instead of the usual
+		// FIFO. Thus it is easier to 
+		// find the cycles in the tree.
+		while (!stack.isEmpty()) {
+			QString current = stack.pop();
+			QSet<QString> currentUsed = used[current];
+			foreach (Link* e, getLinks(current)) {
+				QString neighbor = e->getNodeOther(current)->mID;
+				if (!used.contains(neighbor)) {
+					// found a new node
+					parent[neighbor] = current;
+					QSet<QString> neighbourUsed;
+					neighbourUsed << current;
+					used[neighbor] = neighbourUsed;
+					stack.push(neighbor);
+				}
+				else if (neighbor == current) {
+					// found a self loop
+					QVector<QString> cycle;
+					cycle << current;
+					cycles << cycle;
+				}
+				else if (!currentUsed.contains(neighbor)) {
+					// found a cycle
+					QSet<QString> neighbourUsed = used[neighbor];
+					QVector<QString> cycle;
+					cycle << neighbor;
+					cycle << current;
+					QString p = parent[current];
+					while (!neighbourUsed.contains(p)) {
+						cycle << p;
+						p = parent[p];
+					}
+					cycle << p;
+					cycles << cycle;
+					neighbourUsed << current;
+				}
+			}
+		}
+	}
+	return cycles;
 }

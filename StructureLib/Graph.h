@@ -49,6 +49,9 @@ public:
 	void selectNode(int nid);
 	QVector<Node*> getSelectedNodes();
 
+	// cycles
+	QVector<QVector<QString> > findCycleBase();
+
 public:
 	QString mID;
 	QVector<Node*> nodes;

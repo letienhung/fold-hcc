@@ -24,7 +24,6 @@ public:
 	QVector<FdNode*> slaves;
 	QVector< QSet<int> > slave2master;
 	QVector< QSet<int> > slave2masterSide; // each slave has one or two end props (master + side).
-	QList< QSet<int> > slaveEndClusters;  // cluster of slave ends
 
 	QVector<int> TSlaves;
 	QVector< QSet<int> > HSlaveClusters;// H-slaves sharing side prop belong to the same cluster.
@@ -54,11 +53,11 @@ public:
 
 	void createSlaves(); 
 	void updateSlaves(); // collect current slaves and store into \p slaves
+	void computeSlaveMasterRelation();
 	QVector<FdNode*> mergeConnectedCoplanarParts(QVector<FdNode*> ns);
 
-	void computeSlaveMasterRelation();
-	void clusterSlaves();
 	void createBlocks();
+	void clusterSlaves();
 
 	// foldem
 	void foldabilize(bool withinAABB);

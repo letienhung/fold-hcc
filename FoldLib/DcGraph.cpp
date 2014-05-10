@@ -276,77 +276,92 @@ void DcGraph::createSlaves()
 
 void DcGraph::clusterSlaves()
 {
-	// tags to avoid deleting/copying
-	QVector<bool> isHSlave(slaves.size(), true);
+	// initial
+	TSlaves.clear();
+	HSlaveClusters.clear();
 
-	// T-slaves
-	for (int i = 0; i < slaves.size(); i++)
+	// build master (V) slave (E) graph
+	Structure::Graph* ms_graph = new Structure::Graph();
+	for (int i = 0; i < masters.size(); i++)
 	{
-		if (slave2masterSide[i].size() == 1)
-		{
-			// each T-slave is a cluster
-			TSlaves.push_back(i);
-			isHSlave[i] = false;
-		}
+		Structure::Node* n = new Structure::Node(QString::number(i));
+		ms_graph->addNode(n); // masters are nodes
 	}
 
-	// cluster end props of H-slaves
 	for (int i = 0; i < slaves.size(); i++)
 	{
-		if (isHSlave[i])
+		// T-slaves
+		if (slave2master[i].size() == 1)
 		{
-			// check whether belong to existed clusters
-			QVector<int> clusterIdx;
-			for (int j = 0; j < slaveEndClusters.size(); j++)
-			{
-				QSet<int> isct = slave2masterSide[i] & slaveEndClusters[j];
-				if (!isct.isEmpty()) clusterIdx.push_back(j);
-			}
-
-			// belong to none
-			switch (clusterIdx.size())
-			{
-			case 0: 
-				{
-					// create a new cluster
-					slaveEndClusters.push_back(slave2masterSide[i]);
-				}
-				break;
-			case 1:
-				{
-					// merge the slaveSideProp with the cluster
-					int idx = clusterIdx[0];
-					slaveEndClusters[idx] = slaveEndClusters[idx] + slave2masterSide[i];
-				}
-				break;
-			case 2:
-				{
-					// merge these two clusters
-					// slaveSideProp is already contained in their union
-					int idx0 = clusterIdx[0];
-					int idx1 = clusterIdx[1];
-					slaveEndClusters[idx0] = slaveEndClusters[idx0] + slaveEndClusters[idx1];
-					slaveEndClusters.removeAt(idx1);
-				}
-				break;
-			}
+			TSlaves << i;
+			continue;
 		}
+
+		// H-slave
+		QList<int> mids = slave2master[i].toList();
+		int j = mids.front();
+		int k = mids.last();
+		Structure::Node* nj = ms_graph->getNode(QString::number(j));
+		Structure::Node* nk = ms_graph->getNode(QString::number(k));
+		ms_graph->addLink(nj, nk); // H-slaves are links
 	}
 
-	// H-slave clusters
-	HSlaveClusters.resize(slaveEndClusters.size());
-	for (int i = 0; i < slaves.size(); i++)
+	// enumerate all chordless cycles
+	QVector<QVector<QString> > cycle_base = ms_graph->findCycleBase();
+
+	// convert into slave clusters
+	QVector<QSet<int> > cycle_slaves;
+	foreach (QVector<QString> cycle, cycle_base)
 	{
-		if (isHSlave[i])
+		// slaves in cycle
+		QSet<int> cs;
+
+		// travel tru all edges in the cycle
+		for (int i = 0; i < cycle.size(); i++)
 		{
-			for (int j = 0; j < slaveEndClusters.size(); j++)
+			int j = (i+1)%2;
+
+			// master id of two ends
+			int mi = cycle[i].toInt();
+			int mj = cycle[j].toInt();
+
+			// edge = (mi, mj)
+			QSet<int> mids; mids << mi << mj;
+
+			// check the id of corresponding slave
+			for (int sid = 0; sid < slaves.size(); sid++)
 			{
-				if (slaveEndClusters[j].contains(slave2masterSide[i]))
+				if (mids == slave2master[sid])
 				{
-					HSlaveClusters[j] << i;
+					cs << sid;
+					break;
 				}
 			}
 		}
+
+		// store
+		cycle_slaves << cs;
+	}
+
+	// merge slave clusters sharing edges
+	HSlaveClusters.clear();
+	foreach (QSet<int> scluster, cycle_slaves)
+	{
+		// check intersection with each H-slave cluster
+		bool merged = false;
+		for (int i = 0; i < HSlaveClusters.size(); i++)
+		{
+			QSet<int> isct = HSlaveClusters[i] & scluster; // intersection
+			if (!isct.isEmpty())
+			{
+				HSlaveClusters[i] += scluster; // union
+				merged = true;
+				continue; // skip all others
+			}
+		}
+
+		// create a new cluster if not merged to existed clusters
+		if (!merged) HSlaveClusters << scluster;
 	}
 }
 
@@ -357,6 +372,7 @@ void DcGraph::createBlocks()
 	blocks.clear();
 	masterBlockMap.clear();
 
+	// set bounding box as hard constrain
 	Geom::Box aabb = computeAABB().box();
 	aabb.scale(1.1);
 
@@ -382,7 +398,6 @@ void DcGraph::createBlocks()
 		// masters
 		QVector<PatchNode*> ms;
 		QSet<int> mIdxSet;
-		foreach (int end, slaveEndClusters[i]) mIdxSet << end/2;
 		foreach (int midx, mIdxSet)	ms << masters[midx];
 
 		// slaves
