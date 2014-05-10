@@ -1,78 +1,77 @@
 #include "CliquerAdapter.h"
 #include "cliquer.h"
+#include <iostream>
 
 
 CliquerAdapter::CliquerAdapter( const QVector< QVector<bool> > &m, const QVector<double>& w )
 {
 	// create graph
-	g = (graph_t*)calloc(1,sizeof(graph_t));
-	g->n = m.size();
+	graph = (graph_t*)calloc(1,sizeof(graph_t));
+	graph->n = m.size();
 
 	// edges
-	g->edges = (set_t*)calloc(g->n,sizeof(set_t));
-	for (int i = 0; i < g->n; i++)
-		g->edges[i] = set_new(g->n);
+	graph->edges = (set_t*)calloc(graph->n,sizeof(set_t));
+	for (int i = 0; i < graph->n; i++)
+		graph->edges[i] = set_new(graph->n);
 
-	for (int i = 0; i < g->n; i++){
-		for (int j = i+1; j < g->n; j++)
-			if (m[i][j]) GRAPH_ADD_EDGE(g, i, j);
+	for (int i = 0; i < graph->n; i++){
+		for (int j = i+1; j < graph->n; j++)
+			if (m[i][j]) GRAPH_ADD_EDGE(graph, i, j);
 	}
 
-	// weights
-	// in order to store weights in the graph, we need convert int to double
-	// by multiplying a constant 100. 
-	g->weights = (int*)calloc(g->n,sizeof(int));
-	for (int i = 0; i < g->n; i++)
-		g->weights[i] = w[i] * 100;
+	// weights: int to double (multiplying 100)
+	// weightsAllOne: fake weights for unweighted graph
+	weights = (int*)calloc(graph->n,sizeof(int));
+	weightsAllOne = (int*)calloc(graph->n,sizeof(int));
+	for (int i = 0; i < graph->n; i++)
+	{
+		weights[i] = int(w[i] * 100);
+		weightsAllOne[i] = 1;
+	}
 }
 
 CliquerAdapter::~CliquerAdapter()
 {
 	// delete the graph
-	if (g)	graph_free(g);
+	if (graph)	graph_free(graph);
 }
 
-
-double CliquerAdapter::weightOf( const QVector<int> &clique )
-{
-
-}
-
-
-void CliquerAdapter::computeWeightsOfAllMaxCliques()
-{
-	// clique list
-	int N = 16392;
-	set_t s[16392];
-	clique_default_options->clique_list = s;
-	clique_default_options->clique_list_length = N;
-
-	// find all max cliques
-	int max_size = clique_max_weight(g, NULL);
-	int n = clique_unweighted_find_all(g, max_size, max_size, false, NULL);
-	clique_default_options->clique_list = NULL;
-
-	// compute weight of each clique and store them
-	// in case there are too many max cliques, only the first N are considered.
-	int nn = (n > N)? N : n;
-	for (int i = 0; i < nn; i++)
-	{
-		// get max clique
-		QVector<int> maxClique;
-		for (int j = 0; j < g->n; j++)
-		{
-			if (SET_CONTAINS(s[i], j))
-				maxClique.push_back(j);
-		}
-
-		// compute weight
-		double w = weightOf(maxClique);
-		weight_clique_map.insert(w, maxClique);
-	}
-}
 
 QVector<QVector<int> > CliquerAdapter::getMinWeightMaxCliques()
 {
-	return weight_clique_map.values(weight_clique_map.uniqueKeys().front()).toVector();
-}
+	graph_t *unweighted_graph = graph;
+	unweighted_graph->weights = weightsAllOne;
 
+	// the size of max clique
+	int max_size = clique_max_weight(unweighted_graph, NULL);
+	
+	// weighted graph
+	graph_t *weighted_graph = graph;
+	weighted_graph->weights = weights;
+
+	// mwmc list
+	set_t *mwmc_list;
+
+	// find min weight max clique
+	int mwmc_list_count = clique_mwmc_find_all(weighted_graph, max_size, &mwmc_list);
+
+	// extract cliques
+	std::cout << "\nreading cliques\n";
+	QVector<QVector<int> > mwmc;
+	for (int i = 0; i < mwmc_list_count; i++)
+	{
+		// clique in byte format
+		set_t clique = mwmc_list[i];
+		set_print(clique);
+
+		// read clique
+		QVector<int> qc;
+		for (int j = 0; j < graph->n; j++)
+			if (SET_CONTAINS(clique, j)) qc << j;
+
+		// store clique
+		mwmc << qc;
+	}
+
+	return mwmc;
+}

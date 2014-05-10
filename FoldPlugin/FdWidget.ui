@@ -332,6 +332,9 @@
         <property name="text">
          <string>within AABB</string>
         </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
      </layout>
@@ -347,17 +350,17 @@
        <widget class="QComboBox" name="squeezeDirection">
         <item>
          <property name="text">
+          <string>Z</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>X</string>
          </property>
         </item>
         <item>
          <property name="text">
           <string>Y</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Z</string>
          </property>
         </item>
        </widget>

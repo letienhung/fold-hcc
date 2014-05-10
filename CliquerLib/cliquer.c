@@ -96,8 +96,14 @@ static boolean is_maximal(set_t clique, graph_t *g);
 static boolean false_function(set_t clique,graph_t *g,clique_options *opts);
 
 
+//////////////////////////////////////////////////////////////////////////
+///////////////////min_weight_max_clique///////////////
+int mwmc_min_weight;
+int mwmc_list_count;
+int mwmc_list_length;
+set_t* mwmc_list;
 
-
+static boolean store_clique_min_weight(set_t clique, graph_t *g);
 
 /*****  Unweighted searches  *****/
 /*
@@ -432,7 +438,10 @@ static int sub_unweighted_all(int *table, int size, int min_size, int max_size,
 		if ((!maximal) || is_maximal(current_clique,g)) {
 			/* We've found one.  Store it. */
 			count++;
-			if (!store_clique(current_clique,g,opts)) {
+			//if (!store_clique(current_clique,g,opts)) {
+
+			//hacked the code to store min_cost_max_cliques
+			if (!store_clique_min_weight(current_clique, g)) {
 				return -count;
 			}
 		}
@@ -884,95 +893,9 @@ static int sub_weighted_all(int *table, int size, int weight,
 
 
 
-// code used for finding min_cost_max_clique
-int min_mcmc_weight;
-int mcmc_list_count;
-int mcmc_list_length;
-set_t* mcmc_list = new set_t[mcmc_list_length];
 
 
 /***** Helper functions *****/
-
-/*
- * weight_of_clique(set_t clique, graph_t *g)
- *
- * Computes the sum weight of clique
- *
- *   clique - the clique
- *   g - the graph with weights
- *
- * Returns the sum weight of the clique.
- */
-
-static int weight_of_clique(set_t clique, graph_t *g)
-{
-	int w = 0;
-
-	// iterate through all values of s
-	int i=-1;
-	while ((i=set_return_next(clique,i))>=0) {
-		// i is in set s
-		w += g->weights[i];
-	}
-
-	return w;
-}
-
-/*
- * store_clique_min_weight(set_t clique, graph_t *g) 
- *
- * Stores clique to mcmc_list if its weight is less or equal to min_mcmc_weight
- *
- *   clique - the clique
- *   g - the graph with weights
- *
- * Returns the sum weight of the clique.
- */
-
-static boolean store_clique_min_weight(set_t clique, graph_t *g) 
-{
-	// weight of clique
-	int w = weight_of_clique(clique, g);
-
-	// reject
-	if (w > min_mcmc_weight)
-	{
-		return false;
-	}
-	// clear mcmc_list and save this one
-	else if (w < min_mcmc_weight)
-	{
-		min_mcmc_weight = w;
-		mcmc_list[0] = clique;
-		mcmc_list_count = 1;
-		return true;
-	}
-	// append this one to mcmc_list
-	else
-	{
-		// double the capacity of mcmc_list
-		if (mcmc_list_count >= mcmc_list_length)
-		{
-			// double the size
-			mcmc_list_length *= 2;
-			set_t* new_list = new set_t[mcmc_list_length];
-
-			// copy
-			for (int i = 0; i < mcmc_list_count; i++)
-				new_list[i] = mcmc_list[c];
-
-			
-			// replace with new_list
-			delete mcmc_list;
-			mcmc_list = new_list;
-		}
-
-		// append clique
-		mcmc_list[mcmc_list_count] = clique;
-		mcmc_list_count++;
-		return true;
-	}
-}
 
 /*
  * store_clique()
@@ -1814,4 +1737,85 @@ boolean clique_print_time_always(int level, int i, int n, int max,
 	prev_i=i;
 
 	return TRUE;
+}
+
+
+// Stores min_weight_max_clique
+static boolean store_clique_min_weight(set_t clique, graph_t *g) 
+{
+	// weight of clique
+	int w = graph_subgraph_weight(g, clique);
+
+	// append this one to mcmc_list
+	if (w == mwmc_min_weight)
+	{
+		// double the capacity of mcmc_list
+		if ( mwmc_list_count >= mwmc_list_length )
+		{
+			set_t* new_list;
+			int i;
+
+			// double the size of list
+			mwmc_list_length *= 2;
+			new_list = malloc(mwmc_list_length, sizeof(set_t));
+
+			// copy
+			for (i = 0; i < mwmc_list_count; i++)
+			{
+				new_list[i] = mwmc_list[i];
+				set_free(mwmc_list[i]);
+			}
+
+			// replace with new_list
+			free (mwmc_list);
+			mwmc_list = new_list;
+
+			printf("==Increased capacity: list_length = %d\n", mwmc_list_length);
+		}
+
+		// append clique
+		mwmc_list[mwmc_list_count] = set_duplicate(clique);
+		mwmc_list_count++;
+
+		set_print(clique);
+	}
+	// clear mcmc_list and save this one
+	else if (w < mwmc_min_weight)
+	{
+		int i;
+		for (i = 0; i < mwmc_list_count; i++)
+			set_free(mwmc_list[i]);
+		
+		mwmc_min_weight = w;
+		mwmc_list[0] = set_duplicate(clique);
+		mwmc_list_count = 1;
+
+		printf("\nmin_weight = %d\n", w);
+		set_print(clique);
+	}
+
+	return TRUE;
+}
+
+// API for search all min_cost_max_cliques
+int clique_mwmc_find_all( graph_t *g, int max_size, set_t **mwmc)
+{
+	// initial
+	mwmc_list_length = 16;
+	mwmc_list = malloc(mwmc_list_length * sizeof(set_t));
+	mwmc_list_count = 0;
+	mwmc_min_weight = INT_MAX;
+
+	// hacked function: mwmc will be a by-product
+	clique_unweighted_find_all(g, max_size, max_size, FALSE, NULL);
+
+	// assign mwmc_list
+	*mwmc = mwmc_list;
+	
+	return mwmc_list_count;
+}
+
+set_t* clique_mwmc_list_get()
+{
+	return mwmc_list;
 }

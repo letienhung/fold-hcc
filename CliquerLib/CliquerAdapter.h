@@ -10,13 +10,11 @@ public:
     CliquerAdapter(const QVector< QVector<bool> > &m, const QVector<double>& w);
 	~CliquerAdapter();
 
-	double weightOf(const QVector<int> &clique);
-	void computeWeightsOfAllMaxCliques();
+	// returns mwmc
 	QVector<QVector<int> > getMinWeightMaxCliques();
 	
 private:
-	graph_t* g;
-	QVector<double> weights;
-	QMultiMap< double, QVector<int> > weight_clique_map;
+	graph_t *graph;
+	int *weights, *weightsAllOne;
 };
 
