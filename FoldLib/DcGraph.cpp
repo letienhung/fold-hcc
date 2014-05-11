@@ -330,11 +330,8 @@ void DcGraph::clusterSlaves()
 			QSet<int> mids;
 			mids << n1.toInt() << n2.toInt();
 			for (int sid = 0; sid < slaves.size(); sid++){
-				if (!isVisited[sid] && mids == slave2master[sid])
-				{
+				if (mids == slave2master[sid])
 					cluster << sid;
-					isVisited[sid] = true;
-				}
 			}
 
 			// remove edge (n1, n2) from graph
@@ -344,7 +341,6 @@ void DcGraph::clusterSlaves()
 		// find one cluster
 		h_clusters << cluster;
 	}
-
 
 	// merge clusters who share edges
 	QMap<int, QSet<int> > merged_clusters;
@@ -365,7 +361,12 @@ void DcGraph::clusterSlaves()
 		// create a new cluster
 		merged_clusters[count++] = hc;
 	}
+
+	// save H clusters 
 	HSlaveClusters = merged_clusters.values().toVector();
+	foreach (QSet<int> hc, HSlaveClusters)
+		foreach(int sid, hc) isVisited[sid] = true;
+
 
 	// edges that are not covered by cycles form individual clusters
 	foreach (Structure::Link* link, ms_graph->links)
@@ -376,10 +377,7 @@ void DcGraph::clusterSlaves()
 		QSet<int> cluster;
 		for (int sid = 0; sid < slaves.size(); sid++){
 			if (!isVisited[sid] && mids == slave2master[sid])
-			{
 				cluster << sid;
-				isVisited[sid] = true;
-			}
 		}
 
 		HSlaveClusters << cluster;
