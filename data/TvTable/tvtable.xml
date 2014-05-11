@@ -1,0 +1,93 @@
+<!--?xml Version = "1.0"?-->
+<document>
+    <cN>8</cN>
+    <node>
+        <type>2</type>
+        <ID>Box001</ID>
+        <box>
+            <c>0 0 0.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>50 25 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>Box002</ID>
+        <box>
+            <c>25 0 25.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>25 25 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>Box003</ID>
+        <box>
+            <c>28.5896 0 12.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 25 12.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>Box004</ID>
+        <box>
+            <c>0 0 18.75</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 25 18.75</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>Box005</ID>
+        <box>
+            <c>-49.5 0 6.25</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 25 6.25</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>Box006</ID>
+        <box>
+            <c>-25 0 13</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>25 25 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>Box008</ID>
+        <box>
+            <c>-33.8713 0 25</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 25 12.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>Box010</ID>
+        <box>
+            <c>0 0 38</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>50 25 0.5</e>
+        </box>
+    </node>
+    <cL>0</cL>
+</document>
