@@ -280,6 +280,9 @@ void DcGraph::clusterSlaves()
 	TSlaves.clear();
 	HSlaveClusters.clear();
 
+	// tags to avoid deleting/copying
+	QVector<bool> isVisited(slaves.size(), false);
+
 	// build master (V) slave (E) graph
 	Structure::Graph* ms_graph = new Structure::Graph();
 	for (int i = 0; i < masters.size(); i++)
@@ -294,75 +297,96 @@ void DcGraph::clusterSlaves()
 		if (slave2master[i].size() == 1)
 		{
 			TSlaves << i;
+			isVisited[i] = true;
 			continue;
 		}
 
-		// H-slave
+		// H-slave are links
 		QList<int> mids = slave2master[i].toList();
-		int j = mids.front();
-		int k = mids.last();
-		Structure::Node* nj = ms_graph->getNode(QString::number(j));
-		Structure::Node* nk = ms_graph->getNode(QString::number(k));
-		ms_graph->addLink(nj, nk); // H-slaves are links
+		QString nj = QString::number(mids.front());
+		QString nk = QString::number(mids.last());
+
+		// for each pair of masters, introduce at most one link between them
+		if (ms_graph->getLink(nj, nk) == NULL)
+			ms_graph->addLink(nj, nk);
 	}
 
 	// enumerate all chordless cycles
 	QVector<QVector<QString> > cycle_base = ms_graph->findCycleBase();
 
 	// convert into slave clusters
-	QVector<QSet<int> > cycle_slaves;
+	QVector<QSet<int> > h_clusters;
 	foreach (QVector<QString> cycle, cycle_base)
 	{
-		// slaves in cycle
-		QSet<int> cs;
-
 		// travel tru all edges in the cycle
+		QSet<int> cluster;
 		for (int i = 0; i < cycle.size(); i++)
 		{
-			int j = (i+1)%2;
+			// master string ids
+			QString n1 = cycle[i];
+			QString n2 = cycle[(i+1)%cycle.size()];
 
-			// master id of two ends
-			int mi = cycle[i].toInt();
-			int mj = cycle[j].toInt();
-
-			// edge = (mi, mj)
-			QSet<int> mids; mids << mi << mj;
-
-			// check the id of corresponding slave
-			for (int sid = 0; sid < slaves.size(); sid++)
-			{
-				if (mids == slave2master[sid])
+			// add slaves with the same mids to current cluster
+			QSet<int> mids;
+			mids << n1.toInt() << n2.toInt();
+			for (int sid = 0; sid < slaves.size(); sid++){
+				if (!isVisited[sid] && mids == slave2master[sid])
 				{
-					cs << sid;
-					break;
+					cluster << sid;
+					isVisited[sid] = true;
 				}
 			}
+
+			// remove edge (n1, n2) from graph
+			ms_graph->removeLink(n1, n2);
 		}
 
-		// store
-		cycle_slaves << cs;
+		// find one cluster
+		h_clusters << cluster;
 	}
 
-	// merge slave clusters sharing edges
-	HSlaveClusters.clear();
-	foreach (QSet<int> scluster, cycle_slaves)
+
+	// merge clusters who share edges
+	QMap<int, QSet<int> > merged_clusters;
+	int count = 0;
+	foreach (QSet<int> hc, h_clusters)
 	{
-		// check intersection with each H-slave cluster
-		bool merged = false;
-		for (int i = 0; i < HSlaveClusters.size(); i++)
+		// merge with all intersected clusters
+		foreach (int key, merged_clusters.keys())
 		{
-			QSet<int> isct = HSlaveClusters[i] & scluster; // intersection
-			if (!isct.isEmpty())
+			QSet<int> isct = merged_clusters[key] & hc;
+			if (!isct.isEmpty()) 
 			{
-				HSlaveClusters[i] += scluster; // union
-				merged = true;
-				continue; // skip all others
+				hc += merged_clusters[key];
+				merged_clusters.remove(key);
 			}
 		}
 
-		// create a new cluster if not merged to existed clusters
-		if (!merged) HSlaveClusters << scluster;
+		// create a new cluster
+		merged_clusters[count++] = hc;
 	}
+	HSlaveClusters = merged_clusters.values().toVector();
+
+	// edges that are not covered by cycles form individual clusters
+	foreach (Structure::Link* link, ms_graph->links)
+	{
+		QSet<int> mids;
+		mids << link->nid1.toInt() << link->nid2.toInt();
+
+		QSet<int> cluster;
+		for (int sid = 0; sid < slaves.size(); sid++){
+			if (!isVisited[sid] && mids == slave2master[sid])
+			{
+				cluster << sid;
+				isVisited[sid] = true;
+			}
+		}
+
+		HSlaveClusters << cluster;
+	}
+
+	// delete graph
+	delete ms_graph;
 }
 
 void DcGraph::createBlocks()
@@ -395,29 +419,29 @@ void DcGraph::createBlocks()
 	// H-blocks
 	for (int i = 0; i < HSlaveClusters.size(); i++)
 	{
-		// masters
 		QVector<PatchNode*> ms;
-		QSet<int> mIdxSet;
-		foreach (int midx, mIdxSet)	ms << masters[midx];
-
-		// slaves
 		QVector<FdNode*> ss;
-		foreach (int sidx, HSlaveClusters[i])
-			ss << slaves[sidx];
+		QVector< QVector<QString> > mPairs;
 
-		// master pairs
-		QVector< QVector<QString> > masterPairs;
+		QSet<int> mids; // master indices
 		foreach (int sidx, HSlaveClusters[i])
 		{
-			QVector<QString> new_pair;
-			foreach (int end, slave2masterSide[sidx])
-			{
-				int mid = end / 2;
-				new_pair << masters[mid]->mID;
-			}
+			// slaves
+			ss << slaves[sidx]; 
 
-			masterPairs << new_pair;
+			QVector<QString> mp; 
+			foreach (int mid, slave2master[sidx])
+			{
+				mids << mid; 
+				mp << masters[mid]->mID; 
+			}
+			
+			// master pairs
+			mPairs << mp; 
 		}
+
+		// masters
+		foreach (int mid, mids)	ms << masters[mid];
 
 		//id
 		QString id = "HB_" + QString::number(i);
@@ -425,7 +449,7 @@ void DcGraph::createBlocks()
 		// create
 		foreach (PatchNode* m, ms) 
 			masterBlockMap[m->mID] << blocks.size();
-		blocks << new HBlock(ms, ss, masterPairs, aabb, id);
+		blocks << new HBlock(ms, ss, mPairs, aabb, id);
 	}
 
 	// set up path

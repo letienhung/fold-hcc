@@ -115,15 +115,30 @@ void Structure::Graph::removeNode( QString nid )
 	nodes.remove(idx);
 }
 
-void Structure::Graph::removeLink( Link* link )
+bool Structure::Graph::removeLink( Link* link )
 {
+	if (link == NULL) return false;
+
 	// link index
 	int idx = getLinkIndex(link->nid1, link->nid2);
-	if (idx == -1) return;
+	if (idx == -1) return false;
 
 	// deallocate
 	// delete links[idx];
 	links.remove(idx);
+	return true;
+}
+
+bool Structure::Graph::removeLink( QString nid1, QString nid2 )
+{
+	// link index
+	int idx = getLinkIndex(nid1, nid2);
+	if (idx == -1) return false;
+
+	// deallocate
+	// delete links[idx];
+	links.remove(idx);
+	return true;
 }
 
 Structure::Node* Structure::Graph::getNode(QString nid)
