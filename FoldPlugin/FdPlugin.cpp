@@ -186,6 +186,40 @@ void FdPlugin::exportCurrent()
 
 void FdPlugin::test1()
 {
+	QVector<QString> nids;
+
+	// nodes
+	Structure::Graph* g = new Structure::Graph();
+	for (int i = 0; i < 6; i++)
+	{
+		QString nid = QString::number(i);
+		Structure::Node* n = new Structure::Node(nid);
+		g->addNode(n);
+
+		nids << nid;
+	}
+
+	// edges
+	g->addLink(nids[0], nids[1]);
+	g->addLink(nids[1], nids[2]);
+	g->addLink(nids[2], nids[3]);
+	g->addLink(nids[3], nids[4]);
+	g->addLink(nids[4], nids[5]);
+	g->addLink(nids[5], nids[0]);
+	g->addLink(nids[1], nids[4]);
+	g->addLink(nids[0], nids[3]);
+	g->addLink(nids[2], nids[5]);
+	g->addLink(nids[3], nids[5]);
+
+	// base links
+	QVector<QVector<QString> > cycles = g->findCycleBase();
+	std::cout << std::endl;
+	foreach (QVector<QString> cycle, cycles)
+	{
+		foreach (QString nid, cycle)
+			std::cout << nid.toStdString() << "  ";
+		std::cout << std::endl;
+	}
 }
 
 void FdPlugin::test2()

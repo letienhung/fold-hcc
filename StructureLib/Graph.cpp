@@ -62,6 +62,16 @@ Structure::Link* Structure::Graph::addLink( Node* n1, Node* n2 )
 	return link;
 }
 
+Structure::Link* Structure::Graph::addLink( QString nid1, QString nid2 )
+{
+	Structure::Node* n1 = getNode(nid1);
+	Structure::Node* n2 = getNode(nid2);
+	if (n1 && n2)
+		return addLink(n1, n2);
+	else
+		return NULL;
+}
+
 int Structure::Graph::getNodeIndex( QString nid )
 {
 	int idx = -1;
@@ -328,7 +338,7 @@ QVector<QVector<QString> > Structure::Graph::findCycleBase()
 				}
 				else if (!currentUsed.contains(neighbor)) {
 					// found a cycle
-					QSet<QString> neighbourUsed = used[neighbor];
+					QSet<QString>& neighbourUsed = used[neighbor];
 					QVector<QString> cycle;
 					cycle << neighbor;
 					cycle << current;

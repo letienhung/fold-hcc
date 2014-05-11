@@ -19,6 +19,7 @@ public:
 	void addNode(Node* node);
 	void addLink(Link* link);
 	Link* addLink(Node* n1, Node* n2);
+	Link* addLink(QString nid1, QString nid2);
 	void removeNode(QString nid);
 	void replaceNode(Node* old_node, Node* new_node);
 	void removeLink(Link* link);
