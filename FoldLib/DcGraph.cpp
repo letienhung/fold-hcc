@@ -61,9 +61,9 @@ void DcGraph::updateSlaves()
 		if (!n->hasTag(IS_MASTER))	slaves << n;
 
 	// debug
-	std::cout << "Slaves:\n";
-	foreach (FdNode* s, slaves) 
-		std::cout << s->mID.toStdString() << "  ";
+	//std::cout << "Slaves:\n";
+	//foreach (FdNode* s, slaves) 
+	//	std::cout << s->mID.toStdString() << "  ";
 
 }
 
@@ -203,8 +203,6 @@ QVector<FdNode*> DcGraph::mergeConnectedCoplanarParts( QVector<FdNode*> ns )
 
 void DcGraph::createSlaves()
 {
-	updateSlaves();
-
 	// split slave parts by master patches
 	double adjacentThr = getConnectivityThr();
 	foreach (PatchNode* master, masters)

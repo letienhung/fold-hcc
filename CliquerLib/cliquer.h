@@ -32,7 +32,7 @@ struct _clique_options {
 extern clique_options *clique_default_options;
 
 /* Min weight max clique*/
-extern int clique_mwmc_find_all(graph_t *g, int max_size, set_t **mwmc);
+extern int clique_mwmc_find_all(graph_t *g, int max_size, int ***mwmc, int list_length);
 
 /* Weighted clique functions */
 extern int clique_max_weight(graph_t *g,clique_options *opts);

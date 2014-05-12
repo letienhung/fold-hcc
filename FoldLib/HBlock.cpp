@@ -173,6 +173,10 @@ void HBlock::buildCollisionGraph()
 			}
 		}
 	}
+
+	// debug
+	std::cout << "# fold options / collision graph size = " 
+		<< collFog->getAllFoldOptions().size() << std::endl;
 }
 
 void HBlock::findOptimalSolution()

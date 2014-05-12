@@ -101,8 +101,10 @@ static boolean false_function(set_t clique,graph_t *g,clique_options *opts);
 int mwmc_min_weight;
 int mwmc_list_count;
 int mwmc_list_length;
-set_t* mwmc_list;
+int mwmc_clique_size;
+int **mwmc_list;
 
+static void allocate_mem(int*** arr,int n, int m);
 static boolean store_clique_min_weight(set_t clique, graph_t *g);
 
 /*****  Unweighted searches  *****/
@@ -1745,77 +1747,58 @@ static boolean store_clique_min_weight(set_t clique, graph_t *g)
 {
 	// weight of clique
 	int w = graph_subgraph_weight(g, clique);
+	//printf('.');
 
-	// append this one to mcmc_list
-	if (w == mwmc_min_weight)
+	// skip if weight is greater
+	if (w > mwmc_min_weight) return TRUE;
+	
+	// reset if weight is less
+	if (w < mwmc_min_weight)
 	{
-		// double the capacity of mcmc_list
-		if ( mwmc_list_count >= mwmc_list_length )
-		{
-			set_t* new_list;
-			int i;
-
-			// double the size of list
-			mwmc_list_length *= 2;
-			new_list = malloc(mwmc_list_length, sizeof(set_t));
-
-			// copy
-			for (i = 0; i < mwmc_list_count; i++)
-			{
-				new_list[i] = mwmc_list[i];
-				set_free(mwmc_list[i]);
-			}
-
-			// replace with new_list
-			free (mwmc_list);
-			mwmc_list = new_list;
-
-			printf("==Increased capacity: list_length = %d\n", mwmc_list_length);
-		}
-
-		// append clique
-		mwmc_list[mwmc_list_count] = set_duplicate(clique);
-		mwmc_list_count++;
-
-		set_print(clique);
+		printf("min_weight = %d\n", w);
+		mwmc_min_weight = w; // new min weight
+		mwmc_list_count = 0; // clear list
 	}
-	// clear mcmc_list and save this one
-	else if (w < mwmc_min_weight)
-	{
-		int i;
-		for (i = 0; i < mwmc_list_count; i++)
-			set_free(mwmc_list[i]);
-		
-		mwmc_min_weight = w;
-		mwmc_list[0] = set_duplicate(clique);
-		mwmc_list_count = 1;
 
-		printf("\nmin_weight = %d\n", w);
-		set_print(clique);
+	// skip if no space
+	if ( mwmc_list_count >= mwmc_list_length )
+	{
+		printf("No enough space to store cliques. ");
+	}
+	// append to mcmc_list
+	else 
+	{	
+		//int i = 0; int j = 0;
+		//for(; j < g->n; j++){
+		//	if (SET_CONTAINS(clique, j))
+		//	{
+		//		mwmc_list[0][i++] = j;
+		//	}
+		//}
+
+		int i=-1; int j = 0;
+		while ((i=set_return_next(clique,i))>=0)
+			mwmc_list[mwmc_list_count][j++] = i;
+		mwmc_list_count++;
 	}
 
 	return TRUE;
 }
 
 // API for search all min_cost_max_cliques
-int clique_mwmc_find_all( graph_t *g, int max_size, set_t **mwmc)
+int clique_mwmc_find_all( graph_t *g, int max_size, int ***mwmc, int list_length)
 {
 	// initial
-	mwmc_list_length = 16;
-	mwmc_list = malloc(mwmc_list_length * sizeof(set_t));
+	mwmc_list_length = list_length;
+	mwmc_clique_size = max_size;
+	mwmc_list = *mwmc;
 	mwmc_list_count = 0;
 	mwmc_min_weight = INT_MAX;
 
 	// hacked function: mwmc will be a by-product
 	clique_unweighted_find_all(g, max_size, max_size, FALSE, NULL);
 
-	// assign mwmc_list
-	*mwmc = mwmc_list;
+	printf("mwmc_list_count = %d", mwmc_list_count);
 	
 	return mwmc_list_count;
-}
-
-set_t* clique_mwmc_list_get()
-{
-	return mwmc_list;
 }

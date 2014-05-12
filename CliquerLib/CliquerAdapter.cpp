@@ -43,35 +43,42 @@ QVector<QVector<int> > CliquerAdapter::getMinWeightMaxCliques()
 	unweighted_graph->weights = weightsAllOne;
 
 	// the size of max clique
-	int max_size = clique_max_weight(unweighted_graph, NULL);
+	int max_clique_size = clique_max_weight(unweighted_graph, NULL);
 	
 	// weighted graph
 	graph_t *weighted_graph = graph;
 	weighted_graph->weights = weights;
 
 	// mwmc list
-	set_t *mwmc_list;
+	int mwmc_list_length = 1024;
+	int **mwmc_list = new int*[mwmc_list_length];
+	for (int i = 0; i < mwmc_list_length; i++)
+		mwmc_list[i] = new int[max_clique_size];
 
 	// find min weight max clique
-	int mwmc_list_count = clique_mwmc_find_all(weighted_graph, max_size, &mwmc_list);
+	int mwmc_list_count = clique_mwmc_find_all(weighted_graph, max_clique_size, 
+												&mwmc_list, mwmc_list_length);
 
 	// extract cliques
 	std::cout << "\nreading cliques\n";
 	QVector<QVector<int> > mwmc;
 	for (int i = 0; i < mwmc_list_count; i++)
 	{
-		// clique in byte format
-		set_t clique = mwmc_list[i];
-		set_print(clique);
+		QVector<int> clique;
+		for (int j = 0; j < max_clique_size; j++)
+		{
+			std::cout << mwmc_list[i][j] << "  ";
+			clique << mwmc_list[i][j];
+		}
+		std::cout << std::endl;
 
-		// read clique
-		QVector<int> qc;
-		for (int j = 0; j < graph->n; j++)
-			if (SET_CONTAINS(clique, j)) qc << j;
-
-		// store clique
-		mwmc << qc;
+		mwmc << clique;
 	}
+
+	// delete 
+	for (int i = 0; i < mwmc_list_length; i++)
+		delete [] mwmc_list[i];
+	delete [] mwmc_list;
 
 	return mwmc;
 }
