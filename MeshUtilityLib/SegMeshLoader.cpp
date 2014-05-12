@@ -46,9 +46,6 @@ SurfaceMeshModel* SegMeshLoader::extractSegMesh( QString gid )
 	SurfaceMeshModel* subMesh = new SurfaceMeshModel(gid + ".obj", gid);
 
 	QVector<int> part = groupFaces[gid];
-	
-	int v_count = entireMesh->n_vertices();
-	int f_count = entireMesh->n_faces();
 
 	// vertex set from face
 	QSet<int> vertSet;

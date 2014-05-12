@@ -23,9 +23,6 @@ public:
 	int selDcIdx;
 	QVector<DcGraph*> dcGraphs;
 
-	// animation
-	int nbKeyframes;
-
 	/// Main pipeline	
 public slots:
 	// input

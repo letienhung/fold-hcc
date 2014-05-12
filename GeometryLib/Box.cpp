@@ -668,7 +668,7 @@ void Geom::Box::normalizeAxis()
 
 double Geom::Box::radius()
 {
-	double s;
+	double s = 0;
 	for (int i = 0; i < 3; i++)
 		s += Extent[i] * Extent[i];
 

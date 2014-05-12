@@ -112,7 +112,6 @@ FdGraph* FdPlugin::activeScaffold()
 void FdPlugin::resetMesh()
 {
 	g_manager->setMesh(mesh());
-	showMessage("GraphManager: entireMesh = %s", g_manager->entireMesh->path.toStdString());
 }
 
 void FdPlugin::showStatus( QString msg )

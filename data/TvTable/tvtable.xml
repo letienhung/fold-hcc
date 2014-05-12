@@ -3,7 +3,7 @@
     <cN>8</cN>
     <node>
         <type>2</type>
-        <ID>Box001</ID>
+        <ID>m4</ID>
         <box>
             <c>0 0 0.5</c>
             <x>1 0 0</x>
@@ -14,7 +14,7 @@
     </node>
     <node>
         <type>2</type>
-        <ID>Box002</ID>
+        <ID>m2</ID>
         <box>
             <c>25 0 25.5</c>
             <x>1 0 0</x>
@@ -25,7 +25,7 @@
     </node>
     <node>
         <type>2</type>
-        <ID>Box003</ID>
+        <ID>s1</ID>
         <box>
             <c>28.5896 0 12.5</c>
             <x>1 0 0</x>
@@ -36,7 +36,7 @@
     </node>
     <node>
         <type>2</type>
-        <ID>Box004</ID>
+        <ID>s2</ID>
         <box>
             <c>0 0 18.75</c>
             <x>1 0 0</x>
@@ -47,7 +47,7 @@
     </node>
     <node>
         <type>2</type>
-        <ID>Box005</ID>
+        <ID>s4</ID>
         <box>
             <c>-49.5 0 6.25</c>
             <x>1 0 0</x>
@@ -58,7 +58,7 @@
     </node>
     <node>
         <type>2</type>
-        <ID>Box006</ID>
+        <ID>m3</ID>
         <box>
             <c>-25 0 13</c>
             <x>1 0 0</x>
@@ -69,7 +69,7 @@
     </node>
     <node>
         <type>2</type>
-        <ID>Box008</ID>
+        <ID>s3</ID>
         <box>
             <c>-33.8713 0 25</c>
             <x>1 0 0</x>
@@ -80,7 +80,7 @@
     </node>
     <node>
         <type>2</type>
-        <ID>Box010</ID>
+        <ID>m1</ID>
         <box>
             <c>0 0 38</c>
             <x>1 0 0</x>

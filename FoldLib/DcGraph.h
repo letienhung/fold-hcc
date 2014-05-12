@@ -53,7 +53,7 @@ public:
 
 	void createSlaves(); 
 	void updateSlaves(); // collect current slaves and store into \p slaves
-	void computeSlaveMasterRelation();
+	void updateSlaveMasterRelation();
 	QVector<FdNode*> mergeConnectedCoplanarParts(QVector<FdNode*> ns);
 
 	void createBlocks();

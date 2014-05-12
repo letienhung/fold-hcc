@@ -408,7 +408,7 @@ int *reorder_by_random(graph_t *g, boolean weighted) {
 	int *cnew;
 	boolean *used;
 
-	srand(time(NULL));
+	srand((unsigned int)time(NULL));
 
 	cnew=(int*)calloc(g->n, sizeof(int));
 	used=(int*)calloc(g->n, sizeof(boolean));

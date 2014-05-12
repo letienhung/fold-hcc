@@ -234,7 +234,11 @@ PLANE_RELATION relationWithPlane( FdNode* n, Geom::Plane plane, double thr )
 		if (dist < minDist) minDist = dist;
 		if (dist > maxDist) maxDist = dist;
 	}
-	double distThr = n->mBox.radius() * thr;
+
+	double r = n->mBox.radius();
+	double distThr = r * thr;
+
+	std::cout << thr << "  " << r << "   " << distThr;
 
 	int minSide;
 	if (minDist < -distThr) minSide = -1;
@@ -247,10 +251,16 @@ PLANE_RELATION relationWithPlane( FdNode* n, Geom::Plane plane, double thr )
 	else maxSide = 0;
 
 	int sum = minSide + maxSide;
+
+	// debug
+	std::cout << distThr << "  " << minDist << "  "<< maxDist << "  "<< minSide << "  " << maxSide<< "  " << sum;
+
+
 	if (sum >= 1) return POS_PLANE;
 	if (sum <= -1) return NEG_PLANE;
 	if (minSide == 0 && maxSide == 0) return ON_PLANE;
 	else return ISCT_PLANE;
+
 }
 
 bool onPlane( FdNode* n, Geom::Plane& plane )

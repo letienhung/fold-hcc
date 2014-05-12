@@ -59,9 +59,15 @@ void DcGraph::updateSlaves()
 	slaves.clear();
 	foreach (FdNode* n, getFdNodes())
 		if (!n->hasTag(IS_MASTER))	slaves << n;
+
+	// debug
+	std::cout << "Slaves:\n";
+	foreach (FdNode* s, slaves) 
+		std::cout << s->mID.toStdString() << "  ";
+
 }
 
-void DcGraph::computeSlaveMasterRelation()
+void DcGraph::updateSlaveMasterRelation()
 {
 	// initial
 	slave2master.clear();
@@ -197,6 +203,8 @@ QVector<FdNode*> DcGraph::mergeConnectedCoplanarParts( QVector<FdNode*> ns )
 
 void DcGraph::createSlaves()
 {
+	updateSlaves();
+
 	// split slave parts by master patches
 	double adjacentThr = getConnectivityThr();
 	foreach (PatchNode* master, masters)
@@ -211,14 +219,9 @@ void DcGraph::createSlaves()
 		}
 	}
 
-	// slave parts
-	slaves.clear();
-	foreach (FdNode* n, getFdNodes())
-		if (!n->hasTag(IS_MASTER))	slaves << n;
-
-	// current slave-master relation
+	// slaves and slave-master relation
 	updateSlaves();
-	computeSlaveMasterRelation();
+	updateSlaveMasterRelation();
 
 	// connectivity among slave parts
 	for (int i = 0; i < slaves.size(); i++)
@@ -234,7 +237,7 @@ void DcGraph::createSlaves()
 			// add connectivity
 			if (getDistance(slaves[i], slaves[j]) < adjacentThr)
 			{
-				FdLink* link = FdGraph::addLink(slaves[i], slaves[j]);
+				FdGraph::addLink(slaves[i], slaves[j]);
 			}
 		}
 	}
@@ -255,7 +258,7 @@ void DcGraph::createSlaves()
 
 	// slave-master relation after merging
 	updateSlaves();
-	computeSlaveMasterRelation();
+	updateSlaveMasterRelation();
 
 	// remove slaves that are still flying: unlikely to happen
 	for (int i = 0; i < slaves.size();i++)
@@ -684,7 +687,6 @@ void DcGraph::addDepLinkHOptionTEntity( FoldOption* fn, FoldEntity* other_bn )
 	Vector3 offset = fn->properties["offset"].value<Vector3>();
 	foreach (Geom::Box box, fVBoxes) box.translate(offset);
 	FoldEntity* bn = depFog->getFoldEntity(fn->mID);
-	BlockGraph* block = blocks[bn->entityIdx];
 
 	BlockGraph* other_block = blocks[other_bn->entityIdx];
 	TChain* other_chain = (TChain*)other_block->chains.front();

@@ -12,7 +12,6 @@ FoldManager::FoldManager()
 	dcScaffold = NULL;
 
 	selDcIdx = -1;
-	nbKeyframes = 15;
 }
 
 FoldManager::~FoldManager()
@@ -293,16 +292,12 @@ BlockGraph* FoldManager::getSelBlock()
 
 void FoldManager::generateKeyframes(int N)
 {
-	// generate key frames
-	nbKeyframes = N;
-	double step = 1.0 / nbKeyframes;
-
 	// selected dc graph
 	DcGraph* selDc = getSelDcGraph();
 	if (!selDc) return;
 
 	// forward message
-	selDc->generateKeyframes(nbKeyframes);
+	selDc->generateKeyframes(N);
 
 	// emit signals
 	updateKeyframeList();

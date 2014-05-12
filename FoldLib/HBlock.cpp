@@ -309,7 +309,7 @@ FdGraph* HBlock::getKeyframeScaffold( double t )
 	for (int i = 0; i < chains.size(); i++)
 	{
 		double localT = getLocalTime(t, chains[i]->mFoldDuration);
-		foldedChains << chains[i]->getKeyframeScaffold(t);
+		foldedChains << chains[i]->getKeyframeScaffold(localT);
 	}
 
 	// combine 
