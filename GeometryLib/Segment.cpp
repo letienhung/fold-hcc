@@ -209,3 +209,8 @@ void Geom::Segment::cropRange01( double t0, double t1 )
 {
 	cropRange_11(2*t0-1, 2*t1-1);
 }
+
+SurfaceMesh::Vector3 Geom::Segment::getPosition01( double t )
+{
+	return getPosition(2 * t - 1);
+}

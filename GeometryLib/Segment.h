@@ -30,6 +30,7 @@ public:
 	// coordinates
 	double	getProjCoordinates(Vector3 p);
 	Vector3 getPosition(double coord); 
+	Vector3 getPosition01(double t);
 	int		whichSide(Vector3 p);
 
 	// projection

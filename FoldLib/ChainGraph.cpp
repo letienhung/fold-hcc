@@ -18,6 +18,10 @@ ChainGraph::ChainGraph( FdNode* slave, PatchNode* master1, PatchNode* master2)
 	{
 		mMasters << (PatchNode*)master2->clone();
 		Graph::addNode(mMasters[1]);
+
+		// relative position of two masters
+		Vector3 MC2onM1 = master1->mPatch.getProjection(master2->center());
+		mMC2Trajectory.set(master2->center(), MC2onM1);
 	}
 
 	// setup base orientations
@@ -62,22 +66,26 @@ void ChainGraph::setupBasisOrientations()
 
 void ChainGraph::fold( double t )
 {
-	// move masters[1] to the right location
-	if (mMasters.size() == 2)
-	{
-		Vector3 offset = - t * chainUpSeg.length() * chainUpSeg.Direction;
-		mMasters[1]->translate(offset);
-	}
-
-	// fix masters but free slaves
+	// free all nodes
 	foreach (Structure::Node* n, nodes)
 		n->properties["fixed"] = false;
-	foreach (PatchNode* m, mMasters)
-		m->properties["fixed"] = true;
+
+	// fix masters[0]
+	mMasters.front()->properties["fixed"] = true;
+	mMasters.last()->properties["fixed"] = true;
+
+	// adjust the position of masters[1]
+	mMasters.last()->mBox.Center = mMC2Trajectory.getPosition01(t);
+	mMasters.last()->createScaffold();
+	mMasters.last()->addTag(DELETED_TAG); // avoid propagation from master2
 
 	// hinge angle
-	foreach(FdLink* alink, activeLinks)
-		alink->hinge->setAngleByTime(t);
+	// this works only for odd number of splits (even number of even pieces)
+	double half_angle = asin(1 - t);
+	activeLinks.front()->hinge->angle = half_angle;
+	activeLinks.last()->hinge->angle = half_angle;
+	for (int i = 1; i < activeLinks.size()-1; i++)
+		activeLinks[i]->hinge->angle = 2 * half_angle;
 
 	// restore configuration
 	restoreConfiguration();

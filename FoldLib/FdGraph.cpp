@@ -382,7 +382,7 @@ void FdGraph::restoreConfiguration()
 	QQueue<FdNode*> activeNodes;
 	foreach(FdNode* fn, getFdNodes())
 	{
-		if (fn->properties["fixed"].toBool())
+		if (fn->properties["fixed"].toBool() && !fn->hasTag(DELETED_TAG))
 		{
 			activeNodes.enqueue(fn);
 		}

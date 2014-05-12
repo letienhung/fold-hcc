@@ -51,7 +51,6 @@ public:
 
 	// state
 	void setState(int s);
-	void setAngleByTime(double t);
 
 	// visualization
 	void draw();

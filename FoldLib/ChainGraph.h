@@ -39,6 +39,9 @@ public:
 	CHAIN_TYPE mType;
 
 	QVector<PatchNode*>		mMasters;		// one or two masters
+	Geom::Segment			mMC2Trajectory;	// segment from m2's center to its projection on m1
+											// the trajectory of m2's center during foling
+
 	FdNode*					mOrigSlave;		// original part, which is split into chain parts
 	QVector<FdNode*>		mParts;			// sorted parts in the chain, from masters[0] to masters[1]
 
