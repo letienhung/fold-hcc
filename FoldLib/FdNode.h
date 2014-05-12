@@ -49,6 +49,9 @@ public:
 	virtual void createScaffold() = 0;
 	Geom::AABB computeAABB();
 	Vector3 center();
+
+	// modification
+	void translate(Vector3 t);
 	FdNode* cloneChopped(Geom::Box& chopBox);
 	virtual FdNode* cloneChopped(Geom::Plane& chopper);
 	virtual FdNode* cloneChopped(Geom::Plane& chopper1, Geom::Plane& chopper2);

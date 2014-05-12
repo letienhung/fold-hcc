@@ -286,3 +286,11 @@ void FdNode::deformToAttach( Geom::Plane& plane )
 	createScaffold();
 	deformMesh();
 }
+
+// mesh is not translated
+// call deformMesh to update the location of mesh
+void FdNode::translate( Vector3 t )
+{
+	mBox.translate(t);
+	createScaffold();
+}

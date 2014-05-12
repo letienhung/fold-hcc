@@ -34,7 +34,7 @@ HBlock::HBlock( QVector<PatchNode*>& masters, QVector<FdNode*>& slaves,
 		
 		// create chain
 		HChain* hc = new HChain(slaves[i], (PatchNode*)getNode(mid1), (PatchNode*)getNode(mid2));
-		hc->mFoldDuration = TIME_INTERVAL(masterTimeStamps[mid1], masterTimeStamps[mid2]);
+		hc->setFoldDuration(masterTimeStamps[mid1], masterTimeStamps[mid2]);
 		chains << hc;
 
 		// map from master id to chain idx set
@@ -118,28 +118,28 @@ void HBlock::buildCollisionGraph()
 			if (withinAABB && !barrierBox.containsAll(fArea.getConners()))
 				continue;
 
-			addDebugSegments(fArea.getEdgeSegments());
-
 			// reject if collide with other masters
 			// whose time stamp is within the time interval of fn
-			//bool reject = false;
-			//foreach (QString mid, masterTimeStamps.keys())
-			//{
-			//	double mstamp = masterTimeStamps[mid];
-			//	if (!within(mstamp, chain->mFoldDuration)) continue;
+			bool reject = false;
+			foreach (QString mid, masterTimeStamps.keys())
+			{
+				double mstamp = masterTimeStamps[mid];
+				if (!within(mstamp, chain->mFoldDuration)) continue;
 
-			//	Geom::Rectangle m_rect = ((PatchNode*)getNode(mid))->mPatch;
-			//	if (fAreasIntersect(fArea, m_rect))
-			//	{
-			//		reject = true;
-			//		break;
-			//	}
-			//}
-			//if (reject) continue;
+				Geom::Rectangle m_rect = ((PatchNode*)getNode(mid))->mPatch;
+				if (fAreasIntersect(fArea, m_rect))
+				{
+					reject = true;
+					break;
+				}
+			}
+			if (reject) continue;
 
 			// accept
 			collFog->addNode(fn);
 			collFog->addFoldLink(cn, fn);
+
+			addDebugSegments(fArea.getEdgeSegments());
 		}
 	}
 

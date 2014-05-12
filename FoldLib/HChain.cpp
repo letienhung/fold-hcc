@@ -23,17 +23,8 @@ Geom::Rectangle HChain::getFoldRegion(FoldOption* fn)
 	Geom::Segment axisSeg2 = axisSeg1;
 
 	// shift the axis along rightV
-	if (fn->nbsplit == 1)
-	{
-		double width = getLength() * 0.5;
-		axisSeg2.translate(width * rightV);
-	}
-	else if (fn->nbsplit == 2)
-	{
-		double width = getLength() * 0.25;
-		axisSeg1.translate(-width * rightV);
-		axisSeg2.translate( width * rightV);
-	}
+	double width = getLength() / (fn->nbsplit + 1);
+	axisSeg2.translate(width * rightV);
 
 	// shrink epsilon
 	Geom::Rectangle rect(QVector<Vector3>() 
@@ -45,7 +36,7 @@ Geom::Rectangle HChain::getFoldRegion(FoldOption* fn)
 
 QVector<FoldOption*> HChain::generateFoldOptions()
 {
-	QVector<FoldOption*> options = ChainGraph::generateFoldOptions(1, 2, 3);
+	QVector<FoldOption*> options = ChainGraph::generateFoldOptions(1, 1, 2);
 
 	// fold area
 	foreach (FoldOption* fn, options)
@@ -74,7 +65,7 @@ QVector<Geom::Plane> HChain::generateCutPlanes( int N )
 		cutPlanes << master0.translated(deltaV);
 	}
 
-	// to-do: is N is odd, cutting will be different
+	// to-do: is N is even, cutting will be different
 
 	return cutPlanes;
 }

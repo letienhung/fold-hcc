@@ -29,6 +29,9 @@ public:
 	void fold(double t);
 	FdGraph* getKeyframeScaffold(double t);
 
+	// setter
+	void setFoldDuration(double t0, double t1);
+
 	// getter
 	double getLength();
 

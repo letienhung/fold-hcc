@@ -93,11 +93,8 @@ bool Hinge::fix()
 
 		// step 2: snap two nodes
 		Vector3 hc_free = free_node->mBox.getPosition(free_hr.c_box);
-		free_node->mBox.translate(Origin - hc_free);
+		free_node->translate(Origin - hc_free);
 		free_node->properties["fixed"] = true;
-
-		// step 3: update scaffold
-		free_node->createScaffold();
 
 		return true;
 	}

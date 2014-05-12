@@ -62,10 +62,18 @@ void ChainGraph::setupBasisOrientations()
 
 void ChainGraph::fold( double t )
 {
-	// fix masters[0] but free all others
+	// move masters[1] to the right location
+	if (mMasters.size() == 2)
+	{
+		Vector3 offset = - t * chainUpSeg.length() * chainUpSeg.Direction;
+		mMasters[1]->translate(offset);
+	}
+
+	// fix masters but free slaves
 	foreach (Structure::Node* n, nodes)
 		n->properties["fixed"] = false;
-	mMasters[0]->properties["fixed"] = true;
+	foreach (PatchNode* m, mMasters)
+		m->properties["fixed"] = true;
 
 	// hinge angle
 	foreach(FdLink* alink, activeLinks)
@@ -227,6 +235,9 @@ QVector<FoldOption*> ChainGraph::generateFoldOptions( int nbSplit0, int nbSplit1
 	// #splits
 	for (int n = nbSplit0; n <= nbSplit1; n++)
 	{
+		// skip even number of splits for sake of simplicity
+		if (n%2 == 0) continue;
+
 		// patch chain
 		if (mOrigSlave->mType == FdNode::PATCH)
 		{
@@ -302,4 +313,13 @@ void ChainGraph::applyFoldOption( FoldOption* fn )
 	// reset hinge links
 	resetHingeLinks();
 	setupActiveLinks(fn);
+}
+
+void ChainGraph::setFoldDuration( double t0, double t1 )
+{
+	if (t0 > t1) std::swap(t0, t1);
+	t0 += ZERO_TOLERANCE_LOW;
+	t1 -= ZERO_TOLERANCE_LOW;
+
+	mFoldDuration = TIME_INTERVAL(t0, t1);
 }

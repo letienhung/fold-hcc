@@ -422,9 +422,8 @@ void FdGraph::translate(Vector3 v)
 {
 	foreach(FdNode* n, getFdNodes())
 	{
-		n->mBox.translate(v);
+		n->translate(v);
 		n->deformMesh();
-		n->createScaffold();
 	}
 }
 
