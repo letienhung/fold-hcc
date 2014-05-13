@@ -547,24 +547,16 @@ void DcGraph::buildDepGraph()
 		depFog->addNode(bn);
 		bn->properties["offset"].setValue(Vector3(0,0,0));
 
-		// tag for HBlock entity
-		if (blocks[i]->mType == BlockGraph::H_BLOCK)
-			bn->addTag(IS_HBLOCK_FOLD_ENTITY);
-
 		// fold options and fold links
 		foreach (FoldOption* fn, blocks[i]->generateFoldOptions())
 		{
 			depFog->addNode(fn);
 			depFog->addFoldLink(bn, fn);
 			fn->properties["offset"].setValue(Vector3(0,0,0));
-
-			// tag for HBlock option
-			if (blocks[i]->mType == BlockGraph::H_BLOCK)
-				fn->addTag(IS_HBLOCK_FOLD_OPTION);
 		}
 	}
 
-	// links
+	// dependency links
 	computeDepLinks();
 }
 
