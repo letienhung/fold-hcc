@@ -8,8 +8,8 @@
 #include "Numeric.h"
 #include <QDir>
 
-TBlock::TBlock( PatchNode* master, FdNode* slave, Geom::Box bb, QString id )
-	:BlockGraph(id, bb)
+TBlock::TBlock( PatchNode* master, FdNode* slave, QString id )
+	:BlockGraph(id)
 {
 	// type
 	mType = BlockGraph::T_BLOCK;

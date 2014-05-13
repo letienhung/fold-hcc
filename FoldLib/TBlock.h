@@ -7,7 +7,7 @@ class TChain;
 class TBlock : public BlockGraph
 {
 public:
-    TBlock(PatchNode* master, FdNode* slave, Geom::Box bb, QString id);
+    TBlock(PatchNode* master, FdNode* slave, QString id);
 	~TBlock();
 
 	// foldem

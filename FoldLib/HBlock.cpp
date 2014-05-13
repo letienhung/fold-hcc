@@ -8,8 +8,8 @@
 #include "CliquerAdapter.h"
 
 HBlock::HBlock( QVector<PatchNode*>& masters, QVector<FdNode*>& slaves,  
-				QVector< QVector<QString> >& masterPairs, Geom::Box bb, QString id )
-				:BlockGraph(id, bb)
+				QVector< QVector<QString> >& masterPairs, QString id )
+				:BlockGraph(id)
 {
 	// type
 	mType = BlockGraph::H_BLOCK;

@@ -61,7 +61,6 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->connect(ui->showAABB, SIGNAL(stateChanged(int)), SLOT(showAABB(int)));
 
 	// export
-	plugin->f_manager->connect(ui->exportDepFOG, SIGNAL(clicked()), SLOT(exportDepFOG()));
 	plugin->f_manager->connect(ui->exportCollFOG, SIGNAL(clicked()), SLOT(exportCollFOG()));
 	plugin->connect(ui->exportCurrent, SIGNAL(clicked()), SLOT(exportCurrent()));
 

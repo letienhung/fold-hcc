@@ -6,7 +6,7 @@ class HBlock : public BlockGraph
 {
 public:
     HBlock(QVector<PatchNode*>& masters, QVector<FdNode*>& slaves, 
-		QVector< QVector<QString> >& masterPairs, Geom::Box bb, QString id);
+		QVector< QVector<QString> >& masterPairs, QString id);
 
 	// assign master time stamps
 	void assignMasterTimeStamps();

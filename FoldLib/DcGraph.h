@@ -33,10 +33,6 @@ public:
 	QVector<BlockGraph*> blocks;
 	QMap<QString, QSet<int> > masterBlockMap;
 
-	// dependency graph
-	FoldOptionGraph* depFog;
-	QVector<FoldOptionGraph*> depFogSequence;
-
 	// fold order
 	QVector<BlockGraph*> blockSequence;
 
@@ -61,19 +57,10 @@ public:
 
 	// foldem
 	void foldabilize(bool withinAABB);
-
-	void buildDepGraph();
-	void computeDepLinks();
-	void addDepLinkTOptionTEntity(FoldOption* fn, FoldEntity* other_bn);
-	void addDepLinkTOptionHEntity(FoldOption* fn, FoldEntity* other_bn);
-	void addDepLinkHOptionTEntity(FoldOption* fn, FoldEntity* other_bn);
-
 	void findFoldOrderGreedy();
 	FoldOption* getMinCostFreeFoldOption();
-	void updateDepLinks(double t);
 
 	// export
-	void exportDepFOG();
 	void exportCollFOG();
 
 	// key frame

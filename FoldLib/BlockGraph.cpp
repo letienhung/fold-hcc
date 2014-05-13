@@ -1,7 +1,7 @@
 #include "BlockGraph.h"
 #include "FdUtility.h"
 
-BlockGraph::BlockGraph( QString id, Geom::Box bb )
+BlockGraph::BlockGraph( QString id)
 	: FdGraph(id)
 {
 	// selected chain
@@ -9,7 +9,6 @@ BlockGraph::BlockGraph( QString id, Geom::Box bb )
 
 	// aabb
 	withinAABB = false;
-	barrierBox = bb;
 }
 
 BlockGraph::~BlockGraph()

@@ -27,9 +27,6 @@ DcGraph::DcGraph( FdGraph* scaffold, StrArray2D masterGroups, QString id)
 
 	// selection
 	selBlockIdx = -1;
-
-	// fold option graph
-	depFog = new FoldOptionGraph();
 }
 
 DcGraph::~DcGraph()
@@ -412,7 +409,7 @@ void DcGraph::createBlocks()
 		QString id = "TB_" + QString::number(i);
 
 		masterBlockMap[m->mID] << blocks.size();
-		blocks << new TBlock(m, s, aabb, id);
+		blocks << new TBlock(m, s, id);
 	}
 
 	// H-blocks
@@ -448,7 +445,7 @@ void DcGraph::createBlocks()
 		// create
 		foreach (PatchNode* m, ms) 
 			masterBlockMap[m->mID] << blocks.size();
-		blocks << new HBlock(ms, ss, mPairs, aabb, id);
+		blocks << new HBlock(ms, ss, mPairs, id);
 	}
 
 	// set up path
@@ -524,336 +521,16 @@ FdGraph* DcGraph::getKeyFrame( double t )
 
 void DcGraph::foldabilize(bool withinAABB)
 {
-	// set barrier tag
-	foreach (BlockGraph* b, blocks)
-		b->withinAABB = withinAABB;
 
-	// construct dependency graph
-	buildDepGraph();
+
 
 	// find fold order
 	findFoldOrderGreedy();
 }
 
-void DcGraph::buildDepGraph()
-{
-	depFog->clear();
-
-	// nodes
-	for (int i = 0; i < blocks.size(); i++)
-	{
-		// fold entity
-		FoldEntity* bn = new FoldEntity(i, blocks[i]->mID);
-		depFog->addNode(bn);
-		bn->properties["offset"].setValue(Vector3(0,0,0));
-
-		// fold options and fold links
-		foreach (FoldOption* fn, blocks[i]->generateFoldOptions())
-		{
-			depFog->addNode(fn);
-			depFog->addFoldLink(bn, fn);
-			fn->properties["offset"].setValue(Vector3(0,0,0));
-		}
-	}
-
-	// dependency links
-	computeDepLinks();
-}
-
-void DcGraph::computeDepLinks()
-{
-	// remove all collision links
-	depFog->clearCollisionLinks(); 
-
-	// collision/dependency between fold option and entity
-	foreach (FoldOption* fn, depFog->getAllFoldOptions())
-	{
-		// skip deleted
-		if (fn->hasTag(DELETED_TAG)) continue;
-
-		FoldEntity* bn = depFog->getFoldEntity(fn->mID);
-		foreach(FoldEntity* other_bn, depFog->getAllFoldEntities())
-		{
-			// skip itself
-			if (bn == other_bn) continue;
-
-			// skip deleted
-			if (other_bn->hasTag(DELETED_TAG)) continue;
-
-			// H option vs. T entity
-			if (fn->hasTag(IS_HBLOCK_FOLD_OPTION) && !other_bn->hasTag(IS_HBLOCK_FOLD_ENTITY))
-				addDepLinkHOptionTEntity(fn, other_bn);
-			// T option vs. T/H entity
-			else addDepLinkTOptionHEntity(fn, other_bn);
-		}
-	}
-}
-
-void DcGraph::addDepLinkTOptionTEntity( FoldOption* fn, FoldEntity* other_bn )
-{
-	Geom::SectorCylinder fVolume = fn->properties["fVolume"].value<Geom::SectorCylinder>();
-	Vector3 offset = fn->properties["offset"].value<Vector3>();
-	fVolume.translate(offset);
-
-	BlockGraph* other_block = blocks[other_bn->entityIdx];
-	TChain* other_chain = (TChain*)other_block->chains.front();
-	FdNode* other_part = other_chain->mOrigSlave;
-	Vector3 other_offset = other_bn->properties["offset"].value<Vector3>();
-
-	bool collide = false;
-	if (other_part->mType == FdNode::PATCH)
-	{
-		Geom::Rectangle other_patch = ((PatchNode*) other_part)->mPatch;
-		other_patch.translate(other_offset);
-		if (fVolume.intersects(other_patch))
-		{
-			collide = true;
-		}
-	}
-	else
-	{
-		Geom::Segment other_rod = ((RodNode*) other_part)->mRod;
-		other_rod.translate(other_offset);
-		if (fVolume.intersects(other_rod))
-		{
-			collide = true;
-		}
-	}
-
-	// add collision link
-	if (collide)
-		depFog->addCollisionLink(fn, other_bn);
-}
-
-void DcGraph::addDepLinkTOptionHEntity( FoldOption* fn, FoldEntity* other_bn )
-{
-	Geom::SectorCylinder fVolume = fn->properties["fVolume"].value<Geom::SectorCylinder>();
-	Vector3 offset = fn->properties["offset"].value<Vector3>();
-	fVolume.translate(offset);
-	FoldEntity* bn = depFog->getFoldEntity(fn->mID);
-	BlockGraph* block = blocks[bn->entityIdx];
-	
-	BlockGraph* other_block = blocks[other_bn->entityIdx];
-	Vector3 other_offset = other_bn->properties["offset"].value<Vector3>();
-
-	// check whether \p fVolume intersects any part from \p other_block except for the master of T
-	bool collide = false;
-	foreach (FdNode* other_part, other_block->getFdNodes())
-	{
-		// skip the shared master
-		if (other_part->mID == block->baseMasterId) continue;
-
-		// patch part
-		if (other_part->mType == FdNode::PATCH)
-		{
-			Geom::Rectangle other_patch = ((PatchNode*) other_part)->mPatch;
-			other_patch.translate(other_offset);
-
-			if (fVolume.intersects(other_patch)) 
-				collide = true;
-		}
-		// rod part
-		else
-		{
-			Geom::Segment other_rod = ((RodNode*) other_part)->mRod;
-			other_rod.translate(other_offset);
-
-			if (fVolume.intersects(other_rod))	
-				collide = true;
-		}
-
-		// break the loop if collision happens
-		if (collide) break;
-	}
-
-	// add collision link
-	if (collide)
-		depFog->addCollisionLink(fn, other_bn);
-}
-
-void DcGraph::addDepLinkHOptionTEntity( FoldOption* fn, FoldEntity* other_bn )
-{
-	QVector<Geom::Box> fVBoxes = fn->properties["fVolume"].value<QVector<Geom::Box>>();
-	Vector3 offset = fn->properties["offset"].value<Vector3>();
-	foreach (Geom::Box box, fVBoxes) box.translate(offset);
-	FoldEntity* bn = depFog->getFoldEntity(fn->mID);
-
-	BlockGraph* other_block = blocks[other_bn->entityIdx];
-	TChain* other_chain = (TChain*)other_block->chains.front();
-	FdNode* other_part = other_chain->mOrigSlave;
-	Vector3 other_offset = other_bn->properties["offset"].value<Vector3>();
-	QVector<Vector3> other_samples;
-	if (other_part->mType == FdNode::PATCH)
-	{
-		Geom::Rectangle other_rect = ((PatchNode*)other_part)->mPatch;
-		other_rect.translate(other_offset);
-		other_samples = other_rect.getEdgeSamples(100);
-	}
-	else
-	{
-		Geom::Segment other_seg = ((RodNode*)other_part)->mRod;
-		other_seg.translate(other_offset);
-		other_samples = other_seg.getUniformSamples(20);
-	}
-
-	// check whether \p other_part intersects any box in the \fVBoxes
-	bool collide = false;
-	foreach(Geom::Box box, fVBoxes)
-	{
-		foreach (Vector3 other_p, other_samples)
-		{
-			if (box.contains(other_p))
-			{
-				collide = true;
-				break;
-			}
-		}
-
-		if (collide) break;
-	}
-
-	// add collision link
-	if (collide)
-		depFog->addCollisionLink(fn, other_bn);
-}
-
-void DcGraph::exportDepFOG()
-{
-	for (int i = 0; i < depFogSequence.size(); i++)
-	{
-		QString filePath = path + "/" + mID + "_dep_" + QString::number(i);
-		depFogSequence[i]->saveAsImage(filePath);
-	}
-}
-
-void DcGraph::exportCollFOG()
-{
-	BlockGraph* selBlock = getSelBlock();
-	if (selBlock && selBlock->mType == BlockGraph::H_BLOCK)
-	{
-		HBlock* hblock = (HBlock*)selBlock;
-		hblock->exportCollFOG();
-	}
-}
-
-FoldOption* DcGraph::getMinCostFreeFoldOption()
-{
-	FoldOption* min_fn = NULL;
-	double min_cost = maxDouble();
-	foreach (FoldOption* fn, depFog->getAllFoldOptions())
-	{
-		// skip deleted fold options
-		if (fn->hasTag(DELETED_TAG)) continue;
-
-		// free fold option
-		QVector<Structure::Link*> links = depFog->getCollisionLinks(fn->mID);
-		if (links.isEmpty())
-		{
-			double cost;
-			// give H-block fold option high cost 
-			// such that they have lower priority among free options
-			if (fn->hasTag(IS_HBLOCK_FOLD_OPTION))
-				cost = -1;
-			else
-				cost = fn->getCost();
-
-			if (cost < min_cost)
-			{
-				min_cost = cost;
-				min_fn = fn;
-			}
-		}
-	}
-
-	return min_fn;
-}
-
-void DcGraph::updateDepLinks(double t)
-{
-	FdGraph* keyframe = getKeyFrame(t);
-
-	// offset of fold volumes
-	foreach (FoldEntity* bn, depFog->getAllFoldEntities())
-	{
-		// skip deleted fold entity
-		if (bn->hasTag(DELETED_TAG)) continue;
-
-		// old position
-		BlockGraph* block = blocks[bn->entityIdx];
-		PatchNode* old_baseMaster = block->getBaseMaster();
-		Vector3 old_pos = old_baseMaster->center();
-
-		// new position
-		PatchNode* new_baseMaster = (PatchNode*)keyframe->getNode(old_baseMaster->mID);
-		Vector3 new_pos = new_baseMaster->center();
-
-		// the offset of fold volume
-		Vector3 delta = new_pos - old_pos;
-		bn->properties["offset"].setValue(delta);
-		foreach (FoldOption* fn, depFog->getFoldOptions(bn->mID))
-			fn->properties["offset"].setValue(delta);
-	}
-
-	// update dependency links
-	computeDepLinks();
-}
-
 void DcGraph::findFoldOrderGreedy()
 {
-	// clear
-	blockSequence.clear();
-	foreach (FoldOptionGraph* df, depFogSequence) delete df;
-	depFogSequence.clear();
 
-	// initial time intervals
-	// greater than 1.0 means never be folded
-	foreach (BlockGraph* b, blocks) 
-		b->mFoldDuration = TIME_INTERVAL(1.0, 2.0);
-
-	// keep track of dependency graph
-	depFogSequence << (FoldOptionGraph*)depFog->clone();
-
-	// choose best free fold options in a greedy manner
-	double currTime = 0.0;
-	FoldOption* sel_fn = getMinCostFreeFoldOption();
-	while (sel_fn)
-	{
-		// mark for visualization
-		sel_fn->addTag(SELECTED_FOLD_OPTION);
-
-		// selected block
-		FoldEntity* sel_bn = depFog->getFoldEntity(sel_fn->mID);
-		BlockGraph* sel_block = blocks[sel_bn->entityIdx];
-		blockSequence << sel_block;
-
-		// apply fold option and set up time interval
-		sel_block->applyFoldOption(sel_fn);
-		double timeLength = sel_block->getTimeLength();
-		double start = currTime * timeScale;
-		currTime += timeLength;
-		double end = currTime * timeScale;
-		sel_block->mFoldDuration = TIME_INTERVAL(start, end);
-
-		// exclude family nodes
-		foreach (Structure::Node* n, depFog->getFamilyNodes(sel_fn->mID))
-			n->addTag(DELETED_TAG);
-
-		// remove collision links from family nodes
-		foreach (Structure::Link* l, depFog->getFamilyCollisionLinks(sel_fn->mID))
-			depFog->removeLink(l);
-
-		// update dependency graph if a H-block is foldabilized at this step
-		// because folding of H-block move masters 
-		// and also might change the dependency among folding volumes 
-		if (sel_bn->hasTag(IS_HBLOCK_FOLD_ENTITY))
-			updateDepLinks(currTime);
-
-		// a copy of current depFog
-		depFogSequence << (FoldOptionGraph*)depFog->clone();
-
-		// update best fold option
-		sel_fn = getMinCostFreeFoldOption();
-	}
 
 }
 
@@ -873,4 +550,14 @@ FdGraph* DcGraph::getSelKeyframe()
 	if (keyfameIdx >= 0 && keyfameIdx < keyframes.size())
 		return keyframes[keyfameIdx];
 	else return NULL;
+}
+
+void DcGraph::exportCollFOG()
+{
+	BlockGraph* selBlock = getSelBlock();
+	if (selBlock && selBlock->mType == BlockGraph::H_BLOCK)
+	{
+		HBlock* hblock = (HBlock*)selBlock;
+		hblock->exportCollFOG();
+	}
 }

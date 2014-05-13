@@ -401,15 +401,6 @@ void FoldManager::exportResultMesh()
 	//}
 }
 
-void FoldManager::exportDepFOG()
-{
-	DcGraph* selDc = getSelDcGraph();
-	if (selDc)
-	{
-		selDc->exportDepFOG();
-	}
-}
-
 void FoldManager::exportCollFOG()
 {
 	DcGraph* selDc = getSelDcGraph();
