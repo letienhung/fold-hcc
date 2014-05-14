@@ -92,6 +92,7 @@ public:
 
 	void drawQuads(bool isColored = true){
 
+		glDisable(GL_LIGHTING);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -100,12 +101,12 @@ public:
 		{
 			if(polys[i].size() != 4) continue;
 			else{
-				glNormal3d(polys_normals[i].x(),polys_normals[i].y(),polys_normals[i].z());
 				if(isColored) glColorQt(polys_colors[i]);
 				for(int p = 0; p < 4; p++) glVertQt(polys[i][p]);
 			}
 		}
 		glEnd();
+		glEnable(GL_LIGHTING);
 	}
 
 	void drawWireframes(float width, QColor c)

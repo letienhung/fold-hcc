@@ -303,8 +303,8 @@ QVector<FdNode*> FdGraph::split( QString nid, QVector<Geom::Plane>& planes )
 	QMap<double, Geom::Plane> distPlaneMap;
 	foreach (Geom::Plane plane, planes)
 	{
-		// skip a plane if it doesn't intersect the node
-		if (relationWithPlane(fn, plane, 0.1) != ISCT_PLANE) continue;
+		//// skip a plane if it doesn't intersect the node
+		//if (relationWithPlane(fn, plane, 0.1) != ISCT_PLANE) continue;
 
 		Vector3 cutPoint = plane.getIntersection(sklt);
 		double dist = (cutPoint - sklt.P0).norm();
@@ -335,7 +335,7 @@ QVector<FdNode*> FdGraph::split( QString nid, QVector<Geom::Plane>& planes )
 	// change node id and add to graph
 	for (int i = 0; i < chopped.size(); i++)
 	{
-		chopped[i]->mID = nid + "_" + QString::number(i);
+		chopped[i]->mID = nid + "_sp" + QString::number(i);
 		Structure::Graph::addNode(chopped[i]);
 	}
 
@@ -492,7 +492,7 @@ void FdGraph::addDebugSegments( QVector<Geom::Segment>& segs )
 
 double FdGraph::getConnectivityThr()
 {
-	return 0.1 * computeAABB().radius();
+	return 0.05 * computeAABB().radius();
 }
 
 void FdGraph::addDebugBoxes( QVector<Geom::Box>& boxes )

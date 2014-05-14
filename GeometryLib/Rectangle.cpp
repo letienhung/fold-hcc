@@ -266,17 +266,6 @@ void Geom::Rectangle::drawFace( QColor color /*= Qt::red*/ )
 	ps.drawQuads();
 }
 
-void Geom::Rectangle::drawBackFace( QColor color /*= Qt::red*/ )
-{
-	QVector<Vector3> pnts = getConnersReverse();
-	for (int i = 0; i < 4; i++) 
-		pnts[i] -= Extent[0] * (10e-4) * Normal;
-
-	PolygonSoup ps;
-	ps.addPoly(pnts, color);
-	ps.drawQuads();
-}
-
 void Geom::Rectangle::drawEdges( double width /*= 2.0*/, QColor color /*= Qt::red*/ )
 {
 	LineSegments ls(width);

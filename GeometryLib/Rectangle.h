@@ -61,7 +61,6 @@ public:
 
 	// visualization
 	void drawFace(QColor color = Qt::red);
-	void drawBackFace(QColor color = Qt::red);
 	void drawEdges(double width = 2.0, QColor color = Qt::red);
 
 	// modifier

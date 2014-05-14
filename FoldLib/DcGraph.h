@@ -24,10 +24,7 @@ public:
 	// slaves
 	QVector<FdNode*> slaves;
 	QVector< QSet<int> > slave2master;
-	QVector< QSet<int> > slave2masterSide; // each slave has one or two end props (master + side).
-
-	QVector<int> TSlaves;
-	QVector< QSet<int> > HSlaveClusters;// H-slaves sharing side prop belong to the same cluster.
+	QVector< QSet<int> > slaveClusters;
 
 	// blocks
 	int selBlockIdx;

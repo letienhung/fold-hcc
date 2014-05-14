@@ -10,8 +10,8 @@ PatchNode::PatchNode(QString id, Geom::Box &b, MeshPtr m)
 	mType = FdNode::PATCH;
 	createScaffold(false);
 
-	mPatchColor = mColor.lighter();
-	mPatchColor.setAlpha(255);
+	mPatchColor = mColor;
+	mPatchColor.setAlphaF(1.0);
 }
 
 PatchNode::PatchNode(QString id, Geom::Box &b, Vector3 v, MeshPtr m)
@@ -49,7 +49,7 @@ void PatchNode::drawScaffold()
 		mPatchColor = Qt::red;
 
 	mPatch.drawFace(mPatchColor);
-	mPatch.drawBackFace(mPatchColor);
+	//mPatch.drawBackFace(mPatchColor);
 }
 
 bool PatchNode::isPerpTo( Vector3 v, double dotThreshold )
@@ -96,7 +96,7 @@ QVector<RodNode*> PatchNode::getEdgeRodNodes()
 		deformMesh();
 
 		// create rod node
-		QString id = mID + "_" + QString::number(i++);
+		QString id = mID + "_er" + QString::number(i++);
 		edgeRods << new RodNode(id, box, mMesh);
 
 		// restore mesh

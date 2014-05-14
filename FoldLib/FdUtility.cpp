@@ -304,9 +304,7 @@ bool hasIntersection( FdNode* slave, PatchNode* master, double thr )
 	double b = fabs(maxDist);
 	double ratio = a / (a + b);
 	if (ratio > 0.5) ratio  = 1 - ratio;
-
-	// the slave must have one fifth on either side
-	return ratio > 0.2;
+	return ratio > 0.1; // this is ugly but can avoid some cuts
 }
 
 bool overlap( TimeInterval itv1, TimeInterval itv2 )
