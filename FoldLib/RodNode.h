@@ -13,7 +13,7 @@ public:
 
 public:
 	void drawScaffold();
-	void createScaffold();
+	void createScaffold(bool useAid);
 
 	bool isPerpTo(Vector3 v, double dotThreshold);
 

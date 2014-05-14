@@ -76,7 +76,7 @@ void ChainGraph::fold( double t )
 
 	// adjust the position of masters[1]
 	mMasters.last()->mBox.Center = mMC2Trajectory.getPosition01(t);
-	mMasters.last()->createScaffold();
+	mMasters.last()->createScaffold(true);
 	mMasters.last()->addTag(DELETED_TAG); // avoid propagation from master2
 
 	// hinge angle
@@ -309,7 +309,7 @@ void ChainGraph::applyFoldOption( FoldOption* fn )
 		int aid = slave->mBox.getAxisId(jointV);
 		slave->mBox.scaleRand01(aid, fn->position, fn->position + fn->scale);
 		slave->deformMesh();
-		slave->createScaffold();
+		slave->createScaffold(true);
 	}
 
 	// split

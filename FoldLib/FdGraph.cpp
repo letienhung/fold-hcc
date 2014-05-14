@@ -376,6 +376,11 @@ void FdGraph::changeNodeType( FdNode* n )
 	replaceNode(n, new_node);
 }
 
+void FdGraph::changeRodToPatch( RodNode* rn, Vector3 v )
+{
+	PatchNode* pn = new PatchNode(rn->mID, rn->mBox, v, rn->mMesh);
+	replaceNode(rn, pn);
+}
 
 void FdGraph::restoreConfiguration()
 {
@@ -414,7 +419,7 @@ void FdGraph::normalize(double f)
 	{
 		n->mBox.scaleAsPart(f, offset);
 		n->deformMesh();
-		n->createScaffold();
+		n->createScaffold(true);
 	}
 }
 

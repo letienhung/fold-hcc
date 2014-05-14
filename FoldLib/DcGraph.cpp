@@ -1,20 +1,19 @@
 #include "DcGraph.h"
 #include "PatchNode.h"
-#include "TBlock.h"
-#include "HBlock.h"
 #include <QFileInfo>
 #include "FdUtility.h"
 #include "SectorCylinder.h"
 #include "TChain.h"
 
 
-DcGraph::DcGraph( FdGraph* scaffold, StrArray2D masterGroups, QString id)
+DcGraph::DcGraph(QString id, FdGraph* scaffold, StrArray2D masterGroups, Vector3 v)
 	: FdGraph(*scaffold) // clone the FdGraph
 {
 	path = QFileInfo(path).absolutePath();
 	mID = id;
 
 	// decomposition
+	sqzV = v;
 	createMasters(masterGroups);
 	createSlaves();
 	clusterSlaves();
@@ -22,7 +21,7 @@ DcGraph::DcGraph( FdGraph* scaffold, StrArray2D masterGroups, QString id)
 
 	// time scale
 	double totalDuration = 0;
-	foreach (BlockGraph* b, blocks) totalDuration += b->getTimeLength();
+	foreach (BlockGraph* b, blocks) totalDuration += nbMasters(b);
 	timeScale = 1.0 / totalDuration;
 
 	// selection
@@ -39,11 +38,25 @@ void DcGraph::createMasters(StrArray2D& masterGroups)
 	// merge master groups into patches
 	foreach( QVector<QString> masterGroup, masterGroups )
 	{
+		// merges to a patch or simply returns the single rod
 		FdNode* mf = merge(masterGroup);
-		mf->addTag(IS_MASTER);
+		QString mf_id = mf->mID;
 
-		if (mf->mType != FdNode::PATCH)	changeNodeType(mf);
-		masters.push_back((PatchNode*)mf);
+		// force to change type
+		if (mf->mType == FdNode::ROD) 
+			changeRodToPatch((RodNode*)mf, sqzV);
+		mf = (FdNode*)getNode(mf_id);
+		PatchNode* mp = (PatchNode*)mf;
+
+		// consistent normal with sqzV
+		if (dot(mp->mPatch.Normal, sqzV) < 0)
+			mp->mPatch.flipNormal();
+
+		// tag
+		mp->addTag(IS_MASTER);
+
+		// save
+		masters.push_back(mp);
 	}
 
 	// base master
@@ -61,7 +74,6 @@ void DcGraph::updateSlaves()
 	//std::cout << "Slaves:\n";
 	//foreach (FdNode* s, slaves) 
 	//	std::cout << s->mID.toStdString() << "  ";
-
 }
 
 void DcGraph::updateSlaveMasterRelation()
@@ -392,27 +404,7 @@ void DcGraph::createBlocks()
 	blocks.clear();
 	masterBlockMap.clear();
 
-	// set bounding box as hard constrain
-	Geom::Box aabb = computeAABB().box();
-	aabb.scale(1.1);
-
-	// T-blocks
-	for (int i = 0; i < TSlaves.size(); i++)
-	{
-		int sidx = TSlaves[i];
-		QList<int> endlist = slave2masterSide[sidx].toList();
-		int end = endlist.front();
-		int midx = end/2;
-
-		PatchNode* m = masters[midx];
-		FdNode* s = slaves[sidx];
-		QString id = "TB_" + QString::number(i);
-
-		masterBlockMap[m->mID] << blocks.size();
-		blocks << new TBlock(m, s, id);
-	}
-
-	// H-blocks
+	// each H-slave cluster forms a block
 	for (int i = 0; i < HSlaveClusters.size(); i++)
 	{
 		QVector<PatchNode*> ms;
@@ -445,7 +437,7 @@ void DcGraph::createBlocks()
 		// create
 		foreach (PatchNode* m, ms) 
 			masterBlockMap[m->mID] << blocks.size();
-		blocks << new HBlock(ms, ss, mPairs, id);
+		blocks << new BlockGraph(ms, ss, mPairs, id);
 	}
 
 	// set up path
@@ -555,9 +547,5 @@ FdGraph* DcGraph::getSelKeyframe()
 void DcGraph::exportCollFOG()
 {
 	BlockGraph* selBlock = getSelBlock();
-	if (selBlock && selBlock->mType == BlockGraph::H_BLOCK)
-	{
-		HBlock* hblock = (HBlock*)selBlock;
-		hblock->exportCollFOG();
-	}
+	if (selBlock) selBlock->exportCollFOG();
 }

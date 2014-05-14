@@ -6,7 +6,7 @@ RodNode::RodNode(QString id, Geom::Box &b, MeshPtr m)
 	: FdNode(id, b, m)
 {
 	mType = FdNode::ROD;
-	createScaffold();
+	createScaffold(false);
 
 	mRodColor = mColor.lighter();
 	mRodColor.setAlpha(255);
@@ -25,10 +25,12 @@ RodNode::~RodNode()
 }
 
 
-void RodNode::createScaffold()
+void RodNode::createScaffold(bool useAid)
 {
-	int aid = mBox.maxAxisId();
-	mRod = mBox.getSkeleton(aid);
+	if (!useAid)
+		mAid = mBox.maxAxisId();
+
+	mRod = mBox.getSkeleton(mAid);
 }
 
 

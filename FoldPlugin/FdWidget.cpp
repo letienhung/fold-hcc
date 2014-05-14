@@ -30,8 +30,8 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->g_manager->connect(ui->loadScaffold, SIGNAL(clicked()), SLOT(loadScaffold()));
 
 	/// foldabilization
-	// identify masters
-	this->connect(ui->identifyMasters, SIGNAL(clicked()), SLOT(identifyMasters()));
+	// decompose
+	plugin->f_manager->connect(ui->sqzV, SIGNAL(currentIndexChanged(QString)), SLOT(setSqzV(QString)));
 	plugin->f_manager->connect(ui->decompose, SIGNAL(clicked()), SLOT(decompose()));
 
 	// decomposition and key frame lists
@@ -149,14 +149,6 @@ void FdWidget::selectKeyframe()
 		int idx = selItems.front()->text().toInt();
 		emit(keyframeSelectionChanged(idx));
 	}
-}
-
-void FdWidget::identifyMasters()
-{
-	QString direct = ui->squeezeDirection->currentText();
-	QString method = ui->masterType->currentText();
-
-	plugin->f_manager->identifyMasters(method, direct);
 }
 
 void FdWidget::genKeyframes()

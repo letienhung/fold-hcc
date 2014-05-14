@@ -46,7 +46,7 @@ public:
 	virtual void exportMesh(QFile &file, int& v_offset);
 
 	// geometry
-	virtual void createScaffold() = 0;
+	virtual void createScaffold(bool useAid) = 0;
 	Geom::AABB computeAABB();
 	Vector3 center();
 
@@ -67,4 +67,5 @@ public:
 
 	QColor mColor;
 	NODE_TYPE mType;
+	int mAid; // axis index for creating scaffold
 };

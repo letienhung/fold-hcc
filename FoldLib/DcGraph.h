@@ -12,11 +12,12 @@
 class DcGraph : public FdGraph
 {
 public:
-    DcGraph(FdGraph* scaffold, StrArray2D masterGroups, QString id);
+    DcGraph(QString id, FdGraph* scaffold, StrArray2D masterGroups, Vector3 v);
 	~DcGraph();
 
 public:
 	// masters
+	Vector3 sqzV;
 	QString baseMasterId;
 	QVector<PatchNode*> masters;
 

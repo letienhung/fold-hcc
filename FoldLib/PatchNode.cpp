@@ -8,7 +8,19 @@ PatchNode::PatchNode(QString id, Geom::Box &b, MeshPtr m)
 	: FdNode(id, b, m)
 {
 	mType = FdNode::PATCH;
-	createScaffold();
+	createScaffold(false);
+
+	mPatchColor = mColor.lighter();
+	mPatchColor.setAlpha(255);
+}
+
+PatchNode::PatchNode(QString id, Geom::Box &b, Vector3 v, MeshPtr m)
+	: FdNode(id, b, m)
+{
+	mType = FdNode::PATCH;
+
+	mAid= mBox.getAxisId(v);
+	createScaffold(true);
 
 	mPatchColor = mColor.lighter();
 	mPatchColor.setAlpha(255);
@@ -22,10 +34,13 @@ PatchNode::PatchNode(PatchNode& other)
 }
 
 
-void PatchNode::createScaffold()
+void PatchNode::createScaffold(bool useAid)
 {
-	int aid = mBox.minAxisId();
-	mPatch = mBox.getPatch(aid, 0);
+	// update axis index
+	if (!useAid)
+		mAid = mBox.minAxisId();
+
+	mPatch = mBox.getPatch(mAid, 0);
 }
 
 void PatchNode::drawScaffold()
@@ -71,12 +86,8 @@ QVector<RodNode*> PatchNode::getEdgeRodNodes()
 	Geom::Box mBox_copy = mBox;
 	foreach (Geom::Segment edge, mPatch.getEdgeSegments())
 	{
-		// move edge inward by distance of r
-		Vector3 e2c = mPatch.Center - edge.Center;
-		Vector3 t = r * e2c.normalized();
-
 		// box
-		Geom::Frame frame(edge.Center + t, mPatch.Normal, edge.Direction);
+		Geom::Frame frame(edge.Center, mPatch.Normal, edge.Direction);
 		Vector3 extent(r, edge.Extent, r);
 		Geom::Box box(frame, extent);
 

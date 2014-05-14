@@ -6,11 +6,12 @@
 class BlockGraph : public FdGraph
 {
 public:
-	enum BLOCK_TYPE{T_BLOCK, H_BLOCK};
-
-public:
-    BlockGraph(QString id);
+	BlockGraph(QVector<PatchNode*>& masters, QVector<FdNode*>& slaves, 
+		QVector< QVector<QString> >& masterPairs, QString id);
 	~BlockGraph();
+
+	// assign master time stamps
+	void assignMasterTimeStamps();
 
 	// selection
 	ChainGraph* getSelChain();
@@ -19,13 +20,7 @@ public:
 	QStringList getChainLabels();
 
 	// getter
-	ChainGraph* getChain(QString cid);
-	virtual double getTimeLength() = 0;
-	PatchNode* getBaseMaster();
-
-	// foldem
-	virtual QVector<FoldOption*> generateFoldOptions() = 0;
-	virtual void applyFoldOption(FoldOption* fn) = 0;
+	void exportCollFOG();
 
 	// keyframes
 	/** a stand-alone scaffold representing the folded block at given time
@@ -34,15 +29,38 @@ public:
 		to form the final folded scaffold
 		this scaffold has to be deleted by whoever calls this function
 	**/
-	virtual FdGraph* getKeyframeScaffold(double t) = 0;
-	
+	FdGraph* getKeyframeScaffold(double t);
+
+	// folding volumes
+	void computeBFV();
+
+	// foldem
+	void foldabilize();
+	void buildCollisionGraph();
+	void findOptimalSolution();
+	bool fAreasIntersect(Geom::Rectangle& rect1, Geom::Rectangle& rect2);
 
 public:
-	BLOCK_TYPE mType;
+	// time interval
 	TimeInterval mFoldDuration;
+
+	// master related
+	PatchNode* baseMaster;
+	QVector<PatchNode*> mMasters;
+	QMap<QString, QSet<int> > masterChainsMap;
+	QMap<QString, double> masterTimeStamps;
+
+	// chains
 	int selChainIdx;
-	QVector<ChainGraph*> chains;
-	QString baseMasterId;
-	Geom::Box barrierBox;
+	QVector<ChainGraph*> mChains;
+
+	// folding volumes
+	QMap<QString, Geom::Box> basicFoldingVolume;
+	QMap<QString, Geom::Box> extendedFoldingVolume;
+
+	// collision graph
+	FoldOptionGraph* collFog;
+	FoldOptionGraph* collFogOrig;
+	QVector<FoldOption*> foldSolution;
 }; 
 

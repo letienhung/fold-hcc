@@ -312,6 +312,11 @@ Vector3 Geom::Rectangle::getProjection( Vector3 p )
 	return getPlane().getProjection(p);
 }
 
+Geom::Rectangle Geom::Rectangle::getProjection( Rectangle& rect )
+{
+	return get3DRectangle(get2DRectangle(rect));
+}
+
 SurfaceMesh::Vector3 Geom::Rectangle::getProjectedVector( Vector3 v )
 {
 	return getProjection(Center + v) - Center;
@@ -376,4 +381,9 @@ void Geom::Rectangle::translate( Vector3 t )
 void Geom::Rectangle::scale( double s )
 {
 	Extent *= s;
+}
+
+void Geom::Rectangle::flipNormal()
+{
+	Normal *= -1;
 }

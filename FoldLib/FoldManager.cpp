@@ -4,14 +4,14 @@
 #include <QFileDialog>
 #include <QDir>
 
-#include "HBlock.h"
-
 FoldManager::FoldManager()
 {
 	scaffold = NULL;
 	dcScaffold = NULL;
 
 	selDcIdx = -1;
+
+	sqzV = Vector3(0, 0, 1);
 }
 
 FoldManager::~FoldManager()
@@ -40,30 +40,17 @@ void FoldManager::setScaffold( FdGraph* fdg )
 	updateDcList();
 }
 
-// masters
-void FoldManager::identifyMasters(QString method, QString direct)
+
+void FoldManager::setSqzV( QString sqzV_str )
 {
-	if (scaffold == NULL)
-	{
-		emit(message("There is no input: load scaffold first."));
-		return;
-	}
-
-	if (method == "Parallel")
-	{
-		Vector3 sqzV(0, 0, 0);
-		if (direct == "X") sqzV[0] = 1;
-		if (direct == "Y") sqzV[1] = 1;
-		if (direct == "Z") sqzV[2] = 1;
-
-		identifyParallelMasters(sqzV);
-	}
-
-	// visualize virtual parts
-	emit(sceneChanged());
+	sqzV = Vector3(0, 0, 0);
+	if (sqzV_str == "X") sqzV[0] = 1;
+	if (sqzV_str == "Y") sqzV[1] = 1;
+	if (sqzV_str == "Z") sqzV[2] = 1;
 }
 
-void FoldManager::identifyParallelMasters( Vector3 sqzV )
+
+void FoldManager::identifyMasters()
 {
 	// squeezing direction
 	Geom::AABB aabb = scaffold->computeAABB();
@@ -78,7 +65,6 @@ void FoldManager::identifyParallelMasters( Vector3 sqzV )
 	double perpThr = 0.1;
 	double blockHeightThr = 0.15;
 	double adjacentThr = aabb.radius() * 0.1;
-	double areaThr = box.getPatch(sqzAId, 0).area() * 0.2;
 
 	// ==STEP 1==: nodes perp to squeezing direction
 	QVector<FdNode*> perpNodes;
@@ -147,41 +133,7 @@ void FoldManager::identifyParallelMasters( Vector3 sqzV )
 		// cluster based on adjacency
 		foreach(QVector<FdNode*> cgroup, getConnectedGroups(pgroup, adjacentThr))
 		{
-			bool rejected = false;
-			
-			// reject if contains only edge rods
-			//bool allEdgeRods = true;
-			//foreach(FdNode* n, cgroup)
-			//{
-			//	if (!n->hasTag(IS_EDGE_ROD))
-			//	{
-			//		allEdgeRods = false;
-			//		break;
-			//	}
-			//}
-			//if (allEdgeRods) rejected = true;
-
-			// reject if has trivial size
-			if (!rejected)
-			{
-				Geom::AABB aabb;
-				foreach(FdNode* n, cgroup)
-					aabb.add(n->computeAABB());
-				Geom::Box box = aabb.box();
-				int aid = box.getAxisId(sqzV);
-				double area = box.getPatch(aid, 0).area();
-				if (area < areaThr) rejected = true;
-			}
-
-			// rejected
-			if (rejected)
-			{// remove virtual edge rod nodes
-				foreach(FdNode* n, cgroup)
-					if (n->hasTag(IS_EDGE_ROD))
-						dcScaffold->removeNode(n->mID);
-			}
-			else // accept
-				masterGroups << cgroup;
+			masterGroups << cgroup;
 		}
 	}
 
@@ -189,11 +141,14 @@ void FoldManager::identifyParallelMasters( Vector3 sqzV )
 	masterIdGroups = getIds(masterGroups);
 }
 
-// decomposition
 void FoldManager::decompose()
 {
+	// masters
+	identifyMasters();
+
+	// decompose
 	QString id = "Dc_" + QString::number(dcGraphs.size());
-	dcGraphs.push_back(new DcGraph(dcScaffold, masterIdGroups, id));
+	dcGraphs.push_back(new DcGraph(id, dcScaffold, masterIdGroups, sqzV));
 
 	// update ui
 	updateDcList();
@@ -201,12 +156,9 @@ void FoldManager::decompose()
 
 void FoldManager::foldbzSelBlock()
 {
-	BlockGraph* block = getSelBlock();
-	if (block->mType == BlockGraph::H_BLOCK) 
-	{
-		HBlock* hblock = (HBlock*)block;
-		hblock->foldabilize();
-	}
+	BlockGraph* selBlock = getSelBlock();
+	if (selBlock) selBlock->foldabilize();
+
 }
 
 

@@ -18,6 +18,7 @@ public:
 	FdGraph* scaffold; 
 
 	// decomposition
+	Vector3 sqzV;
 	FdGraph* dcScaffold;
 	StrArray2D masterIdGroups;
 	int selDcIdx;
@@ -30,11 +31,11 @@ public slots:
 
 public:
 	// masters
-	void identifyMasters(QString method, QString direct);
-	void identifyParallelMasters(Vector3 squeezeDirect);
+	void identifyMasters();
 
 public slots:
 	// decomposition
+	void setSqzV (QString sqzV_str);
 	void decompose();
 
 	// foldem

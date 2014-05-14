@@ -45,6 +45,7 @@ public:
 	Segment2 get2DSegment(Segment& s);
 	Segment get3DSegment(Segment2& s);
 	Vector3 getProjection(Vector3 p);
+	Rectangle getProjection(Rectangle& rect);
 	Vector3 getProjectedVector(Vector3 v);
 
 	// coordinates
@@ -66,6 +67,7 @@ public:
 	// modifier
 	void translate(Vector3 t);
 	void scale(double s);
+	void flipNormal();
 
 	// to string
 	QStringList toStrList();

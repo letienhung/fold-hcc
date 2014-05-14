@@ -25,6 +25,8 @@ FdNode::FdNode(QString id, Geom::Box &b, MeshPtr m )
 	showCuboids = true;
 	showScaffold = true;
 	showMesh = true;
+
+	mAid = 0;
 }
 
 FdNode::FdNode(FdNode& other)
@@ -41,6 +43,8 @@ FdNode::FdNode(FdNode& other)
 	showCuboids = true;
 	showScaffold = true; 
 	showMesh = false;
+
+	mAid = other.mAid;
 }
 
 
@@ -119,7 +123,7 @@ void FdNode::refit( BOX_FIT_METHOD method )
 
 	mBox = origBox;
 	encodeMesh();
-	createScaffold();
+	createScaffold(false);
 }
 
 Geom::AABB FdNode::computeAABB()
@@ -283,7 +287,7 @@ void FdNode::deformToAttach( Geom::Plane& plane )
 	}
 
 	// deform
-	createScaffold();
+	createScaffold(true);
 	deformMesh();
 }
 
@@ -292,5 +296,5 @@ void FdNode::deformToAttach( Geom::Plane& plane )
 void FdNode::translate( Vector3 t )
 {
 	mBox.translate(t);
-	createScaffold();
+	createScaffold(true);
 }

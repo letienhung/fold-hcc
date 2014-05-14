@@ -8,12 +8,13 @@ class PatchNode : public FdNode
 {
 public:
     PatchNode(QString id, Geom::Box &b, MeshPtr m);
+	PatchNode(QString id, Geom::Box &b, Vector3 v, MeshPtr m);
 	PatchNode(PatchNode &other);
 	virtual Node* clone();
 
 public:
 	// create patch
-	void createScaffold();
+	void createScaffold(bool useAid);
 
 	// visual
 	void drawScaffold();
