@@ -31,7 +31,6 @@ public:
 	QVector<FdNode*> split(QString nid, QVector<Geom::Plane>& planes);
 	void			 changeNodeType(FdNode* n);
 	void			 changeRodToPatch(RodNode* n, Vector3 v);
-	void             normalize(double f);
 	void             translate(Vector3 v);
 
 	// I/O

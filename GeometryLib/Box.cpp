@@ -388,86 +388,6 @@ int Geom::Box::getAxisId( Vector3 a )
 	return aid;
 }
 
-
-double Geom::Box::calcFrontierWidth( int fid, const QVector<Vector3>& pnts, bool two_side /*= false*/ )
-{
-	int axisID = fid / 3;
-	bool isNeg = fid % 3;
-
-	double maxWidth = -maxDouble();
-	foreach(Vector3 p, pnts)
-	{
-		// off from face
-		Vector3 coord = this->getCoordinates(p);
-		double width = isNeg ? 
-			1 + coord[axisID] : 1 - coord[axisID];
-
-		// if two-side is enabled
-		// skip points closer to the opposite face
-		if (two_side && width > 1) continue;
-
-		// update the maxWidth
-		if (width > maxWidth) maxWidth = width;
-	}
-
-	return maxWidth;
-}
-
-SurfaceMesh::Vector4 Geom::Box::calcFrontierWidth( Vector3 hX, Vector3 hZ, const QVector<Vector3>& pnts )
-{
-	int hxId = getAxisId(hX), hzId = getAxisId(hZ);
-	double xE = Extent[hxId], zE = Extent[hzId];
-
-	double xlow = -1, xhigh = 1, zlow = -1, zhigh = 1;
-	foreach(Vector3 p, pnts)
-	{
-		Vector3 coord = this->getCoordinates(p);
-		double x = coord[hxId], z = coord[hzId];
-		double xCost = 0, zCost = 0;
-
-		// hx direction
-		double new_xlow = xlow, new_xhigh = xhigh;
-		if (inRange(x, xlow, xhigh))
-		{
-			double x_xlow = x - xlow, xhigh_x = xhigh - x;
-			if (x_xlow <= xhigh_x) { 
-				xCost = x_xlow * zE; new_xlow = x;
-			}else{
-				xCost = xhigh_x * zE; new_xhigh = x;
-			}
-		}
-
-		// hz direction
-		double new_zlow = zlow, new_zhigh = zhigh;
-		if (inRange(z, zlow, zhigh))
-		{
-			double z_zlow = z - zlow, zhigh_z = zhigh - z;
-			if (z_zlow <= zhigh_z) { 
-				zCost = z_zlow * xE; new_zlow = z;
-			}else{ 
-				zCost = zhigh_z * xE; new_zhigh = z;
-			}
-		}
-
-		// reduce range with lower cost
-		if (xCost <= zCost){
-			xlow = new_xlow; xhigh = new_xhigh;
-		}else{
-			zlow = new_zlow; zhigh = new_zhigh;
-		}
-	}
-
-	// reverse direction if need
-	if (dot(hX, Axis[hxId])){
-		std::swap(xlow, xhigh); xlow *= -1; xhigh *= -1;
-	}
-	if (dot(hZ, Axis[hzId])){
-		std::swap(zlow, zhigh); zlow *= -1; zhigh *= -1;
-	}
-
-	return Vector4(1 + xlow, 1 - xhigh, 1 + zlow, 1 - zhigh);
-}
-
 int Geom::Box::getType( double threshold )
 {
 	QVector<double> ext;
@@ -640,20 +560,6 @@ double Geom::Box::getExtent( Vector3 v )
 	return Extent[getAxisId(v)];
 }
 
-void Geom::Box::scaleAsPart(double f, Vector3 c)
-{
-	QVector<Point> conners = getConnerPoints();
-	Vector3 centre = Vector3(0.0,0.0,0.0);
-	foreach(Point p, conners){
-		p -= c;
-		p /= f;
-		p += c;
-		centre += p;
-	}
-	this->Center = centre/8;
-	this->Extent /= f;
-}
-
 void Geom::Box::makeRightHanded()
 {
 	if (dot(cross(Axis[0], Axis[1]), Axis[2]) < 0)
@@ -686,7 +592,7 @@ Geom::Plane Geom::Box::getFacePlane( int fid )
 	return getFaceRectangle(fid).getPlane();
 }
 
-bool Geom::Box::containsAll( QVector<Vector3> pnts )
+bool Geom::Box::containsAll( QVector<Vector3>& pnts )
 {
 	bool cnt_all = true;
 	foreach (Vector3 p, pnts){
@@ -702,4 +608,72 @@ bool Geom::Box::containsAll( QVector<Vector3> pnts )
 void Geom::Box::scaleRand01( int axisId, double t0, double t1 )
 {
 	scale(axisId, 2*t0-1, 2*t1-1);
+}
+
+bool Geom::Box::cropByAxisAlignedBox( Box other )
+{
+	for (int i = 0; i < 3; i++)
+	{
+		// skeleton along axis[i]
+		Segment sklt = getSkeleton(i);
+		int other_aid = other.getAxisId(Axis[i]);
+		Segment other_sklt = other.getSkeleton(other_aid);
+
+		// point to same direction
+		if (dot(sklt.Direction, other_sklt.Direction) < 0)
+			other_sklt.flip();
+
+		// projection
+		double t0 = other_sklt.getProjCoordinates(sklt.P0);
+		double t1 = other_sklt.getProjCoordinates(sklt.P1);
+		double t0_crop = Max(-1, t0);
+		double t1_crop = Min(1, t1);
+
+		// no overlapping along this direction
+		if (t0_crop >= t1_crop) 
+		{
+			return false;
+		}
+		// crop along this direction
+		else
+		{
+			// move center
+			Vector3 c = other_sklt.getPosition((t0+t1)/2);
+			Vector3 c_crop = other_sklt.getPosition((t0_crop+t1_crop)/2);
+			Center += c_crop - c;
+
+			// change extent
+			Vector3 p0 = other_sklt.getPosition(t0_crop);
+			Vector3 p1 = other_sklt.getPosition(t1_crop);
+			Extent[i] = (p0 - p1).norm()/2;
+		}
+	}
+
+	return true;
+}
+
+QVector<Vector3> Geom::Box::getEdgeSamples( int N )
+{
+	QVector<Vector3> samples;
+	foreach (Segment e, getEdgeSegments())
+		samples << e.getUniformSamples(N);
+	return samples;
+}
+
+bool Geom::Box::containsAny( QVector<Vector3>& pnts )
+{
+	bool cnt_any = false;
+	foreach (Vector3 p, pnts){
+		if (contains(p)){
+			cnt_any = true;
+			break;
+		}
+	}
+
+	return cnt_any;
+}
+
+bool Geom::Box::intersect( Box other )
+{
+	return containsAny(other.getEdgeSamples(100));
 }

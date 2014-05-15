@@ -123,7 +123,7 @@ void BlockGraph::computeMinFoldingVolume()
 }
 
 
-void BlockGraph::computeMaxFoldingVolume()
+void BlockGraph::computeMaxFoldingVolume(Geom::Box cropper)
 {
 	minFoldingVolume.clear();
 
@@ -159,7 +159,9 @@ void BlockGraph::computeMaxFoldingVolume()
 
 		// projection volume is a box
 		double height = (mrect.Center - mrect_proj.Center).norm();
-		maxFoldingVolume[m->mID] = Geom::Box(max_rect, base_rect.Normal, height);
+		Geom::Box fv(max_rect, base_rect.Normal, height);
+		fv.cropByAxisAlignedBox(cropper);
+		maxFoldingVolume[m->mID] = fv;
 	}
 
 	// debug

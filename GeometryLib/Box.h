@@ -49,10 +49,10 @@ public:
 	void scaleRand01(int axisId, double t0, double t1);
 	void scale(int axisId, double t0, double t1);
 	Box  scaled(double s);
-	void scaleAsPart(double f, Vector3 c);
 
-	// split
+	// modifier
 	bool split(int aid, double cp, Box& box1, Box& box2);
+	bool cropByAxisAlignedBox(Box other);
 
 	// geometry
 	static int NB_FACES;
@@ -90,6 +90,7 @@ public:
 
 	// sampling
 	QVector<Vector3>	getGridSamples(int N);
+	QVector<Vector3>	getEdgeSamples(int N);
 
 	// tags
 	QVector<bool> edgeTags;
@@ -97,11 +98,9 @@ public:
 	// relation with  other objects
 	bool hasFaceCoplanarWith(Line line);
 	bool contains(Vector3 p);
-	bool containsAll(QVector<Vector3> pnts);
-
-	// frontier
-	double calcFrontierWidth(int fid, const QVector<Vector3>& pnts, bool two_side = false);
-	Vector4 calcFrontierWidth(Vector3 hX, Vector3 hZ, const QVector<Vector3>& pnts);
+	bool containsAll(QVector<Vector3>& pnts);
+	bool containsAny(QVector<Vector3>& pnts);
+	bool intersect(Box other);
 
 	// type
 	enum TYPE{ROD, PATCH, BRICK};

@@ -410,19 +410,6 @@ void FdGraph::restoreConfiguration()
 	}
 }
 
-void FdGraph::normalize(double f)
-{
-	Geom::AABB aabb = computeAABB();
-	Vector3 offset = aabb.center();
-
-	foreach(FdNode* n, getFdNodes())
-	{
-		n->mBox.scaleAsPart(f, offset);
-		n->deformMesh();
-		n->createScaffold(true);
-	}
-}
-
 void FdGraph::translate(Vector3 v)
 {
 	foreach(FdNode* n, getFdNodes())

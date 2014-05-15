@@ -35,7 +35,7 @@ public:
 
 	// folding volumes
 	void computeMinFoldingVolume();
-	void computeMaxFoldingVolume();
+	void computeMaxFoldingVolume(Geom::Box cropper);
 
 	// foldem
 	void foldabilize();

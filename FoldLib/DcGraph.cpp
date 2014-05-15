@@ -482,11 +482,14 @@ FdGraph* DcGraph::getKeyFrame( double t )
 
 void DcGraph::foldabilize(bool withinAABB)
 {
+	Geom::Box aabb = computeAABB().box();
+	addDebugBoxes(QVector<Geom::Box>() << aabb);
+
 	// basic folding volumes
 	foreach (BlockGraph* b, blocks)
 	{
 		b->computeMinFoldingVolume();
-		b->computeMaxFoldingVolume();
+		b->computeMaxFoldingVolume(aabb);
 	}
 
 	// find fold order
