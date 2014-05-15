@@ -1,11 +1,9 @@
 #include "HChain.h"
 #include "Numeric.h"
 
-HChain::HChain( FdNode* slave, PatchNode* master1, PatchNode* master2)
-	:ChainGraph(slave, master1, master2)
+HChain::HChain( FdNode* slave, PatchNode* master_low, PatchNode* master_high)
+	:ChainGraph(slave, master_low, master_high)
 {
-	// type
-	properties["type"] = "sandwich";
 }
 
 Geom::Rectangle HChain::getFoldRegion(FoldOption* fn)
@@ -33,6 +31,14 @@ Geom::Rectangle HChain::getFoldRegion(FoldOption* fn)
 	rect.scale(1 - ZERO_TOLERANCE_LOW);
 	return rect;
 }
+
+
+Geom::Rectangle HChain::getMaxFoldRegion( bool right )
+{
+	FoldOption fn(0, right, 1.0, 0.0, 1, "");
+	return getFoldRegion(&fn);
+}
+
 
 QVector<FoldOption*> HChain::generateFoldOptions()
 {

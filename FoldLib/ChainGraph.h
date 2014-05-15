@@ -38,7 +38,7 @@ public:
 public:
 	CHAIN_TYPE mType;
 
-	QVector<PatchNode*>		mMasters;		// one or two masters
+	QVector<PatchNode*>		mMasters;		// one or two masters: from low to high
 	Geom::Segment			mMC2Trajectory;	// segment from m2's center to its projection on m1
 											// the trajectory of m2's center during foling
 

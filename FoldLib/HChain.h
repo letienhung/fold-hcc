@@ -6,13 +6,14 @@
 class HChain : public ChainGraph
 {
 public:
-    HChain(FdNode* slave, PatchNode* master1, PatchNode* master2);
+    HChain(FdNode* slave, PatchNode* master_low, PatchNode* master_high);
 
 	// foldem
 	QVector<FoldOption*> generateFoldOptions();
 
 	// fold region
 	Geom::Rectangle getFoldRegion(FoldOption* fn);
+	Geom::Rectangle getMaxFoldRegion(bool right);
 
 	// modifier
 	QVector<Geom::Plane> generateCutPlanes( int N );

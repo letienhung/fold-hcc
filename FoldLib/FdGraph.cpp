@@ -335,7 +335,7 @@ QVector<FdNode*> FdGraph::split( QString nid, QVector<Geom::Plane>& planes )
 	// change node id and add to graph
 	for (int i = 0; i < chopped.size(); i++)
 	{
-		chopped[i]->mID = nid + "_sp" + QString::number(i);
+		chopped[i]->mID = nid + "sp" + QString::number(i);
 		Structure::Graph::addNode(chopped[i]);
 	}
 
@@ -456,15 +456,16 @@ void FdGraph::drawDebug()
 	// draw boxes
 	if (properties.contains("debugBoxes"))
 	{
+		QColor color = Qt::green; color.setAlphaF(1.0);
 		QVector<Geom::Box> debugBoxes = properties["debugBoxes"].value<QVector<Geom::Box> >();
 		foreach (Geom::Box box, debugBoxes)
 		{
-			box.draw();
+			box.drawWireframe(2.0, color);
 		}
 	}
 
 	// sector cylinders
-	if (properties.contains("debugBoxes"))
+	if (properties.contains("debugSectorCyliners"))
 	{
 		QVector<Geom::SectorCylinder> debugScs = properties["debugSectorCyliners"].value<QVector<Geom::SectorCylinder> >();
 		foreach (Geom::SectorCylinder sc, debugScs)

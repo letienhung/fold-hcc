@@ -56,7 +56,7 @@ void GraphManager::saveScaffold()
 
 void GraphManager::loadScaffold()
 {
-	QString dataPath = getcwd() + "/data";
+	QString dataPath = getcwd() + "/data-syn";
 	QString filename = QFileDialog::getOpenFileName(0, tr("Load Scaffold"), dataPath, tr("Graph Files (*.xml)"));
 	if (filename.isEmpty()) return;
 	scaffold->loadFromFile(filename);

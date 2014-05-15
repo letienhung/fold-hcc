@@ -1,5 +1,6 @@
 #include "FoldManager.h"
 #include "FdUtility.h"
+#include "HChain.h"
 
 #include <QFileDialog>
 #include <QDir>
@@ -167,7 +168,7 @@ void FoldManager::snapshotSelChain( double t )
 	BlockGraph* selBlock = getSelBlock();
 	if (selBlock)
 	{
-		ChainGraph* selChain = selBlock->getSelChain();
+		HChain* selChain = selBlock->getSelChain();
 		if (selChain) selChain->fold(t);
 	}
 

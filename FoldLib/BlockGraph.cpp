@@ -6,51 +6,46 @@
 #include "HChain.h"
 #include "CliquerAdapter.h"
 
-
-BlockGraph::BlockGraph( QVector<PatchNode*>& masters, QVector<FdNode*>& slaves, 
-	QVector< QVector<QString> >& masterPairs, QString id )
+BlockGraph::BlockGraph( QVector<PatchNode*>& ms, QVector<FdNode*>& ss, 
+	QVector< QVector<QString> >& mPairs, QString id )
 	: FdGraph(id)
 {
 	// selected chain
 	selChainIdx = -1;
 
 	// clone nodes
-	foreach (PatchNode* m, masters) 
-	{
-		mMasters << (PatchNode*)m->clone();
-		Structure::Graph::addNode(mMasters.last());
+	foreach (PatchNode* m, ms)	{
+		masters << (PatchNode*)m->clone();
+		Structure::Graph::addNode(masters.last());
 	}
-	foreach (FdNode* s, slaves) 
+	foreach (FdNode* s, ss) 
 		Structure::Graph::addNode(s->clone());
 
 	// sort masters
 	assignMasterTimeStamps();
 
-	// base master is the bottom one
-	double minT = maxDouble();
-	foreach(PatchNode* m, masters)
-	{
-		if (masterTimeStamps[m->mID] < minT)
-		{
-			baseMaster = m;
-			minT = masterTimeStamps[m->mID];
-		}
-	}
-
 	// create chains
-	for (int i = 0; i < slaves.size(); i++)
+	for (int i = 0; i < ss.size(); i++)
 	{
-		QString mid1 = masterPairs[i].front();
-		QString mid2 = masterPairs[i].last();
+		QString mid_low = mPairs[i].front();
+		QString mid_high = mPairs[i].last();
+		if (masterTimeStamps[mid_low] > masterTimeStamps[mid_high])
+		{
+			mid_low = mPairs[i].last();
+			mid_high = mPairs[i].front();
+		}
 
 		// create chain
-		HChain* hc = new HChain(slaves[i], (PatchNode*)getNode(mid1), (PatchNode*)getNode(mid2));
-		hc->setFoldDuration(masterTimeStamps[mid1], masterTimeStamps[mid2]);
-		mChains << hc;
+		HChain* hc = new HChain(ss[i], (PatchNode*)getNode(mid_low), (PatchNode*)getNode(mid_high));
+		hc->setFoldDuration(masterTimeStamps[mid_low], masterTimeStamps[mid_high]);
+		chains << hc;
 
 		// map from master id to chain idx set
-		masterChainsMap[mid1] << i;
-		masterChainsMap[mid2] << i;
+		masterChainsMap[mid_low] << i;
+		masterChainsMap[mid_high] << i;
+
+		// map from master id to under chain ids set
+		masterUnderChainsMap[mid_high] << i;
 	}
 
 	// initial collision graph
@@ -60,7 +55,7 @@ BlockGraph::BlockGraph( QVector<PatchNode*>& masters, QVector<FdNode*>& slaves,
 
 BlockGraph::~BlockGraph()
 {
-	foreach(ChainGraph* c, mChains)
+	foreach(ChainGraph* c, chains)
 		delete c;
 }
 
@@ -71,10 +66,10 @@ FdGraph* BlockGraph::activeScaffold()
 	else		   return this;
 }
 
-ChainGraph* BlockGraph::getSelChain()
+HChain* BlockGraph::getSelChain()
 {
-	if (selChainIdx >= 0 && selChainIdx < mChains.size())
-		return mChains[selChainIdx];
+	if (selChainIdx >= 0 && selChainIdx < chains.size())
+		return chains[selChainIdx];
 	else
 		return NULL;
 }
@@ -82,9 +77,9 @@ ChainGraph* BlockGraph::getSelChain()
 void BlockGraph::selectChain( QString id )
 {
 	selChainIdx = -1;
-	for (int i = 0; i < mChains.size(); i++)
+	for (int i = 0; i < chains.size(); i++)
 	{
-		if (mChains[i]->mID == id)
+		if (chains[i]->mID == id)
 		{
 			selChainIdx = i;
 			break;
@@ -95,7 +90,7 @@ void BlockGraph::selectChain( QString id )
 QStringList BlockGraph::getChainLabels()
 {
 	QStringList labels;
-	foreach(FdGraph* c, mChains)
+	foreach(FdGraph* c, chains)
 		labels.push_back(c->mID);
 
 	// append string to select none
@@ -104,25 +99,73 @@ QStringList BlockGraph::getChainLabels()
 	return labels;
 }
 
-void BlockGraph::computeBFV()
+void BlockGraph::computeMinFoldingVolume()
 {
-	basicFoldingVolume.clear();
+	minFoldingVolume.clear();
 
 	Geom::Rectangle base_rect = baseMaster->mPatch;
-	foreach (PatchNode* m, mMasters)
+	foreach (PatchNode* m, masters)
 	{
 		// skip base master
 		if (m == baseMaster) continue;
 
 		// rect and projection
-		Geom::Rectangle rect = m->mPatch;
-		Geom::Rectangle rect_proj = base_rect.getProjection(rect);
+		Geom::Rectangle mrect = m->mPatch;
+		Geom::Rectangle mrect_proj = base_rect.getProjection(mrect);
 
 		// projection volume is a box
-		double height = (rect.Center - rect_proj.Center).norm();
-		basicFoldingVolume[m->mID] = Geom::Box(rect_proj, base_rect.Normal, height);
+		double height = (mrect.Center - mrect_proj.Center).norm();
+		minFoldingVolume[m->mID] = Geom::Box(mrect_proj, base_rect.Normal, height);
 	}
+
+	// debug
+	//addDebugBoxes(minFoldingVolume.values().toVector());
 }
+
+
+void BlockGraph::computeMaxFoldingVolume()
+{
+	minFoldingVolume.clear();
+
+	Geom::Rectangle base_rect = baseMaster->mPatch;
+	foreach (PatchNode* m, masters)
+	{
+		// skip base master
+		if (m == baseMaster) continue;
+
+		// conner points of fold regions and projected master rect
+		QVector<Vector3> pnts;
+
+		// master rect and projection
+		Geom::Rectangle mrect = m->mPatch;
+		Geom::Rectangle mrect_proj = base_rect.getProjection(mrect);
+		pnts << mrect_proj.getConners();
+
+		// chains attaching to master
+		foreach (QSet<int> cids, masterUnderChainsMap)
+		{
+			foreach (int cid, cids)
+			{
+				pnts << chains[cid]->getMaxFoldRegion(true).getConners();
+				pnts << chains[cid]->getMaxFoldRegion(false).getConners();
+			}
+		}
+
+		// get minimal enclosing rectangle on the projection plane
+		QVector<Vector2> pnts_proj;
+		foreach(Vector3 p, pnts) pnts_proj << base_rect.getProjCoordinates(p);
+		Geom::Rectangle2 max_rect2 = getMinEnclosingRectangle2D(pnts_proj);
+		Geom::Rectangle max_rect = base_rect.get3DRectangle(max_rect2);
+
+		// projection volume is a box
+		double height = (mrect.Center - mrect_proj.Center).norm();
+		maxFoldingVolume[m->mID] = Geom::Box(max_rect, base_rect.Normal, height);
+	}
+
+	// debug
+	addDebugBoxes(maxFoldingVolume.values().toVector());
+}
+
 
 void BlockGraph::exportCollFOG()
 {
@@ -135,10 +178,10 @@ FdGraph* BlockGraph::getKeyframeScaffold( double t )
 {
 	// scaffolds from folded chains
 	QVector<FdGraph*> foldedChains;
-	for (int i = 0; i < mChains.size(); i++)
+	for (int i = 0; i < chains.size(); i++)
 	{
-		double localT = getLocalTime(t, mChains[i]->mFoldDuration);
-		foldedChains << mChains[i]->getKeyframeScaffold(localT);
+		double localT = getLocalTime(t, chains[i]->mFoldDuration);
+		foldedChains << chains[i]->getKeyframeScaffold(localT);
 	}
 
 	// combine 
@@ -163,13 +206,13 @@ bool BlockGraph::fAreasIntersect( Geom::Rectangle& rect1, Geom::Rectangle& rect2
 void BlockGraph::assignMasterTimeStamps()
 {
 	// squeezing line
-	Geom::Rectangle rect0 = mMasters[0]->mPatch;
+	Geom::Rectangle rect0 = masters[0]->mPatch;
 	Geom::Line squzLine(rect0.Center, rect0.Normal);
 
 	// projected position along squeezing line
 	double minT = maxDouble();
 	double maxT = -maxDouble();
-	foreach (PatchNode* m, mMasters)
+	foreach (PatchNode* m, masters)
 	{
 		double t = squzLine.getProjTime(m->center());
 		masterTimeStamps[m->mID] = t;
@@ -184,6 +227,17 @@ void BlockGraph::assignMasterTimeStamps()
 	{
 		masterTimeStamps[mid] = ( masterTimeStamps[mid] - minT ) / timeRange;
 	}
+
+	// base master is the bottom one
+	minT = maxDouble();
+	foreach(PatchNode* m, masters)
+	{
+		if (masterTimeStamps[m->mID] < minT)
+		{
+			baseMaster = m;
+			minT = masterTimeStamps[m->mID];
+		}
+	}
 }
 
 void BlockGraph::foldabilize()
@@ -195,9 +249,9 @@ void BlockGraph::foldabilize()
 	findOptimalSolution();
 
 	// apply fold options
-	for (int i = 0; i < mChains.size(); i++)
+	for (int i = 0; i < chains.size(); i++)
 	{
-		mChains[i]->applyFoldOption(foldSolution[i]);
+		chains[i]->applyFoldOption(foldSolution[i]);
 	}
 }
 
@@ -207,9 +261,9 @@ void BlockGraph::buildCollisionGraph()
 	collFog->clear();
 
 	// fold entities and options
-	for(int i = 0; i < mChains.size(); i++)
+	for(int i = 0; i < chains.size(); i++)
 	{
-		HChain* chain = (HChain*)mChains[i];
+		HChain* chain = (HChain*)chains[i];
 
 		// fold entity
 		FoldEntity* cn = new FoldEntity(i, chain->mID);
@@ -225,7 +279,7 @@ void BlockGraph::buildCollisionGraph()
 			bool reject = false;
 
 			// reject if stick out of EFV
-			foreach (Geom::Box efv, extendedFoldingVolume.values())
+			foreach (Geom::Box efv, validFoldingVolume.values())
 			{
 				if (!efv.containsAll(fArea.getConners()))
 				{
@@ -266,7 +320,7 @@ void BlockGraph::buildCollisionGraph()
 		FoldOption* fn = fns[i];
 		FoldEntity* cn = collFog->getFoldEntity(fn->mID);
 		Geom::Rectangle fArea = fn->properties["fArea"].value<Geom::Rectangle>();
-		TimeInterval tInterval = mChains[cn->entityIdx]->mFoldDuration;
+		TimeInterval tInterval = chains[cn->entityIdx]->mFoldDuration;
 
 		// with other fold options
 		for (int j = i+1; j < fns.size(); j++)
@@ -278,7 +332,7 @@ void BlockGraph::buildCollisionGraph()
 
 			// skip if time interval don't overlap
 			FoldEntity* other_cn = collFog->getFoldEntity(other_fn->mID);
-			TimeInterval other_tInterval = mChains[other_cn->entityIdx]->mFoldDuration;
+			TimeInterval other_tInterval = chains[other_cn->entityIdx]->mFoldDuration;
 			if (!overlap(tInterval, other_tInterval)) continue;
 
 			// collision test using fold region
@@ -331,7 +385,7 @@ void BlockGraph::findOptimalSolution()
 
 	// fold solution
 	foldSolution.clear();
-	foldSolution.resize(mChains.size());
+	foldSolution.resize(chains.size());
 	if (collFogOrig) delete collFogOrig;
 	collFogOrig = (FoldOptionGraph*)collFog->clone();
 	foreach(int idx, qs[0])

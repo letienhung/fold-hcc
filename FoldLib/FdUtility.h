@@ -70,3 +70,6 @@ int nbMasters(FdGraph* scaffold);
 // combination
 FdGraph* combineDecomposition(QVector<FdGraph*> decmps, QString baseMid, 
 	QMap<QString, QSet<int> >& masterDecmpMap);
+
+// min enclosing 2d rectangle
+Geom::Rectangle2 getMinEnclosingRectangle2D(QVector<Vector2> &pnts);

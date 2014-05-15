@@ -1,20 +1,22 @@
 #pragma once
 
-#include "ChainGraph.h"
+#include "FdGraph.h"
 #include "FoldOptionGraph.h"
+
+class HChain;
 
 class BlockGraph : public FdGraph
 {
 public:
-	BlockGraph(QVector<PatchNode*>& masters, QVector<FdNode*>& slaves, 
-		QVector< QVector<QString> >& masterPairs, QString id);
+	BlockGraph(QVector<PatchNode*>& ms, QVector<FdNode*>& ss, 
+		QVector< QVector<QString> >& mPairs, QString id);
 	~BlockGraph();
 
 	// assign master time stamps
 	void assignMasterTimeStamps();
 
 	// selection
-	ChainGraph* getSelChain();
+	HChain* getSelChain();
 	FdGraph* activeScaffold();
 	void selectChain(QString id);
 	QStringList getChainLabels();
@@ -32,7 +34,8 @@ public:
 	FdGraph* getKeyframeScaffold(double t);
 
 	// folding volumes
-	void computeBFV();
+	void computeMinFoldingVolume();
+	void computeMaxFoldingVolume();
 
 	// foldem
 	void foldabilize();
@@ -46,17 +49,19 @@ public:
 
 	// master related
 	PatchNode* baseMaster;
-	QVector<PatchNode*> mMasters;
-	QMap<QString, QSet<int> > masterChainsMap;
+	QVector<PatchNode*> masters;
+	QMap<QString, QSet<int> > masterChainsMap; 
+	QMap<QString, QSet<int> > masterUnderChainsMap; // master : chains under master
 	QMap<QString, double> masterTimeStamps;
 
 	// chains
 	int selChainIdx;
-	QVector<ChainGraph*> mChains;
+	QVector<HChain*> chains;
 
 	// folding volumes
-	QMap<QString, Geom::Box> basicFoldingVolume;
-	QMap<QString, Geom::Box> extendedFoldingVolume;
+	QMap<QString, Geom::Box> minFoldingVolume;
+	QMap<QString, Geom::Box> maxFoldingVolume;
+	QMap<QString, Geom::Box> validFoldingVolume;
 
 	// collision graph
 	FoldOptionGraph* collFog;

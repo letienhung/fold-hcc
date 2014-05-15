@@ -96,7 +96,7 @@ QVector<RodNode*> PatchNode::getEdgeRodNodes()
 		deformMesh();
 
 		// create rod node
-		QString id = mID + "_er" + QString::number(i++);
+		QString id = mID + "er" + QString::number(i++);
 		edgeRods << new RodNode(id, box, mMesh);
 
 		// restore mesh

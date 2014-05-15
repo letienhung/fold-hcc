@@ -541,7 +541,7 @@ int Geom::Box::getFaceId( int aid, bool positive )
 }
 
 
-void Geom::Box::draw( QColor color )
+void Geom::Box::draw( QColor color)
 {
 	PolygonSoup ps;
 	foreach(QVector<Point> f, getFacePoints()) 

@@ -482,8 +482,12 @@ FdGraph* DcGraph::getKeyFrame( double t )
 
 void DcGraph::foldabilize(bool withinAABB)
 {
-
-
+	// basic folding volumes
+	foreach (BlockGraph* b, blocks)
+	{
+		b->computeMinFoldingVolume();
+		b->computeMaxFoldingVolume();
+	}
 
 	// find fold order
 	findFoldOrderGreedy();

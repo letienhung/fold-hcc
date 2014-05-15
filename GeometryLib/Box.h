@@ -108,7 +108,7 @@ public:
 	int getType(double threshold);
 
 	// draw
-	void draw(QColor color = Qt::white);
+	void draw(QColor color = Qt::yellow);
 	void drawWireframe(double width = 2.0, QColor color = Qt::white);
 
 	// I/O

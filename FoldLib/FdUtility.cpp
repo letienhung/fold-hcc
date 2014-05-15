@@ -304,7 +304,7 @@ bool hasIntersection( FdNode* slave, PatchNode* master, double thr )
 	double b = fabs(maxDist);
 	double ratio = a / (a + b);
 	if (ratio > 0.5) ratio  = 1 - ratio;
-	return ratio > 0.1; // this is ugly but can avoid some cuts
+	return ratio > 0.05; // this is ugly but can avoid some cuts
 }
 
 bool overlap( TimeInterval itv1, TimeInterval itv2 )
@@ -414,4 +414,26 @@ QSet<QString> getAllMasterIds( FdGraph* scaffold )
 		mids << m->mID;
 
 	return mids;
+}
+
+Geom::Rectangle2 getMinEnclosingRectangle2D( QVector<Vector2> &pnts )
+{
+	// compute extent along x and y
+	double minX = maxDouble();
+	double maxX = -maxDouble();
+	double minY = maxDouble();
+	double maxY = -maxDouble();
+	foreach (Vector2 p, pnts)
+	{
+		if (p.x() < minX) minX = p.x();
+		if (p.x() > maxX) maxX = p.x();
+
+		if (p.y() < minY) minY = p.y();
+		if (p.y() > maxY) maxY = p.y();
+	}
+
+	// create rect
+	QVector<Vector2> conners;
+	conners << Vector2(minX, minY) << Vector2(maxX, minY) << Vector2(maxX, maxY) << Vector2(minX, maxY);
+	return Geom::Rectangle2(conners);
 }
