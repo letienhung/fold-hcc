@@ -34,13 +34,17 @@ public:
 	// folding volumes
 	void computeMinFoldingVolume();
 	void computeMaxFoldingVolume(Geom::Box cropper);
-	QMap<QString, Geom::Box> computeAvailFoldingVolume(FdGraph* scaffold);
+	QMap<QString, Geom::Box> computeAvailFoldingVolume(FdGraph* scaffold, 
+									QMultiMap<QString, QString>& masterOrderConstraints);
 
 	// foldem
 	void foldabilize();
 	void buildCollisionGraph();
 	void findOptimalSolution();
 	bool fAreasIntersect(Geom::Rectangle& rect1, Geom::Rectangle& rect2);
+
+	// helper
+	QVector<QString> getInbetweenParts(FdGraph* scaffold, QString mid1, QString mid2);
 
 public:
 	// time interval
@@ -58,9 +62,10 @@ public:
 	QVector<HChain*> chains;
 
 	// folding volumes
+	QMap<QString, Geom::Rectangle> minFoldingRegion;
 	QMap<QString, Geom::Box> minFoldingVolume;
 	QMap<QString, Geom::Box> maxFoldingVolume;
-	QMap<QString, Geom::Box> validFoldingVolume;
+	QMap<QString, Geom::Box> availFoldingVolume;
 
 	// collision graph
 	FoldOptionGraph* collFog;

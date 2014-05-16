@@ -410,12 +410,14 @@ void FdGraph::restoreConfiguration()
 	}
 }
 
-void FdGraph::translate(Vector3 v)
+void FdGraph::translate(Vector3 v, bool withMesh)
 {
 	foreach(FdNode* n, getFdNodes())
 	{
 		n->translate(v);
-		n->deformMesh();
+
+		if (withMesh)
+			n->deformMesh();
 	}
 }
 

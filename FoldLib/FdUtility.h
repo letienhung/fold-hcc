@@ -74,5 +74,6 @@ QMap<QString, double> getTimeStampsNormalized(QVector<PatchNode*> pnodes, Vector
 FdGraph* combineDecomposition(QVector<FdGraph*> decmps, QString baseMid, 
 	QMap<QString, QSet<int> >& masterDecmpMap);
 
-// min enclosing 2d rectangle
+// 2D geometry
 Geom::Rectangle2 getMinEnclosingRectangle2D(QVector<Vector2> &pnts);
+Geom::Rectangle2 extendRectangle2D(Geom::Rectangle2 seed, QVector<Vector2> &pnts);

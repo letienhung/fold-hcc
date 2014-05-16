@@ -31,7 +31,7 @@ public:
 	QVector<FdNode*> split(QString nid, QVector<Geom::Plane>& planes);
 	void			 changeNodeType(FdNode* n);
 	void			 changeRodToPatch(RodNode* n, Vector3 v);
-	void             translate(Vector3 v);
+	void             translate(Vector3 v, bool withMesh = true);
 
 	// I/O
 	void saveToFile(QString fname);

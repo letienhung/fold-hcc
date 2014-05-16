@@ -478,3 +478,55 @@ QMap<QString, double> getTimeStampsNormalized( QVector<PatchNode*> pnodes, Vecto
 	foreach (PatchNode* pn, pnodes) nodes << pn;
 	return getTimeStampsNormalized(nodes, v);
 }
+
+Geom::Rectangle2 extendRectangle2D( Geom::Rectangle2 seed, QVector<Vector2> &pnts )
+{
+	// do nothing if see rect contains any pnts
+	foreach (Vector2 p, pnts) 
+		if (seed.contains(p)) 
+			return seed;
+
+	// coordinates in the fame of seed rect
+	QVector<Vector2> pnts_coord;
+	foreach (Vector2 p, pnts) pnts_coord << seed.getCoordinates(p);
+
+	// extend along x
+	double left = -maxDouble();
+	double right = maxDouble();
+	foreach (Vector2 pc, pnts_coord)
+	{
+		// keep the extent along y
+		if (inRange(pc.y(), -1, 1))
+		{
+			double x = pc.x();
+			// tightest bound on left
+			if (x < 0 && x > left) left = x;
+			// tightest bound on right
+			if (x > 0 && x < right) right = x;
+		}
+	}
+
+	// extend along y
+	double bottom = -maxDouble();
+	double top = maxDouble();
+	foreach (Vector2 pc, pnts_coord)
+	{
+		// keep the extent along x
+		if (inRange(pc.x(), left, right))
+		{
+			double y = pc.y();
+			// tightest bound on left
+			if (y < 0 && y > bottom) bottom = y;
+			// tightest bound on right
+			if (y > 0 && y < top) top = y;
+		}
+	}
+
+	// set up box
+	QVector<Vector2> new_conners;
+	new_conners << seed.getPosition(Vector2(left, bottom))
+				<< seed.getPosition(Vector2(right, bottom))
+				<< seed.getPosition(Vector2(right, top))
+				<< seed.getPosition(Vector2(left, top));
+	return Geom::Rectangle2(new_conners);
+}

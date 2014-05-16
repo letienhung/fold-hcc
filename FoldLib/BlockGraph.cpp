@@ -115,40 +115,40 @@ void BlockGraph::computeMinFoldingVolume()
 	minFoldingVolume.clear();
 
 	Geom::Rectangle base_rect = baseMaster->mPatch;
-	foreach (PatchNode* m, masters)
+	foreach (PatchNode* top_master, masters)
 	{
 		// skip base master
-		if (m == baseMaster) continue;
+		if (top_master == baseMaster) continue;
 
 		// rect and projection
-		Geom::Rectangle mrect = m->mPatch;
-		Geom::Rectangle mrect_proj = base_rect.getProjection(mrect);
+		Geom::Rectangle top_rect = top_master->mPatch;
+		Geom::Rectangle top_rect_proj = base_rect.getProjection(top_rect);
 
-		// projection volume is a box
-		double height = (mrect.Center - mrect_proj.Center).norm();
-		minFoldingVolume[m->mID] = Geom::Box(mrect_proj, base_rect.Normal, height);
+		// folding region and volume
+		double height = (top_rect.Center - top_rect_proj.Center).norm();
+		minFoldingRegion[top_master->mID] = top_rect_proj;
+		minFoldingVolume[top_master->mID] = Geom::Box(top_rect_proj, base_rect.Normal, height);
 	}
 
 	// debug
 	//addDebugBoxes(minFoldingVolume.values().toVector());
 }
 
-
-void BlockGraph::computeMaxFoldingVolume(Geom::Box cropper)
+void BlockGraph::computeMaxFoldingVolume(Geom::Box shapeAABB)
 {
 	minFoldingVolume.clear();
 
 	Geom::Rectangle base_rect = baseMaster->mPatch;
-	foreach (PatchNode* m, masters)
+	foreach (PatchNode* top_master, masters)
 	{
 		// skip base master
-		if (m == baseMaster) continue;
+		if (top_master == baseMaster) continue;
 
 		// conner points of fold regions and projected master rect
 		QVector<Vector3> pnts;
 
 		// master rect and projection
-		Geom::Rectangle mrect = m->mPatch;
+		Geom::Rectangle mrect = top_master->mPatch;
 		Geom::Rectangle mrect_proj = base_rect.getProjection(mrect);
 		pnts << mrect_proj.getConners();
 
@@ -162,45 +162,84 @@ void BlockGraph::computeMaxFoldingVolume(Geom::Box cropper)
 			}
 		}
 
-		// get minimal enclosing rectangle on the projection plane
+		// minimal enclosing rectangle on the projection plane
 		QVector<Vector2> pnts_proj;
 		foreach(Vector3 p, pnts) pnts_proj << base_rect.getProjCoordinates(p);
 		Geom::Rectangle2 max_rect2 = getMinEnclosingRectangle2D(pnts_proj);
 		Geom::Rectangle max_rect = base_rect.get3DRectangle(max_rect2);
 
-		// projection volume is a box
+		// folding volume
 		double height = (mrect.Center - mrect_proj.Center).norm();
 		Geom::Box fv(max_rect, base_rect.Normal, height);
-		fv.cropByAxisAlignedBox(cropper);
-		maxFoldingVolume[m->mID] = fv;
+		fv.cropByAxisAlignedBox(shapeAABB);
+		maxFoldingVolume[top_master->mID] = fv;
 	}
 
 	// debug
 	addDebugBoxes(maxFoldingVolume.values().toVector());
 }
 
-QMap<QString, Geom::Box> BlockGraph::computeAvailFoldingVolume( FdGraph* scaffold )
+QMap<QString, Geom::Box> BlockGraph::computeAvailFoldingVolume( FdGraph* scaffold,
+								QMultiMap<QString, QString>& masterOrderConstraints )
 {
 	// compute the offset
 	Vector3 posA = baseMaster->center();
 	Vector3 posB = ((FdNode*)scaffold->getNode(baseMaster->mID))->center();
-	Vector3 offset = posB - posA;
+	Vector3 offset = posA - posB;
 
-	foreach (QString mid, minFoldingVolume.keys())
+	// align scaffold with this block
+	scaffold->translate(offset, false);
+
+	// extent 
+	QString base_mid = baseMaster->mID;
+	Geom::Rectangle base_rect = baseMaster->mPatch;
+	foreach (QString top_mid, minFoldingVolume.keys())
 	{
-		// align with scaffold
-		Geom::Box minFV = minFoldingVolume[mid];
-		Geom::Box maxFV = maxFoldingVolume[mid];
-		minFV.translate(offset);
-		maxFV.translate(offset);
+		QVector<QString> constraintParts;
 
-		// extend in the context of scaffold
+		// parts in between
+		constraintParts << getInbetweenParts(scaffold, base_mid, top_mid);
 
-		// crop by maxFV
-		minFV.cropByAxisAlignedBox(maxFV);
+		// masters with no order constraints with both top and base
+		QList<QString> moc_base = masterOrderConstraints.values(base_mid);
+		QList<QString> moc_top = masterOrderConstraints.values(top_mid);
+		foreach (QString mid, getAllMasterIds())
+			if (!moc_base.contains(mid) && !moc_top.contains(mid))
+				constraintParts << mid;
+
+		// samples from constraint parts
+		QVector<Vector3> samples;
+		foreach(QString nid, constraintParts)
+		{
+			FdNode* n = (FdNode*)getNode(nid);
+			if (n->mType == FdNode::PATCH)
+				samples << ((PatchNode*)n)->mPatch.getEdgeSamples(100);
+			else
+				samples << ((RodNode*)n)->mRod.getUniformSamples(100);
+		}
+
+		// samples from max folding volume
+		Geom::Box mfv = maxFoldingVolume[top_mid];
+		mfv *= 1 + ZERO_TOLERANCE_LOW;
+		samples << mfv.getEdgeSamples(100);
+
+		// projection on base_rect
+		QVector<Vector2> samples_proj;
+		foreach (Vector3 s, samples)
+			samples_proj << base_rect.getProjCoordinates(s);
+
+		// max rect including minFR while excluding all constraint points
+		Geom::Rectangle2 avail_rect = extendRectangle2D(minFoldingRegion, samples_proj);
+
+		// folding volume
+		double height = (top_rect.Center - top_rect_proj.Center).norm();
+		availFoldingVolume[top_mid] = Geom::Box(avail_rect, base_rect.Normal, height);
 	}
 
-	return validFoldingVolume;
+	// restore the position of scaffold
+	scaffold->translate(-offset, false);
+
+	return availFoldingVolume;
 }
 
 void BlockGraph::exportCollFOG()
@@ -278,7 +317,7 @@ void BlockGraph::buildCollisionGraph()
 			bool reject = false;
 
 			// reject if stick out of EFV
-			foreach (Geom::Box efv, validFoldingVolume.values())
+			foreach (Geom::Box efv, availFoldingVolume.values())
 			{
 				if (!efv.containsAll(fArea.getConners()))
 				{
@@ -399,4 +438,47 @@ void BlockGraph::findOptimalSolution()
 double BlockGraph::getTimeLength()
 {
 	return nbMasters(this) - 1;
+}
+
+QVector<QString> BlockGraph::getInbetweenParts( FdGraph* scaffold, QString mid1, QString mid2 )
+{
+	QMap<QString, double> masterTs;
+	QMap<QString, TimeInterval> slaveTs;
+
+	// time line
+	Vector3 sqzV = baseMaster->mPatch.Normal;
+	Geom::Line timeLine(Vector3(0, 0, 0), sqzV);
+
+	// position on time line
+	foreach (FdNode* n, scaffold->getFdNodes())
+	{
+		if (n->hasTag(IS_MASTER))
+		{
+			masterTs[n->mID] = timeLine.getProjTime(n->center());
+		}
+		else
+		{
+			int aid = n->mBox.getAxisId(sqzV);
+			Geom::Segment sklt = n->mBox.getSkeleton(aid);
+			double t0 = timeLine.getProjTime(sklt.P0);
+			double t1 = timeLine.getProjTime(sklt.P1);
+			if (t0 > t1) std::swap(t0, t1);
+			slaveTs[n->mID] = TIME_INTERVAL(t0, t1);
+		}
+	}
+
+	// find parts in between m1 and m2
+	QVector<QString> inbetweens;
+	double t0 = masterTs[mid1];
+	double t1 = masterTs[mid2];
+	if (t0 > t1) std::swap(t0, t1);
+	TimeInterval m1m2 = TIME_INTERVAL(t0, t1);
+	foreach (QString mid, masterTs.keys())
+		if (within(masterTs[mid], m1m2))
+			inbetweens << mid;
+	foreach(QString sid, slaveTs.keys())
+		if (overlap(slaveTs[sid], m1m2))
+			inbetweens << sid;
+	
+	return inbetweens;
 }
