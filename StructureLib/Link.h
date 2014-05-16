@@ -4,7 +4,7 @@
 
 namespace Structure{
 
-class Link
+class Link : public PropertyContainer
 {
 public:
 	Link(Node* n1, Node* n2);
@@ -19,16 +19,10 @@ public:
 	// visualize
 	virtual void draw(){}
 
-	// tag properties
-	void addTag(QString tag);
-	bool hasTag(QString tag);
-
 public:
 	QString	id;
 	QString nid1, nid2;
 	Node *node1, *node2;
-
-    PropertyMap properties;
 };
 
 }

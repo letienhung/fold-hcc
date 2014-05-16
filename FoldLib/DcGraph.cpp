@@ -4,6 +4,7 @@
 #include "FdUtility.h"
 #include "SectorCylinder.h"
 #include "TChain.h"
+#include "IntrRect2Rect2.h"
 
 
 DcGraph::DcGraph(QString id, FdGraph* scaffold, StrArray2D masterGroups, Vector3 v)
@@ -15,13 +16,14 @@ DcGraph::DcGraph(QString id, FdGraph* scaffold, StrArray2D masterGroups, Vector3
 	// decomposition
 	sqzV = v;
 	createMasters(masterGroups);
+	computeMasterOrderConstraints();
 	createSlaves();
 	clusterSlaves();
 	createBlocks();
 
 	// time scale
 	double totalDuration = 0;
-	foreach (BlockGraph* b, blocks) totalDuration += nbMasters(b);
+	foreach (BlockGraph* b, blocks) totalDuration += b->getTimeLength();
 	timeScale = 1.0 / totalDuration;
 
 	// selection
@@ -58,10 +60,52 @@ void DcGraph::createMasters(StrArray2D& masterGroups)
 		// save
 		masters.push_back(mp);
 	}
-
-	// base master
-	baseMasterId = masters.front()->mID;
 }
+
+void DcGraph::computeMasterOrderConstraints()
+{
+	// time stamps: bottom-up
+	QMap<QString, double> masterTimeStamps = getTimeStampsNormalized(masters, sqzV);
+
+	// base master is the bottom one
+	double minT = maxDouble();
+	foreach(PatchNode* m, masters){
+		if (masterTimeStamps[m->mID] < minT){
+			baseMaster = m;
+			minT = masterTimeStamps[m->mID];
+		}
+	}
+
+	// projected rect
+	QMap<QString, Geom::Rectangle2> proj_rects;
+	Geom::Rectangle base_rect = baseMaster->mPatch;
+	foreach (PatchNode* m, masters)
+		proj_rects[m,mID] = base_rect.get2DRectangle(m->mPatch);
+
+	// check each pair of masters
+	for (int i = 0; i < masters.size(); i++){
+		for (int j = i+1; j < masters.size(); j++)
+		{
+			QString mi = masters[i]->mID;
+			QString mj = masters[j]->mID;
+
+			// intersect
+			if (Geom::IntrRect2Rect2::test(proj_rects[mi], proj_rects[mj]))
+			{
+				double ti = masterTimeStamps[mi];
+				double tj = masterTimeStamps[mj];
+
+				// <up, down>
+				if (ti > tj) 
+					masterOrderConstraints.insert(mi, mj);
+				else 
+					masterOrderConstraints.insert(mj,mi);
+					
+			}
+		}
+	}
+}
+
 
 void DcGraph::updateSlaves()
 {
@@ -461,7 +505,7 @@ void DcGraph::selectBlock( QString id )
 	}
 }
 
-FdGraph* DcGraph::getKeyFrame( double t )
+FdGraph* DcGraph::getKeyframe( double t )
 {
 	// folded blocks
 	QVector<FdGraph*> foldedBlocks;
@@ -472,7 +516,7 @@ FdGraph* DcGraph::getKeyFrame( double t )
 	}
 
 	// shift layers and add nodes into scaffold
-	FdGraph *key_graph = combineDecomposition(foldedBlocks, baseMasterId, masterBlockMap);
+	FdGraph *key_graph = combineDecomposition(foldedBlocks, baseMaster->mID, masterBlockMap);
 
 	// delete folded blocks
 	foreach (FdGraph* b, foldedBlocks) delete b;
@@ -485,7 +529,7 @@ void DcGraph::foldabilize(bool withinAABB)
 	Geom::Box aabb = computeAABB().box();
 	addDebugBoxes(QVector<Geom::Box>() << aabb);
 
-	// basic folding volumes
+	// min & max folding volumes
 	foreach (BlockGraph* b, blocks)
 	{
 		b->computeMinFoldingVolume();
@@ -498,8 +542,94 @@ void DcGraph::foldabilize(bool withinAABB)
 
 void DcGraph::findFoldOrderGreedy()
 {
+	// clear tags
+	foreach (BlockGraph* b, blocks)
+		b->removeTag(READY_TAG);
+
+	// initial time intervals
+	// greater than 1.0 means never be folded
+	foreach (BlockGraph* b, blocks) 
+		b->mFoldDuration = TIME_INTERVAL(1.0, 2.0);
+
+	// choose best free block in a greedy manner
+	double currTime = 0.0;
+	int bid = getBestNextBlockIndex(currTime);
+	while (bid >= 0 && bid < blocks.size())
+	{
+		BlockGraph* next_block = blocks[bid];
+
+		// foldabilize selected block
+		next_block->foldabilize();
+		next_block->addTag(READY_TAG);
+
+		// set up time interval
+		double timeLength = next_block->getTimeLength() * timeScale;
+		double nextTime = currTime + timeLength;
+		next_block->mFoldDuration = TIME_INTERVAL(currTime, nextTime);
+
+		// get best next
+		currTime = nextTime;
+		bid = getBestNextBlockIndex(currTime);
+	}
+
+	// remaining blocks (if any) are interlocking
+	// merge them as single block to foldabilize
+
+}
+
+int DcGraph::getBestNextBlockIndex(double currT)
+{
+	FdGraph* currKeyframe = getKeyframe(currT);
+
+	// available folding volumes
+	QMap<QString, <QMap<QString, Geom::Box> > > currAFV;
+	for (int i = 0; i < blocks.size(); i++)
+		currAFV[blocks[i]->mID] = blocks[i]->computeAvailFoldingVolume(currKeyframe);
+
+	// evaluate each block to find the best one
+	double best_score = -maxDouble();
+	int best_bid;
+	for (int bid = 0; bid < blocks.size(); bid++)
+	{
+		BlockGraph* block = blocks[bid];
+
+		// skip folded blocks
+		if (passed(currT, block->mFoldDuration))
+			continue;
+
+		// estimate the folding of i-th block 
+		TimeInterval orig_ti = block->mFoldDuration;
+		double timeLength = block->getTimeLength() * timeScale;
+		double nextT = currT + timeLength;
+		block->mFoldDuration = TIME_INTERVAL(currT, nextT);
+
+		// the folded state is estimated by available folding volume
+		FdGraph* nextKeyframe = getKeyframe(nextT);
+
+		// restore time interval
+		block->mFoldDuration = orig_ti;
+
+		// skip if not valid: flipped vertical order of masters
+		if (!isValid(nextKeyframe)) continue;
+
+		// available folding volumes after folded
+		QMap<QString, <QMap<QString, Geom::Box> > > nextAFV;
+		for (int i = 0; i < blocks.size(); i++)
+			nextAFV << blocks[i]->computeAvailFoldingVolume(nextKeyframe);
+		
+		// evaluate
+		double score = 0;
 
 
+		// update the best
+		if (score > best_score)
+		{
+			best_score = score;
+			best_bid = bid;
+		}
+	}
+
+	return best_bid;
 }
 
 void DcGraph::generateKeyframes( int N )
@@ -509,7 +639,7 @@ void DcGraph::generateKeyframes( int N )
 	double step = 1.0 / (N-1);
 	for (int i = 0; i < N; i++)
 	{
-		keyframes << getKeyFrame(i * step);
+		keyframes << getKeyframe(i * step);
 	}
 }
 
@@ -524,4 +654,16 @@ void DcGraph::exportCollFOG()
 {
 	BlockGraph* selBlock = getSelBlock();
 	if (selBlock) selBlock->exportCollFOG();
+}
+
+bool DcGraph::isValid( FdGraph* folded )
+{
+	QVector<PatchNode*> masters = getAllMasters(folded);
+	QMap<QString, double> masterTimeStamps = getTimeStampsNormalized(masters, sqzV);
+
+	foreach (QString up, masterOrderConstraints.uniqueKeys())
+		foreach (QString down, masterOrderConstraints.values(up))
+			if (masterTimeStamps[up] < masterTimeStamps[down])
+				return false;
+	return true;
 }

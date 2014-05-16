@@ -12,9 +12,6 @@ public:
 		QVector< QVector<QString> >& mPairs, QString id);
 	~BlockGraph();
 
-	// assign master time stamps
-	void assignMasterTimeStamps();
-
 	// selection
 	HChain* getSelChain();
 	FdGraph* activeScaffold();
@@ -23,6 +20,7 @@ public:
 
 	// getter
 	void exportCollFOG();
+	double getTimeLength();
 
 	// keyframes
 	/** a stand-alone scaffold representing the folded block at given time
@@ -36,6 +34,7 @@ public:
 	// folding volumes
 	void computeMinFoldingVolume();
 	void computeMaxFoldingVolume(Geom::Box cropper);
+	QMap<QString, Geom::Box> computeAvailFoldingVolume(FdGraph* scaffold);
 
 	// foldem
 	void foldabilize();

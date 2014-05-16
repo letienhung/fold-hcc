@@ -437,3 +437,44 @@ Geom::Rectangle2 getMinEnclosingRectangle2D( QVector<Vector2> &pnts )
 	conners << Vector2(minX, minY) << Vector2(maxX, minY) << Vector2(maxX, maxY) << Vector2(minX, maxY);
 	return Geom::Rectangle2(conners);
 }
+
+bool passed( double t, TimeInterval itv )
+{
+	return t >= itv.second;
+}
+
+QMap<QString, double> getTimeStampsNormalized( QVector<FdNode*> nodes, Vector3 v )
+{
+	QMap<QString, double> timeStamps;
+
+	// time line
+	Geom::Line timeLine(Vector3(0, 0, 0), v);
+
+	// position on time line
+	double minT = maxDouble();
+	double maxT = -maxDouble();
+	foreach (FdNode* n, nodes)
+	{
+		double t = timeLine.getProjTime(n->center());
+		timeStamps[n->mID] = t;
+
+		if (t < minT) minT = t;
+		if (t > maxT) maxT = t;
+	}
+
+	// normalize time stamps
+	double timeRange = maxT - minT;
+	foreach (QString mid, timeStamps.keys())
+	{
+		timeStamps[mid] = ( timeStamps[mid] - minT ) / timeRange;
+	}
+
+	return timeStamps;
+}
+
+QMap<QString, double> getTimeStampsNormalized( QVector<PatchNode*> pnodes, Vector3 v )
+{
+	QVector<FdNode*> nodes;
+	foreach (PatchNode* pn, pnodes) nodes << pn;
+	return getTimeStampsNormalized(nodes, v);
+}

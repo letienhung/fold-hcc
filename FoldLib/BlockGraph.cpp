@@ -22,7 +22,18 @@ BlockGraph::BlockGraph( QVector<PatchNode*>& ms, QVector<FdNode*>& ss,
 		Structure::Graph::addNode(s->clone());
 
 	// sort masters
-	assignMasterTimeStamps();
+	masterTimeStamps = getTimeStampsNormalized(masters, baseMaster->mPatch.Normal);
+
+	// base master is the bottom one
+	double minT = maxDouble();
+	foreach(PatchNode* m, masters)
+	{
+		if (masterTimeStamps[m->mID] < minT)
+		{
+			baseMaster = m;
+			minT = masterTimeStamps[m->mID];
+		}
+	}
 
 	// create chains
 	for (int i = 0; i < ss.size(); i++)
@@ -168,6 +179,29 @@ void BlockGraph::computeMaxFoldingVolume(Geom::Box cropper)
 	addDebugBoxes(maxFoldingVolume.values().toVector());
 }
 
+QMap<QString, Geom::Box> BlockGraph::computeAvailFoldingVolume( FdGraph* scaffold )
+{
+	// compute the offset
+	Vector3 posA = baseMaster->center();
+	Vector3 posB = ((FdNode*)scaffold->getNode(baseMaster->mID))->center();
+	Vector3 offset = posB - posA;
+
+	foreach (QString mid, minFoldingVolume.keys())
+	{
+		// align with scaffold
+		Geom::Box minFV = minFoldingVolume[mid];
+		Geom::Box maxFV = maxFoldingVolume[mid];
+		minFV.translate(offset);
+		maxFV.translate(offset);
+
+		// extend in the context of scaffold
+
+		// crop by maxFV
+		minFV.cropByAxisAlignedBox(maxFV);
+	}
+
+	return validFoldingVolume;
+}
 
 void BlockGraph::exportCollFOG()
 {
@@ -203,43 +237,6 @@ bool BlockGraph::fAreasIntersect( Geom::Rectangle& rect1, Geom::Rectangle& rect2
 	Geom::Rectangle2 r2 = base_rect.get2DRectangle(rect2);
 
 	return Geom::IntrRect2Rect2::test(r1, r2);
-}
-
-void BlockGraph::assignMasterTimeStamps()
-{
-	// squeezing line
-	Geom::Rectangle rect0 = masters[0]->mPatch;
-	Geom::Line squzLine(rect0.Center, rect0.Normal);
-
-	// projected position along squeezing line
-	double minT = maxDouble();
-	double maxT = -maxDouble();
-	foreach (PatchNode* m, masters)
-	{
-		double t = squzLine.getProjTime(m->center());
-		masterTimeStamps[m->mID] = t;
-
-		if (t < minT) minT = t;
-		if (t > maxT) maxT = t;
-	}
-
-	// normalize time stamps
-	double timeRange = maxT - minT;
-	foreach (QString mid, masterTimeStamps.keys())
-	{
-		masterTimeStamps[mid] = ( masterTimeStamps[mid] - minT ) / timeRange;
-	}
-
-	// base master is the bottom one
-	minT = maxDouble();
-	foreach(PatchNode* m, masters)
-	{
-		if (masterTimeStamps[m->mID] < minT)
-		{
-			baseMaster = m;
-			minT = masterTimeStamps[m->mID];
-		}
-	}
 }
 
 void BlockGraph::foldabilize()
@@ -393,8 +390,13 @@ void BlockGraph::findOptimalSolution()
 	foreach(int idx, qs[0])
 	{
 		FoldOption* fn = fns[idx];
-		fn->addTag(SELECTED_FOLD_OPTION);
+		fn->addTag(SELECTED_TAG);
 		FoldEntity* cn = collFog->getFoldEntity(fn->mID);
 		foldSolution[cn->entityIdx] = fn;
 	}
+}
+
+double BlockGraph::getTimeLength()
+{
+	return nbMasters(this) - 1;
 }

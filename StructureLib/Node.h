@@ -1,14 +1,10 @@
 #pragma once
 
-#include <QString>
-#include <QVariant>
-#include <QMap>
-
-typedef QMap< QString, QVariant > PropertyMap;
+#include "PropertyContainer.h"
 
 namespace Structure{
 
-class Node
+class Node : public PropertyContainer
 {
 public:
 	Node(QString nid); 
@@ -25,14 +21,8 @@ public:
 	virtual void draw();
 	virtual void drawWithName(int name);
 
-	// properties
-	void addTag(QString tag);
-	void removeTag(QString tag);
-	bool hasTag(QString tag);
-
 public:
 	QString	mID;
 	bool isSelected;
-    PropertyMap properties;
 };
 }

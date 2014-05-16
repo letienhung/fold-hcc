@@ -18,8 +18,9 @@ public:
 public:
 	// masters
 	Vector3 sqzV;
-	QString baseMasterId;
+	PatchNode* baseMaster;
 	QVector<PatchNode*> masters;
+	QMultiMap<QString, QString> masterOrderConstraints; //<first, second>: first is above second
 
 	// slaves
 	QVector<FdNode*> slaves;
@@ -44,6 +45,7 @@ public:
 public:
 	// decomposition
 	void createMasters(StrArray2D& masterGroups);
+	void computeMasterOrderConstraints();
 
 	void createSlaves(); 
 	void updateSlaves(); // collect current slaves and store into \p slaves
@@ -56,14 +58,15 @@ public:
 	// foldem
 	void foldabilize(bool withinAABB);
 	void findFoldOrderGreedy();
-	FoldOption* getMinCostFreeFoldOption();
+	int getBestNextBlockIndex(double currT);
+	bool isValid(FdGraph* folded);
 
 	// export
 	void exportCollFOG();
 
 	// key frame
 	void generateKeyframes(int N);
-	FdGraph* getKeyFrame(double t);
+	FdGraph* getKeyframe(double t);
 
 public:
 	FdGraph* activeScaffold();

@@ -7,7 +7,7 @@
 
 namespace Structure{
 
-class Graph
+class Graph : public PropertyContainer
 {
 public:
     Graph(QString id = "");
@@ -58,7 +58,6 @@ public:
 	QString mID;
 	QVector<Node*> nodes;
 	QVector<Link*> links;
-	PropertyMap properties;
 };
 
 }

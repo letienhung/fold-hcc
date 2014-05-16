@@ -16,7 +16,8 @@ DESTDIR = $$PWD/$$CFG/lib
 HEADERS += \
     Node.h \
     Link.h \
-    Graph.h
+    Graph.h \
+    PropertyContainer.h
 
 SOURCES += \
     Link.cpp \

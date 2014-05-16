@@ -17,10 +17,10 @@ typedef QPair<double, double> TimeInterval;
 // tags
 #define	IS_MASTER "isMasterPatch"
 #define IS_EDGE_ROD "isEdgeRodNode"
-#define IS_HBLOCK_FOLD_ENTITY "isHBlockFoldEntity"
-#define IS_HBLOCK_FOLD_OPTION "isHBlockFoldOption"
-#define SELECTED_FOLD_OPTION "selectedFoldOption"
-#define DELETED_TAG "hasdeleted"
+#define DELETED_TAG "hasDeleted"
+#define FOLDED_TAG "hasFolded"
+#define READY_TAG "isReady"
+#define SELECTED_TAG "isSelected"
 
 // Qt meta type
 Q_DECLARE_METATYPE(Vector3)
@@ -60,12 +60,15 @@ Geom::Box getBundleBox(const QVector<FdNode*>& nodes);
 // time intervals
 bool overlap(TimeInterval itv1, TimeInterval itv2);
 bool within(double t, TimeInterval itv);
+bool passed(double t, TimeInterval itv);
 double getLocalTime(double globalT, TimeInterval itv);
 
 // masters
 QVector<PatchNode*> getAllMasters(FdGraph* scaffold);
 QSet<QString> getAllMasterIds(FdGraph* scaffold);
 int nbMasters(FdGraph* scaffold);
+QMap<QString, double> getTimeStampsNormalized(QVector<FdNode*> nodes, Vector3 v);
+QMap<QString, double> getTimeStampsNormalized(QVector<PatchNode*> pnodes, Vector3 v);
 
 // combination
 FdGraph* combineDecomposition(QVector<FdGraph*> decmps, QString baseMid, 
