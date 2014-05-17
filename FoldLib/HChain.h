@@ -15,6 +15,9 @@ public:
 	Geom::Rectangle getFoldRegion(FoldOption* fn);
 	Geom::Rectangle getMaxFoldRegion(bool right);
 
+	// top
+	PatchNode* getTopMaster();
+
 	// modifier
 	QVector<Geom::Plane> generateCutPlanes( int N );
 };

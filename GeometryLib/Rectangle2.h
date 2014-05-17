@@ -39,6 +39,7 @@ namespace Geom{
 		Rectangle2	shrinkFront(QVector<Vector2>& pnts, Segment2& base);
 		Rectangle2	shrinkLeftRight(QVector<Vector2>& pnts, Segment2& base);
 		Rectangle2	shrinkFrontLeftRight(QVector<Vector2>& pnts, Segment2& base);
+		void		cropByAxisAlignedRectangle(Rectangle2& cropper);
 
 		// to string
 		QStringList toStrList(); 

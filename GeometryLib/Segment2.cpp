@@ -8,12 +8,7 @@ Segment2::Segment2()
 
 Segment2::Segment2(const Vector2& p0, const Vector2& p1)
 {
-	P0 = p0;
-	P1 = p1;
-	Center = (P0 + P1) / 2;
-	Direction = P1 - P0;
-	Extent = Direction.norm() / 2;
-	Direction.normalize();
+	set(p0, p1);
 }
 
 QVector<Vector2> Geom::Segment2::getUniformSamples( int N )
@@ -24,4 +19,30 @@ QVector<Vector2> Geom::Segment2::getUniformSamples( int N )
 		samples << P0 + i * step * Direction;
 
 	return samples;
+}
+
+double Geom::Segment2::getProjCoordinates( Vector2& p )
+{
+	Vector2 c2p = p - Center;
+	return dot(c2p, Direction) / Extent;
+}
+
+SurfaceMesh::Vector2 Geom::Segment2::getPosition( double t )
+{
+	return Center +  t * Extent * Direction;
+}
+
+void Geom::Segment2::set(const Vector2& p0, const Vector2& p1 )
+{
+	P0 = p0;
+	P1 = p1;
+	Center = (P0 + P1) / 2;
+	Direction = P1 - P0;
+	Extent = Direction.norm() / 2;
+	Direction.normalize();
+}
+
+void Geom::Segment2::flip()
+{
+	set(P1, P0);
 }

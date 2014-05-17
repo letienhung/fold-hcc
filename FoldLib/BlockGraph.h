@@ -31,11 +31,13 @@ public:
 	**/
 	FdGraph* getKeyframeScaffold(double t);
 
-	// folding volumes
-	void computeMinFoldingVolume();
-	void computeMaxFoldingVolume(Geom::Box cropper);
-	QMap<QString, Geom::Box> computeAvailFoldingVolume(FdGraph* scaffold, 
+	// folding space
+	void computeMinFoldingRegion();
+	void computeMaxFoldingRegion(Geom::Box cropper);
+	void computeAvailFoldingRegion(FdGraph* scaffold, 
 		QMultiMap<QString, QString>& moc_greater, QMultiMap<QString, QString>& moc_less);
+	double getAvailFoldingVolume();
+	Geom::Box getAvailFoldingSpace(QString mid);
 
 	// foldem
 	void foldabilize();
@@ -45,7 +47,6 @@ public:
 
 	// helper
 	QVector<QString> getInbetweenOutsideParts(FdGraph* scaffold, QString mid1, QString mid2);
-	Geom::Rectangle2 RRRRR(Geom::Rectangle2 & seed, QVector<Vector2> &pnts);
 
 public:
 	// time interval
@@ -56,17 +57,20 @@ public:
 	QVector<PatchNode*> masters;
 	QMap<QString, QSet<int> > masterChainsMap; 
 	QMap<QString, QSet<int> > masterUnderChainsMap; // master : chains under master
+
+	// time stamps
+	double timeScale;
 	QMap<QString, double> masterTimeStamps;
 
 	// chains
 	int selChainIdx;
 	QVector<HChain*> chains;
 
-	// folding volumes
+	// folding space
+	QMap<QString, double> masterHeight;
 	QMap<QString, Geom::Rectangle> minFoldingRegion;
-	QMap<QString, Geom::Box> minFoldingVolume;
-	QMap<QString, Geom::Box> maxFoldingVolume;
-	QMap<QString, Geom::Box> availFoldingVolume;
+	QMap<QString, Geom::Rectangle> maxFoldingRegion;
+	QMap<QString, Geom::Rectangle> availFoldingRegion;
 
 	// collision graph
 	FoldOptionGraph* collFog;

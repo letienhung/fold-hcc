@@ -65,7 +65,8 @@ void DcGraph::createMasters(StrArray2D& masterGroups)
 void DcGraph::computeMasterOrderConstraints()
 {
 	// time stamps: bottom-up
-	QMap<QString, double> masterTimeStamps = getTimeStampsNormalized(masters, sqzV);
+	double tScale;
+	QMap<QString, double> masterTimeStamps = getTimeStampsNormalized(masters, sqzV, tScale);
 
 	// base master is the bottom one
 	double minT = maxDouble();
@@ -538,8 +539,8 @@ void DcGraph::foldabilize(bool withinAABB)
 	// min & max folding volumes
 	foreach (BlockGraph* b, blocks)
 	{
-		b->computeMinFoldingVolume();
-		b->computeMaxFoldingVolume(aabb);
+		b->computeMinFoldingRegion();
+		b->computeMaxFoldingRegion(aabb);
 	}
 
 	// find fold order
@@ -592,53 +593,66 @@ int DcGraph::getBestNextBlockIndex(double currT)
 {
 	FdGraph* currKeyframe = getKeyframe(currT);
 
-	// available folding volumes
-	QMap<QString, QMap<QString, Geom::Box> > currAFV;
-	for (int i = 0; i < blocks.size(); i++)
-		currAFV[blocks[i]->mID] = blocks[i]->computeAvailFoldingVolume(currKeyframe, masterOrderGreater, masterOrderLess);
-
-	return 0;
-
 	// evaluate each block to find the best one
 	double best_score = -maxDouble();
 	int best_bid;
-	for (int bid = 0; bid < blocks.size(); bid++)
+	for (int curr_bid = 0; curr_bid < blocks.size(); curr_bid++)
 	{
-		BlockGraph* block = blocks[bid];
+		BlockGraph* currBlock = blocks[curr_bid];
 
 		// skip folded blocks
-		if (passed(currT, block->mFoldDuration))
+		if (passed(currT, currBlock->mFoldDuration))
 			continue;
 
 		// estimate the folding of i-th block 
-		TimeInterval orig_ti = block->mFoldDuration;
-		double timeLength = block->getTimeLength() * timeScale;
+		// look ahead time
+		TimeInterval curr_ti = currBlock->mFoldDuration;
+		double timeLength = currBlock->getTimeLength() * timeScale;
 		double nextT = currT + timeLength;
-		block->mFoldDuration = TIME_INTERVAL(currT, nextT);
-
-		// the folded state is estimated by available folding volume
+		currBlock->mFoldDuration = TIME_INTERVAL(currT, nextT);
 		FdGraph* nextKeyframe = getKeyframe(nextT);
+		currBlock->mFoldDuration = curr_ti;
 
-		// restore time interval
-		block->mFoldDuration = orig_ti;
-
-		// skip if not valid: flipped vertical order of masters
+		// skip if not valid
 		if (!isValid(nextKeyframe)) continue;
 
-		// available folding volumes after folded
-		QMap<QString, QMap<QString, Geom::Box> > nextAFV;
-		for (int i = 0; i < blocks.size(); i++)
-			nextAFV[blocks[i]->mID] = blocks[i]->computeAvailFoldingVolume(nextKeyframe, masterOrderGreater, masterOrderLess);
-		
 		// evaluate
 		double score = 0;
 
+		// AFV of this block
+		currBlock->computeAvailFoldingRegion(currKeyframe,masterOrderGreater, masterOrderLess);
+		score += currBlock->getAvailFoldingVolume();
 
+		// available folding space after folded
+		for (int next_bid = 0; next_bid < blocks.size(); next_bid++)
+		{
+			BlockGraph* nextBlock = blocks[next_bid];
+
+			// skip folded blocks
+			if (passed(nextT, nextBlock->mFoldDuration))
+				continue;
+
+			// look ahead time
+			TimeInterval next_ti = nextBlock->mFoldDuration;
+			double timeLength = nextBlock->getTimeLength() * timeScale;
+			double nextnextT = nextT + timeLength;
+			nextBlock->mFoldDuration = TIME_INTERVAL(nextT, nextnextT);
+			FdGraph* nextnextKeyframe = getKeyframe(nextnextT);
+			nextBlock->mFoldDuration = next_ti;
+
+			// skip if not valid
+			if (!isValid(nextnextKeyframe)) continue;
+
+			// accumulate score
+			nextBlock->computeAvailFoldingRegion(nextKeyframe, masterOrderGreater, masterOrderLess);
+			score += nextBlock->getAvailFoldingVolume();
+		}
+		
 		// update the best
 		if (score > best_score)
 		{
 			best_score = score;
-			best_bid = bid;
+			best_bid = curr_bid;
 		}
 	}
 
@@ -672,11 +686,14 @@ void DcGraph::exportCollFOG()
 bool DcGraph::isValid( FdGraph* folded )
 {
 	QVector<PatchNode*> masters = getAllMasters(folded);
-	QMap<QString, double> masterTimeStamps = getTimeStampsNormalized(masters, sqzV);
+
+	double tScale;
+	QMap<QString, double> masterTimeStamps = getTimeStampsNormalized(masters, sqzV, tScale);
 
 	foreach (QString up, masterOrderGreater.uniqueKeys())
 		foreach (QString down, masterOrderGreater.values(up))
 			if (masterTimeStamps[up] < masterTimeStamps[down])
 				return false;
+
 	return true;
 }

@@ -22,17 +22,15 @@ BlockGraph::BlockGraph( QVector<PatchNode*>& ms, QVector<FdNode*>& ss,
 		Structure::Graph::addNode(s->clone());
 
 	// sort masters
-	masterTimeStamps = getTimeStampsNormalized(masters, masters.front()->mPatch.Normal);
-
-	// base master is the bottom one
-	double minT = maxDouble();
-	foreach(PatchNode* m, masters)
+	masterTimeStamps = getTimeStampsNormalized(masters, masters.front()->mPatch.Normal, timeScale);
+	foreach (PatchNode* m, masters)
 	{
-		if (masterTimeStamps[m->mID] < minT)
-		{
+		// base master is the bottom one
+		if (masterTimeStamps[m->mID] < ZERO_TOLERANCE_LOW)
 			baseMaster = m;
-			minT = masterTimeStamps[m->mID];
-		}
+
+		// height
+		masterHeight[m->mID] = masterTimeStamps[m->mID] * timeScale;
 	}
 
 	// create chains
@@ -110,10 +108,8 @@ QStringList BlockGraph::getChainLabels()
 	return labels;
 }
 
-void BlockGraph::computeMinFoldingVolume()
+void BlockGraph::computeMinFoldingRegion()
 {
-	minFoldingVolume.clear();
-
 	Geom::Rectangle base_rect = baseMaster->mPatch;
 	foreach (PatchNode* top_master, masters)
 	{
@@ -124,20 +120,13 @@ void BlockGraph::computeMinFoldingVolume()
 		Geom::Rectangle top_rect = top_master->mPatch;
 		Geom::Rectangle top_rect_proj = base_rect.getProjection(top_rect);
 
-		// folding region and volume
-		double height = (top_rect.Center - top_rect_proj.Center).norm();
+		// folding region
 		minFoldingRegion[top_master->mID] = top_rect_proj;
-		minFoldingVolume[top_master->mID] = Geom::Box(top_rect_proj, base_rect.Normal, height);
 	}
-
-	// debug
-	//addDebugBoxes(minFoldingVolume.values().toVector());
 }
 
-void BlockGraph::computeMaxFoldingVolume(Geom::Box shapeAABB)
+void BlockGraph::computeMaxFoldingRegion(Geom::Box shapeAABB)
 {
-	minFoldingVolume.clear();
-
 	Geom::Rectangle base_rect = baseMaster->mPatch;
 	foreach (PatchNode* top_master, masters)
 	{
@@ -153,34 +142,33 @@ void BlockGraph::computeMaxFoldingVolume(Geom::Box shapeAABB)
 		pnts << mrect_proj.getConners();
 
 		// chains attaching to master
-		foreach (QSet<int> cids, masterUnderChainsMap)
-		{
-			foreach (int cid, cids)
-			{
+		foreach (QSet<int> cids, masterUnderChainsMap) {
+			foreach (int cid, cids) {
 				pnts << chains[cid]->getMaxFoldRegion(true).getConners();
 				pnts << chains[cid]->getMaxFoldRegion(false).getConners();
 			}
 		}
 
-		// minimal enclosing rectangle on the projection plane
+		// minimal enclosing rectangle
 		QVector<Vector2> pnts_proj;
 		foreach(Vector3 p, pnts) pnts_proj << base_rect.getProjCoordinates(p);
 		Geom::Rectangle2 max_rect2 = getMinEnclosingRectangle2D(pnts_proj);
-		Geom::Rectangle max_rect = base_rect.get3DRectangle(max_rect2);
 
-		// folding volume
-		double height = (mrect.Center - mrect_proj.Center).norm();
-		Geom::Box fv(max_rect, base_rect.Normal, height);
-		fv.cropByAxisAlignedBox(shapeAABB);
-		maxFoldingVolume[top_master->mID] = fv;
+		// crop by shape AABB
+		int aid = shapeAABB.getAxisId(base_rect.Normal);
+		Geom::Rectangle cropper3 = shapeAABB.getPatch(aid, 0);
+		Geom::Rectangle2 cropper2 = base_rect.get2DRectangle(cropper3);
+		max_rect2.cropByAxisAlignedRectangle(cropper2);
+
+		Geom::Rectangle max_rect = base_rect.get3DRectangle(max_rect2);
+		maxFoldingRegion[top_master->mID] = max_rect;
 	}
 
 	// debug
 	//addDebugBoxes(maxFoldingVolume.values().toVector());
 }
 
-
-QMap<QString, Geom::Box> BlockGraph::computeAvailFoldingVolume( FdGraph* scaffold, 
+void BlockGraph::computeAvailFoldingRegion( FdGraph* scaffold, 
 	QMultiMap<QString, QString>& moc_greater, QMultiMap<QString, QString>& moc_less )
 {
 	// compute the offset
@@ -226,43 +214,23 @@ QMap<QString, Geom::Box> BlockGraph::computeAvailFoldingVolume( FdGraph* scaffol
 		}
 
 		// samples from max folding volume
-		Geom::Box mfv = maxFoldingVolume[top_mid];
-		mfv.scale(1 + ZERO_TOLERANCE_LOW);
-		samples << mfv.getEdgeSamples(nbs);
-
-		//addDebugPoints(samples);
+		Geom::Rectangle maxFR = maxFoldingRegion[top_mid];
+		samples << maxFR.getEdgeSamples(nbs);
 
 		// projection on base_rect
 		QVector<Vector2> samples_proj;
 		foreach (Vector3 s, samples)
 			samples_proj << base_rect.getProjCoordinates(s);
 
-		// debug
-		QVector<Vector3> samples2D;
-		foreach (Vector2 sp, samples_proj)
-			samples2D << base_rect.getPosition(sp);
-
-		//addDebugPoints(samples2D);
-
 		// max rect including minFR while excluding all constraint points
-		Geom::Rectangle2 minFR = base_rect.get2DRectangle(minFoldingRegion[top_mid]);
-		Geom::Rectangle2 avail_rect = RRRRR(minFR, samples_proj);
+		Geom::Rectangle2 avail_rect = base_rect.get2DRectangle(minFoldingRegion[top_mid]);
+		extendRectangle2D(avail_rect, samples_proj);
 		Geom::Rectangle avail_rect_3D = base_rect.get3DRectangle(avail_rect);
 
-		//addDebugSegments(avail_rect_3D.getEdgeSegments());
-
-		// folding volume
-		// rect and projection
-		Geom::Rectangle top_rect = top_master->mPatch;
-		Geom::Rectangle top_rect_proj = base_rect.getProjection(top_rect);
-		double height = (top_rect.Center- top_rect_proj.Center).norm();
-		availFoldingVolume[top_mid] = Geom::Box(avail_rect_3D, base_rect.Normal, height);
 	}
 
 	// restore the position of scaffold
 	scaffold->translate(-offset, false);
-
-	return availFoldingVolume;
 }
 
 void BlockGraph::exportCollFOG()
@@ -326,32 +294,29 @@ void BlockGraph::buildCollisionGraph()
 	{
 		HChain* chain = (HChain*)chains[i];
 
+		// available folding space
+		PatchNode* top_master = chain->getTopMaster();
+		Geom::Box afs = getAvailFoldingSpace(top_master->mID); 
+
 		// fold entity
 		FoldEntity* cn = new FoldEntity(i, chain->mID);
 		collFog->addNode(cn);
 
-		properties.remove("debugSegments");// debug
+		// debug
+		properties.remove("debugSegments");
 
 		// fold options and links
 		foreach(FoldOption* fn, chain->generateFoldOptions())
 		{
 			Geom::Rectangle fArea = fn->properties["fArea"].value<Geom::Rectangle>();
 
-			bool reject = false;
-
-			// reject if stick out of EFV
-			foreach (Geom::Box efv, availFoldingVolume.values())
-			{
-				if (!efv.containsAll(fArea.getConners()))
-				{
-					reject = true;
-					continue;
-				}
-			}
-			if (reject) continue;
+			// reject if stick out of AFS
+			if (!afs.containsAll(fArea.getConners()))
+				continue;
 
 			// reject if collide with other masters
 			// whose time stamp is within the time interval of fn
+			bool reject = false;
 			foreach (QString mid, masterTimeStamps.keys())
 			{
 				double mstamp = masterTimeStamps[mid];
@@ -510,70 +475,13 @@ QVector<QString> BlockGraph::getInbetweenOutsideParts( FdGraph* scaffold, QStrin
 	return inbetweens;
 }
 
-Geom::Rectangle2 BlockGraph::RRRRR( Geom::Rectangle2 & seed, QVector<Vector2> &pnts )
+double BlockGraph::getAvailFoldingVolume()
 {
-	Geom::Rectangle base_rect = baseMaster->mPatch;
+	return 0;
+}
 
-	Geom::Rectangle seed3 = base_rect.get3DRectangle(seed);
-	addDebugSegments(seed3.getEdgeSegments());
-
-	QVector<Vector3> pnts3;
-	foreach (Vector2 p2, pnts) pnts3 << base_rect.getPosition(p2);
-	addDebugPoints(pnts3);
-
-
-
-	Geom::Rectangle2 seed_copy = seed;
-	// shrink seed rect by epsilon to avoid pnts on edges
-	seed_copy.Extent *= 0.5;
-
-	// do nothing if seed rect contains any pnts
-	foreach (Vector2 p, pnts) 
-		if (seed_copy.contains(p)) 
-			return seed_copy;
-
-	// coordinates in the frame of seed rect
-	QVector<Vector2> pnts_coord;
-	foreach (Vector2 p, pnts) pnts_coord << seed.getCoordinates(p);
-
-	// extend along x
-	double left = -maxDouble();
-	double right = maxDouble();
-	foreach (Vector2 pc, pnts_coord)
-	{
-		// keep the extent along y
-		if (inRange(pc.y(), -1, 1))
-		{
-			double x = pc.x();
-			// tightest bound on left
-			if (x < 0 && x > left) left = x;
-			// tightest bound on right
-			if (x > 0 && x < right) right = x;
-		}
-	}
-
-	// extend along y
-	double bottom = -maxDouble();
-	double top = maxDouble();
-	foreach (Vector2 pc, pnts_coord)
-	{
-		// keep the extent along x
-		if (inRange(pc.x(), left, right))
-		{
-			double y = pc.y();
-			// tightest bound on left
-			if (y < 0 && y > bottom) bottom = y;
-			// tightest bound on right
-			if (y > 0 && y < top) top = y;
-		}
-	}
-
-	// set up box
-	QVector<Vector2> new_conners;
-	new_conners << seed.getPosition(Vector2(left, bottom))
-		<< seed.getPosition(Vector2(right, bottom))
-		<< seed.getPosition(Vector2(right, top))
-		<< seed.getPosition(Vector2(left, top));
-	return Geom::Rectangle2(new_conners);
-
+Geom::Box BlockGraph::getAvailFoldingSpace( QString mid )
+{
+	Geom::Rectangle afr = availFoldingRegion[mid];
+	return Geom::Box(afr, afr.Normal, masterHeight[mid]);
 }

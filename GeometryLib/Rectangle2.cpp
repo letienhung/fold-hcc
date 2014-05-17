@@ -321,3 +321,43 @@ Geom::Segment2 Geom::Rectangle2::getSkeleton( int aid )
 	Vector2 p1 = getEdgeCenter(aid, false);
 	return Segment2(p0, p1);
 }
+
+void Geom::Rectangle2::cropByAxisAlignedRectangle( Rectangle2& cropper )
+{
+	for (int i = 0; i < 2; i++)
+	{
+		// skeleton along axis[i]
+		Segment2 sklt = getSkeleton(i);
+		int cropper_aid = cropper.getAxisId(Axis[i]);
+		Segment2 other_sklt = cropper.getSkeleton(cropper_aid);
+
+		// point to same direction
+		if (dot(sklt.Direction, other_sklt.Direction) < 0)
+			other_sklt.flip();
+
+		// projection
+		double t0 = other_sklt.getProjCoordinates(sklt.P0);
+		double t1 = other_sklt.getProjCoordinates(sklt.P1);
+		double t0_crop = Max(-1, t0);
+		double t1_crop = Min(1, t1);
+
+		// no overlapping along this direction
+		if (t0_crop >= t1_crop) 
+		{
+			Extent *= 0;
+		}
+		// crop along this direction
+		else
+		{
+			// move center
+			Vector2 c = other_sklt.getPosition((t0+t1)/2);
+			Vector2 c_crop = other_sklt.getPosition((t0_crop+t1_crop)/2);
+			Center += c_crop - c;
+
+			// change extent
+			Vector2 p0 = other_sklt.getPosition(t0_crop);
+			Vector2 p1 = other_sklt.getPosition(t1_crop);
+			Extent[i] = (p0 - p1).norm()/2;
+		}
+	}
+}

@@ -75,3 +75,8 @@ QVector<Geom::Plane> HChain::generateCutPlanes( int N )
 
 	return cutPlanes;
 }
+
+PatchNode* HChain::getTopMaster()
+{
+	return mMasters[1];
+}

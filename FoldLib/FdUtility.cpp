@@ -444,7 +444,7 @@ bool passed( double t, TimeInterval itv )
 	return t >= itv.second;
 }
 
-QMap<QString, double> getTimeStampsNormalized( QVector<FdNode*> nodes, Vector3 v )
+QMap<QString, double> getTimeStampsNormalized( QVector<FdNode*> nodes, Vector3 v, double &tScale )
 {
 	QMap<QString, double> timeStamps;
 
@@ -464,36 +464,37 @@ QMap<QString, double> getTimeStampsNormalized( QVector<FdNode*> nodes, Vector3 v
 	}
 
 	// normalize time stamps
-	double timeRange = maxT - minT;
+	tScale = maxT - minT;
 	foreach (QString mid, timeStamps.keys())
 	{
-		timeStamps[mid] = ( timeStamps[mid] - minT ) / timeRange;
+		timeStamps[mid] = ( timeStamps[mid] - minT ) / tScale;
 	}
 
 	return timeStamps;
 }
 
-QMap<QString, double> getTimeStampsNormalized( QVector<PatchNode*> pnodes, Vector3 v )
+QMap<QString, double> getTimeStampsNormalized( QVector<PatchNode*> pnodes, Vector3 v, double &tScale )
 {
 	QVector<FdNode*> nodes;
 	foreach (PatchNode* pn, pnodes) nodes << pn;
-	return getTimeStampsNormalized(nodes, v);
+	return getTimeStampsNormalized(nodes, v, tScale);
 }
 
-Geom::Rectangle2 extendRectangle2D( Geom::Rectangle2& seed, QVector<Vector2> &pnts )
+bool extendRectangle2D( Geom::Rectangle2& rect, QVector<Vector2> &pnts )
 {
-	Geom::Rectangle2 seed_copy = seed;
-	// shrink seed rect by epsilon to avoid pnts on edges
-	seed_copy.Extent *= 0.5;
+	double epsilon = 2 * ZERO_TOLERANCE_LOW;
+
+	// shrink seed rect to avoid pnts on edges
+	rect.Extent -= Vector2(epsilon, epsilon);
 
 	// do nothing if seed rect contains any pnts
 	foreach (Vector2 p, pnts) 
-		if (seed_copy.contains(p)) 
-			return seed_copy;
+		if (rect.contains(p)) 
+			return false;
 
 	// coordinates in the frame of seed rect
 	QVector<Vector2> pnts_coord;
-	foreach (Vector2 p, pnts) pnts_coord << seed.getCoordinates(p);
+	foreach (Vector2 p, pnts) pnts_coord << rect.getCoordinates(p);
 
 	// extend along x
 	double left = -maxDouble();
@@ -517,7 +518,7 @@ Geom::Rectangle2 extendRectangle2D( Geom::Rectangle2& seed, QVector<Vector2> &pn
 	foreach (Vector2 pc, pnts_coord)
 	{
 		// keep the extent along x
-		if (inRange(pc.x(), left, right))
+		if (inRange(pc.x(), left + epsilon, right - epsilon))
 		{
 			double y = pc.y();
 			// tightest bound on left
@@ -529,9 +530,10 @@ Geom::Rectangle2 extendRectangle2D( Geom::Rectangle2& seed, QVector<Vector2> &pn
 
 	// set up box
 	QVector<Vector2> new_conners;
-	new_conners << seed.getPosition(Vector2(left, bottom))
-				<< seed.getPosition(Vector2(right, bottom))
-				<< seed.getPosition(Vector2(right, top))
-				<< seed.getPosition(Vector2(left, top));
-	return Geom::Rectangle2(new_conners);
+	new_conners << rect.getPosition(Vector2(left, bottom))
+				<< rect.getPosition(Vector2(right, bottom))
+				<< rect.getPosition(Vector2(right, top))
+				<< rect.getPosition(Vector2(left, top));
+	rect =  Geom::Rectangle2(new_conners);
+	return true;
 }
