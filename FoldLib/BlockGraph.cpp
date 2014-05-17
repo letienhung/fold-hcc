@@ -22,7 +22,7 @@ BlockGraph::BlockGraph( QVector<PatchNode*>& ms, QVector<FdNode*>& ss,
 		Structure::Graph::addNode(s->clone());
 
 	// sort masters
-	masterTimeStamps = getTimeStampsNormalized(masters, baseMaster->mPatch.Normal);
+	masterTimeStamps = getTimeStampsNormalized(masters, masters.front()->mPatch.Normal);
 
 	// base master is the bottom one
 	double minT = maxDouble();
@@ -176,11 +176,12 @@ void BlockGraph::computeMaxFoldingVolume(Geom::Box shapeAABB)
 	}
 
 	// debug
-	addDebugBoxes(maxFoldingVolume.values().toVector());
+	//addDebugBoxes(maxFoldingVolume.values().toVector());
 }
 
-QMap<QString, Geom::Box> BlockGraph::computeAvailFoldingVolume( FdGraph* scaffold,
-								QMultiMap<QString, QString>& masterOrderConstraints )
+
+QMap<QString, Geom::Box> BlockGraph::computeAvailFoldingVolume( FdGraph* scaffold, 
+	QMultiMap<QString, QString>& moc_greater, QMultiMap<QString, QString>& moc_less )
 {
 	// compute the offset
 	Vector3 posA = baseMaster->center();
@@ -193,47 +194,69 @@ QMap<QString, Geom::Box> BlockGraph::computeAvailFoldingVolume( FdGraph* scaffol
 	// extent 
 	QString base_mid = baseMaster->mID;
 	Geom::Rectangle base_rect = baseMaster->mPatch;
-	foreach (QString top_mid, minFoldingVolume.keys())
+	QVector<QString> allMasterIds = getAllMasterIds(scaffold);
+	foreach (PatchNode* top_master, masters)
 	{
+		// skip base master
+		if (top_master == baseMaster) continue;
+		
+		// constraint parts: in-between and unordered
+		QString top_mid = top_master->mID;
 		QVector<QString> constraintParts;
+		constraintParts << getInbetweenOutsideParts(scaffold, base_mid, top_mid);
 
-		// parts in between
-		constraintParts << getInbetweenParts(scaffold, base_mid, top_mid);
-
-		// masters with no order constraints with both top and base
-		QList<QString> moc_base = masterOrderConstraints.values(base_mid);
-		QList<QString> moc_top = masterOrderConstraints.values(top_mid);
-		foreach (QString mid, getAllMasterIds())
+		QList<QString> moc_base;
+		moc_base << moc_greater.values(base_mid) << moc_less.values(base_mid) << base_mid;
+		QList<QString> moc_top;
+		moc_top << moc_greater.values(top_mid) << moc_less.values(top_mid) << top_mid;
+		foreach (QString mid, allMasterIds) // no order with both
 			if (!moc_base.contains(mid) && !moc_top.contains(mid))
 				constraintParts << mid;
 
 		// samples from constraint parts
 		QVector<Vector3> samples;
+		int nbs = 10;
 		foreach(QString nid, constraintParts)
 		{
-			FdNode* n = (FdNode*)getNode(nid);
+			FdNode* n = (FdNode*)scaffold->getNode(nid);
 			if (n->mType == FdNode::PATCH)
-				samples << ((PatchNode*)n)->mPatch.getEdgeSamples(100);
+				samples << ((PatchNode*)n)->mPatch.getEdgeSamples(nbs);
 			else
-				samples << ((RodNode*)n)->mRod.getUniformSamples(100);
+				samples << ((RodNode*)n)->mRod.getUniformSamples(nbs);
 		}
 
 		// samples from max folding volume
 		Geom::Box mfv = maxFoldingVolume[top_mid];
-		mfv *= 1 + ZERO_TOLERANCE_LOW;
-		samples << mfv.getEdgeSamples(100);
+		mfv.scale(1 + ZERO_TOLERANCE_LOW);
+		samples << mfv.getEdgeSamples(nbs);
+
+		//addDebugPoints(samples);
 
 		// projection on base_rect
 		QVector<Vector2> samples_proj;
 		foreach (Vector3 s, samples)
 			samples_proj << base_rect.getProjCoordinates(s);
 
+		// debug
+		QVector<Vector3> samples2D;
+		foreach (Vector2 sp, samples_proj)
+			samples2D << base_rect.getPosition(sp);
+
+		//addDebugPoints(samples2D);
+
 		// max rect including minFR while excluding all constraint points
-		Geom::Rectangle2 avail_rect = extendRectangle2D(minFoldingRegion, samples_proj);
+		Geom::Rectangle2 minFR = base_rect.get2DRectangle(minFoldingRegion[top_mid]);
+		Geom::Rectangle2 avail_rect = RRRRR(minFR, samples_proj);
+		Geom::Rectangle avail_rect_3D = base_rect.get3DRectangle(avail_rect);
+
+		//addDebugSegments(avail_rect_3D.getEdgeSegments());
 
 		// folding volume
-		double height = (top_rect.Center - top_rect_proj.Center).norm();
-		availFoldingVolume[top_mid] = Geom::Box(avail_rect, base_rect.Normal, height);
+		// rect and projection
+		Geom::Rectangle top_rect = top_master->mPatch;
+		Geom::Rectangle top_rect_proj = base_rect.getProjection(top_rect);
+		double height = (top_rect.Center- top_rect_proj.Center).norm();
+		availFoldingVolume[top_mid] = Geom::Box(avail_rect_3D, base_rect.Normal, height);
 	}
 
 	// restore the position of scaffold
@@ -440,22 +463,36 @@ double BlockGraph::getTimeLength()
 	return nbMasters(this) - 1;
 }
 
-QVector<QString> BlockGraph::getInbetweenParts( FdGraph* scaffold, QString mid1, QString mid2 )
+QVector<QString> BlockGraph::getInbetweenOutsideParts( FdGraph* scaffold, QString mid1, QString mid2 )
 {
-	QMap<QString, double> masterTs;
-	QMap<QString, TimeInterval> slaveTs;
-
 	// time line
 	Vector3 sqzV = baseMaster->mPatch.Normal;
 	Geom::Line timeLine(Vector3(0, 0, 0), sqzV);
 
 	// position on time line
+	FdNode* master1 = (FdNode*)getNode(mid1);
+	FdNode* master2 = (FdNode*)getNode(mid2);
+	double t0 = timeLine.getProjTime(master1->center());
+	double t1 = timeLine.getProjTime(master2->center());
+	if (t0 > t1) std::swap(t0, t1);
+	TimeInterval m1m2 = TIME_INTERVAL(t0, t1);
+
+	// find parts in between m1 and m2
+	QVector<QString> inbetweens;
 	foreach (FdNode* n, scaffold->getFdNodes())
 	{
+		// skip parts in this block
+		if (containsNode(n->mID)) continue;
+
+		// master
 		if (n->hasTag(IS_MASTER))
 		{
-			masterTs[n->mID] = timeLine.getProjTime(n->center());
+			double t = timeLine.getProjTime(n->center());
+			
+			if (within(t, m1m2)) 
+				inbetweens << n->mID;
 		}
+		// slave
 		else
 		{
 			int aid = n->mBox.getAxisId(sqzV);
@@ -463,22 +500,80 @@ QVector<QString> BlockGraph::getInbetweenParts( FdGraph* scaffold, QString mid1,
 			double t0 = timeLine.getProjTime(sklt.P0);
 			double t1 = timeLine.getProjTime(sklt.P1);
 			if (t0 > t1) std::swap(t0, t1);
-			slaveTs[n->mID] = TIME_INTERVAL(t0, t1);
+			TimeInterval ti = TIME_INTERVAL(t0+ZERO_TOLERANCE_LOW, t1-ZERO_TOLERANCE_LOW);
+			
+			if (overlap(ti, m1m2))
+				inbetweens << n->mID;
 		}
 	}
 
-	// find parts in between m1 and m2
-	QVector<QString> inbetweens;
-	double t0 = masterTs[mid1];
-	double t1 = masterTs[mid2];
-	if (t0 > t1) std::swap(t0, t1);
-	TimeInterval m1m2 = TIME_INTERVAL(t0, t1);
-	foreach (QString mid, masterTs.keys())
-		if (within(masterTs[mid], m1m2))
-			inbetweens << mid;
-	foreach(QString sid, slaveTs.keys())
-		if (overlap(slaveTs[sid], m1m2))
-			inbetweens << sid;
-	
 	return inbetweens;
+}
+
+Geom::Rectangle2 BlockGraph::RRRRR( Geom::Rectangle2 & seed, QVector<Vector2> &pnts )
+{
+	Geom::Rectangle base_rect = baseMaster->mPatch;
+
+	Geom::Rectangle seed3 = base_rect.get3DRectangle(seed);
+	addDebugSegments(seed3.getEdgeSegments());
+
+	QVector<Vector3> pnts3;
+	foreach (Vector2 p2, pnts) pnts3 << base_rect.getPosition(p2);
+	addDebugPoints(pnts3);
+
+
+
+	Geom::Rectangle2 seed_copy = seed;
+	// shrink seed rect by epsilon to avoid pnts on edges
+	seed_copy.Extent *= 0.5;
+
+	// do nothing if seed rect contains any pnts
+	foreach (Vector2 p, pnts) 
+		if (seed_copy.contains(p)) 
+			return seed_copy;
+
+	// coordinates in the frame of seed rect
+	QVector<Vector2> pnts_coord;
+	foreach (Vector2 p, pnts) pnts_coord << seed.getCoordinates(p);
+
+	// extend along x
+	double left = -maxDouble();
+	double right = maxDouble();
+	foreach (Vector2 pc, pnts_coord)
+	{
+		// keep the extent along y
+		if (inRange(pc.y(), -1, 1))
+		{
+			double x = pc.x();
+			// tightest bound on left
+			if (x < 0 && x > left) left = x;
+			// tightest bound on right
+			if (x > 0 && x < right) right = x;
+		}
+	}
+
+	// extend along y
+	double bottom = -maxDouble();
+	double top = maxDouble();
+	foreach (Vector2 pc, pnts_coord)
+	{
+		// keep the extent along x
+		if (inRange(pc.x(), left, right))
+		{
+			double y = pc.y();
+			// tightest bound on left
+			if (y < 0 && y > bottom) bottom = y;
+			// tightest bound on right
+			if (y > 0 && y < top) top = y;
+		}
+	}
+
+	// set up box
+	QVector<Vector2> new_conners;
+	new_conners << seed.getPosition(Vector2(left, bottom))
+		<< seed.getPosition(Vector2(right, bottom))
+		<< seed.getPosition(Vector2(right, top))
+		<< seed.getPosition(Vector2(left, top));
+	return Geom::Rectangle2(new_conners);
+
 }

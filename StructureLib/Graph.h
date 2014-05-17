@@ -31,6 +31,7 @@ public:
 	int		nbNodes();
 	int		nbLinks();
 	bool	isEmpty();
+	bool	containsNode(QString nid);
 	int		getNodeIndex(QString nid);
 	int		getLinkIndex(QString nid1, QString nid2);
 	Node*	getNode(int idx);

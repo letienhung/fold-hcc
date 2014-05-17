@@ -65,7 +65,7 @@ double getLocalTime(double globalT, TimeInterval itv);
 
 // masters
 QVector<PatchNode*> getAllMasters(FdGraph* scaffold);
-QSet<QString> getAllMasterIds(FdGraph* scaffold);
+QVector<QString> getAllMasterIds(FdGraph* scaffold);
 int nbMasters(FdGraph* scaffold);
 QMap<QString, double> getTimeStampsNormalized(QVector<FdNode*> nodes, Vector3 v);
 QMap<QString, double> getTimeStampsNormalized(QVector<PatchNode*> pnodes, Vector3 v);
@@ -76,4 +76,4 @@ FdGraph* combineDecomposition(QVector<FdGraph*> decmps, QString baseMid,
 
 // 2D geometry
 Geom::Rectangle2 getMinEnclosingRectangle2D(QVector<Vector2> &pnts);
-Geom::Rectangle2 extendRectangle2D(Geom::Rectangle2 seed, QVector<Vector2> &pnts);
+Geom::Rectangle2 extendRectangle2D(Geom::Rectangle2& seed, QVector<Vector2> &pnts);

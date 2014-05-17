@@ -309,7 +309,8 @@ bool hasIntersection( FdNode* slave, PatchNode* master, double thr )
 
 bool overlap( TimeInterval itv1, TimeInterval itv2 )
 {
-	return within(itv1.first, itv2) || within(itv1.second, itv2);
+	return within(itv1.first, itv2) || within(itv1.second, itv2) ||
+		within(itv2.first, itv1) || within(itv2.second, itv1);
 }
 
 bool within( double t, TimeInterval itv )
@@ -407,9 +408,9 @@ int nbMasters( FdGraph* scaffold )
 	return getAllMasters(scaffold).size();
 }
 
-QSet<QString> getAllMasterIds( FdGraph* scaffold )
+QVector<QString> getAllMasterIds( FdGraph* scaffold )
 {
-	QSet<QString> mids;
+	QVector<QString> mids;
 	foreach (PatchNode* m, getAllMasters(scaffold))
 		mids << m->mID;
 
@@ -479,14 +480,18 @@ QMap<QString, double> getTimeStampsNormalized( QVector<PatchNode*> pnodes, Vecto
 	return getTimeStampsNormalized(nodes, v);
 }
 
-Geom::Rectangle2 extendRectangle2D( Geom::Rectangle2 seed, QVector<Vector2> &pnts )
+Geom::Rectangle2 extendRectangle2D( Geom::Rectangle2& seed, QVector<Vector2> &pnts )
 {
-	// do nothing if see rect contains any pnts
-	foreach (Vector2 p, pnts) 
-		if (seed.contains(p)) 
-			return seed;
+	Geom::Rectangle2 seed_copy = seed;
+	// shrink seed rect by epsilon to avoid pnts on edges
+	seed_copy.Extent *= 0.5;
 
-	// coordinates in the fame of seed rect
+	// do nothing if seed rect contains any pnts
+	foreach (Vector2 p, pnts) 
+		if (seed_copy.contains(p)) 
+			return seed_copy;
+
+	// coordinates in the frame of seed rect
 	QVector<Vector2> pnts_coord;
 	foreach (Vector2 p, pnts) pnts_coord << seed.getCoordinates(p);
 

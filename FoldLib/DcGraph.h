@@ -20,7 +20,8 @@ public:
 	Vector3 sqzV;
 	PatchNode* baseMaster;
 	QVector<PatchNode*> masters;
-	QMultiMap<QString, QString> masterOrderConstraints; //<first, second>: first is above second
+	QMultiMap<QString, QString> masterOrderGreater; // key > value
+	QMultiMap<QString, QString> masterOrderLess; // key < value
 
 	// slaves
 	QVector<FdNode*> slaves;

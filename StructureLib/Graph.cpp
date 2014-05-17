@@ -85,6 +85,14 @@ int Structure::Graph::getNodeIndex( QString nid )
 	return idx;
 }
 
+
+bool Structure::Graph::containsNode( QString nid )
+{
+	int i = getNodeIndex(nid);
+	return (i >= 0) && (i < nodes.size());
+}
+
+
 int Structure::Graph::getLinkIndex( QString nid1, QString nid2 )
 {
 	int idx = -1;

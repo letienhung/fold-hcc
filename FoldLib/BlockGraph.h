@@ -35,7 +35,7 @@ public:
 	void computeMinFoldingVolume();
 	void computeMaxFoldingVolume(Geom::Box cropper);
 	QMap<QString, Geom::Box> computeAvailFoldingVolume(FdGraph* scaffold, 
-									QMultiMap<QString, QString>& masterOrderConstraints);
+		QMultiMap<QString, QString>& moc_greater, QMultiMap<QString, QString>& moc_less);
 
 	// foldem
 	void foldabilize();
@@ -44,7 +44,8 @@ public:
 	bool fAreasIntersect(Geom::Rectangle& rect1, Geom::Rectangle& rect2);
 
 	// helper
-	QVector<QString> getInbetweenParts(FdGraph* scaffold, QString mid1, QString mid2);
+	QVector<QString> getInbetweenOutsideParts(FdGraph* scaffold, QString mid1, QString mid2);
+	Geom::Rectangle2 RRRRR(Geom::Rectangle2 & seed, QVector<Vector2> &pnts);
 
 public:
 	// time interval

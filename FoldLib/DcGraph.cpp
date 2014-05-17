@@ -80,7 +80,7 @@ void DcGraph::computeMasterOrderConstraints()
 	QMap<QString, Geom::Rectangle2> proj_rects;
 	Geom::Rectangle base_rect = baseMaster->mPatch;
 	foreach (PatchNode* m, masters)
-		proj_rects[m,mID] = base_rect.get2DRectangle(m->mPatch);
+		proj_rects[m->mID] = base_rect.get2DRectangle(m->mPatch);
 
 	// check each pair of masters
 	for (int i = 0; i < masters.size(); i++){
@@ -97,9 +97,15 @@ void DcGraph::computeMasterOrderConstraints()
 
 				// <up, down>
 				if (ti > tj) 
-					masterOrderConstraints.insert(mi, mj);
+				{
+					masterOrderGreater.insert(mi, mj);
+					masterOrderLess.insert(mj, mi);
+				}
 				else 
-					masterOrderConstraints.insert(mj,mi);
+				{
+					masterOrderGreater.insert(mj,mi);
+					masterOrderLess.insert(mi, mj);
+				}
 					
 			}
 		}
@@ -554,6 +560,11 @@ void DcGraph::findFoldOrderGreedy()
 	// choose best free block in a greedy manner
 	double currTime = 0.0;
 	int bid = getBestNextBlockIndex(currTime);
+
+
+	return;
+
+
 	while (bid >= 0 && bid < blocks.size())
 	{
 		BlockGraph* next_block = blocks[bid];
@@ -582,9 +593,11 @@ int DcGraph::getBestNextBlockIndex(double currT)
 	FdGraph* currKeyframe = getKeyframe(currT);
 
 	// available folding volumes
-	QMap<QString, <QMap<QString, Geom::Box> > > currAFV;
+	QMap<QString, QMap<QString, Geom::Box> > currAFV;
 	for (int i = 0; i < blocks.size(); i++)
-		currAFV[blocks[i]->mID] = blocks[i]->computeAvailFoldingVolume(currKeyframe);
+		currAFV[blocks[i]->mID] = blocks[i]->computeAvailFoldingVolume(currKeyframe, masterOrderGreater, masterOrderLess);
+
+	return 0;
 
 	// evaluate each block to find the best one
 	double best_score = -maxDouble();
@@ -613,9 +626,9 @@ int DcGraph::getBestNextBlockIndex(double currT)
 		if (!isValid(nextKeyframe)) continue;
 
 		// available folding volumes after folded
-		QMap<QString, <QMap<QString, Geom::Box> > > nextAFV;
+		QMap<QString, QMap<QString, Geom::Box> > nextAFV;
 		for (int i = 0; i < blocks.size(); i++)
-			nextAFV << blocks[i]->computeAvailFoldingVolume(nextKeyframe);
+			nextAFV[blocks[i]->mID] = blocks[i]->computeAvailFoldingVolume(nextKeyframe, masterOrderGreater, masterOrderLess);
 		
 		// evaluate
 		double score = 0;
@@ -661,8 +674,8 @@ bool DcGraph::isValid( FdGraph* folded )
 	QVector<PatchNode*> masters = getAllMasters(folded);
 	QMap<QString, double> masterTimeStamps = getTimeStampsNormalized(masters, sqzV);
 
-	foreach (QString up, masterOrderConstraints.uniqueKeys())
-		foreach (QString down, masterOrderConstraints.values(up))
+	foreach (QString up, masterOrderGreater.uniqueKeys())
+		foreach (QString down, masterOrderGreater.values(up))
 			if (masterTimeStamps[up] < masterTimeStamps[down])
 				return false;
 	return true;
