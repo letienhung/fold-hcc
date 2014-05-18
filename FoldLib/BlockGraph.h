@@ -68,9 +68,9 @@ public:
 
 	// folding space
 	QMap<QString, double> masterHeight;
-	QMap<QString, Geom::Rectangle> minFoldingRegion;
-	QMap<QString, Geom::Rectangle> maxFoldingRegion;
-	QMap<QString, Geom::Rectangle> availFoldingRegion;
+	QMap<QString, Geom::Rectangle2> minFoldingRegion;
+	QMap<QString, Geom::Rectangle2> maxFoldingRegion;
+	QMap<QString, Geom::Rectangle2> availFoldingRegion;
 
 	// collision graph
 	FoldOptionGraph* collFog;

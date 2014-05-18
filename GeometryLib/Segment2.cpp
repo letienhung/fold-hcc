@@ -44,5 +44,7 @@ void Geom::Segment2::set(const Vector2& p0, const Vector2& p1 )
 
 void Geom::Segment2::flip()
 {
-	set(P1, P0);
+	Vector2 p0 = P1;
+	Vector2 p1 = P0;
+	set(p0, p1);
 }

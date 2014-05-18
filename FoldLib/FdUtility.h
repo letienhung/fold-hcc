@@ -30,6 +30,7 @@ Q_DECLARE_METATYPE(QVector<Geom::SectorCylinder>)
 Q_DECLARE_METATYPE(Geom::Rectangle)
 Q_DECLARE_METATYPE(QVector<Geom::Segment>)
 Q_DECLARE_METATYPE(QVector<Geom::Box>)
+Q_DECLARE_METATYPE(QVector<FdGraph*>)
 
 // distance between fd nodes
 Geom::Segment getDistSegment( FdNode* n1, FdNode* n2 );
@@ -75,7 +76,7 @@ FdGraph* combineDecomposition(QVector<FdGraph*> decmps, QString baseMid,
 	QMap<QString, QSet<int> >& masterDecmpMap);
 
 // 2D geometry
-Geom::Rectangle2 getMinEnclosingRectangle2D(QVector<Vector2> &pnts);
+Geom::Rectangle2 computeAABB2D(QVector<Vector2> &pnts);
 bool extendRectangle2D(Geom::Rectangle2& rect, QVector<Vector2> &pnts);
 
 // volume

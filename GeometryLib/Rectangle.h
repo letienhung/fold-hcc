@@ -58,6 +58,7 @@ public:
 
 	// samples
 	QVector<Vector3> getEdgeSamples(int N);
+	QVector<Vector3> getGridSamples(double w);
 
 	// visualization
 	void drawFace(QColor color = Qt::red);

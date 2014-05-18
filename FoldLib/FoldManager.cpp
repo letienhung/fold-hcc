@@ -293,6 +293,9 @@ void FoldManager::foldabilize(bool withinAABB)
 {
 	foreach (DcGraph* dcg, dcGraphs)
 		dcg->foldabilize(withinAABB);
+
+	// debug
+	updateKeyframeList();
 }
 
 void FoldManager::updateDcList()

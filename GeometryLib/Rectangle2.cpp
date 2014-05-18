@@ -328,16 +328,16 @@ void Geom::Rectangle2::cropByAxisAlignedRectangle( Rectangle2& cropper )
 	{
 		// skeleton along axis[i]
 		Segment2 sklt = getSkeleton(i);
-		int cropper_aid = cropper.getAxisId(Axis[i]);
-		Segment2 other_sklt = cropper.getSkeleton(cropper_aid);
+		int caid = cropper.getAxisId(Axis[i]);
+		Segment2 c_sklt = cropper.getSkeleton(caid);
 
 		// point to same direction
-		if (dot(sklt.Direction, other_sklt.Direction) < 0)
-			other_sklt.flip();
+		if (dot(sklt.Direction, c_sklt.Direction) < 0)
+			c_sklt.flip();
 
 		// projection
-		double t0 = other_sklt.getProjCoordinates(sklt.P0);
-		double t1 = other_sklt.getProjCoordinates(sklt.P1);
+		double t0 = c_sklt.getProjCoordinates(sklt.P0);
+		double t1 = c_sklt.getProjCoordinates(sklt.P1);
 		double t0_crop = Max(-1, t0);
 		double t1_crop = Min(1, t1);
 
@@ -345,19 +345,39 @@ void Geom::Rectangle2::cropByAxisAlignedRectangle( Rectangle2& cropper )
 		if (t0_crop >= t1_crop) 
 		{
 			Extent *= 0;
+			return;
 		}
 		// crop along this direction
 		else
 		{
 			// move center
-			Vector2 c = other_sklt.getPosition((t0+t1)/2);
-			Vector2 c_crop = other_sklt.getPosition((t0_crop+t1_crop)/2);
+			Vector2 c = c_sklt.getPosition((t0+t1)/2);
+			Vector2 c_crop = c_sklt.getPosition((t0_crop+t1_crop)/2);
 			Center += c_crop - c;
 
 			// change extent
-			Vector2 p0 = other_sklt.getPosition(t0_crop);
-			Vector2 p1 = other_sklt.getPosition(t1_crop);
+			Vector2 p0 = c_sklt.getPosition(t0_crop);
+			Vector2 p1 = c_sklt.getPosition(t1_crop);
 			Extent[i] = (p0 - p1).norm()/2;
 		}
 	}
+}
+
+QVector<Vector2> Geom::Rectangle2::getGridSamples( double w)
+{
+	QVector<Vector2> samples;
+
+	int resX = (int)ceil(2 * Extent[0] / w);
+	int resY = (int)ceil(2 * Extent[1] / w);
+
+	for (int i = 0; i <= resX; i++){
+		for (int j = 0; j <= resY; j++)
+			{
+				double ci = -1 + i * w;
+				double cj = -1 + j * w;
+				samples.push_back(this->getPosition(Vector2(ci, cj)));
+			}
+	}
+
+	return samples;
 }

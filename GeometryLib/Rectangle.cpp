@@ -376,3 +376,21 @@ void Geom::Rectangle::flipNormal()
 {
 	Normal *= -1;
 }
+
+QVector<Vector3> Geom::Rectangle::getGridSamples( double w )
+{
+	QVector<Vector3> samples;
+
+	int resX = (int)ceil(2 * Extent[0] / w);
+	int resY = (int)ceil(2 * Extent[1] / w);
+
+	for (int i = 0; i <= resX; i++){
+		for (int j = 0; j <= resY; j++)
+		{
+			double ci = -1 + i * w;
+			double cj = -1 + j * w;
+			samples.push_back(this->getPosition(Vector2(ci, cj)));
+		}
+	}
+	return samples;
+}

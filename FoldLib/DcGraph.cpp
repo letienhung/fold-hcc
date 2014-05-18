@@ -113,7 +113,6 @@ void DcGraph::computeMasterOrderConstraints()
 	}
 }
 
-
 void DcGraph::updateSlaves()
 {
 	// slave parts
@@ -524,6 +523,9 @@ FdGraph* DcGraph::getKeyframe( double t )
 
 	// shift layers and add nodes into scaffold
 	FdGraph *key_graph = combineDecomposition(foldedBlocks, baseMaster->mID, masterBlockMap);
+	
+	// debug
+	//addDebugScaffold(key_graph);
 
 	// delete folded blocks
 	foreach (FdGraph* b, foldedBlocks) delete b;
@@ -558,14 +560,9 @@ void DcGraph::findFoldOrderGreedy()
 	foreach (BlockGraph* b, blocks) 
 		b->mFoldDuration = TIME_INTERVAL(1.0, 2.0);
 
-	// choose best free block in a greedy manner
+	// choose best free block
 	double currTime = 0.0;
 	int bid = getBestNextBlockIndex(currTime);
-
-
-	return;
-
-
 	while (bid >= 0 && bid < blocks.size())
 	{
 		BlockGraph* next_block = blocks[bid];
@@ -578,6 +575,9 @@ void DcGraph::findFoldOrderGreedy()
 		double timeLength = next_block->getTimeLength() * timeScale;
 		double nextTime = currTime + timeLength;
 		next_block->mFoldDuration = TIME_INTERVAL(currTime, nextTime);
+
+		// debug
+		return;
 
 		// get best next
 		currTime = nextTime;
@@ -595,7 +595,7 @@ int DcGraph::getBestNextBlockIndex(double currT)
 
 	// evaluate each block to find the best one
 	double best_score = -maxDouble();
-	int best_bid;
+	int best_bid = -1;
 	for (int curr_bid = 0; curr_bid < blocks.size(); curr_bid++)
 	{
 		BlockGraph* currBlock = blocks[curr_bid];
@@ -611,10 +611,17 @@ int DcGraph::getBestNextBlockIndex(double currT)
 		double nextT = currT + timeLength;
 		currBlock->mFoldDuration = TIME_INTERVAL(currT, nextT);
 		FdGraph* nextKeyframe = getKeyframe(nextT);
-		currBlock->mFoldDuration = curr_ti;
+
+		// debug
+		//keyframes << nextKeyframe;
 
 		// skip if not valid
-		if (!isValid(nextKeyframe)) continue;
+		if (!isValid(nextKeyframe))
+		{
+			// very important: restore time interval
+			currBlock->mFoldDuration = curr_ti;
+			continue;
+		}
 
 		// evaluate
 		double score = 0;
@@ -640,6 +647,9 @@ int DcGraph::getBestNextBlockIndex(double currT)
 			FdGraph* nextnextKeyframe = getKeyframe(nextnextT);
 			nextBlock->mFoldDuration = next_ti;
 
+			//debug
+			//keyframes << nextnextKeyframe;
+
 			// skip if not valid
 			if (!isValid(nextnextKeyframe)) continue;
 
@@ -654,6 +664,9 @@ int DcGraph::getBestNextBlockIndex(double currT)
 			best_score = score;
 			best_bid = curr_bid;
 		}
+
+		// very important: restore time interval
+		currBlock->mFoldDuration = curr_ti;
 	}
 
 	return best_bid;

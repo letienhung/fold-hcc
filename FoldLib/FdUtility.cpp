@@ -417,7 +417,7 @@ QVector<QString> getAllMasterIds( FdGraph* scaffold )
 	return mids;
 }
 
-Geom::Rectangle2 getMinEnclosingRectangle2D( QVector<Vector2> &pnts )
+Geom::Rectangle2 computeAABB2D( QVector<Vector2> &pnts )
 {
 	// compute extent along x and y
 	double minX = maxDouble();

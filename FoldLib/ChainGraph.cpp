@@ -107,7 +107,9 @@ FdGraph* ChainGraph::getKeyframeScaffold( double t )
 		// t = 0
 		if (t <= 0.5)
 		{
-			return (FdGraph*)this->clone();
+			FdGraph* folded = (FdGraph*)this->clone();
+			//addDebugScaffold(folded);
+			return folded;
 		}
 		// t = 1
 		else
@@ -117,10 +119,13 @@ FdGraph* ChainGraph::getKeyframeScaffold( double t )
 			if (mMasters.size() == 2)
 			{
 				FdNode* top_node = (FdNode*)folded->getNode(mMasters[1]->mID);
-				Vector3 top = top_node->center();
-				Vector3 bottom = mMasters[0]->center();
-				top_node->translate(bottom - top);
+				Vector3 c2c = mMasters[0]->center() - mMasters[1]->center();
+				Vector3 up = mMasters[0]->mPatch.Normal;
+				Vector3 offset = dot(c2c, up) * up;
+				top_node->translate(offset);
 			}
+
+			//addDebugScaffold(folded);
 
 			return folded;
 		}

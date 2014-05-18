@@ -61,6 +61,8 @@ public:
 	void addDebugBoxes(QVector<Geom::Box>& boxes);
 	void addDebugSectorCylinders(QVector<Geom::SectorCylinder>& scs);
 
+	void addDebugScaffold(FdGraph* ds);
+
 public:
 	QString path;
 	bool showAABB;

@@ -33,6 +33,7 @@ namespace Geom{
 
 		// samples
 		QVector<Vector2> getEdgeSamples(int N);
+		QVector<Vector2> getGridSamples(double w);
 
 		// shrink
 		void		shrinkToAvoidPoints(QVector<Vector2>& pnts, Segment2& base);
