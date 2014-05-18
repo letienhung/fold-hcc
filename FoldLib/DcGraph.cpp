@@ -55,7 +55,7 @@ void DcGraph::createMasters(StrArray2D& masterGroups)
 			mp->mPatch.flipNormal();
 
 		// tag
-		mp->addTag(IS_MASTER);
+		mp->addTag(MASTER_TAG);
 
 		// save
 		masters.push_back(mp);
@@ -118,7 +118,7 @@ void DcGraph::updateSlaves()
 	// slave parts
 	slaves.clear();
 	foreach (FdNode* n, getFdNodes())
-		if (!n->hasTag(IS_MASTER))	slaves << n;
+		if (!n->hasTag(MASTER_TAG))	slaves << n;
 
 	// debug
 	//std::cout << "Slaves:\n";
@@ -258,7 +258,7 @@ void DcGraph::createSlaves()
 	{
 		foreach(FdNode* n, getFdNodes())
 		{
-			if (n->hasTag(IS_MASTER)) continue;
+			if (n->hasTag(MASTER_TAG)) continue;
 
 			// split slave if it intersects the master
 			if(hasIntersection(n, master, adjacentThr))
@@ -575,9 +575,6 @@ void DcGraph::findFoldOrderGreedy()
 		double timeLength = next_block->getTimeLength() * timeScale;
 		double nextTime = currTime + timeLength;
 		next_block->mFoldDuration = TIME_INTERVAL(currTime, nextTime);
-
-		// debug
-		return;
 
 		// get best next
 		currTime = nextTime;

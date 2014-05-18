@@ -15,7 +15,7 @@ typedef QPair<double, double> TimeInterval;
 #define	TIME_INTERVAL(a, b) qMakePair<double, double>(a, b)
 
 // tags
-#define	IS_MASTER "isMasterPatch"
+#define	MASTER_TAG "isMasterPatch"
 #define IS_EDGE_ROD "isEdgeRodNode"
 #define DELETED_TAG "hasDeleted"
 #define FOLDED_TAG "hasFolded"

@@ -321,7 +321,7 @@ bool within( double t, TimeInterval itv )
 QVector<PatchNode*> getAllMasters( FdGraph* scaffold )
 {
 	QVector<PatchNode*> masters;
-	foreach(Structure::Node* n, scaffold->getNodesWithTag(IS_MASTER))
+	foreach(Structure::Node* n, scaffold->getNodesWithTag(MASTER_TAG))
 		masters << (PatchNode*)n;
 
 	return masters;
@@ -376,7 +376,7 @@ FdGraph* combineDecomposition( QVector<FdGraph*> decmps, QString baseMid,
 			foreach (Structure::Node* n, decmp->nodes)
 			{
 				// master nodes
-				if (n->hasTag(IS_MASTER))
+				if (n->hasTag(MASTER_TAG))
 				{
 					if (!masterCombined[n->mID])
 					{

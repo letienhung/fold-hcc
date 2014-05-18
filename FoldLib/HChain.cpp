@@ -42,7 +42,7 @@ Geom::Rectangle HChain::getMaxFoldRegion( bool right )
 
 QVector<FoldOption*> HChain::generateFoldOptions()
 {
-	QVector<FoldOption*> options = ChainGraph::generateFoldOptions(1, 1, 2);
+	QVector<FoldOption*> options = ChainGraph::generateFoldOptions(1, 4, 1);
 
 	// fold area
 	foreach (FoldOption* fn, options)

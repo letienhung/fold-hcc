@@ -240,24 +240,51 @@ void BlockGraph::exportCollFOG()
 
 FdGraph* BlockGraph::getKeyframeScaffold( double t )
 {
-	// scaffolds from folded chains
-	QVector<FdGraph*> foldedChains;
-	for (int i = 0; i < chains.size(); i++)
+	// chains have been created and ready to fold
+	if (hasTag(READY_TAG))
 	{
-		double localT = getLocalTime(t, chains[i]->mFoldDuration);
-		foldedChains << chains[i]->getKeyframeScaffold(localT);
+		// scaffolds from folded chains
+		QVector<FdGraph*> foldedChains;
+		for (int i = 0; i < chains.size(); i++)
+		{
+			double localT = getLocalTime(t, chains[i]->mFoldDuration);
+			foldedChains << chains[i]->getKeyframeScaffold(localT);
+		}
+
+		// combine 
+		FdGraph* keyframeScaffold = combineDecomposition(foldedChains, baseMaster->mID, masterChainsMap);
+
+		// delete folded chains
+		foreach (FdGraph* c, foldedChains) delete c;
+
+		return keyframeScaffold;
+	}
+	// the block is not ready
+	// can only answer request on t = 0 and t = 1
+	else{
+		// clone
+		FdGraph* folded = (FdGraph*)this->clone();
+
+		// collapse to base
+		if (t > 0.5){
+			foreach (FdNode* n, folded->getFdNodes()){
+				if (n->hasTag(MASTER_TAG)) {
+					// leave base master untouched
+					if (n->mID == baseMaster->mID)	continue;
+
+					// move other masters onto base master
+					Vector3 c2c = baseMaster->center() - n->center();
+					Vector3 up = baseMaster->mPatch.Normal;
+					Vector3 offset = dot(c2c, up) * up;
+					n->translate(offset);
+				}else 
+					folded->removeNode(n->mID);
+			}
+		}
+
+		return folded;
 	}
 
-	// combine 
-	FdGraph* keyframeScaffold = combineDecomposition(foldedChains, baseMaster->mID, masterChainsMap);
-
-	// delete folded chains
-	foreach (FdGraph* c, foldedChains) delete c;
-
-	// debug
-	//addDebugScaffold(keyframeScaffold);
-
-	return keyframeScaffold;
 }
 
 bool BlockGraph::fAreasIntersect( Geom::Rectangle& rect1, Geom::Rectangle& rect2 )
@@ -451,7 +478,7 @@ QVector<QString> BlockGraph::getInbetweenOutsideParts( FdGraph* scaffold, QStrin
 		if (containsNode(n->mID)) continue;
 
 		// master
-		if (n->hasTag(IS_MASTER))
+		if (n->hasTag(MASTER_TAG))
 		{
 			double t = timeLine.getProjTime(n->center());
 			

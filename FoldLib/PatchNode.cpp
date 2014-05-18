@@ -45,7 +45,7 @@ void PatchNode::createScaffold(bool useAid)
 
 void PatchNode::drawScaffold()
 {
-	if (hasTag(IS_MASTER))
+	if (hasTag(MASTER_TAG))
 		mPatchColor = Qt::red;
 
 	mPatch.drawFace(mPatchColor);

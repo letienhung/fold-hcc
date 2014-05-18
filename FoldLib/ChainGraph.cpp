@@ -94,42 +94,8 @@ void ChainGraph::fold( double t )
 
 FdGraph* ChainGraph::getKeyframeScaffold( double t )
 {
-	// chain has been created and ready for propagation
-	if (hasTag(READY_TAG))
-	{
-		fold(t);
-		return (FdGraph*)this->clone();
-	}
-	// the chain is not ready
-	// can only answer request on t = 0 and t = 1
-	else
-	{
-		// t = 0
-		if (t <= 0.5)
-		{
-			FdGraph* folded = (FdGraph*)this->clone();
-			//addDebugScaffold(folded);
-			return folded;
-		}
-		// t = 1
-		else
-		{
-			FdGraph* folded = (FdGraph*)this->clone();
-			folded->removeNode(mOrigSlave->mID);
-			if (mMasters.size() == 2)
-			{
-				FdNode* top_node = (FdNode*)folded->getNode(mMasters[1]->mID);
-				Vector3 c2c = mMasters[0]->center() - mMasters[1]->center();
-				Vector3 up = mMasters[0]->mPatch.Normal;
-				Vector3 offset = dot(c2c, up) * up;
-				top_node->translate(offset);
-			}
-
-			//addDebugScaffold(folded);
-
-			return folded;
-		}
-	}
+	fold(t);
+	return (FdGraph*)this->clone();
 }
 
 double ChainGraph::getLength()
