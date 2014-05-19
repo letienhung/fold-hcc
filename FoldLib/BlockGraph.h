@@ -41,7 +41,12 @@ public:
 
 	// foldem
 	void foldabilize();
-	void buildCollisionGraph();
+	void updateCollisionLinks();
+	void buildCollisionGraphAdaptive();
+	int encodeModification(int nX, int nY);
+	void decodeModification(int mdf, int& nX, int& nY);
+	void genNewModifications(QSet<int>& modifications, int max_nX, int nChunks);
+	void filterFoldOptions(QVector<FoldOption*>& options, int cid);
 	void findOptimalSolution();
 	bool fAreasIntersect(Geom::Rectangle& rect1, Geom::Rectangle& rect2);
 

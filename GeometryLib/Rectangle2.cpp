@@ -381,3 +381,18 @@ QVector<Vector2> Geom::Rectangle2::getGridSamples( double w)
 
 	return samples;
 }
+
+bool Geom::Rectangle2::containsAll( QVector<Vector2>& pnts )
+{
+	bool ctn_all = true;
+	foreach (Vector2 p, pnts)
+	{
+		if (!contains(p))
+		{
+			ctn_all = false;
+			break;
+		}
+	}
+
+	return ctn_all;
+}

@@ -3,7 +3,7 @@
     <cN>7</cN>
     <node>
         <type>2</type>
-        <ID>Box001</ID>
+        <ID>ground</ID>
         <box>
             <c>0 0 0.5</c>
             <x>1 0 0</x>
@@ -14,7 +14,7 @@
     </node>
     <node>
         <type>2</type>
-        <ID>Box002</ID>
+        <ID>ceiling</ID>
         <box>
             <c>0 0 50.5</c>
             <x>1 0 0</x>
@@ -25,7 +25,7 @@
     </node>
     <node>
         <type>2</type>
-        <ID>Box003</ID>
+        <ID>wallRight</ID>
         <box>
             <c>49.5 0 25</c>
             <x>1 0 0</x>
@@ -36,7 +36,7 @@
     </node>
     <node>
         <type>2</type>
-        <ID>Box004</ID>
+        <ID>wallLeft</ID>
         <box>
             <c>-49.5 0 25</c>
             <x>1 0 0</x>
@@ -47,7 +47,7 @@
     </node>
     <node>
         <type>2</type>
-        <ID>Box005</ID>
+        <ID>legLeft</ID>
         <box>
             <c>-15 0 10</c>
             <x>1 0 0</x>
@@ -58,7 +58,7 @@
     </node>
     <node>
         <type>2</type>
-        <ID>Box006</ID>
+        <ID>legRight</ID>
         <box>
             <c>15 0 10</c>
             <x>1 0 0</x>
@@ -69,7 +69,7 @@
     </node>
     <node>
         <type>2</type>
-        <ID>Box007</ID>
+        <ID>table</ID>
         <box>
             <c>0 0 20.5</c>
             <x>1 0 0</x>

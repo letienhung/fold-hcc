@@ -13,26 +13,26 @@
 #include "FdUtility.h"
 
 
-FoldEntity::FoldEntity( int idx, QString id )
-	: Node(id), entityIdx(idx)
+ChainNode::ChainNode( int idx, QString id )
+	: Node(id), chainIdx(idx)
 {
 }
 
-FoldEntity::FoldEntity( FoldEntity &other )
+ChainNode::ChainNode( ChainNode &other )
 	: Node(other)
 {
-	entityIdx = other.entityIdx;
+	chainIdx = other.chainIdx;
 }
 
-Structure::Node* FoldEntity::clone()
+Structure::Node* ChainNode::clone()
 {
-	return new FoldEntity(*this);
+	return new ChainNode(*this);
 }
 
 //////////////////////////////////////////////////////////////////////////
 
 FoldOption::FoldOption( int hIdx, bool right, double s, double p, int n, QString id )
-	: Node(id), jointAxisIdx(hIdx), rightSide(right), scale(s), position(p), nbsplit(n)
+	: Node(id), jointAxisIdx(hIdx), rightSide(right), scale(s), position(p), nSplits(n)
 {
 }
 
@@ -43,7 +43,7 @@ FoldOption::FoldOption( FoldOption &other )
 	rightSide = other.rightSide;
 	scale = other.scale;
 	position = other.position;
-	nbsplit = other.nbsplit;
+	nSplits = other.nSplits;
 }
 
 FoldOption::FoldOption(QString id)
@@ -51,7 +51,7 @@ FoldOption::FoldOption(QString id)
 {
 	// dumpy fold option for H-block
 	scale = 1;
-	nbsplit = 0;
+	nSplits = 0;
 }
 
 Structure::Node* FoldOption::clone()
@@ -61,7 +61,7 @@ Structure::Node* FoldOption::clone()
 
 double FoldOption::getCost()
 {
-	double cost1 = nbsplit;
+	double cost1 = nSplits;
 	double cost2 = 1 - scale;
 
 	return cost1 + cost2;
@@ -73,25 +73,6 @@ QString FoldOption::getInfo()
 		.arg(rightSide)
 		.arg(position).arg(position + scale)
 		.arg(getCost());
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-
-BarrierNode::BarrierNode(int fIdx)
-	:Node(QString("Barrier_%1").arg(fIdx)), faceIdx(fIdx)
-{
-}
-
-BarrierNode::BarrierNode( BarrierNode &other )
-	:Node(other)
-{
-	faceIdx = other.faceIdx;
-}
-
-Structure::Node* BarrierNode::clone()
-{
-	return new BarrierNode(*this);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -119,7 +100,7 @@ Structure::Graph* FoldOptionGraph::clone()
 }
 
 
-void FoldOptionGraph::addNode( FoldEntity* cn )
+void FoldOptionGraph::addNode( ChainNode* cn )
 {
 	Graph::addNode(cn);
 	cn->properties["type"] = "entity";
@@ -129,12 +110,6 @@ void FoldOptionGraph::addNode( FoldOption* fn )
 {
 	Graph::addNode(fn);
 	fn->properties["type"] = "option";
-}
-
-void FoldOptionGraph::addNode( BarrierNode* bn )
-{
-	Graph::addNode(bn);
-	bn->properties["type"] = "barrier";
 }
 
 void FoldOptionGraph::addFoldLink( Structure::Node* n1, Structure::Node* n2 )
@@ -169,18 +144,18 @@ bool FoldOptionGraph::areSiblings( QString nid1, QString nid2 )
 		return false;
 
 	// share the same chain node
-	FoldEntity* cn1 = getFoldEntity(nid1);
-	FoldEntity* cn2 = getFoldEntity(nid2);
+	ChainNode* cn1 = getChainNode(nid1);
+	ChainNode* cn2 = getChainNode(nid2);
 	return cn1->mID == cn2->mID;
 }
 
 
-FoldEntity* FoldOptionGraph::getFoldEntity( QString fnid )
+ChainNode* FoldOptionGraph::getChainNode( QString fnid )
 {
 	if (!verifyNodeType(fnid, "option")) return NULL;
 
 	Structure::Link* l = getFoldinglinks(fnid)[0];
-	return (FoldEntity*)l->getNodeOther(fnid);
+	return (ChainNode*)l->getNodeOther(fnid);
 }
 
 QVector<FoldOption*> FoldOptionGraph::getFoldOptions( QString cnid )
@@ -199,7 +174,7 @@ QVector<FoldOption*> FoldOptionGraph::getFoldOptions( QString cnid )
 QVector<FoldOption*> FoldOptionGraph::getSiblings( QString fnid )
 {
 	if (verifyNodeType(fnid, "entity")) 
-		return getFoldOptions(getFoldEntity(fnid)->mID);
+		return getFoldOptions(getChainNode(fnid)->mID);
 	else
 		return QVector<FoldOption*>();
 }
@@ -216,28 +191,16 @@ QVector<FoldOption*> FoldOptionGraph::getAllFoldOptions()
 	return fns;
 }
 
-QVector<FoldEntity*> FoldOptionGraph::getAllFoldEntities()
+QVector<ChainNode*> FoldOptionGraph::getAllChainNodes()
 {
-	QVector<FoldEntity*> cns;
+	QVector<ChainNode*> cns;
 	foreach(Structure::Node* n, nodes)
 	{
 		if (n->properties["type"].toString() == "entity")
-			cns << (FoldEntity*)n;
+			cns << (ChainNode*)n;
 	}
 
 	return cns;
-}
-
-QVector<BarrierNode*> FoldOptionGraph::getAllBarrierNodes()
-{
-	QVector<BarrierNode*> bns;
-	foreach(Structure::Node* n, nodes)
-	{
-		if (n->properties["type"].toString() == "barrier")
-			bns << (BarrierNode*)n;
-	}
-
-	return bns;
 }
 
 QVector<Structure::Link*> FoldOptionGraph::getFoldinglinks( QString nid )
@@ -273,8 +236,8 @@ QVector<Structure::Node*> FoldOptionGraph::getFamilyNodes( QString nid )
 	QVector<Structure::Node*> family;
 
 	Structure::Node* node = getNode(nid);
-	FoldEntity* cnode = (node->properties["type"] == "entity") ? 
-		(FoldEntity*)node : getFoldEntity(nid);
+	ChainNode* cnode = (node->properties["type"] == "entity") ? 
+		(ChainNode*)node : getChainNode(nid);
 
 	family << cnode;
 	foreach(FoldOption* fn, getFoldOptions(cnode->mID))
@@ -293,24 +256,6 @@ QVector<Structure::Link*> FoldOptionGraph::getFamilyCollisionLinks( QString nid 
 
 	return clinks;
 }
-
-BarrierNode* FoldOptionGraph::getBarrierNode( int fIdx )
-{
-	foreach(Structure::Node* n, nodes)
-	{
-		if (n->properties["type"].toString() == "barrier")
-		{
-			BarrierNode* bn = (BarrierNode*)n;
-			if (bn->faceIdx == fIdx)
-			{
-				return bn;
-			}
-		}
-	}
-
-	return NULL;
-}
-
 
 QString FoldOptionGraph::toGraphvizFormat( QString subcaption, QString caption )
 {
@@ -424,4 +369,19 @@ void FoldOptionGraph::clearCollisionLinks()
 			Structure::Graph::removeLink(link);
 		}
 	}
+}
+
+bool FoldOptionGraph::hasFreeFoldOptions( QString cnid )
+{
+	bool isFree = false;
+	foreach (FoldOption* fn, getFoldOptions(cnid))
+	{
+		if (getCollisionLinks(fn->mID).isEmpty())
+		{
+			isFree = true;
+			break;
+		}
+	}
+
+	return isFree;
 }

@@ -1,15 +1,16 @@
 #pragma once
 #include "Graph.h"
+#include "FdUtility.h"
 
-class FoldEntity : public Structure::Node
+class ChainNode : public Structure::Node
 {
 public:
-	FoldEntity(int idx, QString id);
-	FoldEntity(FoldEntity &other);
+	ChainNode(int idx, QString id);
+	ChainNode(ChainNode &other);
 	Node* clone();
 
-	// entity index
-	int entityIdx; 
+	// chain index
+	int chainIdx; 
 };
 
 class FoldOption : public Structure::Node
@@ -35,20 +36,17 @@ public:
 	double position;
 
 	// #splits
-	int nbsplit;
-};
+	int nSplits;
 
-class BarrierNode : public Structure::Node
-{
+	// duration
+	TimeInterval duration;
+
+	// fold region
+	Geom::Rectangle region;
+
 public:
-	BarrierNode(int fIdx);
-	BarrierNode(BarrierNode &other);
-	Node* clone();
-
-	// barrier is a face of the bounding box
-	int faceIdx;
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
-
 
 class FoldOptionGraph : public Structure::Graph
 {
@@ -59,9 +57,8 @@ public:
 	Graph* clone();
 
 	// modifier
-	void addNode(FoldEntity* cn);
+	void addNode(ChainNode* cn);
 	void addNode(FoldOption* fn);
-	void addNode(BarrierNode* bn);
 	void addFoldLink(Structure::Node* n1, Structure::Node* n2);
 	void addCollisionLink(Structure::Node* n1, Structure::Node* n2);
 
@@ -71,13 +68,12 @@ public:
 	bool verifyNodeType(QString nid, QString type);
 	bool verifyLinkType(QString nid1, QString nid2, QString type);
 	bool areSiblings(QString nid1, QString nid2);
+	bool hasFreeFoldOptions(QString cnid);
 
 	// getters
-	FoldEntity*		getFoldEntity(QString fnid);		// chain node of a folding node
-	BarrierNode*	getBarrierNode(int fIdx);		// barrier node with face index
-	QVector<FoldEntity*>	getAllFoldEntities();		
+	ChainNode*		getChainNode(QString fnid);		// chain node of a folding node
+	QVector<ChainNode*>	getAllChainNodes();		
 	QVector<FoldOption*>	getAllFoldOptions();	
-	QVector<BarrierNode*>	getAllBarrierNodes();
 	QVector<FoldOption*>	getSiblings(QString fnid);		// siblings of folding node
 	QVector<FoldOption*>	getFoldOptions(QString cnid);	// fold options of a chain node
 	QVector<Structure::Node*> getFamilyNodes(QString nid);

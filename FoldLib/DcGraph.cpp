@@ -28,6 +28,13 @@ DcGraph::DcGraph(QString id, FdGraph* scaffold, StrArray2D masterGroups, Vector3
 
 	// selection
 	selBlockIdx = -1;
+
+
+	//////////////////////////////////////////////////////////////////////////
+	QVector<Geom::Segment> normals;
+	foreach (PatchNode* m, masters)
+		normals << Geom::Segment(m->mPatch.Center, m->mPatch.Center + 10 * m->mPatch.Normal);
+	addDebugSegments(normals);
 }
 
 DcGraph::~DcGraph()
@@ -569,7 +576,6 @@ void DcGraph::findFoldOrderGreedy()
 
 		// foldabilize selected block
 		next_block->foldabilize();
-		next_block->addTag(READY_TAG);
 
 		// set up time interval
 		double timeLength = next_block->getTimeLength() * timeScale;

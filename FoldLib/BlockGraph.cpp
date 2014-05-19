@@ -60,6 +60,11 @@ BlockGraph::BlockGraph( QVector<PatchNode*>& ms, QVector<FdNode*>& ss,
 	// initial collision graph
 	collFogOrig = NULL;
 	collFog = new FoldOptionGraph();
+
+	//////////////////////////////////////////////////////////////////////////
+	QVector<Geom::Segment> normals;
+	normals << Geom::Segment(baseMaster->mPatch.Center, baseMaster->mPatch.Center + 10 * baseMaster->mPatch.Normal);
+	addDebugSegments(normals);
 }
 
 BlockGraph::~BlockGraph()
@@ -222,9 +227,11 @@ void BlockGraph::computeAvailFoldingRegion( FdGraph* scaffold,
 		extendRectangle2D(avail_region, samples_proj);
 
 		// avail folding region
+		double epsilon = 2 * ZERO_TOLERANCE_LOW;
+		avail_region.Extent += Vector2(epsilon, epsilon);
 		availFoldingRegion[top_mid] = avail_region;
 
-		//addDebugSegments(base_rect.get3DRectangle(avail_region).getEdgeSegments());
+		addDebugSegments(base_rect.get3DRectangle(avail_region).getEdgeSegments());
 	}
 
 	// restore the position of scaffold
@@ -300,102 +307,176 @@ bool BlockGraph::fAreasIntersect( Geom::Rectangle& rect1, Geom::Rectangle& rect2
 void BlockGraph::foldabilize()
 {
 	// collision graph
-	buildCollisionGraph();
+	buildCollisionGraphAdaptive();
 
 	// find optimal solution
 	findOptimalSolution();
 
 	// apply fold options
+	if (foldSolution.isEmpty()) return;
+
 	for (int i = 0; i < chains.size(); i++)
 	{
 		chains[i]->applyFoldOption(foldSolution[i]);
 	}
+
+	addTag(READY_TAG);
 }
 
-void BlockGraph::buildCollisionGraph()
+int BlockGraph::encodeModification( int nX, int nY )
 {
-	// clear
-	collFog->clear();
+	return nX * 100 + nY;
+}
 
-	// fold entities and options
-	for(int i = 0; i < chains.size(); i++)
+void BlockGraph::decodeModification( int mdf, int& nX, int& nY )
+{
+	nX = mdf / 100;
+	nY = mdf % 100;
+}
+
+void BlockGraph::genNewModifications( QSet<int>& modifications, int max_nX, int nChunks )
+{
+	// generate next level of modification
+	// folding region from lower level must be fully included by some from higher level
+	// folding regions at the same level might overlap but don't include each other
+	if (modifications.isEmpty())
 	{
-		HChain* chain = (HChain*)chains[i];
 
-		// available folding space
-		PatchNode* top_master = chain->getTopMaster();
-		Geom::Box afs = getAvailFoldingSpace(top_master->mID); 
-
-		// fold entity
-		FoldEntity* cn = new FoldEntity(i, chain->mID);
-		collFog->addNode(cn);
-
-		// debug
-		properties.remove("debugSegments");
-
-		// fold options and links
-		foreach(FoldOption* fn, chain->generateFoldOptions())
+		modifications << encodeModification(1, nChunks);
+	}
+	else
+	{
+		QSet<int > newModifications;
+		foreach (int mdf, modifications)
 		{
-			Geom::Rectangle fArea = fn->properties["fArea"].value<Geom::Rectangle>();
+			int nX, nY;
+			decodeModification(mdf, nX, nY);
+			// two options
+			if (nX < max_nX && nY > 0)
+			{
+				int new_nX = nX + 1;
+				int new_nY = nY - 1;
 
-			// reject if stick out of AFS
-			if (!afs.containsAll(fArea.getConners()))
-				continue;
+				newModifications << encodeModification(new_nX, nY)
+					<< encodeModification(nX, new_nY);
+			}
+			// one option: more splits
+			else if (nX < max_nX)
+				newModifications << encodeModification(nX+1, nY);
+			// one option: shrink more
+			else if (nY > 0)
+				newModifications << encodeModification(nX, nY-1);
+		}
 
-			// reject if collide with other masters
-			// whose time stamp is within the time interval of fn
-			bool reject = false;
+		modifications = newModifications;
+	}
+}
+
+void BlockGraph::filterFoldOptions( QVector<FoldOption*>& options, int cid )
+{
+	if (cid < 0 || cid >= chains.size()) return;
+
+	HChain* chain = (HChain*)chains[cid];
+	PatchNode* top_master = chain->getTopMaster();
+	Geom::Rectangle2 AFR = availFoldingRegion[top_master->mID]; 
+
+	// filter
+	QVector<FoldOption*> options_filtered;
+	foreach (FoldOption* fn, options)
+	{
+		bool reject = false;
+
+		// reject if exceeds AFR
+		Geom::Rectangle2 fRegion2 = baseMaster->mPatch.get2DRectangle(fn->region);
+		if (!AFR.containsAll(fRegion2.getConners()))
+			reject = true;
+
+		// reject if collide with other masters
+		// whose time stamp is within the time interval of fn
+		if (!reject)
+		{
 			foreach (QString mid, masterTimeStamps.keys())
 			{
 				double mstamp = masterTimeStamps[mid];
 				if (!within(mstamp, chain->mFoldDuration)) continue;
 
 				Geom::Rectangle m_rect = ((PatchNode*)getNode(mid))->mPatch;
-				if (fAreasIntersect(fArea, m_rect))
+				if (fAreasIntersect(fn->region, m_rect))
 				{
 					reject = true;
 					break;
 				}
 			}
-			if (reject) continue;
-
-			// accept
-			collFog->addNode(fn);
-			collFog->addFoldLink(cn, fn);
-
-			addDebugSegments(fArea.getEdgeSegments());
 		}
+
+		// reject or accept
+		if (reject)	delete fn;
+		else options_filtered << fn;
 	}
 
-	// collision links
-	QVector<FoldOption*> fns = collFog->getAllFoldOptions();
-	for (int i = 0; i < fns.size(); i++)
+	// store
+	options = options_filtered;
+}
+
+void BlockGraph::buildCollisionGraphAdaptive()
+{
+	// clear
+	collFog->clear();
+
+	// fold entities
+	for(int i = 0; i < chains.size(); i++)
+		collFog->addNode(new ChainNode(i, chains[i]->mID));
+
+	// chains with no free fold option
+	QVector<int> collChainIdx;
+	for(int i = 0; i < chains.size(); i++) collChainIdx << i;
+
+	int max_nX = 2;
+	int nChunks = 4;
+	QSet<int> modifications;
+	genNewModifications(modifications, max_nX, nChunks);
+	while (!modifications.isEmpty())
 	{
-		FoldOption* fn = fns[i];
-		FoldEntity* cn = collFog->getFoldEntity(fn->mID);
-		Geom::Rectangle fArea = fn->properties["fArea"].value<Geom::Rectangle>();
-		TimeInterval tInterval = chains[cn->entityIdx]->mFoldDuration;
+		// create new fold options for each colliding chain
+		foreach (int cid, collChainIdx){
+			HChain* chain = (HChain*)chains[cid];
+			ChainNode* cn = (ChainNode*)collFog->getNode(chain->mID);
 
-		// with other fold options
-		for (int j = i+1; j < fns.size(); j++)
-		{
-			FoldOption* other_fn = fns[j];
+			// create new fold options using modifications
+			QVector<FoldOption*> options;
+			foreach (int mdf, modifications){
+				int nX, nY;
+				decodeModification(mdf, nX, nY);
+				int nSplits = 2 * nX - 1;
+				int nUsedChunks = nY;
+				options << chain->generateFoldOptions(nSplits, nUsedChunks, nChunks);
+			}
+			filterFoldOptions(options, cid);
+			foreach (FoldOption* fn, options){
+				fn->addTag(NEW_TAG);
+				collFog->addNode(fn);
+				collFog->addFoldLink(cn, fn);
 
-			// skip siblings
-			if (collFog->areSiblings(fn->mID, other_fn->mID)) continue; 
-
-			// skip if time interval don't overlap
-			FoldEntity* other_cn = collFog->getFoldEntity(other_fn->mID);
-			TimeInterval other_tInterval = chains[other_cn->entityIdx]->mFoldDuration;
-			if (!overlap(tInterval, other_tInterval)) continue;
-
-			// collision test using fold region
-			Geom::Rectangle other_fArea = other_fn->properties["fArea"].value<Geom::Rectangle>();
-			if (fAreasIntersect(fArea, other_fArea))
-			{
-				collFog->addCollisionLink(fn, other_fn);
+				// debug
+				addDebugSegments(fn->region.getEdgeSegments());
 			}
 		}
+
+		// update collisions for new added fold options
+		updateCollisionLinks();
+
+		// update colliding chain list
+		QVector<int> collChainIdx_copy = collChainIdx;
+		collChainIdx.clear();
+		foreach (int cid, collChainIdx_copy)
+			 if (!collFog->hasFreeFoldOptions(chains[cid]->mID))
+				 collChainIdx << cid;
+
+		// all chains have free fold option
+		if (collChainIdx.isEmpty()) break;
+
+		// otherwise go next generation
+		genNewModifications(modifications, max_nX, nChunks);
 	}
 
 	// debug
@@ -403,10 +484,43 @@ void BlockGraph::buildCollisionGraph()
 		<< collFog->getAllFoldOptions().size() << std::endl;
 }
 
+void BlockGraph::updateCollisionLinks()
+{
+	QVector<FoldOption*> fns = collFog->getAllFoldOptions();
+	for (int i = 0; i < fns.size(); i++)
+	{
+		// skip if not new
+		if (!fns[i]->hasTag(NEW_TAG)) continue;
+
+		// collision with others
+		for (int j = i+1; j < fns.size(); j++)
+		{
+			// skip siblings
+			if (collFog->areSiblings(fns[i]->mID, fns[j]->mID)) continue; 
+
+			// skip if time interval don't overlap
+			if (!overlap(fns[i]->duration, fns[j]->duration)) continue;
+
+			// collision test using fold region
+			if (fAreasIntersect(fns[i]->region, fns[j]->region))
+				collFog->addCollisionLink(fns[i], fns[j]);
+		}
+
+		// remove new tag
+		fns[i]->removeTag(NEW_TAG);
+	}
+}
+
 void BlockGraph::findOptimalSolution()
 {
 	// get all folding nodes
 	QVector<FoldOption*> fns = collFog->getAllFoldOptions();
+
+	if (fns.isEmpty())
+	{
+		std::cout << mID.toStdString() << ": collision graph is empty.\n";
+		return;
+	}
 
 	// the dual adjacent matrix
 	QVector<bool> dumpy(fns.size(), true);
@@ -446,8 +560,8 @@ void BlockGraph::findOptimalSolution()
 	{
 		FoldOption* fn = fns[idx];
 		fn->addTag(SELECTED_TAG);
-		FoldEntity* cn = collFog->getFoldEntity(fn->mID);
-		foldSolution[cn->entityIdx] = fn;
+		ChainNode* cn = collFog->getChainNode(fn->mID);
+		foldSolution[cn->chainIdx] = fn;
 	}
 }
 
@@ -547,5 +661,10 @@ Geom::Box BlockGraph::getAvailFoldingSpace( QString mid )
 {
 	Geom::Rectangle base_rect = baseMaster->mPatch;
 	Geom::Rectangle afr3 = base_rect.get3DRectangle(availFoldingRegion[mid]);
-	return Geom::Box(afr3, afr3.Normal, masterHeight[mid]);
+	Geom::Box afs(afr3, base_rect.Normal, masterHeight[mid]);
+
+	double epsilon = 2 * ZERO_TOLERANCE_LOW;
+	afs.Extent += Vector3(epsilon, epsilon, epsilon);
+
+	return afs;
 }

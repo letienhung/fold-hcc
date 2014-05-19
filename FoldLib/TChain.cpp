@@ -20,7 +20,7 @@ Geom::SectorCylinder TChain::getFoldingVolume( FoldOption* fn )
 
 	// chain up segment
 	Geom::Segment upseg = chainUpSeg;
-	upseg.cropRange01(0, 1.0/fn->nbsplit);
+	upseg.cropRange01(0, 1.0/fn->nSplits);
 
 	// rightV
 	Vector3 rightV = rootRightVs[hidx];
@@ -32,9 +32,9 @@ Geom::SectorCylinder TChain::getFoldingVolume( FoldOption* fn )
 	return fv;
 }
 
-QVector<FoldOption*> TChain::generateFoldOptions()
+QVector<FoldOption*> TChain::generateFoldOptions(int nSplits, int nUsedChunks, int nChunks)
 {
-	QVector<FoldOption*> options = ChainGraph::generateFoldOptions(0, 0, 1);
+	QVector<FoldOption*> options = ChainGraph::generateFoldOptions(nSplits, nUsedChunks, nChunks);
 
 	// fold volume
 	foreach (FoldOption* fn, options)

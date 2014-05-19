@@ -236,59 +236,50 @@ void ChainGraph::resetHingeLinks()
 	}
 }
 
-QVector<FoldOption*> ChainGraph::generateFoldOptions( int nbSplit0, int nbSplit1, int nbScales )
+QVector<FoldOption*> ChainGraph::generateFoldOptions( int nSplits, int nUsedChunks, int nChunks )
 {
 	QVector<FoldOption*> options;
 
-	// #splits
-	for (int n = nbSplit0; n <= nbSplit1; n++)
+	// patch chain
+	if (mOrigSlave->mType == FdNode::PATCH)
 	{
-		// skip even number of splits for sake of simplicity
-		if (n%2 == 0) continue;
+		double chunkSize = 1.0/double(nChunks);
+		double usedSize = chunkSize * nUsedChunks;
 
-		// patch chain
-		if (mOrigSlave->mType == FdNode::PATCH)
+		// position
+		for (int i = 0; i <= nChunks - nUsedChunks; i++)
 		{
-			// shrink
-			double step = 1.0/double(nbScales);
-			for (int i = 1; i <= nbScales; i++)
-			{
-				double scale = step * i;
-				// position
-				for (int j = 0; j <= nbScales - i; j++)
-				{
-					double position = step * j;
-					// left
-					QString fnid1 = this->mID + "_" + QString::number(options.size());
-					FoldOption* fn1 = new FoldOption(0, false, scale, position, n, fnid1);
-					options.push_back(fn1);
+			double position = chunkSize * i;
 
-					// right
-					QString fnid2 = this->mID + "_" + QString::number(options.size());
-					FoldOption* fn2 = new FoldOption(0, true, scale, position, n, fnid2);
-					options.push_back(fn2);
-				}
-			}
+			// left
+			QString fnid1 = this->mID + "_" + QString::number(options.size());
+			FoldOption* fn1 = new FoldOption(0, false, usedSize, position, nSplits, fnid1);
+			options.push_back(fn1);
+
+			// right
+			QString fnid2 = this->mID + "_" + QString::number(options.size());
+			FoldOption* fn2 = new FoldOption(0, true, usedSize, position, nSplits, fnid2);
+			options.push_back(fn2);
 		}
-		// rod chain
-		else
-		{
-			// root segment id
-			for (int j = 0; j < 2; j++)
-			{
-				// left
-				QString fnid1 = this->mID + "_" + QString::number(options.size());
-				FoldOption* fn1 = new FoldOption(j, false, 1.0, 0.0, n, fnid1);
-				options.push_back(fn1);
 
-				// right
-				QString fnid2 = this->mID + "_" + QString::number(options.size());
-				FoldOption* fn2 = new FoldOption(j, true, 1.0, 0.0, n, fnid2);
-				options.push_back(fn2);
-			}
-		}	
 	}
+	// rod chain
+	else
+	{
+		// root segment id
+		for (int j = 0; j < 2; j++)
+		{
+			// left
+			QString fnid1 = this->mID + "_" + QString::number(options.size());
+			FoldOption* fn1 = new FoldOption(j, false, 1.0, 0.0, nSplits, fnid1);
+			options.push_back(fn1);
 
+			// right
+			QString fnid2 = this->mID + "_" + QString::number(options.size());
+			FoldOption* fn2 = new FoldOption(j, true, 1.0, 0.0, nSplits, fnid2);
+			options.push_back(fn2);
+		}
+	}	
 
 	return options;
 }
@@ -313,7 +304,7 @@ void ChainGraph::applyFoldOption( FoldOption* fn )
 	}
 
 	// split
-	mParts = FdGraph::split(mOrigSlave->mID, generateCutPlanes(fn->nbsplit));
+	mParts = FdGraph::split(mOrigSlave->mID, generateCutPlanes(fn->nSplits));
 
 	// sort
 	sortChainParts();

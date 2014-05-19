@@ -87,7 +87,7 @@ void FoldManager::identifyMasters()
 				{
 					perpNodes << rn;
 					dcScaffold->Structure::Graph::addNode(rn);
-					rn->addTag(IS_EDGE_ROD);
+					rn->addTag(EDGE_ROD_TAG);
 				}
 				// delete if not need
 				else

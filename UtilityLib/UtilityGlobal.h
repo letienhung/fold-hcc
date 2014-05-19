@@ -14,6 +14,7 @@
 using namespace SurfaceMesh;
 
 namespace SurfaceMesh{
+typedef Eigen::Vector2i Vector2i;
 typedef Eigen::Vector2d Vector2;
 typedef Eigen::Vector4d Vector4;
 }

@@ -15,8 +15,7 @@ public:
 	void setupBasisOrientations();
 
 	// foldem
-	virtual QVector<FoldOption*> generateFoldOptions() = 0;
-	QVector<FoldOption*> generateFoldOptions(int nbSplit0, int nbSplit1, int nbScales);
+	QVector<FoldOption*> generateFoldOptions(int nSplits, int nUsedChunks, int nChunks);
 
 	// modify chain
 	virtual void applyFoldOption(FoldOption* fn);

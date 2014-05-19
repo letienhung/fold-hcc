@@ -27,9 +27,12 @@ namespace Geom{
 		QVector<Segment2>	getEdgeSegments();
 
 		// coordinates
-		bool	contains(Vector2& p);
 		Vector2 getCoordinates(Vector2& p);
 		Vector2 getPosition(Vector2& coord);
+
+		// relation with others
+		bool contains(Vector2& p);
+		bool containsAll(QVector<Vector2>& pnts);
 
 		// samples
 		QVector<Vector2> getEdgeSamples(int N);

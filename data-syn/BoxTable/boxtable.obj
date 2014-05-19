@@ -1,8 +1,8 @@
 # 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
-# File Created: 10.05.2014 17:57:25
+# File Created: 18.05.2014 20:46:23
 
 #
-# object Box001
+# object ground
 #
 
 v  -50.0000 -25.0000 0.0000
@@ -15,7 +15,7 @@ v  -50.0000 25.0000 1.0000
 v  50.0000 25.0000 1.0000
 # 8 vertices
 
-g Box001
+g ground
 f 1 3 4 
 f 4 2 1 
 f 5 6 8 
@@ -31,7 +31,7 @@ f 5 7 3
 # 12 faces
 
 #
-# object Box002
+# object ceiling
 #
 
 v  -50.0000 -25.0000 50.0000
@@ -44,7 +44,7 @@ v  -50.0000 25.0000 51.0000
 v  50.0000 25.0000 51.0000
 # 8 vertices
 
-g Box002
+g ceiling
 f 9 11 12 
 f 12 10 9 
 f 13 14 16 
@@ -60,7 +60,7 @@ f 13 15 11
 # 12 faces
 
 #
-# object Box003
+# object wallRight
 #
 
 v  49.0000 -25.0000 0.0000
@@ -73,7 +73,7 @@ v  49.0000 25.0000 50.0000
 v  50.0000 25.0000 50.0000
 # 8 vertices
 
-g Box003
+g wallRight
 f 17 19 20 
 f 20 18 17 
 f 21 22 24 
@@ -89,7 +89,7 @@ f 21 23 19
 # 12 faces
 
 #
-# object Box004
+# object wallLeft
 #
 
 v  -50.0000 -25.0000 0.0000
@@ -102,7 +102,7 @@ v  -50.0000 25.0000 50.0000
 v  -49.0000 25.0000 50.0000
 # 8 vertices
 
-g Box004
+g wallLeft
 f 25 27 28 
 f 28 26 25 
 f 29 30 32 
@@ -118,7 +118,7 @@ f 29 31 27
 # 12 faces
 
 #
-# object Box005
+# object legLeft
 #
 
 v  -15.5000 -15.0000 0.0000
@@ -131,7 +131,7 @@ v  -15.5000 15.0000 20.0000
 v  -14.5000 15.0000 20.0000
 # 8 vertices
 
-g Box005
+g legLeft
 f 33 35 36 
 f 36 34 33 
 f 37 38 40 
@@ -147,7 +147,7 @@ f 37 39 35
 # 12 faces
 
 #
-# object Box006
+# object legRight
 #
 
 v  14.5000 -15.0000 0.0000
@@ -160,7 +160,7 @@ v  14.5000 15.0000 20.0000
 v  15.5000 15.0000 20.0000
 # 8 vertices
 
-g Box006
+g legRight
 f 41 43 44 
 f 44 42 41 
 f 45 46 48 
@@ -176,7 +176,7 @@ f 45 47 43
 # 12 faces
 
 #
-# object Box007
+# object table
 #
 
 v  -22.5000 -15.0000 20.0000
@@ -189,7 +189,7 @@ v  -22.5000 15.0000 21.0000
 v  22.5000 15.0000 21.0000
 # 8 vertices
 
-g Box007
+g table
 f 49 51 52 
 f 52 50 49 
 f 53 54 56 

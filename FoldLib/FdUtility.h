@@ -16,11 +16,12 @@ typedef QPair<double, double> TimeInterval;
 
 // tags
 #define	MASTER_TAG "isMasterPatch"
-#define IS_EDGE_ROD "isEdgeRodNode"
+#define EDGE_ROD_TAG "isEdgeRodNode"
 #define DELETED_TAG "hasDeleted"
 #define FOLDED_TAG "hasFolded"
 #define READY_TAG "isReady"
 #define SELECTED_TAG "isSelected"
+#define NEW_TAG "isNew"
 
 // Qt meta type
 Q_DECLARE_METATYPE(Vector3)

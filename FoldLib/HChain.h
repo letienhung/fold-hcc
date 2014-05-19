@@ -9,7 +9,8 @@ public:
     HChain(FdNode* slave, PatchNode* master_low, PatchNode* master_high);
 
 	// foldem
-	QVector<FoldOption*> generateFoldOptions();
+	// nX: splits; nY: shrink
+	QVector<FoldOption*> generateFoldOptions(int nSplits, int nUsedChunks, int nChunks);
 
 	// fold region
 	Geom::Rectangle getFoldRegion(FoldOption* fn);

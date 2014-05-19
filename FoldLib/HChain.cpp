@@ -21,7 +21,7 @@ Geom::Rectangle HChain::getFoldRegion(FoldOption* fn)
 	Geom::Segment axisSeg2 = axisSeg1;
 
 	// shift the axis along rightV
-	double width = getLength() / (fn->nbsplit + 1);
+	double width = getLength() / (fn->nSplits + 1);
 	axisSeg2.translate(width * rightV);
 
 	// shrink epsilon
@@ -40,15 +40,15 @@ Geom::Rectangle HChain::getMaxFoldRegion( bool right )
 }
 
 
-QVector<FoldOption*> HChain::generateFoldOptions()
+QVector<FoldOption*> HChain::generateFoldOptions(int nSplits, int nUsedChunks, int nChunks)
 {
-	QVector<FoldOption*> options = ChainGraph::generateFoldOptions(1, 4, 1);
+	QVector<FoldOption*> options = ChainGraph::generateFoldOptions(nSplits, nUsedChunks, nChunks);
 
 	// fold area
 	foreach (FoldOption* fn, options)
 	{
-		Geom::Rectangle fArea = this->getFoldRegion(fn);
-		fn->properties["fArea"].setValue(fArea);
+		fn->region = getFoldRegion(fn);
+		fn->duration = mFoldDuration;
 	}
 
 	return options;

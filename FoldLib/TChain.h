@@ -9,7 +9,7 @@ public:
     TChain(PatchNode* master, FdNode* slave);
 
 	// foldem
-	QVector<FoldOption*> generateFoldOptions();
+	QVector<FoldOption*> generateFoldOptions(int nSplits, int nUsedChunks, int nChunks);
 
 	// fold info
 	Geom::SectorCylinder getFoldingVolume(FoldOption* fn);
