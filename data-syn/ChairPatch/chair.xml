@@ -1,0 +1,49 @@
+<!--?xml Version = "1.0"?-->
+<document>
+    <cN>4</cN>
+    <node>
+        <type>2</type>
+        <ID>back</ID>
+        <box>
+            <c>0 -74.9141 0</c>
+            <x>0 1 0</x>
+            <y>0 0 1</y>
+            <z>1 0 0</z>
+            <e>24.9141 16.665 2.3619</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>backLeg</ID>
+        <box>
+            <c>0 -24.9403 0</c>
+            <x>0 1 0</x>
+            <y>0 0 1</y>
+            <z>1 0 0</z>
+            <e>24.914 16.665 2.3619</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>frontLeg</ID>
+        <box>
+            <c>-35.784 -24.9403 0</c>
+            <x>0 1 0</x>
+            <y>0 0 1</y>
+            <z>1 0 0</z>
+            <e>24.914 16.665 2.3619</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>Seat</ID>
+        <box>
+            <c>-20.2363 -52.1569 0</c>
+            <x>-1 0 0</x>
+            <y>0 0 1</y>
+            <z>0 1 0</z>
+            <e>17.8961 16.665 2.19895</e>
+        </box>
+    </node>
+    <cL>0</cL>
+</document>
