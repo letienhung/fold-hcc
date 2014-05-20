@@ -540,10 +540,9 @@ FdGraph* DcGraph::getKeyframe( double t )
 	return key_graph;
 }
 
-void DcGraph::foldabilize(bool withinAABB)
+void DcGraph::foldabilize()
 {
 	Geom::Box aabb = computeAABB().box();
-	addDebugBoxes(QVector<Geom::Box>() << aabb);
 
 	// min & max folding volumes
 	foreach (BlockGraph* b, blocks)
@@ -712,4 +711,27 @@ bool DcGraph::isValid( FdGraph* folded )
 				return false;
 
 	return true;
+}
+
+void DcGraph::foldbzSelBlock()
+{
+	BlockGraph* selBlock = getSelBlock();
+	if (!selBlock) return;
+
+	// foldabilize selected block
+	selBlock->computeMinFoldingRegion();
+	selBlock->computeMaxFoldingRegion(computeAABB().box());
+	FdGraph* currKeyframe = getKeyframe(0);
+	selBlock->computeAvailFoldingRegion(currKeyframe, masterOrderGreater, masterOrderLess);
+	selBlock->foldabilize();
+	selBlock->mFoldDuration = TIME_INTERVAL(0.0, 1.0);
+	selBlock->addTag(READY_TAG);
+
+	// set unreachable time interval for other blocks
+	TimeInterval ti = TIME_INTERVAL(1.0, 2.0);
+	foreach (BlockGraph* block, blocks)
+	{
+		if (block != selBlock)
+			block->mFoldDuration = ti;
+	}
 }

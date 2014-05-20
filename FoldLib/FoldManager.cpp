@@ -157,22 +157,9 @@ void FoldManager::decompose()
 
 void FoldManager::foldbzSelBlock()
 {
-	BlockGraph* selBlock = getSelBlock();
-	if (selBlock) selBlock->foldabilize();
-
-}
-
-
-void FoldManager::snapshotSelChain( double t )
-{
-	BlockGraph* selBlock = getSelBlock();
-	if (selBlock)
-	{
-		HChain* selChain = selBlock->getSelChain();
-		if (selChain) selChain->fold(t);
-	}
-
-	emit(sceneChanged());
+	DcGraph* selDc = getSelDcGraph();
+	if (selDc)
+		selDc->foldbzSelBlock();
 }
 
 void FoldManager::selectDcGraph( QString id )
@@ -289,10 +276,10 @@ FdGraph* FoldManager::activeScaffold()
 	else		return scaffold;
 }
 
-void FoldManager::foldabilize(bool withinAABB)
+void FoldManager::foldabilize()
 {
 	foreach (DcGraph* dcg, dcGraphs)
-		dcg->foldabilize(withinAABB);
+		dcg->foldabilize();
 
 	// debug
 	updateKeyframeList();

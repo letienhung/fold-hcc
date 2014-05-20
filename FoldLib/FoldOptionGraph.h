@@ -22,7 +22,6 @@ public:
 	Node* clone();
 
 	double getCost();// cost
-	QString getInfo();// printable info
 
 public:
 	// idx of root segment

@@ -42,6 +42,7 @@ public:
 	// foldem
 	void foldabilize();
 	void updateCollisionLinks();
+	void buildCollisionGraph();
 	void buildCollisionGraphAdaptive();
 	int encodeModification(int nX, int nY);
 	void decodeModification(int mdf, int& nX, int& nY);
@@ -52,7 +53,6 @@ public:
 
 	// helper
 	QVector<QString> getInbetweenOutsideParts(FdGraph* scaffold, QString mid1, QString mid2);
-
 public:
 	// time interval
 	TimeInterval mFoldDuration;
@@ -81,5 +81,7 @@ public:
 	FoldOptionGraph* collFog;
 	FoldOptionGraph* collFogOrig;
 	QVector<FoldOption*> foldSolution;
+
+	QVector<FoldOptionGraph*> debugFogs;
 }; 
 

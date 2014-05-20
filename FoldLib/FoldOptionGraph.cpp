@@ -67,13 +67,6 @@ double FoldOption::getCost()
 	return cost1 + cost2;
 }
 
-QString FoldOption::getInfo()
-{
-	return QString("%1;(%2,%3);%4")
-		.arg(rightSide)
-		.arg(position).arg(position + scale)
-		.arg(getCost());
-}
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -279,12 +272,6 @@ QString FoldOptionGraph::toGraphvizFormat( QString subcaption, QString caption )
 
 		// label
 		QString label = node->mID;
-		if (type == "option")
-		{
-			FoldOption* fn = (FoldOption*) node;
-			label = fn->mID + "[" + fn->getInfo() + "]";
-		}
-		if (type == "barrier") label = "Barrier";
 
 		// shape
 		QString shape = "rectangle";
@@ -294,7 +281,6 @@ QString FoldOptionGraph::toGraphvizFormat( QString subcaption, QString caption )
 		QString colorHex; 
 		QColor color = Qt::blue;
 		if (type == "option") color = Qt::green;
-		if (type == "barrier") color = QColor(255, 165, 0);
 		if (node->properties.contains("selected")) color = color.lighter();
 		colorHex.sprintf("#%02X%02X%02X", color.red(), color.green(), color.blue());
 

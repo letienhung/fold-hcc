@@ -57,7 +57,8 @@ public:
 	void clusterSlaves();
 
 	// foldem
-	void foldabilize(bool withinAABB);
+	void foldabilize();
+	void foldbzSelBlock();
 	void findFoldOrderGreedy();
 	int getBestNextBlockIndex(double currT);
 	bool isValid(FdGraph* folded);

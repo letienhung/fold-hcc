@@ -26,7 +26,6 @@ public slots:
 	void selectBlock();
 	void selectChain();
 	void selectKeyframe();
-	void foldabilize();
 	void genKeyframes();
 
 	// to Ui

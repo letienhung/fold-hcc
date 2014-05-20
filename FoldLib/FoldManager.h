@@ -24,29 +24,6 @@ public:
 	int selDcIdx;
 	QVector<DcGraph*> dcGraphs;
 
-	/// Main pipeline	
-public slots:
-	// input
-	void setScaffold(FdGraph* fdg);
-
-public:
-	// masters
-	void identifyMasters();
-
-public slots:
-	// decomposition
-	void setSqzV (QString sqzV_str);
-	void decompose();
-
-	// foldem
-	void foldabilize(bool withinAABB);
-	void exportCollFOG();
-
-public:
-	// output
-	void generateKeyframes(int nbKeyframes);
-	void exportResultMesh();
-
 public:
 	// update Ui
 	void updateDcList();
@@ -62,6 +39,28 @@ public:
 	FdGraph* getSelKeyframe();
 
 public slots:
+	/// Main pipeline	
+	// input
+	void setScaffold(FdGraph* fdg);
+
+	// masters
+	void identifyMasters();
+
+	// decomposition
+	void setSqzV (QString sqzV_str);
+	void decompose();
+
+	// foldem
+	void foldabilize();
+	void foldbzSelBlock();
+
+	// keyframes
+	void generateKeyframes(int nbKeyframes);
+
+	// output
+	void exportCollFOG();
+	void exportResultMesh();
+
 	// selection signal from Ui
 	void selectDcGraph(QString id);
 	void selectBlock(QString id);
@@ -70,10 +69,6 @@ public slots:
 
 	// reset dc graphs
 	void clearDcGraphs();
-
-	// other signals from Ui
-	void foldbzSelBlock();
-	void snapshotSelChain(double t);
 
 signals:
 	// notify others about changes

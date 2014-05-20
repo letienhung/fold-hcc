@@ -231,7 +231,7 @@ void BlockGraph::computeAvailFoldingRegion( FdGraph* scaffold,
 		avail_region.Extent += Vector2(epsilon, epsilon);
 		availFoldingRegion[top_mid] = avail_region;
 
-		addDebugSegments(base_rect.get3DRectangle(avail_region).getEdgeSegments());
+		//addDebugSegments(base_rect.get3DRectangle(avail_region).getEdgeSegments());
 	}
 
 	// restore the position of scaffold
@@ -240,9 +240,14 @@ void BlockGraph::computeAvailFoldingRegion( FdGraph* scaffold,
 
 void BlockGraph::exportCollFOG()
 {
-	QString filePath = path + "/" + mID + "_collision";
-	collFogOrig->saveAsImage(filePath + "_Orig");
-	collFog->saveAsImage(filePath);
+	QString filename = path + "/" + mID;
+	collFogOrig->saveAsImage(filename + "_Orig");
+	collFog->saveAsImage(filename);
+
+	for(int i = 0; i < debugFogs.size(); i++)
+	{
+		debugFogs[i]->saveAsImage(filename + "_debug" + QString::number(i));
+	}
 }
 
 FdGraph* BlockGraph::getKeyframeScaffold( double t )
@@ -317,6 +322,9 @@ void BlockGraph::foldabilize()
 
 	for (int i = 0; i < chains.size(); i++)
 	{
+		if (foldSolution[i] == NULL)
+			continue;
+
 		chains[i]->applyFoldOption(foldSolution[i]);
 	}
 
@@ -370,6 +378,12 @@ void BlockGraph::genNewModifications( QSet<int>& modifications, int max_nX, int 
 
 		modifications = newModifications;
 	}
+
+	// debug
+	std::cout << "modification set:";
+	foreach(int mdf, modifications)
+		std::cout << mdf << "  ";
+	std::cout << std::endl;
 }
 
 void BlockGraph::filterFoldOptions( QVector<FoldOption*>& options, int cid )
@@ -418,6 +432,43 @@ void BlockGraph::filterFoldOptions( QVector<FoldOption*>& options, int cid )
 	options = options_filtered;
 }
 
+void BlockGraph::buildCollisionGraph()
+{
+	// clear
+	collFog->clear();
+
+	// fold entities and options
+	for(int cid = 0; cid < chains.size(); cid++)
+	{
+		HChain* chain = (HChain*)chains[cid];
+
+		// fold entity
+		ChainNode* cn = new ChainNode(cid, chain->mID);
+		collFog->addNode(cn);
+
+		properties.remove("debugSegments");// debug
+
+		// fold options and links
+		QVector<FoldOption*> options;
+		int max_nX = 2;
+		int nChunks = 4;
+		for (int nX = 1; nX <= max_nX; nX++)
+			for (int nUsedChunks = nChunks; nUsedChunks >= 0; nChunks-- )
+				options << chain->generateFoldOptions(2*nX-1, nUsedChunks, nChunks);
+		filterFoldOptions(options, cid);
+		foreach(FoldOption* fn, options)
+		{
+			collFog->addNode(fn);
+			collFog->addFoldLink(cn, fn);
+			//addDebugSegments(fArea.getEdgeSegments());
+		}
+	}
+
+	// collision links
+	updateCollisionLinks();
+}
+
+
 void BlockGraph::buildCollisionGraphAdaptive()
 {
 	// clear
@@ -458,12 +509,15 @@ void BlockGraph::buildCollisionGraphAdaptive()
 				collFog->addFoldLink(cn, fn);
 
 				// debug
-				addDebugSegments(fn->region.getEdgeSegments());
+				//addDebugSegments(fn->region.getEdgeSegments());
 			}
 		}
 
 		// update collisions for new added fold options
 		updateCollisionLinks();
+
+		// debug
+		debugFogs << (FoldOptionGraph*)collFog->clone();
 
 		// update colliding chain list
 		QVector<int> collChainIdx_copy = collChainIdx;
@@ -553,7 +607,7 @@ void BlockGraph::findOptimalSolution()
 
 	// fold solution
 	foldSolution.clear();
-	foldSolution.resize(chains.size());
+	for (int i = 0; i < chains.size(); i++) foldSolution << NULL;
 	if (collFogOrig) delete collFogOrig;
 	collFogOrig = (FoldOptionGraph*)collFog->clone();
 	foreach(int idx, qs[0])
@@ -562,6 +616,8 @@ void BlockGraph::findOptimalSolution()
 		fn->addTag(SELECTED_TAG);
 		ChainNode* cn = collFog->getChainNode(fn->mID);
 		foldSolution[cn->chainIdx] = fn;
+
+		addDebugSegments(fn->region.getEdgeSegments());
 	}
 }
 

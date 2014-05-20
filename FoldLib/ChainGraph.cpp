@@ -252,12 +252,12 @@ QVector<FoldOption*> ChainGraph::generateFoldOptions( int nSplits, int nUsedChun
 			double position = chunkSize * i;
 
 			// left
-			QString fnid1 = this->mID + "_" + QString::number(options.size());
+			QString fnid1 = QString("%1:%2_%3_L_%4").arg(mID).arg(nSplits).arg(nUsedChunks).arg(position);
 			FoldOption* fn1 = new FoldOption(0, false, usedSize, position, nSplits, fnid1);
 			options.push_back(fn1);
 
 			// right
-			QString fnid2 = this->mID + "_" + QString::number(options.size());
+			QString fnid2 = QString("%1:%2_%3_R_%4").arg(mID).arg(nSplits).arg(nUsedChunks).arg(position);
 			FoldOption* fn2 = new FoldOption(0, true, usedSize, position, nSplits, fnid2);
 			options.push_back(fn2);
 		}
@@ -270,12 +270,12 @@ QVector<FoldOption*> ChainGraph::generateFoldOptions( int nSplits, int nUsedChun
 		for (int j = 0; j < 2; j++)
 		{
 			// left
-			QString fnid1 = this->mID + "_" + QString::number(options.size());
+			QString fnid1 = QString("%1:%2_L").arg(mID).arg(nSplits);
 			FoldOption* fn1 = new FoldOption(j, false, 1.0, 0.0, nSplits, fnid1);
 			options.push_back(fn1);
 
 			// right
-			QString fnid2 = this->mID + "_" + QString::number(options.size());
+			QString fnid2 = QString("%1:%2_R").arg(mID).arg(nSplits);;
 			FoldOption* fn2 = new FoldOption(j, true, 1.0, 0.0, nSplits, fnid2);
 			options.push_back(fn2);
 		}
