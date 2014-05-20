@@ -58,7 +58,6 @@ BlockGraph::BlockGraph( QVector<PatchNode*>& ms, QVector<FdNode*>& ss,
 	}
 
 	// initial collision graph
-	collFogOrig = NULL;
 	collFog = new FoldOptionGraph();
 
 	//////////////////////////////////////////////////////////////////////////
@@ -241,7 +240,6 @@ void BlockGraph::computeAvailFoldingRegion( FdGraph* scaffold,
 void BlockGraph::exportCollFOG()
 {
 	QString filename = path + "/" + mID;
-	collFogOrig->saveAsImage(filename + "_Orig");
 	collFog->saveAsImage(filename);
 
 	for(int i = 0; i < debugFogs.size(); i++)
@@ -312,24 +310,35 @@ bool BlockGraph::fAreasIntersect( Geom::Rectangle& rect1, Geom::Rectangle& rect2
 void BlockGraph::foldabilize()
 {
 	// collision graph
-	buildCollisionGraphAdaptive();
+	//buildCollisionGraphAdaptive();
+	buildCollisionGraph();
 
 	// find optimal solution
 	findOptimalSolution();
 
 	// apply fold options
-	if (foldSolution.isEmpty()) return;
+	applySolution(0);
+}
+
+
+void BlockGraph::applySolution( int sid )
+{
+	if (sid < 0 || sid >= foldSolutions.size())
+		return;
 
 	for (int i = 0; i < chains.size(); i++)
 	{
-		if (foldSolution[i] == NULL)
+		FoldOption* fn = foldSolutions[sid][i];
+
+		if (fn == NULL)
 			continue;
 
-		chains[i]->applyFoldOption(foldSolution[i]);
+		chains[i]->applyFoldOption(fn);
 	}
 
 	addTag(READY_TAG);
 }
+
 
 int BlockGraph::encodeModification( int nX, int nY )
 {
@@ -437,9 +446,13 @@ void BlockGraph::buildCollisionGraph()
 	// clear
 	collFog->clear();
 
+	std::cout << "build collision graph...\n";
+
 	// fold entities and options
 	for(int cid = 0; cid < chains.size(); cid++)
 	{
+		std::cout << "cid = " << cid << ": ";
+
 		HChain* chain = (HChain*)chains[cid];
 
 		// fold entity
@@ -450,12 +463,14 @@ void BlockGraph::buildCollisionGraph()
 
 		// fold options and links
 		QVector<FoldOption*> options;
-		int max_nX = 2;
-		int nChunks = 4;
+		int max_nX = 1;
+		int nChunks = 2;
 		for (int nX = 1; nX <= max_nX; nX++)
-			for (int nUsedChunks = nChunks; nUsedChunks >= 0; nChunks-- )
+			for (int nUsedChunks = nChunks; nUsedChunks >= 0; nUsedChunks-- )
 				options << chain->generateFoldOptions(2*nX-1, nUsedChunks, nChunks);
+		std::cout << "initial #options = " << options.size();
 		filterFoldOptions(options, cid);
+		std::cout << "filtered #options = " << options.size() << std::endl;
 		foreach(FoldOption* fn, options)
 		{
 			collFog->addNode(fn);
@@ -540,11 +555,12 @@ void BlockGraph::buildCollisionGraphAdaptive()
 
 void BlockGraph::updateCollisionLinks()
 {
+	std::cout << "update collision links...\n";
 	QVector<FoldOption*> fns = collFog->getAllFoldOptions();
 	for (int i = 0; i < fns.size(); i++)
 	{
 		// skip if not new
-		if (!fns[i]->hasTag(NEW_TAG)) continue;
+		//if (!fns[i]->hasTag(NEW_TAG)) continue;
 
 		// collision with others
 		for (int j = i+1; j < fns.size(); j++)
@@ -561,8 +577,9 @@ void BlockGraph::updateCollisionLinks()
 		}
 
 		// remove new tag
-		fns[i]->removeTag(NEW_TAG);
+		//fns[i]->removeTag(NEW_TAG);
 	}
+	std::cout << std::endl;
 }
 
 void BlockGraph::findOptimalSolution()
@@ -605,19 +622,24 @@ void BlockGraph::findOptimalSolution()
 	CliquerAdapter cliquer(conn, weights);
 	QVector<QVector<int> > qs = cliquer.getMinWeightMaxCliques();
 
-	// fold solution
-	foldSolution.clear();
-	for (int i = 0; i < chains.size(); i++) foldSolution << NULL;
-	if (collFogOrig) delete collFogOrig;
-	collFogOrig = (FoldOptionGraph*)collFog->clone();
-	foreach(int idx, qs[0])
+	// fold solutions
+	foldSolutions.clear();
+	for (int sid = 0; sid < qs.size(); sid++)
 	{
-		FoldOption* fn = fns[idx];
-		fn->addTag(SELECTED_TAG);
-		ChainNode* cn = collFog->getChainNode(fn->mID);
-		foldSolution[cn->chainIdx] = fn;
+		QVector<FoldOption*> solution;
+		for (int i = 0; i < chains.size(); i++) solution << NULL;
 
-		addDebugSegments(fn->region.getEdgeSegments());
+		foreach(int idx, qs[sid])
+		{
+			FoldOption* fn = fns[idx];
+			//fn->addTag(SELECTED_TAG);
+			ChainNode* cn = collFog->getChainNode(fn->mID);
+			solution[cn->chainIdx] = fn;
+
+			//addDebugSegments(fn->region.getEdgeSegments());
+		}
+
+		foldSolutions << solution;
 	}
 }
 

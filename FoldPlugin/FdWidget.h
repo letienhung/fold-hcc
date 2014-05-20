@@ -26,6 +26,7 @@ public slots:
 	void selectBlock();
 	void selectChain();
 	void selectKeyframe();
+	void selectSolution();
 	void genKeyframes();
 
 	// to Ui
@@ -34,11 +35,13 @@ public slots:
 	void setLayerList(QStringList labels);
 	void setChainList(QStringList labels);
 	void setKeyframeList(int N);
+	void setSolutionList(int N);
 
 signals:
 	void dcGraphSelectionChanged(QString id);
 	void blockSelectionChanged(QString id);
 	void chainSelectionChanged(QString id);
 	void keyframeSelectionChanged(int idx);
+	void solutionSelectionChanged(int idx);
 };
 

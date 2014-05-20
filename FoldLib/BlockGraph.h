@@ -51,6 +51,9 @@ public:
 	void findOptimalSolution();
 	bool fAreasIntersect(Geom::Rectangle& rect1, Geom::Rectangle& rect2);
 
+	// apply fold solution
+	void applySolution(int sid);
+
 	// helper
 	QVector<QString> getInbetweenOutsideParts(FdGraph* scaffold, QString mid1, QString mid2);
 public:
@@ -79,9 +82,9 @@ public:
 
 	// collision graph
 	FoldOptionGraph* collFog;
-	FoldOptionGraph* collFogOrig;
-	QVector<FoldOption*> foldSolution;
-
 	QVector<FoldOptionGraph*> debugFogs;
+
+	// fold solutions
+	QVector<QVector<FoldOption*> > foldSolutions;
 }; 
 

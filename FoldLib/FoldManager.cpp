@@ -194,6 +194,7 @@ void FoldManager::selectBlock( QString id )
 	}
 
 	updateChainList();
+	updateSolutionList();
 
 	emit(sceneChanged());
 }
@@ -281,8 +282,7 @@ void FoldManager::foldabilize()
 	foreach (DcGraph* dcg, dcGraphs)
 		dcg->foldabilize();
 
-	// debug
-	updateKeyframeList();
+	
 }
 
 void FoldManager::updateDcList()
@@ -313,7 +313,6 @@ void FoldManager::updateChainList()
 	emit(chainsChanged(chainLables));
 }
 
-
 void FoldManager::updateKeyframeList()
 {
 	// selected dc graph
@@ -321,6 +320,15 @@ void FoldManager::updateKeyframeList()
 	if (!selDc) return;
 
 	emit(keyframesChanged(selDc->keyframes.size()));
+}
+
+void FoldManager::updateSolutionList()
+{
+	// selected dc graph
+	BlockGraph* selBlock = getSelBlock();
+	if (!selBlock) return;
+
+	emit(solutionsChanged(selBlock->foldSolutions.size()));
 }
 
 void FoldManager::exportResultMesh()
@@ -351,4 +359,13 @@ void FoldManager::exportCollFOG()
 	{
 		selDc->exportCollFOG();
 	}
+}
+
+void FoldManager::selectSolution( int idx )
+{
+	// selected dc graph
+	BlockGraph* selBlock = getSelBlock();
+	if (!selBlock) return;
+
+	selBlock->applySolution(idx);
 }

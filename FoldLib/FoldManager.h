@@ -30,6 +30,7 @@ public:
 	void updateBlockList();
 	void updateChainList();
 	void updateKeyframeList();
+	void updateSolutionList();
 
 	// getters
 	FdGraph* activeScaffold();
@@ -66,6 +67,7 @@ public slots:
 	void selectBlock(QString id);
 	void selectChain(QString id);
 	void selectKeyframe(int idx);
+	void selectSolution(int idx);
 
 	// reset dc graphs
 	void clearDcGraphs();
@@ -77,6 +79,7 @@ signals:
 	void blocksChanged(QStringList labels);
 	void chainsChanged(QStringList labels);
 	void keyframesChanged(int N);
+	void solutionsChanged(int N);
 	void message(QString msg);
 };
 

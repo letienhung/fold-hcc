@@ -13,6 +13,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	this->connect(ui->layerList, SIGNAL(itemSelectionChanged()), SLOT(selectBlock()));
 	this->connect(ui->chainList, SIGNAL(itemSelectionChanged()), SLOT(selectChain()));
 	this->connect(ui->keyframeList, SIGNAL(itemSelectionChanged()), SLOT(selectKeyframe()));
+	this->connect(ui->slnList, SIGNAL(itemSelectionChanged()), SLOT(selectSolution()));
 
 	/// structural abstraction
 	// creation and refine
@@ -38,11 +39,13 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	this->connect(plugin->f_manager, SIGNAL(DcGraphsChanged(QStringList)), SLOT(setDcGraphList(QStringList)));
 	this->connect(plugin->f_manager, SIGNAL(blocksChanged(QStringList)), SLOT(setLayerList(QStringList)));
 	this->connect(plugin->f_manager, SIGNAL(chainsChanged(QStringList)), SLOT(setChainList(QStringList)));
+	this->connect(plugin->f_manager, SIGNAL(solutionsChanged(int)), SLOT(setSolutionList(int)));
 	this->connect(plugin->f_manager, SIGNAL(keyframesChanged(int)), SLOT(setKeyframeList(int)));
 	plugin->f_manager->connect(this, SIGNAL(dcGraphSelectionChanged(QString)), SLOT(selectDcGraph(QString)));
 	plugin->f_manager->connect(this, SIGNAL(blockSelectionChanged(QString)), SLOT(selectBlock(QString)));
 	plugin->f_manager->connect(this, SIGNAL(chainSelectionChanged(QString)), SLOT(selectChain(QString)));
 	plugin->f_manager->connect(this, SIGNAL(keyframeSelectionChanged(int)), SLOT(selectKeyframe(int)));
+	plugin->f_manager->connect(this, SIGNAL(solutionSelectionChanged(int)), SLOT(selectSolution(int)));
 	plugin->f_manager->connect(ui->clearDcList, SIGNAL(clicked()), SLOT(clearDcGraphs()));
 
 	// foldabilize
@@ -58,7 +61,6 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->connect(ui->showCuboids, SIGNAL(stateChanged(int)), SLOT(showCuboid(int)));
 	plugin->connect(ui->showScaffold, SIGNAL(stateChanged(int)), SLOT(showScaffold(int)));
 	plugin->connect(ui->showMesh, SIGNAL(stateChanged(int)), SLOT(showMesh(int)));
-	plugin->connect(ui->showAABB, SIGNAL(stateChanged(int)), SLOT(showAABB(int)));
 
 	// export
 	plugin->f_manager->connect(ui->exportCollFOG, SIGNAL(clicked()), SLOT(exportCollFOG()));
@@ -110,6 +112,17 @@ void FdWidget::setKeyframeList( int N )
 	ui->keyframeList->addItems(labels);
 }
 
+void FdWidget::setSolutionList( int N )
+{
+	ui->slnList->clear();
+	QStringList labels;
+	for (int i = 0; i < N; i++)
+		labels << QString::number(i);
+
+	ui->slnList->addItems(labels);
+}
+
+
 void FdWidget::selectDcGraph()
 {
 	QList<QListWidgetItem *> selItems = ui->DcList->selectedItems();
@@ -148,6 +161,17 @@ void FdWidget::selectKeyframe()
 	{
 		int idx = selItems.front()->text().toInt();
 		emit(keyframeSelectionChanged(idx));
+	}
+}
+
+void FdWidget::selectSolution()
+{
+	QList<QListWidgetItem *> selItems = ui->slnList->selectedItems();
+
+	if (!selItems.isEmpty())
+	{
+		int idx = selItems.front()->text().toInt();
+		emit(solutionSelectionChanged(idx));
 	}
 }
 
