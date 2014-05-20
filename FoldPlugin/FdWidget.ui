@@ -192,7 +192,7 @@
      </layout>
     </widget>
    </item>
-   <item row="6" column="0" colspan="2">
+   <item row="7" column="0" colspan="2">
     <widget class="QGroupBox" name="groupBox_5">
      <property name="title">
       <string>Output</string>
@@ -215,7 +215,7 @@
      </layout>
     </widget>
    </item>
-   <item row="9" column="0" colspan="2">
+   <item row="10" column="0" colspan="2">
     <widget class="QGroupBox" name="groupBox_6">
      <property name="title">
       <string>Debug</string>
@@ -238,7 +238,7 @@
      </layout>
     </widget>
    </item>
-   <item row="17" column="0" colspan="2">
+   <item row="18" column="0" colspan="2">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -257,37 +257,119 @@
       <string>Foldabilizer</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
-      <item row="6" column="0" alignment="Qt::AlignHCenter">
+      <item row="15" column="2">
+       <widget class="QGroupBox" name="groupBox_4">
+        <property name="title">
+         <string/>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_5">
+         <item row="3" column="0">
+          <widget class="QSpinBox" name="nbKeyframes">
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="value">
+            <number>25</number>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QPushButton" name="genKeyframes">
+           <property name="text">
+            <string>Gen ==&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <spacer name="verticalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="6" column="0">
+          <spacer name="verticalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="0" column="0">
+          <spacer name="verticalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="2" column="0">
+          <widget class="QCheckBox" name="showKeyframe">
+           <property name="text">
+            <string>Keyframe</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="1" column="0" alignment="Qt::AlignHCenter">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>sqzing V</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0" alignment="Qt::AlignHCenter">
        <widget class="QLabel" name="label_7">
         <property name="text">
-         <string>DcGraphs</string>
+         <string>--DcGraphs--</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="1" alignment="Qt::AlignHCenter">
+      <item row="8" column="2" alignment="Qt::AlignHCenter">
        <widget class="QLabel" name="label_8">
         <property name="text">
-         <string>Blocks</string>
+         <string>--Blocks--</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="2" colspan="2" alignment="Qt::AlignHCenter">
+      <item row="8" column="3" colspan="2" alignment="Qt::AlignHCenter">
        <widget class="QLabel" name="label_9">
         <property name="text">
-         <string>Chains</string>
+         <string>--Chains--</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="3">
+      <item row="9" column="4">
        <widget class="QListWidget" name="chainList"/>
       </item>
-      <item row="7" column="0">
+      <item row="9" column="0">
        <widget class="QListWidget" name="DcList"/>
       </item>
-      <item row="7" column="1">
+      <item row="9" column="2">
        <widget class="QListWidget" name="layerList"/>
       </item>
-      <item row="0" column="1">
+      <item row="1" column="2">
        <widget class="QComboBox" name="sqzV">
         <item>
          <property name="text">
@@ -306,72 +388,17 @@
         </item>
        </widget>
       </item>
-      <item row="0" column="0" alignment="Qt::AlignRight">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>sqzing V</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QPushButton" name="decompose">
-        <property name="text">
-         <string>Decompose</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="3">
-       <widget class="QCheckBox" name="showFolded">
-        <property name="text">
-         <string>Decomposition</string>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="3" colspan="2">
+      <item row="10" column="4" colspan="2">
        <widget class="QPushButton" name="foldbzSelBlock">
         <property name="text">
          <string>Foldabilize Selected Block</string>
         </property>
        </widget>
       </item>
-      <item row="11" column="0">
-       <widget class="QLabel" name="label_11">
-        <property name="text">
-         <string>Solutions</string>
-        </property>
-       </widget>
-      </item>
-      <item row="10" column="0">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>#keyframes:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="12" column="0">
+      <item row="15" column="0">
        <widget class="QListWidget" name="slnList"/>
       </item>
-      <item row="10" column="3">
-       <widget class="QPushButton" name="genKeyframes">
-        <property name="text">
-         <string>Generate Keyframes</string>
-        </property>
-       </widget>
-      </item>
-      <item row="10" column="1">
-       <widget class="QSpinBox" name="nbKeyframes">
-        <property name="minimum">
-         <number>0</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="value">
-         <number>25</number>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="3">
+      <item row="1" column="4">
        <widget class="QComboBox" name="foldMechanism">
         <item>
          <property name="text">
@@ -390,27 +417,48 @@
         </item>
        </widget>
       </item>
-      <item row="12" column="1">
-       <widget class="QListWidget" name="keyframeList"/>
-      </item>
-      <item row="11" column="1">
-       <widget class="QCheckBox" name="showKeyframe">
-        <property name="text">
-         <string>Keyframe</string>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="0" colspan="2">
+      <item row="10" column="0" colspan="3">
        <widget class="QPushButton" name="foldabilize">
         <property name="text">
          <string>Foldabilize</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
+      <item row="15" column="4">
+       <widget class="QListWidget" name="keyframeList"/>
+      </item>
+      <item row="13" column="0" alignment="Qt::AlignHCenter">
+       <widget class="QLabel" name="label_11">
+        <property name="text">
+         <string>--Solutions--</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QCheckBox" name="showFolded">
+        <property name="text">
+         <string>Decomposition</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QPushButton" name="decompose">
+        <property name="text">
+         <string>Decompose</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="4">
        <widget class="QPushButton" name="clearDcList">
         <property name="text">
          <string>Clear</string>
+        </property>
+       </widget>
+      </item>
+      <item row="13" column="4" alignment="Qt::AlignHCenter">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>--Keyframes--</string>
         </property>
        </widget>
       </item>

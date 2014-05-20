@@ -454,6 +454,7 @@ QMap<QString, double> getTimeStampsNormalized( QVector<FdNode*> nodes, Vector3 v
 	// position on time line
 	double minT = maxDouble();
 	double maxT = -maxDouble();
+	Geom::AABB aabb;
 	foreach (FdNode* n, nodes)
 	{
 		double t = timeLine.getProjTime(n->center());
@@ -461,13 +462,22 @@ QMap<QString, double> getTimeStampsNormalized( QVector<FdNode*> nodes, Vector3 v
 
 		if (t < minT) minT = t;
 		if (t > maxT) maxT = t;
+
+		aabb.add(n->mBox.getConnerPoints());
 	}
 
-	// normalize time stamps
+	// set up tScale
 	tScale = maxT - minT;
+	double scaler;
+	if (tScale < 0.1 * aabb.radius())
+		scaler = 0;
+	else
+		scaler = 1 / tScale;
+
+	// normalize time stamps
 	foreach (QString mid, timeStamps.keys())
 	{
-		timeStamps[mid] = ( timeStamps[mid] - minT ) / tScale;
+		timeStamps[mid] = ( timeStamps[mid] - minT ) * scaler;
 	}
 
 	return timeStamps;
@@ -482,10 +492,8 @@ QMap<QString, double> getTimeStampsNormalized( QVector<PatchNode*> pnodes, Vecto
 
 bool extendRectangle2D( Geom::Rectangle2& rect, QVector<Vector2> &pnts )
 {
-	double epsilon = 2 * ZERO_TOLERANCE_LOW;
-
 	// shrink seed rect to avoid pnts on edges
-	rect.Extent -= Vector2(epsilon, epsilon);
+	rect.Extent *= 0.5;
 
 	// do nothing if seed rect contains any pnts
 	foreach (Vector2 p, pnts) 
@@ -513,6 +521,7 @@ bool extendRectangle2D( Geom::Rectangle2& rect, QVector<Vector2> &pnts )
 	}
 
 	// extend along y
+	double epsilon = 2 * ZERO_TOLERANCE_LOW;
 	double bottom = -maxDouble();
 	double top = maxDouble();
 	foreach (Vector2 pc, pnts_coord)

@@ -61,9 +61,9 @@ BlockGraph::BlockGraph( QVector<PatchNode*>& ms, QVector<FdNode*>& ss,
 	collFog = new FoldOptionGraph();
 
 	//////////////////////////////////////////////////////////////////////////
-	QVector<Geom::Segment> normals;
-	normals << Geom::Segment(baseMaster->mPatch.Center, baseMaster->mPatch.Center + 10 * baseMaster->mPatch.Normal);
-	addDebugSegments(normals);
+	//QVector<Geom::Segment> normals;
+	//normals << Geom::Segment(baseMaster->mPatch.Center, baseMaster->mPatch.Center + 10 * baseMaster->mPatch.Normal);
+	//addDebugSegments(normals);
 }
 
 BlockGraph::~BlockGraph()
@@ -124,7 +124,9 @@ void BlockGraph::computeMinFoldingRegion()
 		Geom::Rectangle2 min_region = base_rect.get2DRectangle(top_master->mPatch);
 		minFoldingRegion[top_master->mID] = min_region;
 
-		//addDebugSegments(base_rect.get3DRectangle(min_region).getEdgeSegments());
+		// debug
+		//foreach (int cid, masterUnderChainsMap[top_master->mID])
+			//chains[cid]->addDebugSegments(base_rect.get3DRectangle(min_region).getEdgeSegments());
 	}
 }
 
@@ -141,11 +143,9 @@ void BlockGraph::computeMaxFoldingRegion(Geom::Box shapeAABB)
 
 		// chains under master
 		QVector<Vector3> pnts;
-		foreach (QSet<int> cids, masterUnderChainsMap) {
-			foreach (int cid, cids) {
-				pnts << chains[cid]->getMaxFoldRegion(true).getConners();
-				pnts << chains[cid]->getMaxFoldRegion(false).getConners();
-			}
+		foreach (int cid, masterUnderChainsMap[top_master->mID]) {
+			pnts << chains[cid]->getMaxFoldRegion(true).getConners();
+			pnts << chains[cid]->getMaxFoldRegion(false).getConners();
 		}
 		foreach(Vector3 p, pnts) pnts_proj << base_rect.getProjCoordinates(p);
 
@@ -164,7 +164,16 @@ void BlockGraph::computeMaxFoldingRegion(Geom::Box shapeAABB)
 		// max folding region
 		maxFoldingRegion[top_master->mID] = max_region;
 
-		//addDebugSegments(base_rect.get3DRectangle(max_region).getEdgeSegments());
+		// debug
+		//foreach (int cid, masterUnderChainsMap[top_master->mID])
+		//{
+		//	chains[cid]->addDebugPoints(pnts);
+		//	chains[cid]->addDebugSegments(base_rect.get3DRectangle(max_region).getEdgeSegments());
+
+		//	QVector<Vector3> pnts_proj3;
+		//	foreach (Vector2 p2, pnts_proj) pnts_proj3 << base_rect.getPosition(p2);
+		//	chains[cid]->addDebugPoints(pnts_proj3);
+		//}
 	}
 }
 
@@ -230,7 +239,18 @@ void BlockGraph::computeAvailFoldingRegion( FdGraph* scaffold,
 		avail_region.Extent += Vector2(epsilon, epsilon);
 		availFoldingRegion[top_mid] = avail_region;
 
-		//addDebugSegments(base_rect.get3DRectangle(avail_region).getEdgeSegments());
+		// debug
+		foreach (int cid, masterUnderChainsMap[top_master->mID])
+		{
+			//addDebugPoints(samples);
+
+			QVector<Vector3> samples_proj3;
+			foreach (Vector2 p2, samples_proj) samples_proj3 << base_rect.getPosition(p2);
+			chains[cid]->addDebugPoints(samples_proj3);
+
+			chains[cid]->addDebugSegments(base_rect.get3DRectangle(avail_region).getEdgeSegments());
+			//chains[cid]->addDebugSegments(base_rect.get3DRectangle(minFoldingRegion[top_mid]).getEdgeSegments());
+		}
 	}
 
 	// restore the position of scaffold
@@ -320,7 +340,6 @@ void BlockGraph::foldabilize()
 	applySolution(0);
 }
 
-
 void BlockGraph::applySolution( int sid )
 {
 	if (sid < 0 || sid >= foldSolutions.size())
@@ -338,7 +357,6 @@ void BlockGraph::applySolution( int sid )
 
 	addTag(READY_TAG);
 }
-
 
 int BlockGraph::encodeModification( int nX, int nY )
 {
@@ -400,8 +418,9 @@ void BlockGraph::filterFoldOptions( QVector<FoldOption*>& options, int cid )
 	if (cid < 0 || cid >= chains.size()) return;
 
 	HChain* chain = (HChain*)chains[cid];
-	PatchNode* top_master = chain->getTopMaster();
-	Geom::Rectangle2 AFR = availFoldingRegion[top_master->mID]; 
+	QString top_mid = chain->getTopMaster()->mID;
+	Geom::Rectangle2 AFR = availFoldingRegion[top_mid]; 
+	Geom::Rectangle base_rect = baseMaster->mPatch;
 
 	// filter
 	QVector<FoldOption*> options_filtered;
@@ -410,27 +429,27 @@ void BlockGraph::filterFoldOptions( QVector<FoldOption*>& options, int cid )
 		bool reject = false;
 
 		// reject if exceeds AFR
-		Geom::Rectangle2 fRegion2 = baseMaster->mPatch.get2DRectangle(fn->region);
+		Geom::Rectangle2 fRegion2 = base_rect.get2DRectangle(fn->region);
 		if (!AFR.containsAll(fRegion2.getConners()))
 			reject = true;
 
-		// reject if collide with other masters
-		// whose time stamp is within the time interval of fn
-		if (!reject)
-		{
-			foreach (QString mid, masterTimeStamps.keys())
-			{
-				double mstamp = masterTimeStamps[mid];
-				if (!within(mstamp, chain->mFoldDuration)) continue;
+		//// reject if collide with other masters
+		//// whose time stamp is within the time interval of fn
+		//if (!reject)
+		//{
+		//	foreach (QString mid, masterTimeStamps.keys())
+		//	{
+		//		double mstamp = masterTimeStamps[mid];
+		//		if (!within(mstamp, chain->mFoldDuration)) continue;
 
-				Geom::Rectangle m_rect = ((PatchNode*)getNode(mid))->mPatch;
-				if (fAreasIntersect(fn->region, m_rect))
-				{
-					reject = true;
-					break;
-				}
-			}
-		}
+		//		Geom::Rectangle m_rect = ((PatchNode*)getNode(mid))->mPatch;
+		//		if (fAreasIntersect(fn->region, m_rect))
+		//		{
+		//			reject = true;
+		//			break;
+		//		}
+		//	}
+		//}
 
 		// reject or accept
 		if (reject)	delete fn;
@@ -464,25 +483,29 @@ void BlockGraph::buildCollisionGraph()
 		// fold options and links
 		QVector<FoldOption*> options;
 		int max_nX = 1;
-		int nChunks = 2;
+		int nChunks = 4;
 		for (int nX = 1; nX <= max_nX; nX++)
-			for (int nUsedChunks = nChunks; nUsedChunks >= 0; nUsedChunks-- )
+			for (int nUsedChunks = nChunks; nUsedChunks >= 1; nUsedChunks-- )
 				options << chain->generateFoldOptions(2*nX-1, nUsedChunks, nChunks);
-		std::cout << "initial #options = " << options.size();
+		std::cout << "#options = " << options.size();
 		filterFoldOptions(options, cid);
-		std::cout << "filtered #options = " << options.size() << std::endl;
+		std::cout << " ==> " << options.size() << std::endl;
 		foreach(FoldOption* fn, options)
 		{
 			collFog->addNode(fn);
 			collFog->addFoldLink(cn, fn);
-			//addDebugSegments(fArea.getEdgeSegments());
+
+			// debug
+			chain->addDebugSegments(fn->region.getEdgeSegments());
+			QString top_id = chain->getTopMaster()->mID;
+			Geom::Rectangle2 max_region = maxFoldingRegion[top_id];
+			chain->addDebugSegments(baseMaster->mPatch.get3DRectangle(max_region).getEdgeSegments());
 		}
 	}
 
 	// collision links
 	updateCollisionLinks();
 }
-
 
 void BlockGraph::buildCollisionGraphAdaptive()
 {

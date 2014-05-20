@@ -495,6 +495,13 @@ double FdGraph::getConnectivityThr()
 	return 0.05 * computeAABB().radius();
 }
 
+
+void FdGraph::addDebugBoxe( Geom::Box box )
+{
+	addDebugBoxes(QVector<Geom::Box>() << box);
+}
+
+
 void FdGraph::addDebugBoxes( QVector<Geom::Box>& boxes )
 {
 	QVector<Geom::Box> debugBoxes;

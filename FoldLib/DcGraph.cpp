@@ -614,6 +614,8 @@ int DcGraph::getBestNextBlockIndex(double currT)
 		currBlock->mFoldDuration = TIME_INTERVAL(currT, nextT);
 		FdGraph* nextKeyframe = getKeyframe(nextT);
 
+		keyframes << nextKeyframe;
+
 		// debug
 		//keyframes << nextKeyframe;
 

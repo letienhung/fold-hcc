@@ -280,9 +280,13 @@ FdGraph* FoldManager::activeScaffold()
 void FoldManager::foldabilize()
 {
 	foreach (DcGraph* dcg, dcGraphs)
-		dcg->foldabilize();
+		dcg->foldabilize();	
 
-	
+	// list solution for selected block
+	updateSolutionList();
+
+	// debug
+	updateKeyframeList();
 }
 
 void FoldManager::updateDcList()
