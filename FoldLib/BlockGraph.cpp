@@ -202,13 +202,13 @@ void BlockGraph::computeAvailFoldingRegion( FdGraph* scaffold,
 		QVector<QString> constraintParts;
 		constraintParts << getInbetweenOutsideParts(scaffold, base_mid, top_mid);
 
-		QList<QString> moc_base;
-		moc_base << moc_greater.values(base_mid) << moc_less.values(base_mid) << base_mid;
-		QList<QString> moc_top;
-		moc_top << moc_greater.values(top_mid) << moc_less.values(top_mid) << top_mid;
-		foreach (QString mid, allMasterIds) // no order with both
-			if (!moc_base.contains(mid) && !moc_top.contains(mid))
-				constraintParts << mid;
+		//QList<QString> moc_base;
+		//moc_base << moc_greater.values(base_mid) << moc_less.values(base_mid) << base_mid;
+		//QList<QString> moc_top;
+		//moc_top << moc_greater.values(top_mid) << moc_less.values(top_mid) << top_mid;
+		//foreach (QString mid, allMasterIds) // no order with both
+		//	if (!moc_base.contains(mid) && !moc_top.contains(mid))
+		//		constraintParts << mid;
 
 		// samples from constraint parts
 		QVector<Vector3> samples;
@@ -240,9 +240,11 @@ void BlockGraph::computeAvailFoldingRegion( FdGraph* scaffold,
 		availFoldingRegion[top_mid] = avail_region;
 
 		// debug
+		//continue;
 		foreach (int cid, masterUnderChainsMap[top_master->mID])
 		{
-			//addDebugPoints(samples);
+			chains[cid]->properties.remove("debugPoints");
+			chains[cid]->properties.remove("debugSegments");
 
 			QVector<Vector3> samples_proj3;
 			foreach (Vector2 p2, samples_proj) samples_proj3 << base_rect.getPosition(p2);
@@ -496,10 +498,7 @@ void BlockGraph::buildCollisionGraph()
 			collFog->addFoldLink(cn, fn);
 
 			// debug
-			chain->addDebugSegments(fn->region.getEdgeSegments());
-			QString top_id = chain->getTopMaster()->mID;
-			Geom::Rectangle2 max_region = maxFoldingRegion[top_id];
-			chain->addDebugSegments(baseMaster->mPatch.get3DRectangle(max_region).getEdgeSegments());
+			//chain->addDebugSegments(fn->region.getEdgeSegments());
 		}
 	}
 
@@ -689,6 +688,9 @@ QVector<QString> BlockGraph::getInbetweenOutsideParts( FdGraph* scaffold, QStrin
 	QVector<QString> inbetweens;
 	foreach (FdNode* n, scaffold->getFdNodes())
 	{
+		// skip parts that has been folded
+		if (n->hasTag(FOLDED_TAG)) continue;
+
 		// skip parts in this block
 		if (containsNode(n->mID)) continue;
 

@@ -525,7 +525,15 @@ FdGraph* DcGraph::getKeyframe( double t )
 	for (int i = 0; i < blocks.size(); i++)
 	{
 		double lt = getLocalTime(t, blocks[i]->mFoldDuration);
-		foldedBlocks << blocks[i]->getKeyframeScaffold(lt);
+		FdGraph* fblock = blocks[i]->getKeyframeScaffold(lt);
+
+		// mark nodes in folded blocks
+		if (lt >= 1.0){
+			foreach (Structure::Node* n, fblock->nodes)
+				n->addTag(FOLDED_TAG);
+		}
+
+		foldedBlocks << fblock;
 	}
 
 	// shift layers and add nodes into scaffold
