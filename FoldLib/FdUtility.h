@@ -88,7 +88,7 @@ double volume(QList<Geom::Box> boxes);
 // cluster intersecting sets
 // return clustered set idx; merged sets are stored in \p merged_sets
 template <class T>
-QVector<QSet<int> > mergeIntersectingSets(QVector<QSet<T> > &sets, QVector<QSet<int> > &merged_sets)
+QVector<QSet<int> > mergeIsctSets(QVector<QSet<T> > &sets, QVector<QSet<T> > &merged_sets)
 {
 	QMap<int, QSet<T> > merged_sets_map;
 	QMap<int, QSet<int> > merged_idx_map;

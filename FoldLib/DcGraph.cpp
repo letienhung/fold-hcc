@@ -397,7 +397,7 @@ void DcGraph::clusterSlaves()
 
 	// save slave clusters 
 	//slaveClusters = merged_cycle_slaves.values().toVector();
-	mergeIntersectingSets(cycle_slaves, slaveClusters);
+	mergeIsctSets(cycle_slaves, slaveClusters);
 	foreach (QSet<int> cs, slaveClusters)
 		foreach(int sid, cs) slaveVisited[sid] = true;
 
@@ -535,9 +535,42 @@ FdGraph* DcGraph::getKeyframe( double t )
 
 	// merge *merged prediction* of folded blocks
 	QVector<PatchNode*> mps;
-	foreach (PatchNode* m, getAllMasters(key_graph))
-		if (m->hasTag(MERGE_PREDICTION_TAG)) 
+	QVector<QSet<QString> > m_sets, mm_sets;
+	foreach (PatchNode* m, getAllMasters(key_graph)){
+		if (m->hasTag(MERGE_PREDICTION_TAG)) {
 			mps << m;
+			m_sets << key_graph->getProperty<QSet<QString> >(MERGED_MASTERS_SET);
+		}
+	}
+	QVector<QSet<int> > mm_set_idx = mergeIsctSets(m_sets, mm_sets);
+	for (int i = 0; i < mm_set_idx.size(); i++)
+	{
+		// merged set indices
+		QList<int> msidx = mm_set_idx[i].toList();
+
+		// pick up the first
+		PatchNode* mmp = mps[msidx[0]];
+		Geom::Rectangle mmp_rect = mmp->mPatch;
+
+		// merge with others
+		QVector<Vector2> pnts2 = mmp_rect.get2DConners();
+		for (int j = 1; j < mps.size(); j++)
+		{
+			int sidx = msidx[j];
+			Geom::Rectangle2 rect2 = mmp_rect.get2DRectangle(mps[sidx]->mPatch);
+			pnts2 << rect2.getConners();
+			key_graph->removeNode(mps[sidx]->mID);
+		}
+		Geom::Rectangle2 aabb2 = computeAABB2D(pnts2);
+		mmp->resize(aabb2);
+		mmp->addProperty<QSet<QString>>(MERGED_MASTERS_SET, mm_sets[i]);
+
+		// new id
+		mmp->mID = "";
+		foreach (QString mid, mm_sets[i])
+			mmp->mID += mid + "&";
+		mmp->mID.truncate(mmp->mID.length() - 2);
+	}
 	
 	// debug
 	//addDebugScaffold(key_graph);

@@ -361,14 +361,14 @@ FdGraph* BlockGraph::getKeyframeScaffold( double t )
 		{
 			// this is a ***merged prediction***
 			PatchNode* mergedPatch = (PatchNode*)baseMaster->clone();
+			mergedPatch->mID = "";
 			mergedPatch->addTag(MERGE_PREDICTION_TAG); 
-			//folded->Structure::Graph::addNode(mergedPatch);
+			folded->Structure::Graph::addNode(mergedPatch);
 
 			// resize merged patch using available region
-			QVector<Vector2> pnts2;
+			QVector<Vector2> pnts2 = base_rect.get2DConners();
 			foreach (QString mid, availFoldingRegion.keys())
 				pnts2 << availFoldingRegion[mid].getConners();
-			pnts2 << Vector2(-1, -1) << Vector2(1, -1) << Vector2(1, 1) << Vector2(-1, 1);
 			Geom::Rectangle2 aabb2 = computeAABB2D(pnts2);
 			mergedPatch->resize(aabb2);
 
@@ -387,7 +387,8 @@ FdGraph* BlockGraph::getKeyframeScaffold( double t )
 					// this is a ***folded*** master
 					// its role has been taken over by merged prediction patch
 					n->addTag(FOLDED_TAG); 
-					mergedPatch->appendToContainerProperty<QString>(MERGED_MASTERS_SET, n->mID);
+					mergedPatch->appendToSetProperty<QString>(MERGED_MASTERS_SET, n->mID);
+					mergedPatch->mID += "&" + n->mID;
 				}else{
 					// remove slave nodes
 					folded->removeNode(n->mID);

@@ -3,6 +3,7 @@
 #include <QVariant>
 #include <QMap>
 #include <QVector>
+#include <QSet>
 
 Q_DECLARE_METATYPE(QVector<QString>)
 
@@ -39,23 +40,38 @@ public:
 		return properties.contains(key);
 	}
 
-	template<T> getProperty(QString key)
+	template<class T> 
+	T getProperty(QString key)
 	{
 		return properties[key].value<T>();
 	}
 
-	template<class C, class T>
-	void appendToContainerProperty(QString key, C<T> vec){
-		C<T> vprop;
+	template<class T>
+	void appendToVectorProperty(QString key, QVector<T> vec){
+		QVector<T> vprop;
 		if (properties.contains(key))
-			vprop = properties[key].value<C<T> >();
+			vprop = properties[key].value<QVector<T> >();
 		vprop << vec;
 		properties[key].setValue(vprop);
 	}
 
-	template<class C, class T>
-	void appendToContainerProperty(QString key, T value){
-		appendToContainerProperty(key, C<T>() << value);
+	template<class T>
+	void appendToVectorProperty(QString key, T value){
+		appendToVectorProperty(key, QVector<T>() << value);
+	}
+
+	template<class T>
+	void appendToSetProperty(QString key, QSet<T> vec){
+		QSet<T> vprop;
+		if (properties.contains(key))
+			vprop = properties[key].value<QSet<T> >();
+		vprop << vec;
+		properties[key].setValue(vprop);
+	}
+
+	template<class T>
+	void appendToSetProperty(QString key, T value){
+		appendToSetProperty(key, QSet<T>() << value);
 	}
 
 public:
