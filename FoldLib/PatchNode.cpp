@@ -112,3 +112,21 @@ double PatchNode::getThickness()
 	int aid = mBox.getAxisId(mPatch.Normal);
 	return 2 * mBox.getExtent(aid);
 }
+
+void PatchNode::resize( Geom::Rectangle2& newPatch )
+{
+	Geom::Rectangle newPatch3 = mPatch.get3DRectangle(newPatch);
+
+	// shift center
+	mBox.translate(newPatch3.Center - mPatch.Center);
+
+	// adjust extent
+	int aid_x = mBox.getAxisId(newPatch3.Axis[0]);
+	mBox.Extent[aid_x] = newPatch3.Extent[0];
+
+	int aid_y = mBox.getAxisId(newPatch3.Axis[1]);
+	mBox.Extent[aid_y] = newPatch3.Extent[1];
+
+	// update scaffold
+	createScaffold(true);
+}

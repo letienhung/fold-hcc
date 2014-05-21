@@ -63,7 +63,6 @@ void ChainGraph::setupBasisOrientations()
 	}
 }
 
-
 void ChainGraph::fold( double t )
 {
 	// free all nodes
@@ -90,7 +89,6 @@ void ChainGraph::fold( double t )
 	// restore configuration
 	restoreConfiguration();
 }
-
 
 FdGraph* ChainGraph::getKeyframeScaffold( double t )
 {

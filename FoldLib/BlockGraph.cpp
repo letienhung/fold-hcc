@@ -177,6 +177,73 @@ void BlockGraph::computeMaxFoldingRegion(Geom::Box shapeAABB)
 	}
 }
 
+QVector<QString> BlockGraph::getInbetweenOutsideParts( FdGraph* scaffold, QString mid1, QString mid2 )
+{
+	// time line
+	Vector3 sqzV = baseMaster->mPatch.Normal;
+	Geom::Line timeLine(Vector3(0, 0, 0), sqzV);
+
+	// position on time line
+	FdNode* master1 = (FdNode*)getNode(mid1);
+	FdNode* master2 = (FdNode*)getNode(mid2);
+	double t0 = timeLine.getProjTime(master1->center());
+	double t1 = timeLine.getProjTime(master2->center());
+	if (t0 > t1) std::swap(t0, t1);
+	TimeInterval m1m2 = TIME_INTERVAL(t0, t1);
+
+	// find parts in between m1 and m2
+	QVector<QString> inbetweens;
+	foreach (FdNode* n, scaffold->getFdNodes())
+	{
+		// skip parts that has been folded
+		if (n->hasTag(FOLDED_TAG)) continue;
+
+		// skip parts in this block
+		if (containsNode(n->mID)) continue;
+
+		// master
+		if (n->hasTag(MASTER_TAG))
+		{
+			double t = timeLine.getProjTime(n->center());
+
+			if (within(t, m1m2)) 
+				inbetweens << n->mID;
+		}
+		// slave
+		else
+		{
+			int aid = n->mBox.getAxisId(sqzV);
+			Geom::Segment sklt = n->mBox.getSkeleton(aid);
+			double t0 = timeLine.getProjTime(sklt.P0);
+			double t1 = timeLine.getProjTime(sklt.P1);
+			if (t0 > t1) std::swap(t0, t1);
+			TimeInterval ti = TIME_INTERVAL(t0+ZERO_TOLERANCE_LOW, t1-ZERO_TOLERANCE_LOW);
+
+			if (overlap(ti, m1m2))
+				inbetweens << n->mID;
+		}
+	}
+
+	return inbetweens;
+}
+
+QVector<QString> BlockGraph::getUnrelatedParts( FdGraph* scaffold, QString mid1, QString mid2, 
+	QMultiMap<QString, QString>& moc_greater, QMultiMap<QString, QString>& moc_less )
+{
+	QVector<QString> urParts;
+
+	QList<QString> moc1, moc2;
+	moc1 << moc_greater.values(mid1) << moc_less.values(mid1) << mid1;
+	moc2 << moc_greater.values(mid2) << moc_less.values(mid2) << mid2;
+
+	foreach (QString mid, getAllMasterIds(scaffold))
+		// no order with both
+		if (!moc1.contains(mid) && !moc2.contains(mid))
+			urParts << mid;
+
+	return urParts;
+}
+
 void BlockGraph::computeAvailFoldingRegion( FdGraph* scaffold, 
 	QMultiMap<QString, QString>& moc_greater, QMultiMap<QString, QString>& moc_less )
 {
@@ -196,21 +263,12 @@ void BlockGraph::computeAvailFoldingRegion( FdGraph* scaffold,
 	{
 		// skip base master
 		if (top_master == baseMaster) continue;
-		
-		// constraint parts: in-between and unordered
 		QString top_mid = top_master->mID;
+
+		// samples from constraint parts: in-between and unordered
 		QVector<QString> constraintParts;
 		constraintParts << getInbetweenOutsideParts(scaffold, base_mid, top_mid);
-
-		//QList<QString> moc_base;
-		//moc_base << moc_greater.values(base_mid) << moc_less.values(base_mid) << base_mid;
-		//QList<QString> moc_top;
-		//moc_top << moc_greater.values(top_mid) << moc_less.values(top_mid) << top_mid;
-		//foreach (QString mid, allMasterIds) // no order with both
-		//	if (!moc_base.contains(mid) && !moc_top.contains(mid))
-		//		constraintParts << mid;
-
-		// samples from constraint parts
+		constraintParts << getUnrelatedParts(scaffold, base_mid, top_mid, moc_greater, moc_less);
 		QVector<Vector3> samples;
 		int nbs = 10;
 		foreach(QString nid, constraintParts)
@@ -298,7 +356,23 @@ FdGraph* BlockGraph::getKeyframeScaffold( double t )
 		FdGraph* folded = (FdGraph*)this->clone();
 
 		// collapse to base
-		if (t > 0.5){
+		Geom::Rectangle base_rect = baseMaster->mPatch;
+		if (t > 0.5)
+		{
+			// this is a ***merged prediction***
+			PatchNode* mergedPatch = (PatchNode*)baseMaster->clone();
+			mergedPatch->addTag(MERGE_PREDICTION_TAG); 
+			folded->Structure::Graph::addNode(mergedPatch);
+
+			// resize merged patch using available region
+			QVector<Vector2> pnts2;
+			foreach (QString mid, availFoldingRegion.keys())
+				pnts2 << availFoldingRegion[mid].getConners();
+			pnts2 << Vector2(-1, -1) << Vector2(1, -1) << Vector2(1, 1) << Vector2(-1, 1);
+			Geom::Rectangle2 aabb2 = computeAABB2D(pnts2);
+			mergedPatch->resize(aabb2);
+
+			// also keep copy of folded masters
 			foreach (FdNode* n, folded->getFdNodes()){
 				if (n->hasTag(MASTER_TAG)) {
 					// leave base master untouched
@@ -306,11 +380,18 @@ FdGraph* BlockGraph::getKeyframeScaffold( double t )
 
 					// move other masters onto base master
 					Vector3 c2c = baseMaster->center() - n->center();
-					Vector3 up = baseMaster->mPatch.Normal;
+					Vector3 up = base_rect.Normal;
 					Vector3 offset = dot(c2c, up) * up;
 					n->translate(offset);
-				}else 
+
+					// this is a ***folded*** master
+					// its role has been taken over by merged prediction patch
+					n->addTag(FOLDED_TAG); 
+					//mergedPatch->appendToVectorProperty<QString>(MERGED_MASTERS_SET, n->mID);
+				}else{
+					// remove slave nodes
 					folded->removeNode(n->mID);
+				}
 			}
 		}
 
@@ -668,56 +749,6 @@ void BlockGraph::findOptimalSolution()
 double BlockGraph::getTimeLength()
 {
 	return nbMasters(this) - 1;
-}
-
-QVector<QString> BlockGraph::getInbetweenOutsideParts( FdGraph* scaffold, QString mid1, QString mid2 )
-{
-	// time line
-	Vector3 sqzV = baseMaster->mPatch.Normal;
-	Geom::Line timeLine(Vector3(0, 0, 0), sqzV);
-
-	// position on time line
-	FdNode* master1 = (FdNode*)getNode(mid1);
-	FdNode* master2 = (FdNode*)getNode(mid2);
-	double t0 = timeLine.getProjTime(master1->center());
-	double t1 = timeLine.getProjTime(master2->center());
-	if (t0 > t1) std::swap(t0, t1);
-	TimeInterval m1m2 = TIME_INTERVAL(t0, t1);
-
-	// find parts in between m1 and m2
-	QVector<QString> inbetweens;
-	foreach (FdNode* n, scaffold->getFdNodes())
-	{
-		// skip parts that has been folded
-		if (n->hasTag(FOLDED_TAG)) continue;
-
-		// skip parts in this block
-		if (containsNode(n->mID)) continue;
-
-		// master
-		if (n->hasTag(MASTER_TAG))
-		{
-			double t = timeLine.getProjTime(n->center());
-			
-			if (within(t, m1m2)) 
-				inbetweens << n->mID;
-		}
-		// slave
-		else
-		{
-			int aid = n->mBox.getAxisId(sqzV);
-			Geom::Segment sklt = n->mBox.getSkeleton(aid);
-			double t0 = timeLine.getProjTime(sklt.P0);
-			double t1 = timeLine.getProjTime(sklt.P1);
-			if (t0 > t1) std::swap(t0, t1);
-			TimeInterval ti = TIME_INTERVAL(t0+ZERO_TOLERANCE_LOW, t1-ZERO_TOLERANCE_LOW);
-			
-			if (overlap(ti, m1m2))
-				inbetweens << n->mID;
-		}
-	}
-
-	return inbetweens;
 }
 
 double BlockGraph::getAvailFoldingVolume()

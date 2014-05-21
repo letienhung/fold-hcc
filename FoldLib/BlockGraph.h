@@ -56,6 +56,8 @@ public:
 
 	// helper
 	QVector<QString> getInbetweenOutsideParts(FdGraph* scaffold, QString mid1, QString mid2);
+	QVector<QString> getUnrelatedParts(FdGraph* scaffold, QString mid1, QString mid2,
+		QMultiMap<QString, QString>& moc_greater, QMultiMap<QString, QString>& moc_less);
 public:
 	// time interval
 	TimeInterval mFoldDuration;

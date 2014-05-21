@@ -23,6 +23,7 @@ public:
 	double getThickness();
 	bool isPerpTo(Vector3 v, double dotThreshold);
 	Geom::Plane getSurfacePlane(bool positive);
+	void resize(Geom::Rectangle2& newPatch);
 
 	// edges
 	QVector<RodNode*> getEdgeRodNodes();

@@ -22,6 +22,8 @@ typedef QPair<double, double> TimeInterval;
 #define READY_TAG "isReady"
 #define SELECTED_TAG "isSelected"
 #define NEW_TAG "isNew"
+#define MERGE_PREDICTION_TAG "isMerged"
+#define MERGED_MASTERS_SET "mergedMastersSet"
 
 // Qt meta type
 Q_DECLARE_METATYPE(Vector3)

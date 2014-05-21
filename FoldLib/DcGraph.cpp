@@ -526,18 +526,18 @@ FdGraph* DcGraph::getKeyframe( double t )
 	{
 		double lt = getLocalTime(t, blocks[i]->mFoldDuration);
 		FdGraph* fblock = blocks[i]->getKeyframeScaffold(lt);
-
-		// mark nodes in folded blocks
-		if (lt >= 1.0){
-			foreach (Structure::Node* n, fblock->nodes)
-				n->addTag(FOLDED_TAG);
-		}
-
 		foldedBlocks << fblock;
 	}
 
 	// shift layers and add nodes into scaffold
 	FdGraph *key_graph = combineDecomposition(foldedBlocks, baseMaster->mID, masterBlockMap);
+
+	// merge *merged prediction* of folded blocks
+	foreach (PatchNode* m, getAllMasters(key_graph))
+	{
+		// skip regular masters
+		
+	}
 	
 	// debug
 	//addDebugScaffold(key_graph);
