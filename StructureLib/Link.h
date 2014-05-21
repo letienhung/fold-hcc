@@ -4,7 +4,7 @@
 
 namespace Structure{
 
-class Link : public PropertyContainer
+class Link : public PropertyMap
 {
 public:
 	Link(Node* n1, Node* n2);

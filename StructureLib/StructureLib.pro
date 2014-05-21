@@ -17,7 +17,7 @@ HEADERS += \
     Node.h \
     Link.h \
     Graph.h \
-    PropertyContainer.h
+    PropertyMap.h
 
 SOURCES += \
     Link.cpp \

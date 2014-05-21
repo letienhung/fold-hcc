@@ -1,10 +1,10 @@
 #pragma once
 
-#include "PropertyContainer.h"
+#include "PropertyMap.h"
 
 namespace Structure{
 
-class Node : public PropertyContainer
+class Node : public PropertyMap
 {
 public:
 	Node(QString nid); 

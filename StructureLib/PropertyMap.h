@@ -10,12 +10,10 @@ Q_DECLARE_METATYPE(QVector<QString>)
 namespace Structure
 {
 
-typedef QMap< QString, QVariant > PropertyMap;
-
-class PropertyContainer
+class PropertyMap
 {
 public:
-    PropertyContainer(){}
+    PropertyMap(){}
 
 	// properties
 	void addTag(QString tag){
@@ -36,22 +34,32 @@ public:
 		properties[k] = value;
 	}
 
-	template<class T>
-	void appendToVectorProperty(QString key, QVector<T> vec){
-		QVector<T> vprop;
+	bool containsProperty(QString key)
+	{
+		return properties.contains(key);
+	}
+
+	template<T> getProperty(QString key)
+	{
+		return properties[key].value<T>();
+	}
+
+	template<class C, class T>
+	void appendToContainerProperty(QString key, C<T> vec){
+		C<T> vprop;
 		if (properties.contains(key))
-			vprop = properties[key].value<QVector<T> >();
+			vprop = properties[key].value<C<T> >();
 		vprop << vec;
 		properties[key].setValue(vprop);
 	}
 
-	template<class T>
-	void appendToVectorProperty(QString key, T value){
-		appendToVectorProperty(key, QVector<T>() << value);
+	template<class C, class T>
+	void appendToContainerProperty(QString key, T value){
+		appendToContainerProperty(key, C<T>() << value);
 	}
 
 public:
-	PropertyMap properties;
+	QMap<QString, QVariant> properties;
 };
 
 }

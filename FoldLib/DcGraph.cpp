@@ -376,27 +376,28 @@ void DcGraph::clusterSlaves()
 	}
 
 	// merge cycles who share slaves
-	QMap<int, QSet<int> > merged_cycle_slaves;
-	int count = 0;
-	foreach (QSet<int> cs, cycle_slaves)
-	{
-		foreach (int key, merged_cycle_slaves.keys())
-		{
-			QSet<int> isct = merged_cycle_slaves[key] & cs;
-			if (!isct.isEmpty()) 
-			{
-				// merge and remove old cluster
-				cs += merged_cycle_slaves[key];
-				merged_cycle_slaves.remove(key);
-			}
-		}
+	//QMap<int, QSet<int> > merged_cycle_slaves;
+	//int count = 0;
+	//foreach (QSet<int> cs, cycle_slaves)
+	//{
+	//	foreach (int key, merged_cycle_slaves.keys())
+	//	{
+	//		QSet<int> isct = merged_cycle_slaves[key] & cs;
+	//		if (!isct.isEmpty()) 
+	//		{
+	//			// merge and remove old cluster
+	//			cs += merged_cycle_slaves[key];
+	//			merged_cycle_slaves.remove(key);
+	//		}
+	//	}
 
-		// create a new merged cluster
-		merged_cycle_slaves[count++] = cs;
-	}
+	//	// create a new merged cluster
+	//	merged_cycle_slaves[count++] = cs;
+	//}
 
 	// save slave clusters 
-	slaveClusters = merged_cycle_slaves.values().toVector();
+	//slaveClusters = merged_cycle_slaves.values().toVector();
+	mergeIntersectingSets(cycle_slaves, slaveClusters);
 	foreach (QSet<int> cs, slaveClusters)
 		foreach(int sid, cs) slaveVisited[sid] = true;
 
@@ -533,11 +534,10 @@ FdGraph* DcGraph::getKeyframe( double t )
 	FdGraph *key_graph = combineDecomposition(foldedBlocks, baseMaster->mID, masterBlockMap);
 
 	// merge *merged prediction* of folded blocks
+	QVector<PatchNode*> mps;
 	foreach (PatchNode* m, getAllMasters(key_graph))
-	{
-		// skip regular masters
-		
-	}
+		if (m->hasTag(MERGE_PREDICTION_TAG)) 
+			mps << m;
 	
 	// debug
 	//addDebugScaffold(key_graph);

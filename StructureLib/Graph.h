@@ -7,7 +7,7 @@
 
 namespace Structure{
 
-class Graph : public PropertyContainer
+class Graph : public PropertyMap
 {
 public:
     Graph(QString id = "");

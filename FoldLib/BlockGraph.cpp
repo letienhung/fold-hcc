@@ -268,7 +268,7 @@ void BlockGraph::computeAvailFoldingRegion( FdGraph* scaffold,
 		// samples from constraint parts: in-between and unordered
 		QVector<QString> constraintParts;
 		constraintParts << getInbetweenOutsideParts(scaffold, base_mid, top_mid);
-		constraintParts << getUnrelatedParts(scaffold, base_mid, top_mid, moc_greater, moc_less);
+		//constraintParts << getUnrelatedParts(scaffold, base_mid, top_mid, moc_greater, moc_less);
 		QVector<Vector3> samples;
 		int nbs = 10;
 		foreach(QString nid, constraintParts)
@@ -362,7 +362,7 @@ FdGraph* BlockGraph::getKeyframeScaffold( double t )
 			// this is a ***merged prediction***
 			PatchNode* mergedPatch = (PatchNode*)baseMaster->clone();
 			mergedPatch->addTag(MERGE_PREDICTION_TAG); 
-			folded->Structure::Graph::addNode(mergedPatch);
+			//folded->Structure::Graph::addNode(mergedPatch);
 
 			// resize merged patch using available region
 			QVector<Vector2> pnts2;
@@ -387,7 +387,7 @@ FdGraph* BlockGraph::getKeyframeScaffold( double t )
 					// this is a ***folded*** master
 					// its role has been taken over by merged prediction patch
 					n->addTag(FOLDED_TAG); 
-					//mergedPatch->appendToVectorProperty<QString>(MERGED_MASTERS_SET, n->mID);
+					mergedPatch->appendToContainerProperty<QString>(MERGED_MASTERS_SET, n->mID);
 				}else{
 					// remove slave nodes
 					folded->removeNode(n->mID);

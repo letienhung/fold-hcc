@@ -84,3 +84,39 @@ bool extendRectangle2D(Geom::Rectangle2& rect, QVector<Vector2> &pnts);
 
 // volume
 double volume(QList<Geom::Box> boxes);
+
+// cluster intersecting sets
+// return clustered set idx; merged sets are stored in \p merged_sets
+template <class T>
+QVector<QSet<int> > mergeIntersectingSets(QVector<QSet<T> > &sets, QVector<QSet<int> > &merged_sets)
+{
+	QMap<int, QSet<T> > merged_sets_map;
+	QMap<int, QSet<int> > merged_idx_map;
+	int count = 0;
+	for (int sid = 0; sid < sets.size(); sid++)
+	{
+		QSet<T> set = sets[sid];
+		QSet<int> setIdx;
+		setIdx << sid;
+		foreach (int key, merged_sets_map.keys())
+		{
+			QSet<T> isct = merged_sets_map[key] & set;
+			if (!isct.isEmpty()) 
+			{
+				// merge and remove old cluster
+				set += merged_sets_map[key];
+				setIdx += merged_idx_map[key];
+				merged_sets_map.remove(key);
+				merged_idx_map.remove(key);
+			}
+		}
+
+		// create a new merged cluster
+		merged_sets_map[count] = set;
+		merged_idx_map[count] = setIdx;
+	}
+
+	// result
+	merged_sets = merged_sets_map.values().toVector();
+	return merged_idx_map.values().toVector();
+}
