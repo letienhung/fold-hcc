@@ -1,0 +1,192 @@
+<!--?xml Version = "1.0"?-->
+<document>
+    <cN>17</cN>
+    <node>
+        <type>2</type>
+        <ID>m1</ID>
+        <box>
+            <c>-23.8243 0 30.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>27.5 20 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>s11</ID>
+        <box>
+            <c>-39.1851 0 15.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 20 15</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>m3</ID>
+        <box>
+            <c>50.5629 0 20.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>40 20 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>s32</ID>
+        <box>
+            <c>49.5 0 10.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 20 10</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>m4</ID>
+        <box>
+            <c>31.8995 0 80.5683</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>15 20 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>s12</ID>
+        <box>
+            <c>-9.6851 0 15.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 20 15</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>s31</ID>
+        <box>
+            <c>20 0 10.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 20 10</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>s42</ID>
+        <box>
+            <c>38.4187 0 50.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 20 30</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>s41</ID>
+        <box>
+            <c>25 0 50.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 20 30</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>s043</ID>
+        <box>
+            <c>79.8692 0 10.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 20 10</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>s044</ID>
+        <box>
+            <c>73.0478 0 50.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 20 30</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>s045</ID>
+        <box>
+            <c>59.6291 0 50.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 20 30</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>m005</ID>
+        <box>
+            <c>66.5286 0 80.5683</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>15 20 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>s046</ID>
+        <box>
+            <c>137.407 0 15.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 20 15</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>m006</ID>
+        <box>
+            <c>123.268 0 30.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>27.5 20 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>s047</ID>
+        <box>
+            <c>107.907 0 15.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 20 15</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>m0</ID>
+        <box>
+            <c>49.0832 0 0.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>115 20 0.5</e>
+        </box>
+    </node>
+    <cL>0</cL>
+</document>
