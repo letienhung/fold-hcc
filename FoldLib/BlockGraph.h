@@ -96,7 +96,8 @@ public:
 	QMap<QString, double> masterHeightSuper;    
 	QMap<QString, QSet<int> > masterUnderChainsMapSuper;
 
-	// folding space
+	// folding regions
+	// ***2D rectangles encoded in original base patch
 	QMap<QString, Geom::Rectangle2> minFoldingRegion;
 	QMap<QString, Geom::Rectangle2> maxFoldingRegion;
 	QMap<QString, Geom::Rectangle2> availFoldingRegion;

@@ -561,7 +561,7 @@ FdGraph* DcGraph::getSuperKeyframe( double t )
 	foreach (PatchNode* m, getAllMasters(keyframe)){
 		if (m->hasTag(SUPER_PATCH_TAG)) {
 			superPatches << m;
-			childMasters << keyframe->properties[MERGED_MASTERS].value<QSet<QString> >();
+			childMasters << m->properties[MERGED_MASTERS].value<QSet<QString> >();
 		}
 	}
 
@@ -678,6 +678,8 @@ void DcGraph::foldabilize()
 int DcGraph::getBestNextBlockIndex(double currT)
 {
 	FdGraph* currKeyframe = getSuperKeyframe(currT);
+	// debug
+	keyframes << currKeyframe;
 
 	// evaluate each block to find the best one
 	double best_score = -maxDouble();
@@ -690,6 +692,11 @@ int DcGraph::getBestNextBlockIndex(double currT)
 		if (passed(currT, currBlock->mFoldDuration))
 			continue;
 
+		// evaluate
+		double score = 0;
+		currBlock->computeAvailFoldingRegion(currKeyframe);// AFV of this block
+		score += currBlock->getAvailFoldingVolume();
+
 		// estimate the folding of i-th block 
 		// look ahead time
 		TimeInterval curr_ti = currBlock->mFoldDuration;
@@ -698,10 +705,8 @@ int DcGraph::getBestNextBlockIndex(double currT)
 		currBlock->mFoldDuration = TIME_INTERVAL(currT, nextT);
 		FdGraph* nextKeyframe = getSuperKeyframe(nextT);
 
-		keyframes << nextKeyframe;
-
 		// debug
-		//keyframes << nextKeyframe;
+		keyframes << nextKeyframe;
 
 		// skip if not valid
 		if (!isValid(nextKeyframe))
@@ -711,12 +716,6 @@ int DcGraph::getBestNextBlockIndex(double currT)
 			continue;
 		}
 
-		// evaluate
-		double score = 0;
-
-		// AFV of this block
-		currBlock->computeAvailFoldingRegion(currKeyframe);
-		score += currBlock->getAvailFoldingVolume();
 
 		// available folding space after folded
 		for (int next_bid = 0; next_bid < blocks.size(); next_bid++)
@@ -736,7 +735,7 @@ int DcGraph::getBestNextBlockIndex(double currT)
 			nextBlock->mFoldDuration = next_ti;
 
 			//debug
-			//keyframes << nextnextKeyframe;
+			keyframes << nextnextKeyframe;
 
 			// skip if not valid
 			if (!isValid(nextnextKeyframe)) continue;

@@ -120,7 +120,7 @@ QStringList BlockGraph::getChainLabels()
 
 void BlockGraph::computeMinFoldingRegion()
 {
-	Geom::Rectangle base_rect = baseMasterSuper->mPatch;
+	Geom::Rectangle base_rect = baseMaster->mPatch; // ***use original base rect
 	foreach (PatchNode* top_master, mastersSuper)
 	{
 		// skip base master
@@ -138,7 +138,7 @@ void BlockGraph::computeMinFoldingRegion()
 
 void BlockGraph::computeMaxFoldingRegion()
 {
-	Geom::Rectangle base_rect = baseMasterSuper->mPatch;
+	Geom::Rectangle base_rect = baseMaster->mPatch;// ***use original base rect
 	int aid = shapeAABB.getAxisId(base_rect.Normal);
 	Geom::Rectangle cropper3 = shapeAABB.getPatch(aid, 0);
 	Geom::Rectangle2 cropper2 = base_rect.get2DRectangle(cropper3);
@@ -182,8 +182,8 @@ QVector<QString> BlockGraph::getInbetweenOutsideParts( FdGraph* superKeyframe, Q
 	Geom::Line timeLine(Vector3(0, 0, 0), sqzV);
 
 	// position on time line
-	FdNode* master1 = (FdNode*)getNode(mid1);
-	FdNode* master2 = (FdNode*)getNode(mid2);
+	FdNode* master1 = (FdNode*)superBlock->getNode(mid1);
+	FdNode* master2 = (FdNode*)superBlock->getNode(mid2);
 	double t0 = timeLine.getProjTime(master1->center());
 	double t1 = timeLine.getProjTime(master2->center());
 	if (t0 > t1) std::swap(t0, t1);
@@ -197,7 +197,7 @@ QVector<QString> BlockGraph::getInbetweenOutsideParts( FdGraph* superKeyframe, Q
 		if (n->hasTag(FOLDED_TAG)) continue;
 
 		// skip parts in this block
-		if (containsNode(n->mID)) continue;
+		if (superBlock->containsNode(n->mID)) continue;
 
 		// master
 		if (n->hasTag(MASTER_TAG))
@@ -266,12 +266,12 @@ void BlockGraph::computeAvailFoldingRegion( FdGraph* superKeyframe )
 
 	// extent 
 	QString base_mid = baseMasterSuper->mID;
-	Geom::Rectangle base_rect = baseMasterSuper->mPatch;
+	Geom::Rectangle base_rect = baseMaster->mPatch;// ***use original base rect
 	foreach (PatchNode* top_master, mastersSuper)
 	{
 		// skip base master
-		if (top_master == baseMasterSuper) continue;
 		QString top_mid = top_master->mID;
+		if (top_mid == base_mid) continue;
 
 		// samples from constraint parts: in-between and unordered
 		QVector<QString> constraintParts;
@@ -870,13 +870,17 @@ void BlockGraph::computeSuperBlock( FdGraph* superKeyframe )
 	}
 
 	// other stuff
-	baseMasterSuper = (PatchNode*)superBlock->getNode(baseMaster->mID);
+	mastersSuper.clear();
+	masterHeightSuper.clear();
+	masterUnderChainsMapSuper.clear();
+	QString base_mid_super = M2S[baseMaster->mID];
+	baseMasterSuper = (PatchNode*)superBlock->getNode(base_mid_super);
 	foreach (PatchNode* m, masters)
-		mastersSuper << (PatchNode*)superBlock->getNode(m->mID);
-	foreach (QString mid, masterHeight.keys())
 	{
-		QString super_mid = M2S[mid];
-		masterHeightSuper[super_mid] = masterHeight[mid];
-		masterUnderChainsMapSuper[super_mid] = masterUnderChainsMap[mid];
+		QString mid = m->mID;
+		QString mid_super = M2S[mid];
+		mastersSuper << (PatchNode*)superBlock->getNode(mid_super);
+		masterHeightSuper[mid_super] = masterHeight[mid];
+		masterUnderChainsMapSuper[mid_super] = masterUnderChainsMap[mid];
 	}
 }
