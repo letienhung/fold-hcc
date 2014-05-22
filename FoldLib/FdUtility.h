@@ -19,11 +19,14 @@ typedef QPair<double, double> TimeInterval;
 #define EDGE_ROD_TAG "isEdgeRodNode"
 #define DELETED_TAG "hasDeleted"
 #define FOLDED_TAG "hasFolded"
-#define READY_TAG "isReady"
+#define READY_TO_FOLD_TAG "isReadyToFold"
 #define SELECTED_TAG "isSelected"
 #define NEW_TAG "isNew"
-#define MERGE_PREDICTION_TAG "isMerged"
-#define MERGED_MASTERS_SET "mergedMastersSet"
+#define SUPER_PATCH_TAG "isMerged"
+#define MERGED_MASTERS "mergedMastersSet"
+#define	MASTER_SUPER_MAP "master_prediction_map"
+#define MOC_GREATER "moc_greater"
+#define MOC_LESS "moc_less"
 
 // Qt meta type
 Q_DECLARE_METATYPE(Vector3)
@@ -34,6 +37,11 @@ Q_DECLARE_METATYPE(Geom::Rectangle)
 Q_DECLARE_METATYPE(QVector<Geom::Segment>)
 Q_DECLARE_METATYPE(QVector<Geom::Box>)
 Q_DECLARE_METATYPE(QVector<FdGraph*>)
+typedef QMap<QString, QString> StringStringMap;
+Q_DECLARE_METATYPE(StringStringMap)
+typedef QMap<QString, QSet<QString> > StringSetMap;
+Q_DECLARE_METATYPE(StringSetMap)
+Q_DECLARE_METATYPE(QSet<QString>)
 
 // distance between fd nodes
 Geom::Segment getDistSegment( FdNode* n1, FdNode* n2 );
@@ -73,6 +81,7 @@ QVector<QString> getAllMasterIds(FdGraph* scaffold);
 int nbMasters(FdGraph* scaffold);
 QMap<QString, double> getTimeStampsNormalized(QVector<FdNode*> nodes, Vector3 v, double &tScale);
 QMap<QString, double> getTimeStampsNormalized(QVector<PatchNode*> pnodes, Vector3 v, double &tScale);
+QVector<PatchNode*> getAllMergedPredictions(FdGraph* scaffold);
 
 // combination
 FdGraph* combineDecomposition(QVector<FdGraph*> decmps, QString baseMid, 

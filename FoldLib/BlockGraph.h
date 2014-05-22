@@ -8,8 +8,8 @@ class HChain;
 class BlockGraph : public FdGraph
 {
 public:
-	BlockGraph(QVector<PatchNode*>& ms, QVector<FdNode*>& ss, 
-		QVector< QVector<QString> >& mPairs, QString id);
+	BlockGraph(QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& ss, 
+		QVector< QVector<QString> >& mPairs, Geom::Box shape_aabb );
 	~BlockGraph();
 
 	// selection
@@ -22,20 +22,25 @@ public:
 	void exportCollFOG();
 	double getTimeLength();
 
-	// keyframes
+	// key frame
 	/** a stand-alone scaffold representing the folded block at given time
 		this scaffold can be requested for position of folded master and slave parts
 		this scaffold need be translated to combine with key frame scaffold from other blocks
 		to form the final folded scaffold
 		this scaffold has to be deleted by whoever calls this function
 	**/
-	FdGraph* getKeyframeScaffold(double t);
+	FdGraph* getKeyframe(double t);
+	FdGraph* getSuperKeyframe(double t);
+
+	// state of the art
+	/** the augmented block in the content of scaffold
+	**/
+	void computeAugmentedBlock(FdGraph* scaffold);
 
 	// folding space
 	void computeMinFoldingRegion();
-	void computeMaxFoldingRegion(Geom::Box cropper);
-	void computeAvailFoldingRegion(FdGraph* scaffold, 
-		QMultiMap<QString, QString>& moc_greater, QMultiMap<QString, QString>& moc_less);
+	void computeMaxFoldingRegion();
+	void computeAvailFoldingRegion(FdGraph* scaffold);
 	double getAvailFoldingVolume();
 	Geom::Box getAvailFoldingSpace(QString mid);
 
@@ -56,8 +61,8 @@ public:
 
 	// helper
 	QVector<QString> getInbetweenOutsideParts(FdGraph* scaffold, QString mid1, QString mid2);
-	QVector<QString> getUnrelatedParts(FdGraph* scaffold, QString mid1, QString mid2,
-		QMultiMap<QString, QString>& moc_greater, QMultiMap<QString, QString>& moc_less);
+	//QVector<QString> getUnrelatedParts(FdGraph* scaffold, QString mid1, QString mid2,
+		//QMultiMap<QString, QString>& moc_greater, QMultiMap<QString, QString>& moc_less);
 public:
 	// time interval
 	TimeInterval mFoldDuration;
@@ -77,7 +82,8 @@ public:
 	QVector<HChain*> chains;
 
 	// folding space
-	QMap<QString, double> masterHeight;
+	Geom::Box shapeAABB;
+	QMap<QString, double> masterHeight;             
 	QMap<QString, Geom::Rectangle2> minFoldingRegion;
 	QMap<QString, Geom::Rectangle2> maxFoldingRegion;
 	QMap<QString, Geom::Rectangle2> availFoldingRegion;
@@ -88,5 +94,9 @@ public:
 
 	// fold solutions
 	QVector<QVector<FoldOption*> > foldSolutions;
+
+	// augmented block
+	FdGraph* augmentedBlock;
+	QMap<QString, QSet<int> > augMasterUnderChainsMap;
 }; 
 

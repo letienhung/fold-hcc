@@ -5,9 +5,6 @@
 #include <QVector>
 #include <QSet>
 
-Q_DECLARE_METATYPE(QVector<QString>)
-
-
 namespace Structure
 {
 
@@ -29,21 +26,9 @@ public:
 		return properties.contains(tag);
 	}
 
-	template<class T>
-	void addProperty(QString key, T value)
-	{
-		properties[k] = value;
-	}
-
 	bool containsProperty(QString key)
 	{
 		return properties.contains(key);
-	}
-
-	template<class T> 
-	T getProperty(QString key)
-	{
-		return properties[key].value<T>();
 	}
 
 	template<class T>
@@ -51,7 +36,7 @@ public:
 		QVector<T> vprop;
 		if (properties.contains(key))
 			vprop = properties[key].value<QVector<T> >();
-		vprop << vec;
+		vprop += vec;
 		properties[key].setValue(vprop);
 	}
 
@@ -65,7 +50,7 @@ public:
 		QSet<T> vprop;
 		if (properties.contains(key))
 			vprop = properties[key].value<QSet<T> >();
-		vprop << vec;
+		vprop += vec;
 		properties[key].setValue(vprop);
 	}
 

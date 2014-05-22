@@ -546,3 +546,13 @@ bool extendRectangle2D( Geom::Rectangle2& rect, QVector<Vector2> &pnts )
 	rect =  Geom::Rectangle2(new_conners);
 	return true;
 }
+
+QVector<PatchNode*> getAllMergedPredictions( FdGraph* scaffold )
+{
+	QVector<PatchNode*> mps;
+	foreach (PatchNode* m, getAllMasters(scaffold))
+		if (m->hasTag(SUPER_PATCH_TAG))
+			mps << m;
+
+	return mps;
+}

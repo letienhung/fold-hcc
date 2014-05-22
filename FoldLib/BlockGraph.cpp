@@ -6,8 +6,8 @@
 #include "HChain.h"
 #include "CliquerAdapter.h"
 
-BlockGraph::BlockGraph( QVector<PatchNode*>& ms, QVector<FdNode*>& ss, 
-	QVector< QVector<QString> >& mPairs, QString id )
+BlockGraph::BlockGraph( QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& ss, 
+	QVector< QVector<QString> >& mPairs, Geom::Box shape_aabb )
 	: FdGraph(id)
 {
 	// selected chain
@@ -60,6 +60,12 @@ BlockGraph::BlockGraph( QVector<PatchNode*>& ms, QVector<FdNode*>& ss,
 	// initial collision graph
 	collFog = new FoldOptionGraph();
 
+	// shape AABB
+	shapeAABB = shape_aabb;
+
+	// augmented
+	augmentedBlock = NULL;
+
 	//////////////////////////////////////////////////////////////////////////
 	//QVector<Geom::Segment> normals;
 	//normals << Geom::Segment(baseMaster->mPatch.Center, baseMaster->mPatch.Center + 10 * baseMaster->mPatch.Normal);
@@ -70,6 +76,8 @@ BlockGraph::~BlockGraph()
 {
 	foreach(ChainGraph* c, chains)
 		delete c;
+
+	if (augmentedBlock) delete augmentedBlock;
 }
 
 FdGraph* BlockGraph::activeScaffold()
@@ -130,7 +138,7 @@ void BlockGraph::computeMinFoldingRegion()
 	}
 }
 
-void BlockGraph::computeMaxFoldingRegion(Geom::Box shapeAABB)
+void BlockGraph::computeMaxFoldingRegion()
 {
 	Geom::Rectangle base_rect = baseMaster->mPatch;
 	foreach (PatchNode* top_master, masters)
@@ -227,25 +235,24 @@ QVector<QString> BlockGraph::getInbetweenOutsideParts( FdGraph* scaffold, QStrin
 	return inbetweens;
 }
 
-QVector<QString> BlockGraph::getUnrelatedParts( FdGraph* scaffold, QString mid1, QString mid2, 
-	QMultiMap<QString, QString>& moc_greater, QMultiMap<QString, QString>& moc_less )
-{
-	QVector<QString> urParts;
+//QVector<QString> BlockGraph::getUnrelatedParts( FdGraph* scaffold, QString mid1, QString mid2, 
+//	QMultiMap<QString, QString>& moc_greater, QMultiMap<QString, QString>& moc_less )
+//{
+//	QVector<QString> urParts;
+//
+//	QList<QString> moc1, moc2;
+//	moc1 << moc_greater.values(mid1) << moc_less.values(mid1) << mid1;
+//	moc2 << moc_greater.values(mid2) << moc_less.values(mid2) << mid2;
+//
+//	foreach (QString mid, getAllMasterIds(scaffold))
+//		// no order with both
+//		if (!moc1.contains(mid) && !moc2.contains(mid))
+//			urParts << mid;
+//
+//	return urParts;
+//}
 
-	QList<QString> moc1, moc2;
-	moc1 << moc_greater.values(mid1) << moc_less.values(mid1) << mid1;
-	moc2 << moc_greater.values(mid2) << moc_less.values(mid2) << mid2;
-
-	foreach (QString mid, getAllMasterIds(scaffold))
-		// no order with both
-		if (!moc1.contains(mid) && !moc2.contains(mid))
-			urParts << mid;
-
-	return urParts;
-}
-
-void BlockGraph::computeAvailFoldingRegion( FdGraph* scaffold, 
-	QMultiMap<QString, QString>& moc_greater, QMultiMap<QString, QString>& moc_less )
+void BlockGraph::computeAvailFoldingRegion( FdGraph* scaffold )
 {
 	// compute the offset
 	Vector3 posA = baseMaster->center();
@@ -328,10 +335,12 @@ void BlockGraph::exportCollFOG()
 	}
 }
 
-FdGraph* BlockGraph::getKeyframeScaffold( double t )
+FdGraph* BlockGraph::getKeyframe( double t )
 {
+	FdGraph* keyframe = NULL;
+
 	// chains have been created and ready to fold
-	if (hasTag(READY_TAG))
+	if (hasTag(READY_TO_FOLD_TAG))
 	{
 		// scaffolds from folded chains
 		QVector<FdGraph*> foldedChains;
@@ -342,38 +351,21 @@ FdGraph* BlockGraph::getKeyframeScaffold( double t )
 		}
 
 		// combine 
-		FdGraph* keyframeScaffold = combineDecomposition(foldedChains, baseMaster->mID, masterChainsMap);
+		keyframe = combineDecomposition(foldedChains, baseMaster->mID, masterChainsMap);
 
 		// delete folded chains
 		foreach (FdGraph* c, foldedChains) delete c;
-
-		return keyframeScaffold;
-	}
+	}else
 	// the block is not ready
 	// can only answer request on t = 0 and t = 1
-	else{
+	{
 		// clone
-		FdGraph* folded = (FdGraph*)this->clone();
+		keyframe = (FdGraph*)this->clone();
 
 		// collapse to base
 		Geom::Rectangle base_rect = baseMaster->mPatch;
-		if (t > 0.5)
-		{
-			// this is a ***merged prediction***
-			PatchNode* mergedPatch = (PatchNode*)baseMaster->clone();
-			mergedPatch->mID = "";
-			mergedPatch->addTag(MERGE_PREDICTION_TAG); 
-			folded->Structure::Graph::addNode(mergedPatch);
-
-			// resize merged patch using available region
-			QVector<Vector2> pnts2 = base_rect.get2DConners();
-			foreach (QString mid, availFoldingRegion.keys())
-				pnts2 << availFoldingRegion[mid].getConners();
-			Geom::Rectangle2 aabb2 = computeAABB2D(pnts2);
-			mergedPatch->resize(aabb2);
-
-			// also keep copy of folded masters
-			foreach (FdNode* n, folded->getFdNodes()){
+		if (t > 0.5){
+			foreach (FdNode* n, keyframe->getFdNodes()){
 				if (n->hasTag(MASTER_TAG)) {
 					// leave base master untouched
 					if (n->mID == baseMaster->mID)	continue;
@@ -383,23 +375,63 @@ FdGraph* BlockGraph::getKeyframeScaffold( double t )
 					Vector3 up = base_rect.Normal;
 					Vector3 offset = dot(c2c, up) * up;
 					n->translate(offset);
-
-					// this is a ***folded*** master
-					// its role has been taken over by merged prediction patch
-					n->addTag(FOLDED_TAG); 
-					mergedPatch->appendToSetProperty<QString>(MERGED_MASTERS_SET, n->mID);
-					mergedPatch->mID += "&" + n->mID;
-				}else{
+				}else {
 					// remove slave nodes
-					folded->removeNode(n->mID);
+					keyframe->removeNode(n->mID);
 				}
 			}
 		}
-
-		return folded;
 	}
 
+	return keyframe;
 }
+
+
+FdGraph* BlockGraph::getSuperKeyframe( double t )
+{
+	FdGraph* keyframe = getKeyframe(t);
+
+	// do nothing if the block is NOT fully folded
+	if (1 - t > ZERO_TOLERANCE_LOW) return keyframe;
+
+	// create super patch
+	PatchNode* superPatch = (PatchNode*)baseMaster->clone();
+	superPatch->mID = mID + "_super";
+	superPatch->addTag(SUPER_PATCH_TAG); 
+
+	// resize super patch
+	Geom::Rectangle base_rect = superPatch->mPatch;
+	QVector<Vector2> pnts2 = base_rect.get2DConners();
+	if (hasTag(READY_TO_FOLD_TAG))
+	{// use folded parts
+		foreach (Structure::Node* n, keyframe->nodes)
+		{
+			Geom::Rectangle part_rect = ((PatchNode*)n)->mPatch;
+			pnts2 << base_rect.get2DRectangle(part_rect).getConners();
+		}
+	}
+	else
+	{// predict using available folding regions
+		foreach (QString mid, availFoldingRegion.keys())
+			pnts2 << availFoldingRegion[mid].getConners();
+	}
+	Geom::Rectangle2 aabb2 = computeAABB2D(pnts2);
+	superPatch->resize(aabb2);
+
+
+	// maps between regular and super nodes
+	foreach (Structure::Node* n, keyframe->nodes)
+	{
+		n->addTag(FOLDED_TAG); 
+		superPatch->appendToSetProperty<QString>(MERGED_MASTERS, n->mID);
+	}
+
+	// add to key frame
+	keyframe->Structure::Graph::addNode(superPatch);
+
+	return keyframe;
+}
+
 
 bool BlockGraph::fAreasIntersect( Geom::Rectangle& rect1, Geom::Rectangle& rect2 )
 {
@@ -439,7 +471,7 @@ void BlockGraph::applySolution( int sid )
 		chains[i]->applyFoldOption(fn);
 	}
 
-	addTag(READY_TAG);
+	addTag(READY_TO_FOLD_TAG);
 }
 
 int BlockGraph::encodeModification( int nX, int nY )
@@ -802,4 +834,36 @@ Geom::Box BlockGraph::getAvailFoldingSpace( QString mid )
 	afs.Extent += Vector3(epsilon, epsilon, epsilon);
 
 	return afs;
+}
+
+void BlockGraph::computeAugmentedBlock( FdGraph* scaffold )
+{
+	// clone current block
+	if (augmentedBlock) delete augmentedBlock;
+	augmentedBlock = (FdGraph*)this->clone();
+
+	// offset from scaffold to block
+	Vector3 block_pos = baseMaster->center();
+	Vector3 scaffold_pos = ((PatchNode*)scaffold->getNode(baseMaster->mID))->center();
+	Vector3 scaffold2block = block_pos - scaffold_pos;
+
+	// replace parts
+	QMap<QString, QString> masterPredictionMap = scaffold->properties[MASTER_SUPER_MAP].value<QMap<QString, QString> >();
+
+	// replace master with merged prediction
+	foreach (PatchNode* m, masters)
+	{
+		if (masterPredictionMap.contains(m->mID))
+		{
+			// remove master
+			augmentedBlock->removeNode(m->mID);
+
+			// clone prediction
+			PatchNode* prediction = (PatchNode*)scaffold->getNode(masterPredictionMap[m->mID]);
+			PatchNode* prediction_copy = (PatchNode*)prediction->clone();
+			prediction_copy->translate(scaffold2block);
+			augmentedBlock->Structure::Graph::addNode(prediction_copy);
+		}
+	}
+
 }

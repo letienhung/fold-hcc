@@ -106,13 +106,13 @@ void DcGraph::computeMasterOrderConstraints()
 				// <up, down>
 				if (ti > tj) 
 				{
-					masterOrderGreater.insert(mi, mj);
-					masterOrderLess.insert(mj, mi);
+					masterOrderGreater[mi] << mj;
+					masterOrderLess[mj] << mi;
 				}
 				else 
 				{
-					masterOrderGreater.insert(mj,mi);
-					masterOrderLess.insert(mi, mj);
+					masterOrderGreater[mj] << mi;
+					masterOrderLess[mi] << mj;
 				}
 					
 			}
@@ -432,6 +432,7 @@ void DcGraph::createBlocks()
 	masterBlockMap.clear();
 
 	// each H-slave cluster forms a block
+	Geom::Box aabb = computeAABB().box();
 	for (int i = 0; i < slaveClusters.size(); i++)
 	{
 		QVector<PatchNode*> ms;
@@ -464,7 +465,7 @@ void DcGraph::createBlocks()
 		// create
 		foreach (PatchNode* m, ms) 
 			masterBlockMap[m->mID] << blocks.size();
-		blocks << new BlockGraph(ms, ss, mPairs, id);
+		blocks << new BlockGraph(id, ms, ss, mPairs, aabb);
 	}
 
 	// set up path
@@ -526,52 +527,13 @@ FdGraph* DcGraph::getKeyframe( double t )
 	for (int i = 0; i < blocks.size(); i++)
 	{
 		double lt = getLocalTime(t, blocks[i]->mFoldDuration);
-		FdGraph* fblock = blocks[i]->getKeyframeScaffold(lt);
+		FdGraph* fblock = blocks[i]->getKeyframe(lt);
 		foldedBlocks << fblock;
 	}
 
 	// shift layers and add nodes into scaffold
 	FdGraph *key_graph = combineDecomposition(foldedBlocks, baseMaster->mID, masterBlockMap);
 
-	// merge *merged prediction* of folded blocks
-	QVector<PatchNode*> mps;
-	QVector<QSet<QString> > m_sets, mm_sets;
-	foreach (PatchNode* m, getAllMasters(key_graph)){
-		if (m->hasTag(MERGE_PREDICTION_TAG)) {
-			mps << m;
-			m_sets << key_graph->getProperty<QSet<QString> >(MERGED_MASTERS_SET);
-		}
-	}
-	QVector<QSet<int> > mm_set_idx = mergeIsctSets(m_sets, mm_sets);
-	for (int i = 0; i < mm_set_idx.size(); i++)
-	{
-		// merged set indices
-		QList<int> msidx = mm_set_idx[i].toList();
-
-		// pick up the first
-		PatchNode* mmp = mps[msidx[0]];
-		Geom::Rectangle mmp_rect = mmp->mPatch;
-
-		// merge with others
-		QVector<Vector2> pnts2 = mmp_rect.get2DConners();
-		for (int j = 1; j < mps.size(); j++)
-		{
-			int sidx = msidx[j];
-			Geom::Rectangle2 rect2 = mmp_rect.get2DRectangle(mps[sidx]->mPatch);
-			pnts2 << rect2.getConners();
-			key_graph->removeNode(mps[sidx]->mID);
-		}
-		Geom::Rectangle2 aabb2 = computeAABB2D(pnts2);
-		mmp->resize(aabb2);
-		mmp->addProperty<QSet<QString>>(MERGED_MASTERS_SET, mm_sets[i]);
-
-		// new id
-		mmp->mID = "";
-		foreach (QString mid, mm_sets[i])
-			mmp->mID += mid + "&";
-		mmp->mID.truncate(mmp->mID.length() - 2);
-	}
-	
 	// debug
 	//addDebugScaffold(key_graph);
 
@@ -581,26 +543,113 @@ FdGraph* DcGraph::getKeyframe( double t )
 	return key_graph;
 }
 
-void DcGraph::foldabilize()
+FdGraph* DcGraph::getSuperKeyframe( double t )
 {
-	Geom::Box aabb = computeAABB().box();
+	// regular key frame with super nodes
+	QVector<FdGraph*> foldedBlocks;
+	for (int i = 0; i < blocks.size(); i++){
+		double lt = getLocalTime(t, blocks[i]->mFoldDuration);
+		FdGraph* fblock = blocks[i]->getSuperKeyframe(lt);
+		foldedBlocks << fblock;
+	}
+	FdGraph *keyframe = combineDecomposition(foldedBlocks, baseMaster->mID, masterBlockMap);
+	foreach (FdGraph* b, foldedBlocks) delete b;
 
-	// min & max folding volumes
-	foreach (BlockGraph* b, blocks)
-	{
-		b->computeMinFoldingRegion();
-		b->computeMaxFoldingRegion(aabb);
+	// merge super nodes which share children
+	QVector<PatchNode*> superPatches;
+	QVector<QSet<QString> > childMasters, childMasters_new;
+	foreach (PatchNode* m, getAllMasters(keyframe)){
+		if (m->hasTag(SUPER_PATCH_TAG)) {
+			superPatches << m;
+			childMasters << keyframe->properties[MERGED_MASTERS].value<QSet<QString> >();
+		}
 	}
 
-	// find fold order
-	findFoldOrderGreedy();
+	// cluster
+	QVector<QSet<int> > superIdxClusters = mergeIsctSets(childMasters, childMasters_new);
+
+	// merge to create new super patches
+	QMap<QString, QString> masterSuperMap;
+	for (int i = 0; i < superIdxClusters.size(); i++)
+	{
+		// merged set indices
+		QList<int> superIndices = superIdxClusters[i].toList();
+
+		// pick up the first
+		PatchNode* superPatch_new = superPatches[superIndices[0]];
+		superPatch_new->mID = QString("MP_%1").arg(i);
+		Geom::Rectangle pred_rect_new = superPatch_new->mPatch;
+
+		// merge with others
+		QVector<Vector2> pnts2 = pred_rect_new.get2DConners();
+		for (int j = 1; j < superIndices.size(); j++)
+		{
+			int superIdx = superIndices[j];
+			Geom::Rectangle2 rect2 = pred_rect_new.get2DRectangle(superPatches[superIdx]->mPatch);
+			pnts2 << rect2.getConners();
+
+			// remove other
+			keyframe->removeNode(superPatches[superIdx]->mID);
+		}
+		Geom::Rectangle2 aabb2 = computeAABB2D(pnts2);
+		superPatch_new->resize(aabb2);
+
+		// store master_super_map
+		superPatch_new->properties[MERGED_MASTERS].setValue(childMasters_new[i]);
+		foreach (QString mid, childMasters_new[i])
+			masterSuperMap[mid] = superPatch_new->mID;
+	}
+
+	// store master-prediction-map as property
+	keyframe->properties[MASTER_SUPER_MAP].setValue(masterSuperMap);
+
+	// update master order constraints
+	StringSetMap mocGreater_new = masterOrderGreater;
+	StringSetMap mocLess_new = masterOrderLess;
+	foreach (QSet<QString> child_mids, childMasters_new)
+	{
+		// super id
+		QString child = child_mids.toList().front();
+		QString super = masterSuperMap[child];
+
+		// inherit orders from children
+		QSet<QString> greater_union, less_union;
+		foreach (QString cmid, child_mids)
+		{
+			greater_union += mocGreater_new[cmid];
+			less_union += mocLess_new[cmid];
+
+			// remove
+			mocGreater_new.remove(child);
+			mocLess_new.remove(child);
+		}
+
+		// update ordered masters if need
+		QSet<QString> greater_union_new, less_union_new;
+		foreach (QString gmid, greater_union){
+			if (masterSuperMap.contains(gmid)) gmid = masterSuperMap[gmid];
+			greater_union_new << gmid;
+		}
+		foreach (QString lmid, less_union){
+			if (masterSuperMap.contains(lmid)) lmid = masterSuperMap[lmid];
+			less_union_new << lmid;
+		}
+
+		// store
+		mocGreater_new[super] = greater_union_new;
+		mocLess_new[super] = less_union_new;
+	}
+	keyframe->properties[MOC_GREATER].setValue(mocGreater_new);
+	keyframe->properties[MOC_LESS].setValue(mocLess_new);
+
+	return keyframe;
 }
 
-void DcGraph::findFoldOrderGreedy()
+void DcGraph::foldabilize()
 {
 	// clear tags
 	foreach (BlockGraph* b, blocks)
-		b->removeTag(READY_TAG);
+		b->removeTag(READY_TO_FOLD_TAG);
 
 	// initial time intervals
 	// greater than 1.0 means never be folded
@@ -629,7 +678,6 @@ void DcGraph::findFoldOrderGreedy()
 
 	// remaining blocks (if any) are interlocking
 	// merge them as single block to foldabilize
-
 }
 
 int DcGraph::getBestNextBlockIndex(double currT)
@@ -672,7 +720,7 @@ int DcGraph::getBestNextBlockIndex(double currT)
 		double score = 0;
 
 		// AFV of this block
-		currBlock->computeAvailFoldingRegion(currKeyframe,masterOrderGreater, masterOrderLess);
+		//currBlock->computeAvailFoldingRegion(currKeyframe,masterOrderGreater, masterOrderLess);
 		score += currBlock->getAvailFoldingVolume();
 
 		// available folding space after folded
@@ -699,7 +747,7 @@ int DcGraph::getBestNextBlockIndex(double currT)
 			if (!isValid(nextnextKeyframe)) continue;
 
 			// accumulate score
-			nextBlock->computeAvailFoldingRegion(nextKeyframe, masterOrderGreater, masterOrderLess);
+			//nextBlock->computeAvailFoldingRegion(nextKeyframe, masterOrderGreater, masterOrderLess);
 			score += nextBlock->getAvailFoldingVolume();
 		}
 		
@@ -748,10 +796,10 @@ bool DcGraph::isValid( FdGraph* folded )
 	double tScale;
 	QMap<QString, double> masterTimeStamps = getTimeStampsNormalized(masters, sqzV, tScale);
 
-	foreach (QString up, masterOrderGreater.uniqueKeys())
-		foreach (QString down, masterOrderGreater.values(up))
-			if (masterTimeStamps[up] < masterTimeStamps[down])
-				return false;
+	//foreach (QString up, masterOrderGreater.uniqueKeys())
+	//	foreach (QString down, masterOrderGreater.values(up))
+	//		if (masterTimeStamps[up] < masterTimeStamps[down])
+	//			return false;
 
 	return true;
 }
@@ -762,13 +810,11 @@ void DcGraph::foldbzSelBlock()
 	if (!selBlock) return;
 
 	// foldabilize selected block
-	selBlock->computeMinFoldingRegion();
-	selBlock->computeMaxFoldingRegion(computeAABB().box());
 	FdGraph* currKeyframe = getKeyframe(0);
-	selBlock->computeAvailFoldingRegion(currKeyframe, masterOrderGreater, masterOrderLess);
+	//selBlock->computeAvailFoldingRegion(currKeyframe, masterOrderGreater, masterOrderLess);
 	selBlock->foldabilize();
 	selBlock->mFoldDuration = TIME_INTERVAL(0.0, 1.0);
-	selBlock->addTag(READY_TAG);
+	selBlock->addTag(READY_TO_FOLD_TAG);
 
 	// set unreachable time interval for other blocks
 	TimeInterval ti = TIME_INTERVAL(1.0, 2.0);

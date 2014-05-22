@@ -20,8 +20,8 @@ public:
 	Vector3 sqzV;
 	PatchNode* baseMaster;
 	QVector<PatchNode*> masters;
-	QMultiMap<QString, QString> masterOrderGreater; // key > value
-	QMultiMap<QString, QString> masterOrderLess; // key < value
+	QMap<QString, QSet<QString> > masterOrderGreater;
+	QMap<QString, QSet<QString> > masterOrderLess;
 
 	// slaves
 	QVector<FdNode*> slaves;
@@ -59,7 +59,6 @@ public:
 	// foldem
 	void foldabilize();
 	void foldbzSelBlock();
-	void findFoldOrderGreedy();
 	int getBestNextBlockIndex(double currT);
 	bool isValid(FdGraph* folded);
 
@@ -69,6 +68,7 @@ public:
 	// key frame
 	void generateKeyframes(int N);
 	FdGraph* getKeyframe(double t);
+	FdGraph* getSuperKeyframe(double t);
 
 public:
 	FdGraph* activeScaffold();
