@@ -60,7 +60,7 @@ public:
 	void foldabilize();
 	void foldbzSelBlock();
 	int getBestNextBlockIndex(double currT);
-	bool isValid(FdGraph* folded);
+	bool isValid(FdGraph* superKeyframe);
 
 	// export
 	void exportCollFOG();

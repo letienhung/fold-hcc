@@ -32,10 +32,8 @@ public:
 	FdGraph* getKeyframe(double t);
 	FdGraph* getSuperKeyframe(double t);
 
-	// state of the art
-	/** the augmented block in the content of scaffold
-	**/
-	void computeAugmentedBlock(FdGraph* scaffold);
+	// super block
+	void computeSuperBlock(FdGraph* superKeyframe);
 
 	// folding space
 	void computeMinFoldingRegion();
@@ -60,9 +58,8 @@ public:
 	void applySolution(int sid);
 
 	// helper
-	QVector<QString> getInbetweenOutsideParts(FdGraph* scaffold, QString mid1, QString mid2);
-	//QVector<QString> getUnrelatedParts(FdGraph* scaffold, QString mid1, QString mid2,
-		//QMultiMap<QString, QString>& moc_greater, QMultiMap<QString, QString>& moc_less);
+	QVector<QString> getInbetweenOutsideParts(FdGraph* superKeyframe, QString mid1, QString mid2);
+	QVector<QString> getUnrelatedMasters(FdGraph* superKeyframe, QString mid1, QString mid2);
 public:
 	// time interval
 	TimeInterval mFoldDuration;
@@ -70,6 +67,7 @@ public:
 	// master related
 	PatchNode* baseMaster;
 	QVector<PatchNode*> masters;
+	QMap<QString, double> masterHeight;             
 	QMap<QString, QSet<int> > masterChainsMap; 
 	QMap<QString, QSet<int> > masterUnderChainsMap; // master : chains under master
 
@@ -81,12 +79,8 @@ public:
 	int selChainIdx;
 	QVector<HChain*> chains;
 
-	// folding space
+	// AABB of entire shape
 	Geom::Box shapeAABB;
-	QMap<QString, double> masterHeight;             
-	QMap<QString, Geom::Rectangle2> minFoldingRegion;
-	QMap<QString, Geom::Rectangle2> maxFoldingRegion;
-	QMap<QString, Geom::Rectangle2> availFoldingRegion;
 
 	// collision graph
 	FoldOptionGraph* collFog;
@@ -95,8 +89,16 @@ public:
 	// fold solutions
 	QVector<QVector<FoldOption*> > foldSolutions;
 
-	// augmented block
-	FdGraph* augmentedBlock;
-	QMap<QString, QSet<int> > augMasterUnderChainsMap;
+	// super block
+	FdGraph* superBlock;
+	PatchNode* baseMasterSuper;
+	QVector<PatchNode*> mastersSuper;
+	QMap<QString, double> masterHeightSuper;    
+	QMap<QString, QSet<int> > masterUnderChainsMapSuper;
+
+	// folding space
+	QMap<QString, Geom::Rectangle2> minFoldingRegion;
+	QMap<QString, Geom::Rectangle2> maxFoldingRegion;
+	QMap<QString, Geom::Rectangle2> availFoldingRegion;
 }; 
 

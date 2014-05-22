@@ -603,42 +603,37 @@ FdGraph* DcGraph::getSuperKeyframe( double t )
 	// store master-prediction-map as property
 	keyframe->properties[MASTER_SUPER_MAP].setValue(masterSuperMap);
 
-	// update master order constraints
+	// update moc_greater
 	StringSetMap mocGreater_new = masterOrderGreater;
-	StringSetMap mocLess_new = masterOrderLess;
 	foreach (QSet<QString> child_mids, childMasters_new)
 	{
-		// super id
-		QString child = child_mids.toList().front();
-		QString super = masterSuperMap[child];
-
 		// inherit orders from children
-		QSet<QString> greater_union, less_union;
-		foreach (QString cmid, child_mids)
-		{
+		QSet<QString> greater_union;
+		foreach (QString cmid, child_mids){
 			greater_union += mocGreater_new[cmid];
-			less_union += mocLess_new[cmid];
-
-			// remove
-			mocGreater_new.remove(child);
-			mocLess_new.remove(child);
+			mocGreater_new.remove(cmid);
 		}
 
 		// update ordered masters if need
-		QSet<QString> greater_union_new, less_union_new;
+		QSet<QString> greater_union_new;
 		foreach (QString gmid, greater_union){
 			if (masterSuperMap.contains(gmid)) gmid = masterSuperMap[gmid];
 			greater_union_new << gmid;
 		}
-		foreach (QString lmid, less_union){
-			if (masterSuperMap.contains(lmid)) lmid = masterSuperMap[lmid];
-			less_union_new << lmid;
-		}
 
 		// store
+		QString child = child_mids.toList().front();
+		QString super = masterSuperMap[child];
 		mocGreater_new[super] = greater_union_new;
-		mocLess_new[super] = less_union_new;
 	}
+
+	// moc_less
+	StringSetMap mocLess_new;
+	foreach (QString key, mocGreater_new.keys())
+		foreach(QString value, mocGreater_new[key])
+			mocLess_new[value] << key;
+
+	// store as property
 	keyframe->properties[MOC_GREATER].setValue(mocGreater_new);
 	keyframe->properties[MOC_LESS].setValue(mocLess_new);
 
@@ -682,7 +677,7 @@ void DcGraph::foldabilize()
 
 int DcGraph::getBestNextBlockIndex(double currT)
 {
-	FdGraph* currKeyframe = getKeyframe(currT);
+	FdGraph* currKeyframe = getSuperKeyframe(currT);
 
 	// evaluate each block to find the best one
 	double best_score = -maxDouble();
@@ -701,7 +696,7 @@ int DcGraph::getBestNextBlockIndex(double currT)
 		double timeLength = currBlock->getTimeLength() * timeScale;
 		double nextT = currT + timeLength;
 		currBlock->mFoldDuration = TIME_INTERVAL(currT, nextT);
-		FdGraph* nextKeyframe = getKeyframe(nextT);
+		FdGraph* nextKeyframe = getSuperKeyframe(nextT);
 
 		keyframes << nextKeyframe;
 
@@ -720,7 +715,7 @@ int DcGraph::getBestNextBlockIndex(double currT)
 		double score = 0;
 
 		// AFV of this block
-		//currBlock->computeAvailFoldingRegion(currKeyframe,masterOrderGreater, masterOrderLess);
+		currBlock->computeAvailFoldingRegion(currKeyframe);
 		score += currBlock->getAvailFoldingVolume();
 
 		// available folding space after folded
@@ -747,7 +742,7 @@ int DcGraph::getBestNextBlockIndex(double currT)
 			if (!isValid(nextnextKeyframe)) continue;
 
 			// accumulate score
-			//nextBlock->computeAvailFoldingRegion(nextKeyframe, masterOrderGreater, masterOrderLess);
+			nextBlock->computeAvailFoldingRegion(nextKeyframe);
 			score += nextBlock->getAvailFoldingVolume();
 		}
 		
@@ -789,17 +784,23 @@ void DcGraph::exportCollFOG()
 	if (selBlock) selBlock->exportCollFOG();
 }
 
-bool DcGraph::isValid( FdGraph* folded )
+bool DcGraph::isValid( FdGraph* superKeyframe )
 {
-	QVector<PatchNode*> masters = getAllMasters(folded);
+	// get all masters: unfolded and super
+	QVector<PatchNode*> ms;
+	foreach (PatchNode* m, getAllMasters(superKeyframe))
+		if (!m->hasTag(FOLDED_TAG))	ms << m;
 
+	// compute time stamps
 	double tScale;
-	QMap<QString, double> masterTimeStamps = getTimeStampsNormalized(masters, sqzV, tScale);
+	QMap<QString, double> timeStamps = getTimeStampsNormalized(ms, sqzV, tScale);
 
-	//foreach (QString up, masterOrderGreater.uniqueKeys())
-	//	foreach (QString down, masterOrderGreater.values(up))
-	//		if (masterTimeStamps[up] < masterTimeStamps[down])
-	//			return false;
+	// check validity
+	StringSetMap moc_greater = superKeyframe->properties[MOC_GREATER].value<StringSetMap>();
+	foreach (QString key, moc_greater.keys())
+		foreach (QString value, moc_greater[key])
+			if (timeStamps[key] < timeStamps[value])
+				return false;
 
 	return true;
 }

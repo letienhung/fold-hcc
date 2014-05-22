@@ -81,7 +81,6 @@ QVector<QString> getAllMasterIds(FdGraph* scaffold);
 int nbMasters(FdGraph* scaffold);
 QMap<QString, double> getTimeStampsNormalized(QVector<FdNode*> nodes, Vector3 v, double &tScale);
 QMap<QString, double> getTimeStampsNormalized(QVector<PatchNode*> pnodes, Vector3 v, double &tScale);
-QVector<PatchNode*> getAllMergedPredictions(FdGraph* scaffold);
 
 // combination
 FdGraph* combineDecomposition(QVector<FdGraph*> decmps, QString baseMid, 
