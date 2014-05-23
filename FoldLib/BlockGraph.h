@@ -96,6 +96,7 @@ public:
 	QVector<PatchNode*> mastersSuper;
 	QMap<QString, double> masterHeightSuper;    
 	QMap<QString, QSet<int> > masterUnderChainsMapSuper;
+	QMap<int, QString> chainTopMasterMapSuper;
 
 	// folding regions
 	// ***2D rectangles encoded in original base patch

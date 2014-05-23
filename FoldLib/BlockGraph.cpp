@@ -120,6 +120,7 @@ QStringList BlockGraph::getChainLabels()
 
 void BlockGraph::computeMinFoldingRegion()
 {
+	minFoldingRegion.clear();
 	Geom::Rectangle base_rect = baseMaster->mPatch; // ***use original base rect
 	foreach (PatchNode* top_master, mastersSuper)
 	{
@@ -138,6 +139,7 @@ void BlockGraph::computeMinFoldingRegion()
 
 void BlockGraph::computeMaxFoldingRegion()
 {
+	maxFoldingRegion.clear();
 	Geom::Rectangle base_rect = baseMaster->mPatch;// ***use original base rect
 	int aid = shapeAABB.getAxisId(base_rect.Normal);
 	Geom::Rectangle cropper3 = shapeAABB.getPatch(aid, 0);
@@ -259,6 +261,7 @@ void BlockGraph::computeAvailFoldingRegion( FdGraph* superKeyframe )
 	computeMaxFoldingRegion();
 
 	// extent 
+	availFoldingRegion.clear();
 	QString base_mid = baseMasterSuper->mID;
 	Geom::Rectangle base_rect = baseMaster->mPatch;// ***use original base rect
 	foreach (PatchNode* top_master, mastersSuper)
@@ -518,11 +521,9 @@ void BlockGraph::genNewModifications( QSet<int>& modifications, int max_nX, int 
 
 void BlockGraph::filterFoldOptions( QVector<FoldOption*>& options, int cid )
 {
-	if (cid < 0 || cid >= chains.size()) return;
-
-	HChain* chain = (HChain*)chains[cid];
-	QString top_mid = chain->getTopMaster()->mID;
-	Geom::Rectangle2 AFR = availFoldingRegion[top_mid]; 
+	HChain* chain = chains[cid];
+	QString top_mid_super = chainTopMasterMapSuper[cid];
+	Geom::Rectangle2 AFR = availFoldingRegion[top_mid_super]; 
 	Geom::Rectangle base_rect = baseMaster->mPatch;
 
 	// filter
@@ -768,14 +769,14 @@ double BlockGraph::getTimeLength()
 double BlockGraph::getAvailFoldingVolume()
 {
 	Geom::Rectangle base_rect = baseMaster->mPatch;
-	QList<QString> mids = availFoldingRegion.keys();
+	QList<QString> super_mids = availFoldingRegion.keys();
 
 	// trivial case
 	if (availFoldingRegion.size() == 1)
 	{
-		QString mid = mids.front();
-		Geom::Rectangle afr3 = base_rect.get3DRectangle(availFoldingRegion[mid]);
-		return afr3.area() * masterHeight[mid];
+		QString smid = super_mids.front();
+		Geom::Rectangle afr3 = base_rect.get3DRectangle(availFoldingRegion[smid]);
+		return afr3.area() * masterHeightSuper[smid];
 	}
 
 	// AABB of avail folding regions
@@ -794,9 +795,9 @@ double BlockGraph::getAvailFoldingVolume()
 		Vector2 gp2 = base_rect.getProjCoordinates(gp3);
 
 		double best_height = 0;
-		foreach (QString mid, mids)
-			if (availFoldingRegion[mid].contains(gp2) && masterHeight[mid] > best_height)
-				best_height = masterHeight[mid];
+		foreach (QString smid, super_mids)
+			if (availFoldingRegion[smid].contains(gp2) && masterHeightSuper[smid] > best_height)
+				best_height = masterHeightSuper[smid];
 
 		AFV += best_height;
 	}
@@ -805,11 +806,11 @@ double BlockGraph::getAvailFoldingVolume()
 	return AFV;
 }
 
-Geom::Box BlockGraph::getAvailFoldingSpace( QString mid )
+Geom::Box BlockGraph::getAvailFoldingSpace( QString mid_super )
 {
 	Geom::Rectangle base_rect = baseMaster->mPatch;
-	Geom::Rectangle afr3 = base_rect.get3DRectangle(availFoldingRegion[mid]);
-	Geom::Box afs(afr3, base_rect.Normal, masterHeight[mid]);
+	Geom::Rectangle afr3 = base_rect.get3DRectangle(availFoldingRegion[mid_super]);
+	Geom::Box afs(afr3, base_rect.Normal, masterHeightSuper[mid_super]);
 
 	double epsilon = 2 * ZERO_TOLERANCE_LOW;
 	afs.Extent += Vector3(epsilon, epsilon, epsilon);
@@ -853,6 +854,8 @@ void BlockGraph::computeSuperBlock( FdGraph* superKeyframe )
 	mastersSuper.clear();
 	masterHeightSuper.clear();
 	masterUnderChainsMapSuper.clear();
+	chainTopMasterMapSuper.clear();
+
 	QString base_mid_super = M2S[baseMaster->mID];
 	baseMasterSuper = (PatchNode*)superBlock->getNode(base_mid_super);
 	foreach (PatchNode* m, masters)
@@ -861,14 +864,18 @@ void BlockGraph::computeSuperBlock( FdGraph* superKeyframe )
 		QString mid_super = M2S[mid];
 		mastersSuper << (PatchNode*)superBlock->getNode(mid_super);
 		masterHeightSuper[mid_super] = masterHeight[mid];
-		masterUnderChainsMapSuper[mid_super] = masterUnderChainsMap[mid];
+
+		QSet<int> underChainIndices = masterUnderChainsMap[mid];
+		masterUnderChainsMapSuper[mid_super] = underChainIndices;
+		foreach (int ucid, underChainIndices)
+			chainTopMasterMapSuper[ucid] = mid_super;
 	}
 }
 
 QVector<Geom::Box> BlockGraph::getAFS()
 {
 	QVector<Geom::Box> afs;
-	foreach (QString top_mid, availFoldingRegion.keys())
-		afs << getAvailFoldingSpace(top_mid);
+	foreach (QString top_mid_super, availFoldingRegion.keys())
+		afs << getAvailFoldingSpace(top_mid_super);
 	return afs;
 }
