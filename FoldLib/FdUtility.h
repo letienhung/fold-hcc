@@ -127,6 +127,7 @@ QVector<QSet<int> > mergeIsctSets(QVector<QSet<T> > &sets, QVector<QSet<T> > &me
 		// create a new merged cluster
 		merged_sets_map[count] = set;
 		merged_idx_map[count] = setIdx;
+		count++;
 	}
 
 	// result

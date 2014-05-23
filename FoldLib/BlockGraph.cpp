@@ -303,7 +303,7 @@ void BlockGraph::computeAvailFoldingRegion( FdGraph* superKeyframe )
 		QVector<Vector3> samples_proj3;
 		foreach (Vector2 p2, samples_proj) 
 			samples_proj3 << base_rect.getPosition(p2);
-		properties[AFR_CP].setValue(samples);
+		properties[AFR_CP].setValue(samples_proj3);
 	}
 
 	// restore the position of scaffold
@@ -427,10 +427,13 @@ bool BlockGraph::fAreasIntersect( Geom::Rectangle& rect1, Geom::Rectangle& rect2
 	return Geom::IntrRect2Rect2::test(r1, r2);
 }
 
-void BlockGraph::foldabilize()
+void BlockGraph::foldabilize(FdGraph* superKeyframe)
 {
+	// available folding region
+	computeAvailFoldingRegion(superKeyframe);
+	properties[AFS].setValue(getAFS());
+
 	// collision graph
-	//buildCollisionGraphAdaptive();
 	buildCollisionGraph();
 
 	// find optimal solution
@@ -438,10 +441,6 @@ void BlockGraph::foldabilize()
 
 	// apply fold options
 	applySolution(0);
-
-	// debug
-	// store the AFS
-	properties[AFS].setValue(getAFS());
 }
 
 void BlockGraph::applySolution( int sid )

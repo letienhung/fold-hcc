@@ -44,7 +44,7 @@ public:
 	QVector<Geom::Box> getAFS();
 
 	// foldem
-	void foldabilize();
+	void foldabilize(FdGraph* superKeyframe);
 	void updateCollisionLinks();
 	void buildCollisionGraph();
 	void buildCollisionGraphAdaptive();

@@ -504,10 +504,8 @@ void DcGraph::selectBlock( QString id )
 {
 	// select layer named id
 	selBlockIdx = -1;
-	for (int i = 0; i < blocks.size(); i++)
-	{
-		if (blocks[i]->mID == id)
-		{
+	for (int i = 0; i < blocks.size(); i++){
+		if (blocks[i]->mID == id){
 			selBlockIdx = i;
 			break;
 		}
@@ -515,9 +513,7 @@ void DcGraph::selectBlock( QString id )
 
 	// disable selection on chains
 	if (getSelBlock())
-	{
 		getSelBlock()->selectChain("");
-	}
 }
 
 FdGraph* DcGraph::getKeyframe( double t )
@@ -571,28 +567,40 @@ FdGraph* DcGraph::getKeyframe( double t )
 
 FdGraph* DcGraph::getSuperKeyframe( double t )
 {
-	// regular key frame with super nodes
+	// super key frame for each block
 	QVector<FdGraph*> foldedBlocks;
+	QSet<QString> foldedParts;
 	for (int i = 0; i < blocks.size(); i++){
 		double lt = getLocalTime(t, blocks[i]->mFoldDuration);
 		FdGraph* fblock = blocks[i]->getSuperKeyframe(lt);
 		foldedBlocks << fblock;
+		// keep track of all folded parts
+		foreach (Structure::Node* n, fblock->nodes)
+			if (n->hasTag(FOLDED_TAG)) foldedParts << n->mID;
 	}
+
+	// combine
 	FdGraph *keyframe = combineDecomposition(foldedBlocks, baseMaster->mID, masterBlockMap);
 	foreach (FdGraph* b, foldedBlocks) delete b;
+	foreach (QString fp, foldedParts)
+		keyframe->getNode(fp)->addTag(FOLDED_TAG);
 
-	// merge super nodes which share children
+	// super nodes and their children
+	std::cout << "SuperPatches: ";
 	QVector<PatchNode*> superPatches;
 	QVector<QSet<QString> > childMasters, childMasters_new;
 	foreach (PatchNode* m, getAllMasters(keyframe)){
 		if (m->hasTag(SUPER_PATCH_TAG)) {
 			superPatches << m;
 			childMasters << m->properties[MERGED_MASTERS].value<QSet<QString> >();
+			std::cout << m->mID.toStdString() << "  ";
 		}
 	}
+	std::cout << std::endl;
 
-	// cluster
+	// merge super nodes which share children
 	QVector<QSet<int> > superIdxClusters = mergeIsctSets(childMasters, childMasters_new);
+
 
 	// merge to create new super patches
 	QMap<QString, QString> masterSuperMap;
@@ -682,6 +690,14 @@ void DcGraph::foldabilize()
 	// choose best free block
 	double currTime = 0.0;
 	FdGraph* currKeyframe = getSuperKeyframe(currTime);
+
+	foreach (Structure::Node* n, currKeyframe->nodes) 
+	{
+		std::cout << n->mID.toStdString();
+		if (n->hasTag(FOLDED_TAG)) std::cout << "  isFolded";
+		std::cout << std::endl;
+	}
+
 	int next_bid = getBestNextBlockIndex(currTime, currKeyframe);
 	while (next_bid >= 0 && next_bid < blocks.size())
 	{
@@ -689,8 +705,7 @@ void DcGraph::foldabilize()
 		std::cout << "Next block to be folded: " << next_block->mID.toStdString() << std::endl;
 
 		// foldabilize selected next block
-		next_block->computeAvailFoldingRegion(currKeyframe);
-		next_block->foldabilize();
+		next_block->foldabilize(currKeyframe);
 
 		// set up time interval
 		double timeLength = next_block->getTimeLength() * timeScale;
@@ -702,6 +717,14 @@ void DcGraph::foldabilize()
 		currTime = nextTime;
 		delete currKeyframe;
 		currKeyframe = getSuperKeyframe(currTime);
+
+		foreach (Structure::Node* n, currKeyframe->nodes) 
+		{
+			std::cout << n->mID.toStdString();
+			if (n->hasTag(FOLDED_TAG)) std::cout << "  isFolded";
+			std::cout << std::endl;
+		}
+
 		next_bid = getBestNextBlockIndex(currTime, currKeyframe);
 	}
 
