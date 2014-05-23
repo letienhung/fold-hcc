@@ -73,12 +73,13 @@ void FdPlugin::drawWithNames()
 void FdPlugin::updateScene()
 {
 	// update visual options
-	if (activeScaffold())
+	FdGraph* active = activeScaffold();
+	if (active)
 	{
-		activeScaffold()->showAABB = drawAABB;
-		activeScaffold()->showCuboids(drawCuboid);
-		activeScaffold()->showScaffold(drawScaffold);
-		activeScaffold()->showMeshes(drawMesh);
+		active->showAABB = drawAABB;
+		active->showCuboids(drawCuboid);
+		active->showScaffold(drawScaffold);
+		active->showMeshes(drawMesh);
 	}
 
 	drawArea()->updateGL();

@@ -221,6 +221,7 @@ void FdGraph::draw()
 
 	// debug
 	drawDebug();
+	drawSpecial();
 }
 
 FdNode* FdGraph::merge( QVector<QString> nids )
@@ -421,6 +422,26 @@ void FdGraph::translate(Vector3 v, bool withMesh)
 	}
 }
 
+void FdGraph::drawSpecial()
+{
+	if (properties.contains(AFR_CP))
+	{
+		QVector<Vector3> pnts = properties[AFR_CP].value<QVector<Vector3> >();
+		PointSoup ps;
+		foreach (Vector3 p, pnts) ps.addPoint(p, Qt::cyan);
+		ps.draw();
+	}
+
+	if (properties.contains(MAXFR_CP))
+	{
+		QVector<Vector3> pnts = properties[MAXFR_CP].value<QVector<Vector3> >();
+		PointSoup ps;
+		foreach (Vector3 p, pnts) ps.addPoint(p, Qt::blue);
+		ps.draw();
+	}
+}
+
+
 void FdGraph::drawDebug()
 {
 	// debug segments
@@ -496,7 +517,7 @@ double FdGraph::getConnectivityThr()
 }
 
 
-void FdGraph::addDebugBoxe( Geom::Box box )
+void FdGraph::addDebugBox( Geom::Box box )
 {
 	addDebugBoxes(QVector<Geom::Box>() << box);
 }

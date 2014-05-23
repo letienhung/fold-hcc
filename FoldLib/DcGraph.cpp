@@ -3,7 +3,7 @@
 #include <QFileInfo>
 #include "FdUtility.h"
 #include "SectorCylinder.h"
-#include "TChain.h"
+#include "HChain.h"
 #include "IntrRect2Rect2.h"
 
 
@@ -28,7 +28,7 @@ DcGraph::DcGraph(QString id, FdGraph* scaffold, StrArray2D masterGroups, Vector3
 
 	// selection
 	selBlockIdx = -1;
-
+	keyframeIdx = -1;
 
 	//////////////////////////////////////////////////////////////////////////
 	QVector<Geom::Segment> normals;
@@ -524,15 +524,41 @@ FdGraph* DcGraph::getKeyframe( double t )
 {
 	// folded blocks
 	QVector<FdGraph*> foldedBlocks;
+	QVector<Geom::Box> activeAFS;
+	QVector<Vector3> activeAFR_CP;
+	Vector3 activeOrigPosition;
+	QString activeBaseMasterID;
+	bool showActiveBlockStuff = false;
 	for (int i = 0; i < blocks.size(); i++)
 	{
 		double lt = getLocalTime(t, blocks[i]->mFoldDuration);
 		FdGraph* fblock = blocks[i]->getKeyframe(lt);
 		foldedBlocks << fblock;
+
+		// debug: active block
+		if (lt > 0 && lt < 1)
+		{
+			activeAFS = blocks[i]->properties[AFS].value<QVector<Geom::Box> >();
+			activeAFR_CP = blocks[i]->properties[AFR_CP].value<QVector<Vector3> >();
+			activeOrigPosition = blocks[i]->baseMaster->center();
+			activeBaseMasterID = blocks[i]->baseMaster->mID;
+			showActiveBlockStuff = true;
+		}
 	}
 
 	// shift layers and add nodes into scaffold
 	FdGraph *key_graph = combineDecomposition(foldedBlocks, baseMaster->mID, masterBlockMap);
+
+	// debug
+	if (showActiveBlockStuff)
+	{
+		Vector3 activeCurrPosition = ((PatchNode*)key_graph->getNode(activeBaseMasterID))->center();
+		Vector3 offsetV = activeCurrPosition - activeOrigPosition;
+		for (int i = 0; i < activeAFS.size(); i++ ) activeAFS[i].translate(offsetV);
+		for (int i = 0; i < activeAFR_CP.size(); i++ ) activeAFR_CP[i] += offsetV;
+		key_graph->addDebugBoxes(activeAFS);
+		key_graph->properties[AFR_CP].setValue(activeAFR_CP);
+	}
 
 	// debug
 	//addDebugScaffold(key_graph);
@@ -605,26 +631,28 @@ FdGraph* DcGraph::getSuperKeyframe( double t )
 
 	// update moc_greater
 	StringSetMap mocGreater_new = masterOrderGreater;
+	// change name of keys
 	foreach (QSet<QString> child_mids, childMasters_new)
 	{
-		// inherit orders from children
-		QSet<QString> greater_union;
+		QString child = child_mids.toList().front();
+		QString key_new = masterSuperMap[child];
+		QSet<QString> values_union;
 		foreach (QString cmid, child_mids){
-			greater_union += mocGreater_new[cmid];
+			values_union += mocGreater_new[cmid];
 			mocGreater_new.remove(cmid);
 		}
-
-		// update ordered masters if need
-		QSet<QString> greater_union_new;
-		foreach (QString gmid, greater_union){
-			if (masterSuperMap.contains(gmid)) gmid = masterSuperMap[gmid];
-			greater_union_new << gmid;
+		mocGreater_new[key_new] = values_union;
+	}
+	// change name of values
+	foreach (QString key, mocGreater_new.keys())
+	{
+		QSet<QString> values_new;
+		foreach (QString v, mocGreater_new[key]){
+			if (masterSuperMap.contains(v)) 
+				v = masterSuperMap[v]; // change name
+			values_new << v;
 		}
-
-		// store
-		QString child = child_mids.toList().front();
-		QString super = masterSuperMap[child];
-		mocGreater_new[super] = greater_union_new;
+		mocGreater_new[key] = values_new;
 	}
 
 	// moc_less
@@ -653,12 +681,15 @@ void DcGraph::foldabilize()
 
 	// choose best free block
 	double currTime = 0.0;
-	int bid = getBestNextBlockIndex(currTime);
-	while (bid >= 0 && bid < blocks.size())
+	FdGraph* currKeyframe = getSuperKeyframe(currTime);
+	int next_bid = getBestNextBlockIndex(currTime, currKeyframe);
+	while (next_bid >= 0 && next_bid < blocks.size())
 	{
-		BlockGraph* next_block = blocks[bid];
+		BlockGraph* next_block = blocks[next_bid];
+		std::cout << "Next block to be folded: " << next_block->mID.toStdString() << std::endl;
 
-		// foldabilize selected block
+		// foldabilize selected next block
+		next_block->computeAvailFoldingRegion(currKeyframe);
 		next_block->foldabilize();
 
 		// set up time interval
@@ -667,96 +698,96 @@ void DcGraph::foldabilize()
 		next_block->mFoldDuration = TIME_INTERVAL(currTime, nextTime);
 
 		// get best next
+		std::cout << "\n\n========================\n";
 		currTime = nextTime;
-		bid = getBestNextBlockIndex(currTime);
+		delete currKeyframe;
+		currKeyframe = getSuperKeyframe(currTime);
+		next_bid = getBestNextBlockIndex(currTime, currKeyframe);
 	}
 
 	// remaining blocks (if any) are interlocking
 	// merge them as single block to foldabilize
+
+	delete currKeyframe;
 }
 
-int DcGraph::getBestNextBlockIndex(double currT)
+/**   currT                 nextT                 next2T
+	    |------nextBlock------|------next2Block------|
+   currKeyframe          nextKeyframe           next2Keyframe
+**/  
+int DcGraph::getBestNextBlockIndex(double currTime, FdGraph* currKeyframe)
 {
-	FdGraph* currKeyframe = getSuperKeyframe(currT);
-	// debug
-	keyframes << currKeyframe;
-
-	// evaluate each block to find the best one
 	double best_score = -maxDouble();
-	int best_bid = -1;
-	for (int curr_bid = 0; curr_bid < blocks.size(); curr_bid++)
+	int best_next_bid = -1;
+	for (int next_bid = 0; next_bid < blocks.size(); next_bid++)
 	{
-		BlockGraph* currBlock = blocks[curr_bid];
-
 		// skip folded blocks
-		if (passed(currT, currBlock->mFoldDuration))
-			continue;
+		BlockGraph* nextBlock = blocks[next_bid];
+		if (passed(currTime, nextBlock->mFoldDuration)) continue;
+
+		// predict the folding currBlock
+		TimeInterval next_ti = nextBlock->mFoldDuration;
+		double timeLength = nextBlock->getTimeLength() * timeScale;
+		double nextTime = currTime + timeLength;
+		nextBlock->mFoldDuration = TIME_INTERVAL(currTime, nextTime);
+		nextBlock->computeAvailFoldingRegion(currKeyframe);
+		FdGraph* nextKeyframe = getSuperKeyframe(nextTime);
+		// debug
+		//keyframes << nextKeyframe;
+		//addDebugBoxes(nextBlock->getAFS());
+		//addDebugPoints(nextBlock->chains.front()->getTopMaster()->mPatch.getConners());
 
 		// evaluate
 		double score = 0;
-		currBlock->computeAvailFoldingRegion(currKeyframe);// AFV of this block
-		score += currBlock->getAvailFoldingVolume();
-
-		// estimate the folding of i-th block 
-		// look ahead time
-		TimeInterval curr_ti = currBlock->mFoldDuration;
-		double timeLength = currBlock->getTimeLength() * timeScale;
-		double nextT = currT + timeLength;
-		currBlock->mFoldDuration = TIME_INTERVAL(currT, nextT);
-		FdGraph* nextKeyframe = getSuperKeyframe(nextT);
-
-		// debug
-		keyframes << nextKeyframe;
-
-		// skip if not valid
-		if (!isValid(nextKeyframe))
+		if (isValid(nextKeyframe))
 		{
-			// very important: restore time interval
-			currBlock->mFoldDuration = curr_ti;
-			continue;
-		}
-
-
-		// available folding space after folded
-		for (int next_bid = 0; next_bid < blocks.size(); next_bid++)
-		{
-			BlockGraph* nextBlock = blocks[next_bid];
-
-			// skip folded blocks
-			if (passed(nextT, nextBlock->mFoldDuration))
-				continue;
-
-			// look ahead time
-			TimeInterval next_ti = nextBlock->mFoldDuration;
-			double timeLength = nextBlock->getTimeLength() * timeScale;
-			double nextnextT = nextT + timeLength;
-			nextBlock->mFoldDuration = TIME_INTERVAL(nextT, nextnextT);
-			FdGraph* nextnextKeyframe = getKeyframe(nextnextT);
-			nextBlock->mFoldDuration = next_ti;
-
-			//debug
-			keyframes << nextnextKeyframe;
-
-			// skip if not valid
-			if (!isValid(nextnextKeyframe)) continue;
-
-			// accumulate score
-			nextBlock->computeAvailFoldingRegion(nextKeyframe);
+			// AFV of nextBlock
 			score += nextBlock->getAvailFoldingVolume();
+
+			// AFV of unfolded blocks after nextBlock is folded
+			for (int next2_bid = 0; next2_bid < blocks.size(); next2_bid++)
+			{
+				// skip folded blocks
+				BlockGraph* next2Block = blocks[next2_bid];
+				if (passed(nextTime, next2Block->mFoldDuration)) continue;
+
+				// predict the folding of next2Block
+				TimeInterval next2_ti = next2Block->mFoldDuration;
+				double timeLength = next2Block->getTimeLength() * timeScale;
+				double next2Time = nextTime + timeLength;
+				next2Block->mFoldDuration = TIME_INTERVAL(nextTime, next2Time);
+				next2Block->computeAvailFoldingRegion(nextKeyframe);
+				FdGraph* next2Keyframe = getSuperKeyframe(next2Time);
+
+				// accumulate score if the folding is valid
+				if (isValid(next2Keyframe))
+				{
+					score += next2Block->getAvailFoldingVolume();
+					// debug
+					//keyframes << next2Keyframe;
+					//addDebugBoxes(next2Block->getAFS());
+				}
+
+				// clean up
+				//delete next2Keyframe;
+				next2Block->mFoldDuration = next2_ti;
+			}
 		}
-		
+
 		// update the best
-		if (score > best_score)
-		{
+		if (score > best_score){
 			best_score = score;
-			best_bid = curr_bid;
+			best_next_bid = next_bid;
 		}
 
 		// very important: restore time interval
-		currBlock->mFoldDuration = curr_ti;
-	}
+		//delete nextKeyframe;
+		nextBlock->mFoldDuration = next_ti;
 
-	return best_bid;
+		// debug
+		std::cout << "best score = " << best_score << std::endl;
+	}
+	return best_next_bid;
 }
 
 void DcGraph::generateKeyframes( int N )
@@ -772,8 +803,8 @@ void DcGraph::generateKeyframes( int N )
 
 FdGraph* DcGraph::getSelKeyframe()
 {
-	if (keyfameIdx >= 0 && keyfameIdx < keyframes.size())
-		return keyframes[keyfameIdx];
+	if (keyframeIdx >= 0 && keyframeIdx < keyframes.size())
+		return keyframes[keyframeIdx];
 	else return NULL;
 }
 
@@ -806,21 +837,21 @@ bool DcGraph::isValid( FdGraph* superKeyframe )
 
 void DcGraph::foldbzSelBlock()
 {
-	BlockGraph* selBlock = getSelBlock();
-	if (!selBlock) return;
+	//BlockGraph* selBlock = getSelBlock();
+	//if (!selBlock) return;
 
-	// foldabilize selected block
-	FdGraph* currKeyframe = getKeyframe(0);
-	//selBlock->computeAvailFoldingRegion(currKeyframe, masterOrderGreater, masterOrderLess);
-	selBlock->foldabilize();
-	selBlock->mFoldDuration = TIME_INTERVAL(0.0, 1.0);
-	selBlock->addTag(READY_TO_FOLD_TAG);
+	//// foldabilize selected block
+	//FdGraph* currKeyframe = getKeyframe(0);
+	////selBlock->computeAvailFoldingRegion(currKeyframe, masterOrderGreater, masterOrderLess);
+	//selBlock->foldabilize();
+	//selBlock->mFoldDuration = TIME_INTERVAL(0.0, 1.0);
+	//selBlock->addTag(READY_TO_FOLD_TAG);
 
-	// set unreachable time interval for other blocks
-	TimeInterval ti = TIME_INTERVAL(1.0, 2.0);
-	foreach (BlockGraph* block, blocks)
-	{
-		if (block != selBlock)
-			block->mFoldDuration = ti;
-	}
+	//// set unreachable time interval for other blocks
+	//TimeInterval ti = TIME_INTERVAL(1.0, 2.0);
+	//foreach (BlockGraph* block, blocks)
+	//{
+	//	if (block != selBlock)
+	//		block->mFoldDuration = ti;
+	//}
 }

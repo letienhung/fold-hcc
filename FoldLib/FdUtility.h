@@ -28,6 +28,11 @@ typedef QPair<double, double> TimeInterval;
 #define MOC_GREATER "moc_greater"
 #define MOC_LESS "moc_less"
 
+// debug visual
+#define AFS "availFoldingSpace"
+#define AFR_CP "AFR_constraint_points"
+#define MAXFR_CP "MAXFR_constraint_points"
+
 // Qt meta type
 Q_DECLARE_METATYPE(Vector3)
 Q_DECLARE_METATYPE(QVector<Vector3>)

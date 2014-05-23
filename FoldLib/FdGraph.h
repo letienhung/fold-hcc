@@ -54,11 +54,12 @@ public:
 	void restoreConfiguration();
 
 	// debug
+	void drawSpecial();
 	void drawDebug();
 	void addDebugPoints(QVector<Vector3>& pnts);
 	void addDebugSegment(Geom::Segment seg);
 	void addDebugSegments(QVector<Geom::Segment>& segs);
-	void addDebugBoxe(Geom::Box box);
+	void addDebugBox(Geom::Box box);
 	void addDebugBoxes(QVector<Geom::Box>& boxes);
 	void addDebugSectorCylinders(QVector<Geom::SectorCylinder>& scs);
 

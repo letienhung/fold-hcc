@@ -40,7 +40,7 @@ public:
 	double timeScale; // timeScale * block.timeUnits = normalized time
 
 	// folding results
-	int keyfameIdx;
+	int keyframeIdx;
 	QVector<FdGraph*> keyframes;
 
 public:
@@ -59,7 +59,7 @@ public:
 	// foldem
 	void foldabilize();
 	void foldbzSelBlock();
-	int getBestNextBlockIndex(double currT);
+	int getBestNextBlockIndex(double currT, FdGraph* currKeyframe);
 	bool isValid(FdGraph* superKeyframe);
 
 	// export

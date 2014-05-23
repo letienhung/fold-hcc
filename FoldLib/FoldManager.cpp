@@ -249,7 +249,7 @@ void FoldManager::selectKeyframe( int idx )
 	DcGraph* selDc = getSelDcGraph();
 	if (!selDc) return;
 
-	selDc->keyfameIdx = idx;
+	selDc->keyframeIdx = idx;
 
 	emit(sceneChanged());
 }

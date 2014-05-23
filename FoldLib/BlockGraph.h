@@ -41,6 +41,7 @@ public:
 	void computeAvailFoldingRegion(FdGraph* scaffold);
 	double getAvailFoldingVolume();
 	Geom::Box getAvailFoldingSpace(QString mid);
+	QVector<Geom::Box> getAFS();
 
 	// foldem
 	void foldabilize();

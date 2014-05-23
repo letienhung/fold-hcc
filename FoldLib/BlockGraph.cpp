@@ -163,30 +163,24 @@ void BlockGraph::computeMaxFoldingRegion()
 		maxFoldingRegion[top_master->mID] = max_region;
 
 		// debug
-		//foreach (int cid, masterUnderChainsMap[top_master->mID])
-		//{
-		//	chains[cid]->addDebugPoints(pnts);
-		//	chains[cid]->addDebugSegments(base_rect.get3DRectangle(max_region).getEdgeSegments());
-
-		//	QVector<Vector3> pnts_proj3;
-		//	foreach (Vector2 p2, pnts_proj) pnts_proj3 << base_rect.getPosition(p2);
-		//	chains[cid]->addDebugPoints(pnts_proj3);
-		//}
+		QVector<Vector3> pnts_proj3;
+		foreach (Vector2 p2, pnts_proj) 
+			pnts_proj3 << base_rect.getPosition(p2);
+		properties[MAXFR_CP].setValue(pnts_proj3);
 	}
 }
 
-QVector<QString> BlockGraph::getInbetweenOutsideParts( FdGraph* superKeyframe, QString mid1, QString mid2 )
+QVector<QString> BlockGraph::getInbetweenOutsideParts( FdGraph* superKeyframe, QString base_mid, QString top_mid )
 {
 	// time line
-	Vector3 sqzV = baseMasterSuper->mPatch.Normal;
+	Vector3 sqzV = baseMaster->mPatch.Normal;
 	Geom::Line timeLine(Vector3(0, 0, 0), sqzV);
 
 	// position on time line
-	FdNode* master1 = (FdNode*)superBlock->getNode(mid1);
-	FdNode* master2 = (FdNode*)superBlock->getNode(mid2);
-	double t0 = timeLine.getProjTime(master1->center());
-	double t1 = timeLine.getProjTime(master2->center());
-	if (t0 > t1) std::swap(t0, t1);
+	FdNode* base_master = (FdNode*)superBlock->getNode(base_mid);
+	FdNode* top_master = (FdNode*)superBlock->getNode(top_mid);
+	double t0 = timeLine.getProjTime(base_master->center());
+	double t1 = timeLine.getProjTime(top_master->center());
 	TimeInterval m1m2 = TIME_INTERVAL(t0, t1);
 
 	// find parts in between m1 and m2
@@ -222,7 +216,7 @@ QVector<QString> BlockGraph::getInbetweenOutsideParts( FdGraph* superKeyframe, Q
 	return inbetweens;
 }
 
-QVector<QString> BlockGraph::getUnrelatedMasters( FdGraph* superKeyframe, QString mid1, QString mid2)
+QVector<QString> BlockGraph::getUnrelatedMasters( FdGraph* superKeyframe, QString base_mid, QString top_mid)
 {
 	QVector<QString> urMasters;
 
@@ -231,10 +225,10 @@ QVector<QString> BlockGraph::getUnrelatedMasters( FdGraph* superKeyframe, QStrin
 	StringSetMap moc_less = superKeyframe->properties[MOC_LESS].value<StringSetMap>();
 
 	// related parts with mid1 and mid2
-	QSet<QString> moc1 = moc_greater[mid1] + moc_less[mid1];
-	QSet<QString> moc2 = moc_greater[mid2] + moc_less[mid2];	
+	QSet<QString> base_moc = moc_greater[base_mid] + moc_less[base_mid];
+	QSet<QString> top_moc = moc_greater[top_mid] + moc_less[top_mid];	
 
-	// parts unrelated with both
+	// masters unrelated with both
 	foreach (Structure::Node* n, superKeyframe->nodes)
 	{
 		// skip slaves
@@ -244,7 +238,7 @@ QVector<QString> BlockGraph::getUnrelatedMasters( FdGraph* superKeyframe, QStrin
 		if (n->hasTag(FOLDED_TAG)) continue;
 
 		// accept if not related to any
-		if (!moc1.contains(n->mID) && !moc2.contains(n->mID))
+		if (!base_moc.contains(n->mID) && !top_moc.contains(n->mID))
 			urMasters << n->mID;
 	}
 
@@ -306,19 +300,10 @@ void BlockGraph::computeAvailFoldingRegion( FdGraph* superKeyframe )
 		availFoldingRegion[top_mid] = avail_region;
 
 		// debug
-		//continue;
-		foreach (int cid, masterUnderChainsMap[top_master->mID])
-		{
-			chains[cid]->properties.remove("debugPoints");
-			chains[cid]->properties.remove("debugSegments");
-
-			QVector<Vector3> samples_proj3;
-			foreach (Vector2 p2, samples_proj) samples_proj3 << base_rect.getPosition(p2);
-			chains[cid]->addDebugPoints(samples_proj3);
-
-			chains[cid]->addDebugSegments(base_rect.get3DRectangle(avail_region).getEdgeSegments());
-			//chains[cid]->addDebugSegments(base_rect.get3DRectangle(minFoldingRegion[top_mid]).getEdgeSegments());
-		}
+		QVector<Vector3> samples_proj3;
+		foreach (Vector2 p2, samples_proj) 
+			samples_proj3 << base_rect.getPosition(p2);
+		properties[AFR_CP].setValue(samples);
 	}
 
 	// restore the position of scaffold
@@ -387,7 +372,6 @@ FdGraph* BlockGraph::getKeyframe( double t )
 	return keyframe;
 }
 
-
 FdGraph* BlockGraph::getSuperKeyframe( double t )
 {
 	FdGraph* keyframe = getKeyframe(t);
@@ -433,7 +417,6 @@ FdGraph* BlockGraph::getSuperKeyframe( double t )
 	return keyframe;
 }
 
-
 bool BlockGraph::fAreasIntersect( Geom::Rectangle& rect1, Geom::Rectangle& rect2 )
 {
 	Geom::Rectangle base_rect = baseMaster->mPatch;
@@ -455,6 +438,10 @@ void BlockGraph::foldabilize()
 
 	// apply fold options
 	applySolution(0);
+
+	// debug
+	// store the AFS
+	properties[AFS].setValue(getAFS());
 }
 
 void BlockGraph::applySolution( int sid )
@@ -550,23 +537,23 @@ void BlockGraph::filterFoldOptions( QVector<FoldOption*>& options, int cid )
 		if (!AFR.containsAll(fRegion2.getConners()))
 			reject = true;
 
-		//// reject if collide with other masters
-		//// whose time stamp is within the time interval of fn
-		//if (!reject)
-		//{
-		//	foreach (QString mid, masterTimeStamps.keys())
-		//	{
-		//		double mstamp = masterTimeStamps[mid];
-		//		if (!within(mstamp, chain->mFoldDuration)) continue;
+		// reject if collide with other masters
+		// whose time stamp is within the time interval of fn
+		if (!reject)
+		{
+			foreach (QString mid, masterTimeStamps.keys())
+			{
+				double mstamp = masterTimeStamps[mid];
+				if (!within(mstamp, chain->mFoldDuration)) continue;
 
-		//		Geom::Rectangle m_rect = ((PatchNode*)getNode(mid))->mPatch;
-		//		if (fAreasIntersect(fn->region, m_rect))
-		//		{
-		//			reject = true;
-		//			break;
-		//		}
-		//	}
-		//}
+				Geom::Rectangle m_rect = ((PatchNode*)getNode(mid))->mPatch;
+				if (fAreasIntersect(fn->region, m_rect))
+				{
+					reject = true;
+					break;
+				}
+			}
+		}
 
 		// reject or accept
 		if (reject)	delete fn;
@@ -600,7 +587,7 @@ void BlockGraph::buildCollisionGraph()
 		// fold options and links
 		QVector<FoldOption*> options;
 		int max_nX = 1;
-		int nChunks = 4;
+		int nChunks = 2;
 		for (int nX = 1; nX <= max_nX; nX++)
 			for (int nUsedChunks = nChunks; nUsedChunks >= 1; nUsedChunks-- )
 				options << chain->generateFoldOptions(2*nX-1, nUsedChunks, nChunks);
@@ -696,9 +683,6 @@ void BlockGraph::updateCollisionLinks()
 	QVector<FoldOption*> fns = collFog->getAllFoldOptions();
 	for (int i = 0; i < fns.size(); i++)
 	{
-		// skip if not new
-		//if (!fns[i]->hasTag(NEW_TAG)) continue;
-
 		// collision with others
 		for (int j = i+1; j < fns.size(); j++)
 		{
@@ -712,9 +696,6 @@ void BlockGraph::updateCollisionLinks()
 			if (fAreasIntersect(fns[i]->region, fns[j]->region))
 				collFog->addCollisionLink(fns[i], fns[j]);
 		}
-
-		// remove new tag
-		//fns[i]->removeTag(NEW_TAG);
 	}
 	std::cout << std::endl;
 }
@@ -883,4 +864,12 @@ void BlockGraph::computeSuperBlock( FdGraph* superKeyframe )
 		masterHeightSuper[mid_super] = masterHeight[mid];
 		masterUnderChainsMapSuper[mid_super] = masterUnderChainsMap[mid];
 	}
+}
+
+QVector<Geom::Box> BlockGraph::getAFS()
+{
+	QVector<Geom::Box> afs;
+	foreach (QString top_mid, availFoldingRegion.keys())
+		afs << getAvailFoldingSpace(top_mid);
+	return afs;
 }
