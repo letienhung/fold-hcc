@@ -384,14 +384,18 @@ void FoldManager::setNbKeyframes(int N)
 	nbKeyframes = N;
 }
 
-void FoldManager::setNbFolds( int N )
+void FoldManager::setNbSplits( int N )
 {
-
+	foreach (DcGraph* dc, dcGraphs)
+		foreach (BlockGraph* b, dc->blocks)
+			b->setNbSplits(N);
 }
 
 void FoldManager::setNbChunks( int N )
 {
-
+	foreach (DcGraph* dc, dcGraphs)
+		foreach (BlockGraph* b, dc->blocks)
+			b->setNbChunks(N);
 }
 
 void FoldManager::useThickness( int state )

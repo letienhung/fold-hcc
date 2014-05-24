@@ -586,17 +586,14 @@ FdGraph* DcGraph::getSuperKeyframe( double t )
 		keyframe->getNode(fp)->addTag(FOLDED_TAG);
 
 	// super nodes and their children
-	std::cout << "SuperPatches: ";
 	QVector<PatchNode*> superPatches;
 	QVector<QSet<QString> > childMasters, childMasters_new;
 	foreach (PatchNode* m, getAllMasters(keyframe)){
 		if (m->hasTag(SUPER_PATCH_TAG)) {
 			superPatches << m;
 			childMasters << m->properties[MERGED_MASTERS].value<QSet<QString> >();
-			std::cout << m->mID.toStdString() << "  ";
 		}
 	}
-	std::cout << std::endl;
 
 	// merge super nodes which share children
 	QVector<QSet<int> > superIdxClusters = mergeIsctSets(childMasters, childMasters_new);
@@ -688,43 +685,27 @@ void DcGraph::foldabilize()
 		b->mFoldDuration = TIME_INTERVAL(1.0, 2.0);
 
 	// choose best free block
+	std::cout << "\n\n============START============\n";
 	double currTime = 0.0;
 	FdGraph* currKeyframe = getSuperKeyframe(currTime);
-
-	foreach (Structure::Node* n, currKeyframe->nodes) 
-	{
-		std::cout << n->mID.toStdString();
-		if (n->hasTag(FOLDED_TAG)) std::cout << "  isFolded";
-		std::cout << std::endl;
-	}
-
 	int next_bid = getBestNextBlockIndex(currTime, currKeyframe);
 	while (next_bid >= 0 && next_bid < blocks.size())
 	{
-		BlockGraph* next_block = blocks[next_bid];
-		std::cout << "Next block to be folded: " << next_block->mID.toStdString() << std::endl;
+		std::cout << "Best next = " << blocks[next_bid]->mID.toStdString() << "\n";
 
-		// foldabilize selected next block
+		// foldabilize next block
+		BlockGraph* next_block = blocks[next_bid];
 		next_block->foldabilize(currKeyframe);
 
-		// set up time interval
+		// get best next
+		std::cout << "\n============NEXT============\n";
 		double timeLength = next_block->getTimeLength() * timeScale;
 		double nextTime = currTime + timeLength;
 		next_block->mFoldDuration = TIME_INTERVAL(currTime, nextTime);
 
-		// get best next
-		std::cout << "\n\n========================\n";
 		currTime = nextTime;
 		delete currKeyframe;
 		currKeyframe = getSuperKeyframe(currTime);
-
-		foreach (Structure::Node* n, currKeyframe->nodes) 
-		{
-			std::cout << n->mID.toStdString();
-			if (n->hasTag(FOLDED_TAG)) std::cout << "  isFolded";
-			std::cout << std::endl;
-		}
-
 		next_bid = getBestNextBlockIndex(currTime, currKeyframe);
 	}
 
@@ -732,6 +713,7 @@ void DcGraph::foldabilize()
 	// merge them as single block to foldabilize
 
 	delete currKeyframe;
+	std::cout << "\n============FINISH============\n";
 }
 
 /**   currT                 nextT                 next2T

@@ -284,6 +284,16 @@ QVector<FoldOption*> ChainGraph::generateFoldOptions( int nSplits, int nUsedChun
 
 void ChainGraph::applyFoldOption( FoldOption* fn )
 {
+	// delete chain if fold option is null
+	if (fn == NULL) {
+		addTag(DELETED_TAG);
+		std::cout << "Chain: " << mID.toStdString() << " is deleted.\n";
+		return;
+	}
+
+	// clear
+	removeTag(DELETED_TAG);
+
 	// remove original chain parts
 	foreach (FdNode* n, mParts) removeNode(n->mID);
 

@@ -334,20 +334,32 @@ FdGraph* combineDecomposition( QVector<FdGraph*> decmps, QString baseMid,
 	if (decmps.size() == 1)
 		return (FdGraph*)decmps.front()->clone();
 
-	// create scaffold for combination
-	FdGraph* keyframeScaffold = new FdGraph();
 
 	// combined tags
 	QMap<QString, bool> masterCombined;
 	foreach (QString mid, masterDecmpMap.keys()) 
 		masterCombined[mid] = false;
 	QVector<bool> decmpCombined(decmps.size(), false);
+	for (int i = 0; i < decmps.size(); i++)
+		if (decmps[i] == NULL) decmpCombined[i] = true;
 
 	// start from base master
-	int base_decmp_id = masterDecmpMap[baseMid].toList().front();
+	int base_decmp_id = -1;
+	foreach (int bdid, masterDecmpMap[baseMid])
+	{
+		if (decmps[bdid] != NULL)
+		{
+			base_decmp_id = bdid;
+			break;
+		}
+	}
+	if (base_decmp_id < 0) return NULL;
+	
+	// create scaffold for combination
+	FdGraph* combination = new FdGraph();
 	FdGraph* base_decmp = decmps[base_decmp_id];
 	PatchNode* baseMaster = (PatchNode*)base_decmp->getNode(baseMid);
-	keyframeScaffold->Structure::Graph::addNode(baseMaster);
+	combination->Structure::Graph::addNode(baseMaster);
 	masterCombined[baseMid] = true;
 
 	// prorogation
@@ -357,7 +369,7 @@ FdGraph* combineDecomposition( QVector<FdGraph*> decmps, QString baseMid,
 	{
 		// set current to an active master
 		QString curr_mid = activeMids.dequeue();
-		PatchNode* currMaster = (PatchNode*)keyframeScaffold->getNode(curr_mid);
+		PatchNode* currMaster = (PatchNode*)combination->getNode(curr_mid);
 		Vector3 currPos = currMaster->center();
 
 		// combine decompositions containing current master
@@ -381,7 +393,7 @@ FdGraph* combineDecomposition( QVector<FdGraph*> decmps, QString baseMid,
 					if (!masterCombined[n->mID])
 					{
 						// combine unvisited masters
-						keyframeScaffold->Structure::Graph::addNode(n->clone());
+						combination->Structure::Graph::addNode(n->clone());
 						masterCombined[n->mID] = true;
 
 						// store as active
@@ -391,7 +403,7 @@ FdGraph* combineDecomposition( QVector<FdGraph*> decmps, QString baseMid,
 				// clone slave nodes
 				else 
 				{
-					keyframeScaffold->Structure::Graph::addNode(n->clone());
+					combination->Structure::Graph::addNode(n->clone());
 				}
 			}
 
@@ -400,7 +412,7 @@ FdGraph* combineDecomposition( QVector<FdGraph*> decmps, QString baseMid,
 		}
 	}
 
-	return keyframeScaffold;
+	return combination;
 }
 
 int nbMasters( FdGraph* scaffold )

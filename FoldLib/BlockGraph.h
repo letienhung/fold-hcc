@@ -18,21 +18,10 @@ public:
 	void selectChain(QString id);
 	QStringList getChainLabels();
 
-	// getter
-	void exportCollFOG();
-	double getTimeLength();
 
 	// key frame
-	/** a stand-alone scaffold representing the folded block at given time
-		this scaffold can be requested for position of folded master and slave parts
-		this scaffold need be translated to combine with key frame scaffold from other blocks
-		to form the final folded scaffold
-		this scaffold has to be deleted by whoever calls this function
-	**/
 	FdGraph* getKeyframe(double t);
 	FdGraph* getSuperKeyframe(double t);
-
-	// super block
 	void computeSuperBlock(FdGraph* superKeyframe);
 
 	// folding space
@@ -42,16 +31,19 @@ public:
 	double getAvailFoldingVolume();
 	Geom::Box getAvailFoldingSpace(QString mid);
 	QVector<Geom::Box> getAFS();
+	QVector<QString> getInbetweenOutsideParts(FdGraph* superKeyframe, QString mid1, QString mid2);
+	QVector<QString> getUnrelatedMasters(FdGraph* superKeyframe, QString mid1, QString mid2);
+
+	// collision graph
+	void addNodesToCollisionGraph();
+	void filterFoldOptions(QVector<FoldOption*>& options, int cid);
+	void addEdgesToCollisionGraph();
+	void exportCollFOG();
+	void setNbSplits(int N);
+	void setNbChunks(int N);
 
 	// foldem
 	void foldabilize(FdGraph* superKeyframe);
-	void updateCollisionLinks();
-	void buildCollisionGraph();
-	void buildCollisionGraphAdaptive();
-	int encodeModification(int nX, int nY);
-	void decodeModification(int mdf, int& nX, int& nY);
-	void genNewModifications(QSet<int>& modifications, int max_nX, int nChunks);
-	void filterFoldOptions(QVector<FoldOption*>& options, int cid);
 	void findOptimalSolution();
 	bool fAreasIntersect(Geom::Rectangle& rect1, Geom::Rectangle& rect2);
 
@@ -59,8 +51,7 @@ public:
 	void applySolution(int sid);
 
 	// helper
-	QVector<QString> getInbetweenOutsideParts(FdGraph* superKeyframe, QString mid1, QString mid2);
-	QVector<QString> getUnrelatedMasters(FdGraph* superKeyframe, QString mid1, QString mid2);
+	double getTimeLength();
 public:
 	// time interval
 	TimeInterval mFoldDuration;
@@ -84,6 +75,8 @@ public:
 	Geom::Box shapeAABB;
 
 	// collision graph
+	int nbSplits;
+	int nbChunks;
 	FoldOptionGraph* collFog;
 	QVector<FoldOptionGraph*> debugFogs;
 

@@ -49,7 +49,7 @@ public slots:
 
 	// parameters
 	void setSqzV (QString sqzV_str);
-	void setNbFolds(int N);
+	void setNbSplits(int N);
 	void setNbChunks(int N);
 	void useThickness(int state);
 	void setThinkness(double thk);

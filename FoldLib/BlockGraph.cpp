@@ -66,6 +66,10 @@ BlockGraph::BlockGraph( QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& s
 	// super block
 	superBlock = NULL;
 
+	// parameters for deformation
+	nbSplits = 1;
+	nbChunks = 2;
+
 	//////////////////////////////////////////////////////////////////////////
 	//QVector<Geom::Segment> normals;
 	//normals << Geom::Segment(baseMaster->mPatch.Center, baseMaster->mPatch.Center + 10 * baseMaster->mPatch.Normal);
@@ -332,8 +336,14 @@ FdGraph* BlockGraph::getKeyframe( double t )
 		QVector<FdGraph*> foldedChains;
 		for (int i = 0; i < chains.size(); i++)
 		{
-			double localT = getLocalTime(t, chains[i]->mFoldDuration);
-			foldedChains << chains[i]->getKeyframeScaffold(localT);
+			// skip deleted chain
+			if (chains[i]->hasTag(DELETED_TAG))
+				foldedChains << NULL;
+			else
+			{
+				double localT = getLocalTime(t, chains[i]->mFoldDuration);
+				foldedChains << chains[i]->getKeyframeScaffold(localT);
+			}
 		}
 
 		// combine 
@@ -434,12 +444,19 @@ void BlockGraph::foldabilize(FdGraph* superKeyframe)
 	properties[AFS].setValue(getAFS());
 
 	// collision graph
-	buildCollisionGraph();
+	std::cout << "\n==build collision graph==\n";
+	collFog->clear();
+	std::cout << "===add nodes===\n";
+	addNodesToCollisionGraph();
+	std::cout << "===add edges===\n";
+	addEdgesToCollisionGraph();
 
 	// find optimal solution
+	std::cout << "\n==maximum idependent set==\n";
 	findOptimalSolution();
 
 	// apply fold options
+	std::cout << "\n==apply solution==\n";
 	applySolution(0);
 }
 
@@ -459,66 +476,10 @@ void BlockGraph::applySolution( int sid )
 		FoldOption* fn = foldSolutions[sid][i];
 		chains[i]->applyFoldOption(fn);
 
-		// mark solution in collision graph
-		fn->addTag(SELECTED_TAG);
+		if (fn)	fn->addTag(SELECTED_TAG);
 	}
 
 	addTag(READY_TO_FOLD_TAG);
-}
-
-int BlockGraph::encodeModification( int nX, int nY )
-{
-	return nX * 100 + nY;
-}
-
-void BlockGraph::decodeModification( int mdf, int& nX, int& nY )
-{
-	nX = mdf / 100;
-	nY = mdf % 100;
-}
-
-void BlockGraph::genNewModifications( QSet<int>& modifications, int max_nX, int nChunks )
-{
-	// generate next level of modification
-	// folding region from lower level must be fully included by some from higher level
-	// folding regions at the same level might overlap but don't include each other
-	if (modifications.isEmpty())
-	{
-
-		modifications << encodeModification(1, nChunks);
-	}
-	else
-	{
-		QSet<int > newModifications;
-		foreach (int mdf, modifications)
-		{
-			int nX, nY;
-			decodeModification(mdf, nX, nY);
-			// two options
-			if (nX < max_nX && nY > 0)
-			{
-				int new_nX = nX + 1;
-				int new_nY = nY - 1;
-
-				newModifications << encodeModification(new_nX, nY)
-					<< encodeModification(nX, new_nY);
-			}
-			// one option: more splits
-			else if (nX < max_nX)
-				newModifications << encodeModification(nX+1, nY);
-			// one option: shrink more
-			else if (nY > 0)
-				newModifications << encodeModification(nX, nY-1);
-		}
-
-		modifications = newModifications;
-	}
-
-	// debug
-	std::cout << "modification set:";
-	foreach(int mdf, modifications)
-		std::cout << mdf << "  ";
-	std::cout << std::endl;
 }
 
 void BlockGraph::filterFoldOptions( QVector<FoldOption*>& options, int cid )
@@ -567,13 +528,8 @@ void BlockGraph::filterFoldOptions( QVector<FoldOption*>& options, int cid )
 	options = options_filtered;
 }
 
-void BlockGraph::buildCollisionGraph()
+void BlockGraph::addNodesToCollisionGraph()
 {
-	// clear
-	collFog->clear();
-
-	std::cout << "build collision graph...\n";
-
 	// fold entities and options
 	QVector<Geom::Rectangle> frs;
 	Geom::Rectangle base_rect = baseMaster->mPatch;
@@ -591,11 +547,9 @@ void BlockGraph::buildCollisionGraph()
 
 		// fold options and links
 		QVector<FoldOption*> options;
-		int max_nX = 1;
-		int nChunks = 2;
-		for (int nX = 1; nX <= max_nX; nX++)
-			for (int nUsedChunks = nChunks; nUsedChunks >= 1; nUsedChunks-- )
-				options << chain->generateFoldOptions(2*nX-1, nUsedChunks, nChunks);
+		for (int nS = 1; nS <= nbSplits; nS += 2)
+			for (int nUsedChunks = nbChunks; nUsedChunks >= 1; nUsedChunks-- )
+				options << chain->generateFoldOptions(nS, nUsedChunks, nbChunks);
 		std::cout << "#options = " << options.size();
 		filterFoldOptions(options, cid);
 		std::cout << " ==> " << options.size() << std::endl;
@@ -611,83 +565,10 @@ void BlockGraph::buildCollisionGraph()
 
 	// debug
 	properties[FOLD_REGIONS].setValue(frs);
-
-	// collision links
-	updateCollisionLinks();
 }
 
-void BlockGraph::buildCollisionGraphAdaptive()
+void BlockGraph::addEdgesToCollisionGraph()
 {
-	// clear
-	collFog->clear();
-
-	// fold entities
-	for(int i = 0; i < chains.size(); i++)
-		collFog->addNode(new ChainNode(i, chains[i]->mID));
-
-	// chains with no free fold option
-	QVector<int> collChainIdx;
-	for(int i = 0; i < chains.size(); i++) collChainIdx << i;
-
-	int max_nX = 2;
-	int nChunks = 4;
-	QSet<int> modifications;
-	genNewModifications(modifications, max_nX, nChunks);
-	while (!modifications.isEmpty())
-	{
-		// create new fold options for each colliding chain
-		foreach (int cid, collChainIdx){
-			HChain* chain = (HChain*)chains[cid];
-			ChainNode* cn = (ChainNode*)collFog->getNode(chain->mID);
-
-			// create new fold options using modifications
-			QVector<FoldOption*> options;
-			foreach (int mdf, modifications){
-				int nX, nY;
-				decodeModification(mdf, nX, nY);
-				int nSplits = 2 * nX - 1;
-				int nUsedChunks = nY;
-				options << chain->generateFoldOptions(nSplits, nUsedChunks, nChunks);
-			}
-			filterFoldOptions(options, cid);
-			foreach (FoldOption* fn, options){
-				fn->addTag(NEW_TAG);
-				collFog->addNode(fn);
-				collFog->addFoldLink(cn, fn);
-
-				// debug
-				//addDebugSegments(fn->region.getEdgeSegments());
-			}
-		}
-
-		// update collisions for new added fold options
-		updateCollisionLinks();
-
-		// debug
-		debugFogs << (FoldOptionGraph*)collFog->clone();
-
-		// update colliding chain list
-		QVector<int> collChainIdx_copy = collChainIdx;
-		collChainIdx.clear();
-		foreach (int cid, collChainIdx_copy)
-			 if (!collFog->hasFreeFoldOptions(chains[cid]->mID))
-				 collChainIdx << cid;
-
-		// all chains have free fold option
-		if (collChainIdx.isEmpty()) break;
-
-		// otherwise go next generation
-		genNewModifications(modifications, max_nX, nChunks);
-	}
-
-	// debug
-	std::cout << "# fold options / collision graph size = " 
-		<< collFog->getAllFoldOptions().size() << std::endl;
-}
-
-void BlockGraph::updateCollisionLinks()
-{
-	std::cout << "update collision links...\n";
 	QVector<FoldOption*> fns = collFog->getAllFoldOptions();
 	for (int i = 0; i < fns.size(); i++)
 	{
@@ -705,7 +586,6 @@ void BlockGraph::updateCollisionLinks()
 				collFog->addCollisionLink(fns[i], fns[j]);
 		}
 	}
-	std::cout << std::endl;
 }
 
 void BlockGraph::findOptimalSolution()
@@ -750,19 +630,16 @@ void BlockGraph::findOptimalSolution()
 
 	// fold solutions
 	foldSolutions.clear();
+	QVector<FoldOption*> sln_dummy;
+	for (int i = 0; i < chains.size(); i++) sln_dummy << NULL;
 	for (int sid = 0; sid < qs.size(); sid++)
 	{
-		QVector<FoldOption*> solution;
-		for (int i = 0; i < chains.size(); i++) solution << NULL;
-
+		QVector<FoldOption*> solution = sln_dummy;
 		foreach(int idx, qs[sid])
 		{
 			FoldOption* fn = fns[idx];
-			//fn->addTag(SELECTED_TAG);
 			ChainNode* cn = collFog->getChainNode(fn->mID);
 			solution[cn->chainIdx] = fn;
-
-			//addDebugSegments(fn->region.getEdgeSegments());
 		}
 
 		foldSolutions << solution;
@@ -886,4 +763,14 @@ QVector<Geom::Box> BlockGraph::getAFS()
 	foreach (QString top_mid_super, availFoldingRegion.keys())
 		afs << getAvailFoldingSpace(top_mid_super);
 	return afs;
+}
+
+void BlockGraph::setNbSplits( int N )
+{
+	nbSplits = N;
+}
+
+void BlockGraph::setNbChunks( int N )
+{
+	nbChunks = N;
 }
