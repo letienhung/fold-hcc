@@ -47,20 +47,24 @@ public slots:
 	// input
 	void setScaffold(FdGraph* fdg);
 
-	// masters
-	void identifyMasters();
-
-	// decomposition
+	// parameters
 	void setSqzV (QString sqzV_str);
-	void decompose();
+	void setNbFolds(int N);
+	void setNbChunks(int N);
+	void useThickness(int state);
+	void setThinkness(double thk);
 
-	// foldem
+	// fold
 	void foldabilize();
 	void foldbzSelBlock();
 
 	// keyframes
 	void setNbKeyframes(int N);
 	void generateKeyframes();
+
+	// decomposition
+	void identifyMasters();
+	void decompose();
 
 	// output
 	void exportCollFOG();

@@ -383,3 +383,23 @@ void FoldManager::setNbKeyframes(int N)
 {
 	nbKeyframes = N;
 }
+
+void FoldManager::setNbFolds( int N )
+{
+
+}
+
+void FoldManager::setNbChunks( int N )
+{
+
+}
+
+void FoldManager::useThickness( int state )
+{
+
+}
+
+void FoldManager::setThinkness( double thk )
+{
+
+}
