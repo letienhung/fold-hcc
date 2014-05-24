@@ -165,10 +165,10 @@ void BlockGraph::computeMaxFoldingRegion()
 		maxFoldingRegion[top_master->mID] = max_region;
 
 		// debug
-		QVector<Vector3> pnts_proj3;
-		foreach (Vector2 p2, pnts_proj) 
-			pnts_proj3 << base_rect.getPosition(p2);
-		properties[MAXFR_CP].setValue(pnts_proj3);
+		//QVector<Vector3> pnts_proj3;
+		//foreach (Vector2 p2, pnts_proj) 
+		//	pnts_proj3 << base_rect.getPosition(p2);
+		//properties[MAXFR_CP].setValue(pnts_proj3);
 	}
 }
 
@@ -293,13 +293,10 @@ void BlockGraph::computeAvailFoldingRegion( FdGraph* superKeyframe )
 		// max folding region
 		samples_proj << maxFoldingRegion[top_mid].getEdgeSamples(nbs);
 
-		// include minFR while exclude all constraint points
+		// avail folding region
+		// includes minFR but excludes all constraint points
 		Geom::Rectangle2 avail_region = minFoldingRegion[top_mid];
 		extendRectangle2D(avail_region, samples_proj);
-
-		// avail folding region
-		double epsilon = 10 * ZERO_TOLERANCE_LOW;
-		avail_region.Extent += Vector2(epsilon, epsilon);
 		availFoldingRegion[top_mid] = avail_region;
 
 		// debug
@@ -448,17 +445,22 @@ void BlockGraph::foldabilize(FdGraph* superKeyframe)
 
 void BlockGraph::applySolution( int sid )
 {
+	// clear selection in collision graph
+	foreach (Structure::Node* n, collFog->nodes)
+		n->removeTag(SELECTED_TAG);
+
+	// assert index
 	if (sid < 0 || sid >= foldSolutions.size())
 		return;
 
+	// apply fold option to each chain
 	for (int i = 0; i < chains.size(); i++)
 	{
 		FoldOption* fn = foldSolutions[sid][i];
-
-		if (fn == NULL)
-			continue;
-
 		chains[i]->applyFoldOption(fn);
+
+		// mark solution in collision graph
+		fn->addTag(SELECTED_TAG);
 	}
 
 	addTag(READY_TO_FOLD_TAG);
@@ -523,7 +525,8 @@ void BlockGraph::filterFoldOptions( QVector<FoldOption*>& options, int cid )
 {
 	HChain* chain = chains[cid];
 	QString top_mid_super = chainTopMasterMapSuper[cid];
-	Geom::Rectangle2 AFR = availFoldingRegion[top_mid_super]; 
+	Geom::Rectangle2 AFR = availFoldingRegion[top_mid_super];
+	AFR.Extent *= 1.01; // ugly way to avoid numerical issue
 	Geom::Rectangle base_rect = baseMaster->mPatch;
 
 	// filter
@@ -572,6 +575,8 @@ void BlockGraph::buildCollisionGraph()
 	std::cout << "build collision graph...\n";
 
 	// fold entities and options
+	QVector<Geom::Rectangle> frs;
+	Geom::Rectangle base_rect = baseMaster->mPatch;
 	for(int cid = 0; cid < chains.size(); cid++)
 	{
 		std::cout << "cid = " << cid << ": ";
@@ -600,9 +605,12 @@ void BlockGraph::buildCollisionGraph()
 			collFog->addFoldLink(cn, fn);
 
 			// debug
-			//chain->addDebugSegments(fn->region.getEdgeSegments());
+			frs << base_rect.getProjection(fn->region);
 		}
 	}
+
+	// debug
+	properties[FOLD_REGIONS].setValue(frs);
 
 	// collision links
 	updateCollisionLinks();

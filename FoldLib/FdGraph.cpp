@@ -439,6 +439,15 @@ void FdGraph::drawSpecial()
 		foreach (Vector3 p, pnts) ps.addPoint(p, Qt::blue);
 		ps.draw();
 	}
+
+	if (properties.contains(FOLD_REGIONS))
+	{
+		QVector<Geom::Rectangle> regions = properties[FOLD_REGIONS].value< QVector<Geom::Rectangle> >();
+		foreach (Geom::Rectangle rect, regions)
+		{
+			rect.drawEdges(2.0, Qt::blue);
+		}
+	}
 }
 
 

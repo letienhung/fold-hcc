@@ -13,6 +13,8 @@ FoldManager::FoldManager()
 	selDcIdx = -1;
 
 	sqzV = Vector3(0, 0, 1);
+
+	nbKeyframes = 25;
 }
 
 FoldManager::~FoldManager()
@@ -180,7 +182,7 @@ void FoldManager::selectDcGraph( QString id )
 
 	// update list
 	updateBlockList();
-	updateKeyframeList();
+	updateKeyframeSlider();
 
 	// update scene
 	emit(sceneChanged());
@@ -231,17 +233,17 @@ BlockGraph* FoldManager::getSelBlock()
 		return NULL;
 }
 
-void FoldManager::generateKeyframes(int N)
+void FoldManager::generateKeyframes()
 {
 	// selected dc graph
 	DcGraph* selDc = getSelDcGraph();
 	if (!selDc) return;
 
 	// forward message
-	selDc->generateKeyframes(N);
+	selDc->generateKeyframes(nbKeyframes);
 
 	// emit signals
-	updateKeyframeList();
+	updateKeyframeSlider();
 }
 
 void FoldManager::selectKeyframe( int idx )
@@ -249,8 +251,7 @@ void FoldManager::selectKeyframe( int idx )
 	DcGraph* selDc = getSelDcGraph();
 	if (!selDc) return;
 
-	selDc->keyframeIdx = idx;
-
+	selDc->selectKeyframe(idx);
 	emit(sceneChanged());
 }
 
@@ -279,14 +280,18 @@ FdGraph* FoldManager::activeScaffold()
 
 void FoldManager::foldabilize()
 {
-	foreach (DcGraph* dcg, dcGraphs)
-		dcg->foldabilize();	
+	// forward signal to selected decomposition graph
+	DcGraph* selDc = getSelDcGraph();
+	if (!selDc) return;
 
-	// list solution for selected block
-	updateSolutionList();
+	// foldabilize
+	selDc->foldabilize();
 
-	// debug
-	updateKeyframeList();
+	// forward message
+	selDc->generateKeyframes(nbKeyframes);
+
+	// emit signals
+	updateKeyframeSlider();
 }
 
 void FoldManager::updateDcList()
@@ -294,7 +299,7 @@ void FoldManager::updateDcList()
 	emit(DcGraphsChanged(getDcGraphLabels()));
 
 	updateBlockList();
-	updateKeyframeList();
+	updateKeyframeSlider();
 }
 
 void FoldManager::updateBlockList()
@@ -317,13 +322,13 @@ void FoldManager::updateChainList()
 	emit(chainsChanged(chainLables));
 }
 
-void FoldManager::updateKeyframeList()
+void FoldManager::updateKeyframeSlider()
 {
 	// selected dc graph
 	DcGraph* selDc = getSelDcGraph();
 	if (!selDc) return;
 
-	emit(keyframesChanged(selDc->keyframes.size()));
+	emit(keyframesChanged(selDc->keyframes.size()-1));
 }
 
 void FoldManager::updateSolutionList()
@@ -372,4 +377,9 @@ void FoldManager::selectSolution( int idx )
 	if (!selBlock) return;
 
 	selBlock->applySolution(idx);
+}
+
+void FoldManager::setNbKeyframes(int N)
+{
+	nbKeyframes = N;
 }

@@ -605,7 +605,7 @@ bool Geom::Box::containsAll( QVector<Vector3>& pnts )
 	return cnt_all;
 }
 
-void Geom::Box::scaleRand01( int axisId, double t0, double t1 )
+void Geom::Box::scaleRange01( int axisId, double t0, double t1 )
 {
 	scale(axisId, 2*t0-1, 2*t1-1);
 }

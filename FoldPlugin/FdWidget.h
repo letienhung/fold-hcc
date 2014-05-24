@@ -25,16 +25,13 @@ public slots:
 	void selectDcGraph();
 	void selectBlock();
 	void selectChain();
-	void selectKeyframe();
 	void selectSolution();
-	void genKeyframes();
 
 	// to Ui
-	void setScaffold(FdGraph* fdg);
 	void setDcGraphList(QStringList labels);
 	void setLayerList(QStringList labels);
 	void setChainList(QStringList labels);
-	void setKeyframeList(int N);
+	void setKeyframeSlider(int N);
 	void setSolutionList(int N);
 
 signals:

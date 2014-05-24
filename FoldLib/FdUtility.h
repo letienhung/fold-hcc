@@ -31,6 +31,7 @@ typedef QPair<double, double> TimeInterval;
 // debug visual
 #define AFS "availFoldingSpace"
 #define AFR_CP "AFR_constraint_points"
+#define FOLD_REGIONS "filtered_fold_regions"
 #define MAXFR_CP "MAXFR_constraint_points"
 
 // Qt meta type
@@ -39,6 +40,7 @@ Q_DECLARE_METATYPE(QVector<Vector3>)
 Q_DECLARE_METATYPE(Geom::SectorCylinder)
 Q_DECLARE_METATYPE(QVector<Geom::SectorCylinder>)
 Q_DECLARE_METATYPE(Geom::Rectangle)
+Q_DECLARE_METATYPE(QVector<Geom::Rectangle>)
 Q_DECLARE_METATYPE(QVector<Geom::Segment>)
 Q_DECLARE_METATYPE(QVector<Geom::Box>)
 Q_DECLARE_METATYPE(QVector<FdGraph*>)

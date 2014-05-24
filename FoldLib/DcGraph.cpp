@@ -878,3 +878,9 @@ void DcGraph::foldbzSelBlock()
 	//		block->mFoldDuration = ti;
 	//}
 }
+
+void DcGraph::selectKeyframe( int idx )
+{
+	if (idx >= 0 && idx < keyframes.size())
+		keyframeIdx = idx;
+}

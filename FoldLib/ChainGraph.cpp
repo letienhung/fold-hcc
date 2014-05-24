@@ -294,9 +294,18 @@ void ChainGraph::applyFoldOption( FoldOption* fn )
 	// shrink
 	if (fn->scale < 1.0 - ZERO_TOLERANCE_LOW)
 	{
-		Vector3 jointV = rootJointSegs[fn->jointAxisIdx].Direction;
-		int aid = slave->mBox.getAxisId(jointV);
-		slave->mBox.scaleRand01(aid, fn->position, fn->position + fn->scale);
+		Geom::Segment axisSeg = rootJointSegs[fn->jointAxisIdx];
+		int aid = slave->mBox.getAxisId(axisSeg.Direction);
+		Vector3 boxAxis = slave->mBox.Axis[aid];
+
+		double t0 = fn->position;
+		double t1 = fn->position + fn->scale;
+
+		if (dot(axisSeg.Direction, boxAxis) < 0)
+			slave->mBox.scaleRange01(aid, 1-t1, 1-t0);
+		else
+			slave->mBox.scaleRange01(aid, t0, t1);
+
 		slave->deformMesh();
 		slave->createScaffold(true);
 	}

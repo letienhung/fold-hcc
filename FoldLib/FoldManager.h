@@ -24,12 +24,15 @@ public:
 	int selDcIdx;
 	QVector<DcGraph*> dcGraphs;
 
+	// keyframes
+	int nbKeyframes;
+
 public:
 	// update Ui
 	void updateDcList();
 	void updateBlockList();
 	void updateChainList();
-	void updateKeyframeList();
+	void updateKeyframeSlider();
 	void updateSolutionList();
 
 	// getters
@@ -56,7 +59,8 @@ public slots:
 	void foldbzSelBlock();
 
 	// keyframes
-	void generateKeyframes(int nbKeyframes);
+	void setNbKeyframes(int N);
+	void generateKeyframes();
 
 	// output
 	void exportCollFOG();

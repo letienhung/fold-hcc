@@ -78,5 +78,6 @@ public:
 	void selectBlock(QString id);
 
 	FdGraph* getSelKeyframe();
+	void selectKeyframe(int idx);
 };
 
