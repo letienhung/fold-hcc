@@ -53,7 +53,7 @@ QVector<Geom::Plane> TChain::generateCutPlanes( int nbSplit )
 	if (master.whichSide(mOrigSlave->center()) < 0) master.flip();
 
 	// deltaV to shift up
-	double step = getLength() / (nbSplit + 1);
+	double step = chainUpSeg.length() / (nbSplit + 1);
 
 	QVector<Geom::Plane> cutPlanes;
 	for (int i = 0; i < nbSplit; i++)

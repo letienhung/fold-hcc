@@ -21,7 +21,7 @@ Geom::Rectangle HChain::getFoldRegion(FoldOption* fn)
 	Geom::Segment axisSeg2 = axisSeg1;
 
 	// shift the axis along rightV
-	double width = getLength() / (fn->nSplits + 1);
+	double width = chainUpSeg.length() / (fn->nSplits + 1);
 	axisSeg2.translate(width * rightV);
 
 	// shrink epsilon
@@ -58,17 +58,23 @@ QVector<FoldOption*> HChain::generateFoldOptions(int nSplits, int nUsedChunks, i
 QVector<Geom::Plane> HChain::generateCutPlanes( int N )
 {
 	// plane of master0
-	Geom::Plane master0 = mMasters[0]->mPatch.getPlane();
-	if (master0.whichSide(mOrigSlave->center()) < 0) master0.flip();
+	Geom::Plane base_plane = mMasters[0]->mPatch.getPlane();
+	if (base_plane.whichSide(mOrigSlave->center()) < 0) base_plane.flip();
+	
+	// thickness
+	Vector3 dv = base_thk * base_plane.Normal;
+	base_plane.translate(dv);
 
-	// deltaV to shift up
-	double step = getLength() / (N + 1);
+	// step to shift up
+	double height = mMC2Trajectory.length() - base_thk - top_thk;
+	double step = height / (N + 1);
 
+	// create planes
 	QVector<Geom::Plane> cutPlanes;
 	for (int i = 0; i < N; i++)
 	{
-		Vector3 deltaV = (i+1) * step * master0.Normal;
-		cutPlanes << master0.translated(deltaV);
+		Vector3 deltaV = (i+1) * step * base_plane.Normal;
+		cutPlanes << base_plane.translated(deltaV);
 	}
 
 	// to-do: is N is even, cutting will be different

@@ -19,7 +19,8 @@ public:
 
 	// modify chain
 	virtual void applyFoldOption(FoldOption* fn);
-	virtual QVector<Geom::Plane> generateCutPlanes( int nbSplit ) = 0;
+	void createSlavePart(FoldOption* fn);
+	virtual QVector<Geom::Plane> generateCutPlanes(int nbSplit) = 0;
 	void sortChainParts();
 	void resetHingeLinks();
 	void setupActiveLinks(FoldOption* fn);
@@ -30,9 +31,6 @@ public:
 
 	// setter
 	void setFoldDuration(double t0, double t1);
-
-	// getter
-	double getLength();
 
 public:
 	CHAIN_TYPE mType;
@@ -56,4 +54,9 @@ public:
 	QVector< QVector<FdLink*> > hingeLinks;
 	QVector<FdLink*> activeLinks;
 	TimeInterval mFoldDuration;
+
+	// half thickness
+	double top_thk;		// top master
+	double base_thk;	// base master
+	double slave_thk;	// slave
 };
