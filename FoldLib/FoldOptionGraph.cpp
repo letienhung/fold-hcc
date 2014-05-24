@@ -61,7 +61,7 @@ Structure::Node* FoldOption::clone()
 
 double FoldOption::getCost()
 {
-	double cost1 = nSplits;
+	double cost1 = nSplits / 10;
 	double cost2 = 1 - scale;
 
 	return cost1 + cost2;

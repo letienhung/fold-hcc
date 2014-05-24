@@ -55,6 +55,9 @@ public:
 
 	void createBlocks();
 	void clusterSlaves();
+	BlockGraph* createBlock(QSet<int> sCluster);
+	BlockGraph* mergeBlocks( QVector<BlockGraph*> blocks );
+
 
 	// foldem
 	void foldabilize();

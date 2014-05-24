@@ -99,8 +99,9 @@ void ChainGraph::fold( double t )
 		chainUpSeg_copy.cropRange01(base_dt, 1 - top_dt);
 		double h_length = chainUpSeg_copy.length() / mParts.size() * (1 - t);
 
-		double top_height = top_thk + base_thk + 2 * h_thk + 2 * h_length;
-		mMasters.last()->mBox.Center = mMasters.front()->mBox.Center - top_height * mMC2Trajectory.Direction;
+		int n = mParts.size();
+		double top_height = top_thk + base_thk + n * h_thk + n * h_length;
+		mMasters.last()->mBox.Center = mMC2Trajectory.P1 - top_height * mMC2Trajectory.Direction;
 		mMasters.last()->createScaffold(true);
 	}
 }
@@ -169,11 +170,14 @@ void ChainGraph::createSlavePart(FoldOption* fn)
 	Structure::Graph::addNode(slave);
 
 	// self thickness
-	if (slave->mType == FdNode::PATCH)
+	if (slave_thk > 0)
 	{
-		PatchNode* slave_patch = (PatchNode*)slave;
-		int aid = slave->mBox.getAxisId(slave_patch->mPatch.Normal);
-		slave->mBox.Extent[aid] = slave_thk;
+		if (slave->mType == FdNode::PATCH)
+		{
+			PatchNode* slave_patch = (PatchNode*)slave;
+			int aid = slave->mBox.getAxisId(slave_patch->mPatch.Normal);
+			slave->mBox.Extent[aid] = slave_thk;
+		}
 	}
 
 	// horizontal modification

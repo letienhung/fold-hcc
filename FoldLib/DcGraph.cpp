@@ -424,6 +424,51 @@ void DcGraph::clusterSlaves()
 	}
 }
 
+
+
+BlockGraph* DcGraph::createBlock( QSet<int> sCluster )
+{
+	QVector<PatchNode*> ms;
+	QVector<FdNode*> ss;
+	QVector< QVector<QString> > mPairs;
+
+	QSet<int> mids; // master indices
+	foreach (int sidx, sCluster)
+	{
+		// slaves
+		ss << slaves[sidx]; 
+
+		QVector<QString> mp; 
+		foreach (int mid, slave2master[sidx]){
+			mids << mid; 
+			mp << masters[mid]->mID; 
+		}
+
+		// master pairs
+		mPairs << mp; 
+	}
+
+	// masters
+	foreach (int mid, mids)	ms << masters[mid];
+
+	// create
+	int bidx = blocks.size();
+	QString id = "HB_" + QString::number(bidx);
+	Geom::Box aabb = computeAABB().box();
+	BlockGraph* b =  new BlockGraph(id, ms, ss, mPairs, aabb);
+	blocks << b;
+
+	// master block map
+	foreach (PatchNode* m, ms) 
+		masterBlockMap[m->mID] << bidx;
+
+	// set up path
+	b->path = path;
+
+	return b;
+}
+
+
 void DcGraph::createBlocks()
 {
 	// clear blocks
@@ -432,45 +477,10 @@ void DcGraph::createBlocks()
 	masterBlockMap.clear();
 
 	// each H-slave cluster forms a block
-	Geom::Box aabb = computeAABB().box();
 	for (int i = 0; i < slaveClusters.size(); i++)
 	{
-		QVector<PatchNode*> ms;
-		QVector<FdNode*> ss;
-		QVector< QVector<QString> > mPairs;
-
-		QSet<int> mids; // master indices
-		foreach (int sidx, slaveClusters[i])
-		{
-			// slaves
-			ss << slaves[sidx]; 
-
-			QVector<QString> mp; 
-			foreach (int mid, slave2master[sidx])
-			{
-				mids << mid; 
-				mp << masters[mid]->mID; 
-			}
-			
-			// master pairs
-			mPairs << mp; 
-		}
-
-		// masters
-		foreach (int mid, mids)	ms << masters[mid];
-
-		//id
-		QString id = "HB_" + QString::number(i);
-
-		// create
-		foreach (PatchNode* m, ms) 
-			masterBlockMap[m->mID] << blocks.size();
-		blocks << new BlockGraph(id, ms, ss, mPairs, aabb);
+		createBlock(slaveClusters[i]);
 	}
-
-	// set up path
-	foreach (BlockGraph* b, blocks)
-		b->path = path;
 }
 
 BlockGraph* DcGraph::getSelBlock()
@@ -681,8 +691,11 @@ void DcGraph::foldabilize()
 
 	// initial time intervals
 	// greater than 1.0 means never be folded
-	foreach (BlockGraph* b, blocks) 
+	foreach (BlockGraph* b, blocks)
+	{
 		b->mFoldDuration = TIME_INTERVAL(1.0, 2.0);
+		b->removeTag(FOLDED_TAG);
+	}
 
 	// choose best free block
 	std::cout << "\n\n============START============\n";
@@ -696,13 +709,13 @@ void DcGraph::foldabilize()
 		// foldabilize next block
 		BlockGraph* next_block = blocks[next_bid];
 		next_block->foldabilize(currKeyframe);
-
-		// get best next
-		std::cout << "\n============NEXT============\n";
+		next_block->addTag(FOLDED_TAG);
 		double timeLength = next_block->getTimeLength() * timeScale;
 		double nextTime = currTime + timeLength;
 		next_block->mFoldDuration = TIME_INTERVAL(currTime, nextTime);
 
+		// get best next
+		std::cout << "\n============NEXT============\n";
 		currTime = nextTime;
 		delete currKeyframe;
 		currKeyframe = getSuperKeyframe(currTime);
@@ -710,7 +723,28 @@ void DcGraph::foldabilize()
 	}
 
 	// remaining blocks (if any) are interlocking
+	QVector<BlockGraph*> blocks_copy = blocks;
+	blocks.clear();
+	QVector<int> intlkBlockIndices;
+	for (int bid = 0; bid < blocks_copy.size(); bid ++)
+	{
+		BlockGraph* b = blocks_copy[bid];
+		if (b->hasTag(FOLDED_TAG)) blocks << b;
+		else intlkBlockIndices << bid;
+	}
+
 	// merge them as single block to foldabilize
+	std::cout << "\n============MERGE INTERLOCKING============\n";
+	if (!intlkBlockIndices.isEmpty())
+	{
+		QSet<int> sCluster;
+		foreach (int bidx, intlkBlockIndices)
+			sCluster += slaveClusters[bidx];
+		
+		BlockGraph* mergedBlock = createBlock(sCluster);
+		mergedBlock->foldabilize(currKeyframe);
+		mergedBlock->mFoldDuration = TIME_INTERVAL(currTime, 1.0);
+	}
 
 	delete currKeyframe;
 	std::cout << "\n============FINISH============\n";
@@ -743,11 +777,11 @@ int DcGraph::getBestNextBlockIndex(double currTime, FdGraph* currKeyframe)
 		//addDebugPoints(nextBlock->chains.front()->getTopMaster()->mPatch.getConners());
 
 		// evaluate
-		double score = 0;
+		double score = -1;
 		if (isValid(nextKeyframe))
 		{
 			// AFV of nextBlock
-			score += nextBlock->getAvailFoldingVolume();
+			score = nextBlock->getAvailFoldingVolume();
 
 			// AFV of unfolded blocks after nextBlock is folded
 			for (int next2_bid = 0; next2_bid < blocks.size(); next2_bid++)
@@ -780,7 +814,7 @@ int DcGraph::getBestNextBlockIndex(double currTime, FdGraph* currKeyframe)
 		}
 
 		// update the best
-		if (score > best_score){
+		if (score > 0 && score > best_score){
 			best_score = score;
 			best_next_bid = next_bid;
 		}
@@ -865,4 +899,11 @@ void DcGraph::selectKeyframe( int idx )
 {
 	if (idx >= 0 && idx < keyframes.size())
 		keyframeIdx = idx;
+}
+
+BlockGraph* DcGraph::mergeBlocks( QVector<BlockGraph*> blocks )
+{
+	BlockGraph* mergedBlock;
+
+	return mergedBlock;
 }
