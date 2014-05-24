@@ -15,7 +15,7 @@ public:
 
 	Link* clone();
 
-	bool fix();
+	FdNode* fix();
 	void draw();
 
 public:

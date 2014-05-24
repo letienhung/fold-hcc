@@ -28,6 +28,10 @@ typedef QPair<double, double> TimeInterval;
 #define MOC_GREATER "moc_greater"
 #define MOC_LESS "moc_less"
 
+// propagation
+#define FIXED_NODE_TAG "hasFixed"
+#define ACTIVE_HINGE_TAG "isActiveHinge"
+
 // debug visual
 #define AFS "availFoldingSpace"
 #define AFR_CP "AFR_constraint_points"

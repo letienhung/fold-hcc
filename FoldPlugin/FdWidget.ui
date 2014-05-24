@@ -32,16 +32,6 @@
       <string>Foldabilizer</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
-      <item row="2" column="1">
-       <widget class="QSpinBox" name="nbSplits">
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>3</number>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="0" alignment="Qt::AlignHCenter">
        <widget class="QLabel" name="label_6">
         <property name="text">
@@ -75,13 +65,6 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0" alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>#splits</string>
-        </property>
-       </widget>
-      </item>
       <item row="2" column="3">
        <widget class="QSpinBox" name="nbChunks">
         <property name="minimum">
@@ -95,27 +78,10 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="3">
-       <widget class="QDoubleSpinBox" name="thickness"/>
-      </item>
-      <item row="1" column="2" alignment="Qt::AlignHCenter">
-       <widget class="QCheckBox" name="useThickness">
-        <property name="text">
-         <string>thickness</string>
-        </property>
-       </widget>
-      </item>
       <item row="4" column="1" colspan="3">
        <widget class="QPushButton" name="foldabilize">
         <property name="text">
          <string>Foldabilize</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QCheckBox" name="showKeyframe">
-        <property name="text">
-         <string>Keyframe</string>
         </property>
        </widget>
       </item>
@@ -129,6 +95,30 @@
         </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QCheckBox" name="showKeyframe">
+        <property name="text">
+         <string>Keyframe</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" alignment="Qt::AlignHCenter">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>#splits</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QSpinBox" name="nbSplits">
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>3</number>
         </property>
        </widget>
       </item>
@@ -366,19 +356,29 @@
         </property>
        </widget>
       </item>
-      <item row="6" column="0" colspan="2">
-       <widget class="QPushButton" name="exportCurrent">
-        <property name="text">
-         <string>Export Current</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label_4">
         <property name="text">
          <string>#keyframes</string>
         </property>
        </widget>
+      </item>
+      <item row="8" column="1">
+       <widget class="QPushButton" name="exportCurrent">
+        <property name="text">
+         <string>Export Current</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="useThickness">
+        <property name="text">
+         <string>thickness</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QDoubleSpinBox" name="thickness"/>
       </item>
      </layout>
     </widget>

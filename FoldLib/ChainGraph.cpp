@@ -72,27 +72,37 @@ void ChainGraph::fold( double t )
 {
 	// free all nodes
 	foreach (Structure::Node* n, nodes)
-		n->properties["fixed"] = false;
+		n->removeTag(FIXED_NODE_TAG);
 
 	// fix masters[0]
-	mMasters.front()->properties["fixed"] = true;
-	mMasters.last()->properties["fixed"] = true;
-
-	// adjust the position of masters[1]
-	mMasters.last()->mBox.Center = mMC2Trajectory.getPosition01(t);
-	mMasters.last()->createScaffold(true);
-	mMasters.last()->addTag(DELETED_TAG); // avoid propagation from master2
+	mMasters.front()->addTag(FIXED_NODE_TAG);
 
 	// hinge angle
-	// this works only for odd number of splits (even number of even pieces)
+	// this works only for odd number of splits (even number of pieces)
 	double half_angle = asin(1 - t);
 	activeLinks.front()->hinge->angle = half_angle;
-	activeLinks.last()->hinge->angle = half_angle;
-	for (int i = 1; i < activeLinks.size()-1; i++)
+	for (int i = 1; i < activeLinks.size(); i++)
 		activeLinks[i]->hinge->angle = 2 * half_angle;
 
 	// restore configuration
 	restoreConfiguration();
+
+	// adjust the position of top master
+	if (mMasters.size() == 2)
+	{
+		double h_thk = 2 * slave_thk * cos(half_angle);
+
+		double height = mMC2Trajectory.length();
+		double top_dt = top_thk / height;
+		double base_dt = base_thk / height;
+		Geom::Segment chainUpSeg_copy = chainUpSeg;
+		chainUpSeg_copy.cropRange01(base_dt, 1 - top_dt);
+		double h_length = chainUpSeg_copy.length() / mParts.size() * (1 - t);
+
+		double top_height = top_thk + base_thk + 2 * h_thk + 2 * h_length;
+		mMasters.last()->mBox.Center = mMasters.front()->mBox.Center - top_height * mMC2Trajectory.Direction;
+		mMasters.last()->createScaffold(true);
+	}
 }
 
 FdGraph* ChainGraph::getKeyframeScaffold( double t )
@@ -287,32 +297,32 @@ void ChainGraph::resetHingeLinks()
 		links.clear();
 	}
 
-	// create hinge links between mMasters[1] and mParts.last()
-	if (mMasters.size() == 2)
-	{
-		for (int i = 0; i < rootJointSegs_copy.size(); i++)
-		{
-			Geom::Segment jseg = rootJointSegs_copy[i].translated(chainUpSeg_copy.P1 - chainUpSeg_copy.P0);
-			Vector3 upV = chainUpSeg.Direction;
-			Vector3 rV = rootRightVs[i];
-			Vector3 axisV = jseg.Direction;
-			Vector3 posR = jseg.P1 + slave_thk * rV;
-			Vector3 posL = jseg.P0 - slave_thk * rV;
-			Hinge* hingeR = new Hinge(mParts.last(), mMasters[1], 
-				posR, -upV,  rV, -axisV, jseg.length());
-			Hinge* hingeL = new Hinge(mParts.last(), mMasters[1], 
-				posL, -upV, -rV, axisV, jseg.length());
+	//// create hinge links between mMasters[1] and mParts.last()
+	//if (mMasters.size() == 2)
+	//{
+	//	for (int i = 0; i < rootJointSegs_copy.size(); i++)
+	//	{
+	//		Geom::Segment jseg = rootJointSegs_copy[i].translated(chainUpSeg_copy.P1 - chainUpSeg_copy.P0);
+	//		Vector3 upV = chainUpSeg.Direction;
+	//		Vector3 rV = rootRightVs[i];
+	//		Vector3 axisV = jseg.Direction;
+	//		Vector3 posR = jseg.P1 + slave_thk * rV;
+	//		Vector3 posL = jseg.P0 - slave_thk * rV;
+	//		Hinge* hingeR = new Hinge(mParts.last(), mMasters[1], 
+	//			posR, -upV,  rV, -axisV, jseg.length());
+	//		Hinge* hingeL = new Hinge(mParts.last(), mMasters[1], 
+	//			posL, -upV, -rV, axisV, jseg.length());
 
-			FdLink* linkR = new FdLink(mParts.last(), mMasters[1], hingeR);
-			FdLink* linkL = new FdLink(mParts.last(), mMasters[1], hingeL);
-			links << linkR << linkL;
+	//		FdLink* linkR = new FdLink(mParts.last(), mMasters[1], hingeR);
+	//		FdLink* linkL = new FdLink(mParts.last(), mMasters[1], hingeL);
+	//		links << linkR << linkL;
 
-			Graph::addLink(linkR);
-			Graph::addLink(linkL);
-		}
+	//		Graph::addLink(linkR);
+	//		Graph::addLink(linkL);
+	//	}
 
-		hingeLinks << links;
-	}
+	//	hingeLinks << links;
+	//}
 }
 
 void ChainGraph::setupActiveLinks( FoldOption* fn )
@@ -334,11 +344,11 @@ void ChainGraph::setupActiveLinks( FoldOption* fn )
 	{
 		// inactive all hinges
 		foreach(FdLink* l, hingeLinks[i])
-			l->properties["active"] = false;
+			l->removeTag(ACTIVE_HINGE_TAG);
 
 		int hidx = (i % 2) ? hidx_odd : hidx_even;
 		FdLink* activeLink = hingeLinks[i][hidx];
-		activeLink->properties["active"] = true;
+		activeLink->addTag(ACTIVE_HINGE_TAG);
 		activeLinks << activeLink;
 	}
 }

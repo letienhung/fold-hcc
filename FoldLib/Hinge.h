@@ -44,7 +44,7 @@ public:
 
 public:
 	// restore the configuration of self and two incident nodes
-	bool fix();
+	FdNode* fix();
 
 	// getters
 	Vector3 getDihedralDirec(FdNode* n);

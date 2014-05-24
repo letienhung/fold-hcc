@@ -51,14 +51,14 @@ Hinge::HingeRecordInBox Hinge::createLinkRecord( Geom::Box& node_box )
 	return lr;
 }
 
-bool Hinge::fix()
+FdNode* Hinge::fix()
 {
 	// if both nodes are fixed, treat node2 as free
 	// distinguish between fixed and free
 	FdNode *fixed_node, *free_node;
 	HingeRecordInBox fixed_hr, free_hr;
 	Geom::Frame::RecordInFrame free_nr;
-	if (node1->properties["fixed"].toBool())
+	if (node1->hasTag(FIXED_NODE_TAG))
 	{
 		fixed_node = node1; free_node = node2;
 		fixed_hr = hinge_record1; free_hr = hinge_record2;
@@ -70,34 +70,33 @@ bool Hinge::fix()
 		free_nr = n1_frecord;
 	}
 
+	// skip if free node is not free
+	if (free_node->hasTag(DELETED_TAG) ||free_node->hasTag(FIXED_NODE_TAG))
+	{
+		return NULL;
+	}
+
 	// fix hinge position and orientation from fixed node
 	recoverLink(fixed_hr, fixed_node->mBox);
 
 	// fix hinge angle
-	updateDihedralVectors(node1->properties["fixed"].toBool());
+	updateDihedralVectors(node1->hasTag(FIXED_NODE_TAG));
 
 	// fix dihedral frames
 	updateDihedralFrames();
 
-	// fix the free node if it is truly free
-	if (free_node->properties["fixed"].toBool())
-	{
-		return false; 
-	}
-	else
-	{
-		// step 1: fix the frame
-		Geom::Frame free_dhf = (node1->properties["fixed"].toBool())? zyFrame : zxFrame;
-		Geom::Frame free_nf = free_dhf.decodeFrame(free_nr);
-		free_node->mBox.setFrame( free_nf ); 
+	// fix the free node
+	// step 1: fix the frame
+	Geom::Frame free_dhf = (node1->hasTag(FIXED_NODE_TAG))? zyFrame : zxFrame;
+	Geom::Frame free_nf = free_dhf.decodeFrame(free_nr);
+	free_node->mBox.setFrame( free_nf ); 
 
-		// step 2: snap two nodes
-		Vector3 hc_free = free_node->mBox.getPosition(free_hr.c_box);
-		free_node->translate(Origin - hc_free);
-		free_node->properties["fixed"] = true;
+	// step 2: snap two nodes
+	Vector3 hc_free = free_node->mBox.getPosition(free_hr.c_box);
+	free_node->translate(Origin - hc_free);
+	free_node->addTag(FIXED_NODE_TAG);
 
-		return true;
-	}
+	return free_node;
 }
 
 void Hinge::recoverLink( HingeRecordInBox lr, Geom::Box& node_box )
