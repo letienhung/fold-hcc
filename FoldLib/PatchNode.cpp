@@ -9,9 +9,6 @@ PatchNode::PatchNode(QString id, Geom::Box &b, MeshPtr m)
 {
 	mType = FdNode::PATCH;
 	createScaffold(false);
-
-	mPatchColor = mColor;
-	mPatchColor.setAlphaF(1.0);
 }
 
 PatchNode::PatchNode(QString id, Geom::Box &b, Vector3 v, MeshPtr m)
@@ -21,16 +18,12 @@ PatchNode::PatchNode(QString id, Geom::Box &b, Vector3 v, MeshPtr m)
 
 	mAid= mBox.getAxisId(v);
 	createScaffold(true);
-
-	mPatchColor = mColor.lighter();
-	mPatchColor.setAlpha(255);
 }
 
 PatchNode::PatchNode(PatchNode& other)
 	:FdNode(other)
 {
 	mPatch = other.mPatch;
-	mPatchColor = other.mPatchColor;
 }
 
 
@@ -45,10 +38,8 @@ void PatchNode::createScaffold(bool useAid)
 
 void PatchNode::drawScaffold()
 {
-	if (hasTag(MASTER_TAG))
-		mPatchColor = Qt::red;
-
-	mPatch.drawFace(mPatchColor);
+	mPatch.drawFace(mColor);
+	mPatch.drawEdges(2.0, mColor.darker());
 }
 
 bool PatchNode::isPerpTo( Vector3 v, double dotThreshold )

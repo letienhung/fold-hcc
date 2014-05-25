@@ -151,7 +151,7 @@ public:
 
     void draw(QGLWidget &widget){ this->draw(); Q_UNUSED(widget) }
 
-	void draw(){
+	void draw(bool drawEnds = true){
 		glDisable(GL_LIGHTING);
 
 		glLineWidth(_size);
@@ -163,13 +163,16 @@ public:
 		}
 		glEnd();
 
-		glPointSize(_size+4);
-		glBegin(GL_POINTS);
-		for(int i = 0; i < (int) lines.size(); i++){
-			glColorQt(lines_colors[i]);
-			glVertQt(lines[i].first);
+		if (drawEnds)
+		{
+			glPointSize(_size+4);
+			glBegin(GL_POINTS);
+			for(int i = 0; i < (int) lines.size(); i++){
+				glColorQt(lines_colors[i]);
+				glVertQt(lines[i].first);
+			}
+			glEnd();
 		}
-		glEnd();
 
 		glEnable(GL_LIGHTING);
 	}

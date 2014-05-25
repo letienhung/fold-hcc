@@ -271,7 +271,7 @@ void Geom::Rectangle::drawEdges( double width /*= 2.0*/, QColor color /*= Qt::re
 	LineSegments ls(width);
 	foreach (Segment e, getEdgeSegments())
 		ls.addLine(e.P0, e.P1, color);
-	ls.draw();
+	ls.draw(false);
 }
 
 double Geom::Rectangle::area()

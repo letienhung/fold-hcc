@@ -280,7 +280,9 @@ FdGraph* FoldManager::activeScaffold()
 
 void FoldManager::foldabilize()
 {
-	// forward signal to selected decomposition graph
+	// decompose
+	decompose();
+	selDcIdx = 0;
 	DcGraph* selDc = getSelDcGraph();
 	if (!selDc) return;
 
