@@ -10,8 +10,8 @@ public:
     CliquerAdapter(const QVector< QVector<bool> > &m, const QVector<double>& w);
 	~CliquerAdapter();
 
-	// returns mwmc
 	QVector<QVector<int> > getMinWeightMaxCliques();
+	QVector<QVector<int> > getMaxWeightedCliques();
 	
 private:
 	graph_t *graph;

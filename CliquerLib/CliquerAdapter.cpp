@@ -82,3 +82,39 @@ QVector<QVector<int> > CliquerAdapter::getMinWeightMaxCliques()
 
 	return mwmc;
 }
+
+QVector<QVector<int> > CliquerAdapter::getMaxWeightedCliques()
+{
+	// weighted graph
+	graph->weights = weights;
+
+	// call Cliquer
+	set_t s[1024];
+	clique_default_options->clique_list=s;
+	clique_default_options->clique_list_length=1024;
+	int n = clique_find_all(graph,0,0,true,NULL);
+
+	// read
+	std::cout << "#MWC = " << n << "\n";
+	QVector<QVector<int> > qCliques;
+	for (int ci = 0; ci < n; ci++)
+	{
+		set_t clique = s[ci];
+
+		QVector<int> qClique;
+		int w = 0;
+		int i = -1;
+		while ( (i = set_return_next(clique,i)) >= 0 )
+		{
+			qClique << i;
+			w += weights[i];
+			std::cout << i << " ";
+		}
+		std::cout << "\t: w = " << w << "\n";
+
+		qCliques << qClique;
+		set_free(clique);
+	}
+
+	return qCliques;
+}

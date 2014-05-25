@@ -564,23 +564,25 @@ void BlockGraph::addNodesToCollisionGraph()
 		ChainNode* cn = new ChainNode(cid, chain->mID);
 		collFog->addNode(cn);
 
-		properties.remove("debugSegments");// debug
-
-		// fold options and links
+		// fold options
 		QVector<FoldOption*> options;
 		for (int nS = 1; nS <= nbSplits; nS += 2)
 			for (int nUsedChunks = nbChunks; nUsedChunks >= 1; nUsedChunks-- )
 				options << chain->generateFoldOptions(nS, nUsedChunks, nbChunks);
+		FoldOption* delete_fn = new FoldOption(chain->mID + "_delete");
+		delete_fn->addTag(DELETE_FOLD_OPTION);
+		options << delete_fn;
+
+		// filter
 		std::cout << "#options = " << options.size();
 		filterFoldOptions(options, cid);
 		std::cout << " ==> " << options.size() << std::endl;
+
+		// links
 		foreach(FoldOption* fn, options)
 		{
 			collFog->addNode(fn);
 			collFog->addFoldLink(cn, fn);
-
-			// debug
-			frs << base_rect.getProjection(fn->region);
 		}
 	}
 
@@ -593,9 +595,15 @@ void BlockGraph::addEdgesToCollisionGraph()
 	QVector<FoldOption*> fns = collFog->getAllFoldOptions();
 	for (int i = 0; i < fns.size(); i++)
 	{
+		// skip delete fold option
+		if (fns[i]->hasTag(DELETE_FOLD_OPTION)) continue;
+
 		// collision with others
 		for (int j = i+1; j < fns.size(); j++)
 		{
+			// skip delete fold option
+			if (fns[j]->hasTag(DELETE_FOLD_OPTION)) continue;
+
 			// skip siblings
 			if (collFog->areSiblings(fns[i]->mID, fns[j]->mID)) continue; 
 
@@ -643,11 +651,22 @@ void BlockGraph::findOptimalSolution()
 		}
 	}
 
-	// find minimum cost maximum cliques
+	// find maximum weighted clique
+	double maxCost = -1;
+	QVector<double> costs;
+	foreach (FoldOption* fn, fns){
+		double cost = fn->getCost();
+		costs << cost;
+		if (cost > maxCost) maxCost = cost;
+	}
+	maxCost += 1;
+
 	QVector<double> weights;
-	foreach(FoldOption* fn, fns) weights.push_back(fn->getCost());
+	foreach(double cost, costs) 
+		weights.push_back(maxCost - cost);
+
 	CliquerAdapter cliquer(conn, weights);
-	QVector<QVector<int> > qs = cliquer.getMinWeightMaxCliques();
+	QVector<QVector<int> > qs = cliquer.getMaxWeightedCliques();
 
 	// fold solutions
 	foldSolutions.clear();

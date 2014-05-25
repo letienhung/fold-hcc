@@ -18,7 +18,7 @@ FdNode::FdNode(QString id, Geom::Box &b, MeshPtr m )
 	mBox = b;
 	encodeMesh();
 
-	mColor = qRandomSelectedColor(); 
+	mColor = qRandomColor(); 
 	mColor.setAlphaF(0.5);
 	mType = NONE;
 

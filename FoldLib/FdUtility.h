@@ -21,12 +21,12 @@ typedef QPair<double, double> TimeInterval;
 #define FOLDED_TAG "hasFolded"
 #define READY_TO_FOLD_TAG "isReadyToFold"
 #define SELECTED_TAG "isSelected"
-#define NEW_TAG "isNew"
 #define SUPER_PATCH_TAG "isMerged"
 #define MERGED_MASTERS "mergedMastersSet"
 #define	MASTER_SUPER_MAP "master_prediction_map"
 #define MOC_GREATER "moc_greater"
 #define MOC_LESS "moc_less"
+#define DELETE_FOLD_OPTION	"deleteFoldOption"
 
 // propagation
 #define FIXED_NODE_TAG "hasFixed"
