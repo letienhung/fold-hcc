@@ -79,6 +79,7 @@ void FdGraph::exportMesh(QString fname)
 	int v_offset = 0;
 	QVector<FdNode*> nodes = getFdNodes();
 	foreach(FdNode *n, nodes){
+		n->deformMesh();
 		n->exportMesh(file, v_offset);
 	}
 	file.close();

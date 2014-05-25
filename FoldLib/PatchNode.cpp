@@ -49,7 +49,6 @@ void PatchNode::drawScaffold()
 		mPatchColor = Qt::red;
 
 	mPatch.drawFace(mPatchColor);
-	//mPatch.drawBackFace(mPatchColor);
 }
 
 bool PatchNode::isPerpTo( Vector3 v, double dotThreshold )
