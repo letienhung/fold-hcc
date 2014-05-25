@@ -23,6 +23,7 @@ BlockGraph::BlockGraph( QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& s
 
 	// sort masters
 	masterTimeStamps = getTimeStampsNormalized(masters, masters.front()->mPatch.Normal, timeScale);
+	QMultiMap<double, QString> timeMasterMap;
 	foreach (PatchNode* m, masters)
 	{
 		// base master is the bottom one
@@ -31,7 +32,11 @@ BlockGraph::BlockGraph( QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& s
 
 		// height
 		masterHeight[m->mID] = masterTimeStamps[m->mID] * timeScale;
+
+		// time to master
+		timeMasterMap.insert(masterTimeStamps[m->mID], m->mID);	
 	}
+	sortedMasters = timeMasterMap.values().toVector();
 
 	// create chains
 	for (int i = 0; i < ss.size(); i++)
@@ -55,6 +60,7 @@ BlockGraph::BlockGraph( QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& s
 
 		// map from master id to under chain ids set
 		masterUnderChainsMap[mid_high] << i;
+		chainBaseMasterMap[i] = mid_low;
 	}
 
 	// initial collision graph
@@ -428,8 +434,7 @@ FdGraph* BlockGraph::getSuperKeyframe( double t )
 	Geom::Rectangle2 aabb2 = computeAABB2D(pnts2);
 	superPatch->resize(aabb2);
 
-
-	// maps between regular and super nodes
+	// merged masters
 	foreach (Structure::Node* n, keyframe->nodes)
 	{
 		n->addTag(FOLDED_TAG); 
@@ -732,7 +737,7 @@ void BlockGraph::computeSuperBlock( FdGraph* superKeyframe )
 
 	// replace parts
 	QMap<QString, QString> masterSuperMap = superKeyframe->properties[MASTER_SUPER_MAP].value<QMap<QString, QString> >();
-	QMap<QString, QString> M2S; // master-super map in this block
+	master2Super.clear(); // master-super map in this block
 	foreach (PatchNode* m, masters)
 	{
 		if (masterSuperMap.contains(m->mID))
@@ -745,10 +750,10 @@ void BlockGraph::computeSuperBlock( FdGraph* superKeyframe )
 			super->translate(keyframe2block);
 			superBlock->Structure::Graph::addNode(super);
 
-			M2S[m->mID] = masterSuperMap[m->mID];
+			master2Super[m->mID] = masterSuperMap[m->mID];
 		}
 		else
-			M2S[m->mID] = m->mID;
+			master2Super[m->mID] = m->mID;
 	}
 
 	// other stuff
@@ -757,12 +762,12 @@ void BlockGraph::computeSuperBlock( FdGraph* superKeyframe )
 	masterUnderChainsMapSuper.clear();
 	chainTopMasterMapSuper.clear();
 
-	QString base_mid_super = M2S[baseMaster->mID];
+	QString base_mid_super = master2Super[baseMaster->mID];
 	baseMasterSuper = (PatchNode*)superBlock->getNode(base_mid_super);
 	foreach (PatchNode* m, masters)
 	{
 		QString mid = m->mID;
-		QString mid_super = M2S[mid];
+		QString mid_super = master2Super[mid];
 		mastersSuper << (PatchNode*)superBlock->getNode(mid_super);
 		masterHeightSuper[mid_super] = masterHeight[mid];
 
@@ -824,4 +829,40 @@ void BlockGraph::updateSolutionWithThickness()
 	}
 
 	applySolution(selSlnIdx);
+}
+
+void BlockGraph::computeMasterNbUnderLayers()
+{
+	// base rect
+	Geom::Rectangle base_rect = baseMaster->mPatch;
+
+	// bottom up
+	QMap<QString, QSet<QString> > masterTopSuperSiblings;
+	for (int i = 0; i < sortedMasters.size(); i++)
+	{
+		QString mid = sortedMasters[i];
+		int nbLayers = 0;
+
+		// top_super_siblings of mid
+		QString mid_super = master2Super[mid];
+		PatchNode* master_super = (PatchNode*)superBlock->getNode(mid_super);
+		if (master_super->hasTag(SUPER_PATCH_TAG))
+		{
+			QSet<QString> superSiblings = master_super->properties[MERGED_MASTERS].value<QSet<QString> >();
+			
+			// to-do: find top siblings
+		}
+
+		// under masters
+		for (int j = 0; j < i; j++)
+		{
+			QString under_mid = sortedMasters[j];
+			// to-do: find offset 
+			int offset = masterNbUnderLayers[under_mid] + 3;
+			if (offset > nbLayers) nbLayers = offset;
+		}
+
+		// store
+		masterNbUnderLayers[mid] = nbLayers;
+	}
 }

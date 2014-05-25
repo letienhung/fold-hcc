@@ -45,6 +45,7 @@ public:
 	void setThickness(double thk);
 	void setUseThickness(bool use);
 	void updateSolutionWithThickness();
+	void computeMasterNbUnderLayers();
 
 	// foldem
 	void foldabilize(FdGraph* superKeyframe);
@@ -66,10 +67,12 @@ public:
 	QMap<QString, double> masterHeight;             
 	QMap<QString, QSet<int> > masterChainsMap; 
 	QMap<QString, QSet<int> > masterUnderChainsMap; // master : chains under master
+	QMap<int, QString> chainBaseMasterMap;
 
 	// time stamps
 	double timeScale;
 	QMap<QString, double> masterTimeStamps;
+	QVector<QString> sortedMasters; // bottom-up
 
 	// chains
 	int selChainIdx;
@@ -89,6 +92,7 @@ public:
 	QVector<QVector<FoldOption*> > foldSolutions;
 
 	// super block
+	QMap<QString, QString> master2Super;
 	FdGraph* superBlock;
 	PatchNode* baseMasterSuper;
 	QVector<PatchNode*> mastersSuper;
@@ -105,5 +109,6 @@ public:
 	// thickness
 	bool useThickness;
 	double thickness;
+	QMap<QString, int> masterNbUnderLayers;
 }; 
 
