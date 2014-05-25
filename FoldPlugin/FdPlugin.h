@@ -4,6 +4,7 @@
 #include "SurfaceMeshPlugins.h"
 #include "GraphManager.h"
 #include "FoldManager.h"
+#include <QColorDialog>
 
 class FdWidget;
 
@@ -33,11 +34,13 @@ public:
 	bool drawFolded;
 	bool drawKeyframe;
 
+	QColorDialog* qColorDialog;
 public:
     FdPlugin();
 	
 	// helpers
 	FdGraph* activeScaffold();
+	QVector<FdNode*> selectedFdNodes();
 
 public slots:
 	// to graph manager
@@ -58,6 +61,10 @@ public slots:
 
 	// export
 	void exportCurrent();
+
+	// color dialog
+	void showColorDialog();
+	void updateSelNodesColor(QColor c);
 
 	void test1();
 	void test2();

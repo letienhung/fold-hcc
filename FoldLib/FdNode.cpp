@@ -19,7 +19,7 @@ FdNode::FdNode(QString id, Geom::Box &b, MeshPtr m )
 	encodeMesh();
 
 	mColor = qRandomColor(); 
-	mColor.setAlphaF(0.5);
+	mColor.setAlphaF(0.78);
 	mType = NONE;
 
 	showCuboids = true;
@@ -70,11 +70,11 @@ void FdNode::draw()
 		// faces
 		mBox.draw(mColor);
 
-		// wireframes
+		// wire frames
 		if(isSelected)	
 			mBox.drawWireframe(4.0, Qt::yellow);
-		else if (!properties.contains("isMaster"))
-			mBox.drawWireframe();
+		else
+			mBox.drawWireframe(2.0, mColor.lighter());
 	}
 }
 

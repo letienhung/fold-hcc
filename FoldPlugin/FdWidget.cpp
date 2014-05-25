@@ -61,6 +61,9 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->f_manager->connect(ui->keyframeSlider, SIGNAL(valueChanged(int)), SLOT(selectKeyframe(int)));
 	plugin->connect(ui->exportCurrent, SIGNAL(clicked()), SLOT(exportCurrent()));
 
+	// color
+	plugin->connect(ui->assignColor, SIGNAL(clicked()), SLOT(showColorDialog()));
+
 	// test
 	plugin->connect(ui->test1, SIGNAL(clicked()), SLOT(test1()));
 	plugin->connect(ui->test2, SIGNAL(clicked()), SLOT(test2()));

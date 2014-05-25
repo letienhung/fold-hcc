@@ -34,14 +34,19 @@ FdPlugin::FdPlugin()
 	drawCuboid = true;
 	drawScaffold = true;
 	drawMesh = false;
+
+	// color dialog
+	qColorDialog = NULL;
 }
 
 void FdPlugin::create()
 {
 	if (!widget)
 	{
+		// create widget
         widget = new FdWidget(this);
 
+		// locate 
 		ModePluginDockWidget *dockwidget = new ModePluginDockWidget("Foldabilizer", mainWindow());
 		dockwidget->setWidget(widget);
 		mainWindow()->addDockWidget(Qt::RightDockWidgetArea, dockwidget);
@@ -124,22 +129,54 @@ bool FdPlugin::postSelection( const QPoint& point )
 {
 	Q_UNUSED(point);
 
-	if (activeScaffold())
+	FdGraph* activeFd = activeScaffold();
+	if (activeFd)
 	{
 		int nidx = drawArea()->selectedName();
 
-		FdNode* sn = (FdNode*)activeScaffold()->getNode(nidx);
+		FdNode* sn = (FdNode*)activeFd->getNode(nidx);
 		if (sn)
 		{
-			showMessage("Selected name = %d, nodeId = %s, mesh = %s", nidx, qPrintable(sn->mID), qPrintable(sn->getMeshName()));
-			activeScaffold()->selectNode(nidx);
+			bool isSelected = activeFd->selectNode(nidx);
+			if (isSelected)
+				showMessage("Selected name = %d, nodeId = %s, mesh = %s", 
+					nidx, qPrintable(sn->mID), qPrintable(sn->getMeshName()));
+			else
+				showMessage("Deselected name = %d, nodeId = %s", nidx, qPrintable(sn->mID));
 		}
 		else
-			showMessage("Selected name = %d", nidx);
+		{
+			activeFd->deselectAllNodes();
+			showMessage("Deselected all.");
+		}
+
+		// set current color
+		if (qColorDialog && !selectedFdNodes().isEmpty())
+		{
+			FdNode* selNode = selectedFdNodes().front();
+			qColorDialog->setCurrentColor(selNode->mColor);
+		}
 	}
 
 	return true;
 }
+
+
+QVector<FdNode*> FdPlugin::selectedFdNodes()
+{
+	QVector<FdNode*> selNodes;
+
+	FdGraph* activeFd = activeScaffold();
+	if (activeFd)
+	{
+		foreach(Structure::Node* n, activeFd->getSelectedNodes())
+			selNodes << (FdNode*)n;
+	}
+
+	return selNodes;
+}
+
+
 
 void FdPlugin::showFolded( int state )
 {
@@ -186,44 +223,56 @@ void FdPlugin::exportCurrent()
 
 void FdPlugin::test1()
 {
-	QVector<QString> nids;
-
-	// nodes
-	Structure::Graph* g = new Structure::Graph();
-	for (int i = 0; i < 6; i++)
-	{
-		QString nid = QString::number(i);
-		Structure::Node* n = new Structure::Node(nid);
-		g->addNode(n);
-
-		nids << nid;
-	}
-
-	// edges
-	g->addLink(nids[0], nids[1]);
-	g->addLink(nids[1], nids[2]);
-	g->addLink(nids[2], nids[3]);
-	g->addLink(nids[3], nids[4]);
-	g->addLink(nids[4], nids[5]);
-	g->addLink(nids[5], nids[0]);
-	g->addLink(nids[1], nids[4]);
-	g->addLink(nids[0], nids[3]);
-	g->addLink(nids[2], nids[5]);
-	g->addLink(nids[3], nids[5]);
-
-	// base links
-	QVector<QVector<QString> > cycles = g->findCycleBase();
-	std::cout << std::endl;
-	foreach (QVector<QString> cycle, cycles)
-	{
-		foreach (QString nid, cycle)
-			std::cout << nid.toStdString() << "  ";
-		std::cout << std::endl;
-	}
 }
 
 void FdPlugin::test2()
 {
+}
+
+void FdPlugin::showColorDialog()
+{
+	if(qColorDialog == NULL)
+	{
+		// create
+		qColorDialog = new QColorDialog();
+		qColorDialog->hide();
+		qColorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
+		qColorDialog->setOption(QColorDialog::DontUseNativeDialog,false);
+		qColorDialog->setOption(QColorDialog::NoButtons,true);
+		qColorDialog->setWindowFlags(Qt::X11BypassWindowManagerHint | Qt::WindowStaysOnTopHint);
+		connect(mainWindow(), SIGNAL(destroyed()), qColorDialog, SLOT(deleteLater()));
+
+		// Predefined colors
+		QVector<QColor> selColors;
+		selColors << QColor::fromRgb(71, 92, 244)	// blue
+				  << QColor::fromRgb(129, 168, 48)	// yellow
+				  << QColor::fromRgb(240, 43, 82)	// red
+				  << QColor::fromRgb(205, 104, 234)	// purple - pink
+				  << QColor::fromRgb(93, 54, 192)	// purple 
+				  << QColor::fromRgb(234, 67, 16)	// orange
+				  << QColor::fromRgb(54, 145, 89)	// green-light
+				  << QColor::fromRgb(36, 93, 16)	// green
+				  << QColor::fromRgb(44, 201, 212)	// cyan
+				  << QColor::fromRgb(255, 93, 109);	// pink
+		for (int i = 0; i < selColors.size(); i++) 
+			qColorDialog->setCustomColor(i, selColors[i].rgb());
+
+		// signals
+		this->connect(qColorDialog, SIGNAL(currentColorChanged(QColor)), SLOT(updateSelNodesColor(QColor)));
+	}
+
+	qColorDialog->show();
+}
+
+void FdPlugin::updateSelNodesColor( QColor c )
+{
+	foreach (FdNode* n, selectedFdNodes())
+	{
+		if (c.alpha() > 200) c.setAlpha(200);
+		n->mColor = c;
+	}
+
+	updateScene();
 }
 
 Q_EXPORT_PLUGIN(FdPlugin)

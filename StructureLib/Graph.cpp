@@ -216,13 +216,23 @@ void Structure::Graph::drawWithNames()
 	}
 }
 
-void Structure::Graph::selectNode( int nid )
+bool Structure::Graph::selectNode( int nid )
 {
 	if (nid >= 0 && nid < nbNodes())
 	{
 		nodes[nid]->flipSelect();
+		return nodes[nid]->isSelected;
 	}
+
+	return false;
 }
+
+
+void Structure::Graph::deselectAllNodes()
+{
+	foreach (Node* n, nodes) n->isSelected = false;
+}
+
 
 QVector<Structure::Node*> Structure::Graph::getSelectedNodes()
 {

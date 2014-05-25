@@ -49,7 +49,8 @@ public:
 
 	// Selection
 	void drawWithNames();
-	void selectNode(int nid);
+	bool selectNode(int nid);
+	void deselectAllNodes();
 	QVector<Node*> getSelectedNodes();
 
 	// cycles
