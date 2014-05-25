@@ -34,6 +34,7 @@ FdPlugin::FdPlugin()
 	drawCuboid = true;
 	drawScaffold = true;
 	drawMesh = false;
+	drawAFS = true;
 
 	// color dialog
 	qColorDialog = NULL;
@@ -85,6 +86,9 @@ void FdPlugin::updateScene()
 		active->showCuboids(drawCuboid);
 		active->showScaffold(drawScaffold);
 		active->showMeshes(drawMesh);
+
+		if (drawAFS) active->addTag(SHOW_AFS);
+		else active->removeTag(SHOW_AFS);
 	}
 
 	drawArea()->updateGL();
@@ -214,6 +218,14 @@ void FdPlugin::showKeyframe( int state )
 	updateScene();
 }
 
+
+void FdPlugin::showAFS( int state )
+{
+	drawAFS = (state == Qt::Checked);
+	updateScene();
+}
+
+
 void FdPlugin::exportCurrent()
 {
 	QString filename = QFileDialog::getSaveFileName(0, tr("Save Current Scaffold"), NULL, tr("Mesh Files (*.obj)"));
@@ -273,6 +285,40 @@ void FdPlugin::updateSelNodesColor( QColor c )
 	}
 
 	updateScene();
+}
+
+void FdPlugin::saveSnapshot()
+{
+	FdGraph* activeFd = activeScaffold();
+	if (!activeFd) return;
+
+	QString path = QFileInfo(activeFd->path).absolutePath();
+	QString filename = path  + "/" + activeFd->mID + "_snapshot";
+	drawArea()->setSnapshotFormat("PNG");
+	drawArea()->setSnapshotQuality(100);
+	drawArea()->setSnapshotFileName(filename);
+	drawArea()->saveSnapshot(true, true);
+}
+
+void FdPlugin::saveSnapshotAll()
+{
+	if (!f_manager) return;
+	
+	DcGraph* selDc = f_manager->getSelDcGraph();
+	if (!selDc) return;
+
+	drawKeyframe = true;
+	QString filename = selDc->path + "/snapshot";
+	drawArea()->setSnapshotFormat("PNG");
+	drawArea()->setSnapshotQuality(100);
+	drawArea()->setSnapshotFileName(filename);
+
+	for (int i = 0; i < selDc->keyframes.size(); i++)
+	{
+		f_manager->selectKeyframe(i);
+		updateScene();
+		drawArea()->saveSnapshot(true, true);
+	}
 }
 
 Q_EXPORT_PLUGIN(FdPlugin)

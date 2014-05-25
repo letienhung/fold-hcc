@@ -341,6 +341,15 @@ QVector<FdNode*> FdGraph::split( QString nid, QVector<Geom::Plane>& planes )
 		Structure::Graph::addNode(chopped[i]);
 	}
 
+	// inherits color
+	for (int i = 0; i < chopped.size(); i++)
+	{
+		if (i % 2 == 0)
+			chopped[i]->mColor = fn->mColor;
+		else
+			chopped[i]->mColor = fn->mColor.lighter(120);
+	}
+
 	// remove the original node
 	removeNode(nid);
 
@@ -443,6 +452,16 @@ void FdGraph::drawSpecial()
 		foreach (Geom::Rectangle rect, regions)
 		{
 			rect.drawEdges(2.0, Qt::blue);
+		}
+	}
+
+	if (properties.contains(AFS) && hasTag(SHOW_AFS))
+	{
+		QColor color = Qt::green; color.setAlphaF(1.0);
+		QVector<Geom::Box> boxes = properties[AFS].value<QVector<Geom::Box> >();
+		foreach (Geom::Box box, boxes)
+		{
+			box.drawWireframe(2.0, color);
 		}
 	}
 }

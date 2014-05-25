@@ -31,10 +31,10 @@ DcGraph::DcGraph(QString id, FdGraph* scaffold, StrArray2D masterGroups, Vector3
 	keyframeIdx = -1;
 
 	//////////////////////////////////////////////////////////////////////////
-	QVector<Geom::Segment> normals;
-	foreach (PatchNode* m, masters)
-		normals << Geom::Segment(m->mPatch.Center, m->mPatch.Center + 10 * m->mPatch.Normal);
-	addDebugSegments(normals);
+	//QVector<Geom::Segment> normals;
+	//foreach (PatchNode* m, masters)
+	//	normals << Geom::Segment(m->mPatch.Center, m->mPatch.Center + 10 * m->mPatch.Normal);
+	//addDebugSegments(normals);
 }
 
 DcGraph::~DcGraph()
@@ -562,8 +562,8 @@ FdGraph* DcGraph::getKeyframe( double t )
 		Vector3 offsetV = activeCurrPosition - activeOrigPosition;
 		for (int i = 0; i < activeAFS.size(); i++ ) activeAFS[i].translate(offsetV);
 		for (int i = 0; i < activeAFR_CP.size(); i++ ) activeAFR_CP[i] += offsetV;
-		key_graph->addDebugBoxes(activeAFS);
-		key_graph->properties[AFR_CP].setValue(activeAFR_CP);
+		key_graph->properties[AFS].setValue(activeAFS);
+		//key_graph->properties[AFR_CP].setValue(activeAFR_CP);
 	}
 
 	// debug
@@ -571,6 +571,9 @@ FdGraph* DcGraph::getKeyframe( double t )
 
 	// delete folded blocks
 	foreach (FdGraph* b, foldedBlocks) delete b;
+
+	// path
+	key_graph->path = path;
 
 	return key_graph;
 }

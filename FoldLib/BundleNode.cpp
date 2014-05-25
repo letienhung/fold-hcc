@@ -1,5 +1,6 @@
 #include "BundleNode.h"
 #include "FdUtility.h"
+#include "Numeric.h"
 
 BundleNode::BundleNode( QString id, Geom::Box& b, QVector<FdNode*> nodes )
 	:PatchNode(id, b, MeshPtr(NULL))
@@ -11,6 +12,19 @@ BundleNode::BundleNode( QString id, Geom::Box& b, QVector<FdNode*> nodes )
 	Geom::Frame frame = mBox.getFrame();
 	foreach (FdNode* n, mNodes)
 		mNodeFrameRecords << frame.encodeFrame(n->mBox.getFrame());
+
+	// inherits color from largest child
+	double maxVol = -maxDouble();
+	QColor maxColor;
+	foreach (FdNode* n, mNodes)
+	{
+		if (n->mBox.volume() > maxVol)
+		{
+			maxVol = n->mBox.volume();
+			maxColor = n->mColor;
+		}
+	}
+	mColor = maxColor;
 
 	properties["isBundle"] = true;
 }

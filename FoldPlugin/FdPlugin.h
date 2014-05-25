@@ -33,6 +33,7 @@ public:
 	bool drawMesh;
 	bool drawFolded;
 	bool drawKeyframe;
+	bool drawAFS;
 
 	QColorDialog* qColorDialog;
 public:
@@ -53,6 +54,7 @@ public slots:
 	void showMesh(int state);
 	void showFolded(int state);
 	void showKeyframe(int state);
+	void showAFS(int state);
 
 	// scene and message
 	void updateScene();
@@ -66,6 +68,11 @@ public slots:
 	void showColorDialog();
 	void updateSelNodesColor(QColor c);
 
+	// snapshot
+	void saveSnapshot();
+	void saveSnapshotAll();
+
+	// debug
 	void test1();
 	void test2();
 };

@@ -25,6 +25,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->connect(ui->showCuboids, SIGNAL(stateChanged(int)), SLOT(showCuboid(int)));
 	plugin->connect(ui->showScaffold, SIGNAL(stateChanged(int)), SLOT(showScaffold(int)));
 	plugin->connect(ui->showMesh, SIGNAL(stateChanged(int)), SLOT(showMesh(int)));
+	plugin->connect(ui->showAFS, SIGNAL(stateChanged(int)), SLOT(showAFS(int)));
 
 	// foldabilize
 	plugin->f_manager->connect(ui->sqzV, SIGNAL(currentIndexChanged(QString)), SLOT(setSqzV(QString)));
@@ -63,6 +64,10 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 
 	// color
 	plugin->connect(ui->assignColor, SIGNAL(clicked()), SLOT(showColorDialog()));
+
+	// snapshot
+	plugin->connect(ui->snapshot, SIGNAL(clicked()), SLOT(saveSnapshot()));
+	plugin->connect(ui->snapshotAll, SIGNAL(clicked()), SLOT(saveSnapshotAll()));
 
 	// test
 	plugin->connect(ui->test1, SIGNAL(clicked()), SLOT(test1()));

@@ -37,6 +37,7 @@ typedef QPair<double, double> TimeInterval;
 #define AFR_CP "AFR_constraint_points"
 #define FOLD_REGIONS "filtered_fold_regions"
 #define MAXFR_CP "MAXFR_constraint_points"
+#define SHOW_AFS "showAFS"
 
 // Qt meta type
 Q_DECLARE_METATYPE(Vector3)
