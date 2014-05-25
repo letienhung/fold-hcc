@@ -130,3 +130,9 @@ void PatchNode::resize( Geom::Rectangle2& newPatch )
 	// update scaffold
 	createScaffold(true);
 }
+
+void PatchNode::setThickness( double thk )
+{
+	int aid = mBox.getAxisId(mPatch.Normal);
+	mBox.Extent[aid] = 0.5 * thk;
+}

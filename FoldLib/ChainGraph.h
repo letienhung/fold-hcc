@@ -27,7 +27,7 @@ public:
 
 	// animation
 	void fold(double t);
-	FdGraph* getKeyframeScaffold(double t);
+	FdGraph* getKeyframe(double t);
 
 	// setter
 	void setFoldDuration(double t0, double t1);
@@ -55,8 +55,7 @@ public:
 	QVector<FdLink*> activeLinks;
 	TimeInterval mFoldDuration;
 
-	// half thickness
-	double top_thk;		// top master
-	double base_thk;	// base master
-	double slave_thk;	// slave
+	// thickness
+	double half_thk;
+	double base_offset;
 };

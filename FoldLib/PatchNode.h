@@ -21,6 +21,7 @@ public:
 
 	// geometry
 	double getThickness();
+	void setThickness(double thk);
 	bool isPerpTo(Vector3 v, double dotThreshold);
 	Geom::Plane getSurfacePlane(bool positive);
 	void resize(Geom::Rectangle2& newPatch);

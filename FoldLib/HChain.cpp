@@ -62,11 +62,11 @@ QVector<Geom::Plane> HChain::generateCutPlanes( int N )
 	if (base_plane.whichSide(mOrigSlave->center()) < 0) base_plane.flip();
 	
 	// thickness
-	Vector3 dv = base_thk * base_plane.Normal;
+	Vector3 dv = base_offset * base_plane.Normal;
 	base_plane.translate(dv);
 
 	// step to shift up
-	double height = mMC2Trajectory.length() - base_thk - top_thk;
+	double height = mMC2Trajectory.length() - base_offset - half_thk;
 	double step = height / (N + 1);
 
 	// create planes

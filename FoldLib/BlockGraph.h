@@ -18,7 +18,6 @@ public:
 	void selectChain(QString id);
 	QStringList getChainLabels();
 
-
 	// key frame
 	FdGraph* getKeyframe(double t);
 	FdGraph* getSuperKeyframe(double t);
@@ -41,6 +40,11 @@ public:
 	void exportCollFOG();
 	void setNbSplits(int N);
 	void setNbChunks(int N);
+
+	// thickness
+	void setThickness(double thk);
+	void setUseThickness(bool use);
+	void updateSolutionWithThickness();
 
 	// foldem
 	void foldabilize(FdGraph* superKeyframe);
@@ -81,6 +85,7 @@ public:
 	QVector<FoldOptionGraph*> debugFogs;
 
 	// fold solutions
+	int selSlnIdx;
 	QVector<QVector<FoldOption*> > foldSolutions;
 
 	// super block
@@ -96,5 +101,9 @@ public:
 	QMap<QString, Geom::Rectangle2> minFoldingRegion;
 	QMap<QString, Geom::Rectangle2> maxFoldingRegion;
 	QMap<QString, Geom::Rectangle2> availFoldingRegion;
+
+	// thickness
+	bool useThickness;
+	double thickness;
 }; 
 

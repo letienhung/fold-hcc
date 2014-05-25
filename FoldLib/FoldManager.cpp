@@ -400,10 +400,15 @@ void FoldManager::setNbChunks( int N )
 
 void FoldManager::useThickness( int state )
 {
-
+	bool use = (state == Qt::Checked);
+	foreach (DcGraph* dc, dcGraphs)
+		foreach (BlockGraph* b, dc->blocks)
+			b->setUseThickness(use);
 }
 
-void FoldManager::setThinkness( double thk )
+void FoldManager::setThickness( double thk )
 {
-
+	foreach (DcGraph* dc, dcGraphs)
+		foreach (BlockGraph* b, dc->blocks)
+			b->setThickness(thk);
 }

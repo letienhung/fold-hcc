@@ -70,6 +70,13 @@ BlockGraph::BlockGraph( QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& s
 	nbSplits = 1;
 	nbChunks = 2;
 
+	// thickness
+	thickness = 0;
+	useThickness = false;
+
+	// selected solution
+	selSlnIdx = -1;
+
 	//////////////////////////////////////////////////////////////////////////
 	//QVector<Geom::Segment> normals;
 	//normals << Geom::Segment(baseMaster->mPatch.Center, baseMaster->mPatch.Center + 10 * baseMaster->mPatch.Normal);
@@ -332,7 +339,7 @@ FdGraph* BlockGraph::getKeyframe( double t )
 	// chains have been created and ready to fold
 	if (hasTag(READY_TO_FOLD_TAG))
 	{
-		// scaffolds from folded chains
+		// folded chains
 		QVector<FdGraph*> foldedChains;
 		for (int i = 0; i < chains.size(); i++)
 		{
@@ -342,12 +349,18 @@ FdGraph* BlockGraph::getKeyframe( double t )
 			else
 			{
 				double localT = getLocalTime(t, chains[i]->mFoldDuration);
-				foldedChains << chains[i]->getKeyframeScaffold(localT);
+				foldedChains << chains[i]->getKeyframe(localT);
 			}
 		}
 
 		// combine 
 		keyframe = combineDecomposition(foldedChains, baseMaster->mID, masterChainsMap);
+
+		// thickness of masters
+		if (useThickness){
+			foreach (PatchNode* m, getAllMasters(keyframe))
+				m->setThickness(thickness);
+		}
 
 		// delete folded chains
 		foreach (FdGraph* c, foldedChains) delete c;
@@ -384,6 +397,8 @@ FdGraph* BlockGraph::getKeyframe( double t )
 
 FdGraph* BlockGraph::getSuperKeyframe( double t )
 {
+	// regular key frame w\o thickness
+	setUseThickness(false);
 	FdGraph* keyframe = getKeyframe(t);
 
 	// do nothing if the block is NOT fully folded
@@ -471,6 +486,7 @@ void BlockGraph::applySolution( int sid )
 		return;
 
 	// apply fold option to each chain
+	selSlnIdx = sid;
 	for (int i = 0; i < chains.size(); i++)
 	{
 		FoldOption* fn = foldSolutions[sid][i];
@@ -773,4 +789,39 @@ void BlockGraph::setNbSplits( int N )
 void BlockGraph::setNbChunks( int N )
 {
 	nbChunks = N;
+}
+
+void BlockGraph::setThickness( double thk )
+{
+	thickness = thk;
+	if (useThickness)
+		updateSolutionWithThickness();
+}
+
+void BlockGraph::setUseThickness(bool use)
+{
+	if (useThickness != use)
+	{
+		useThickness = use;
+		updateSolutionWithThickness();
+	}
+}
+
+void BlockGraph::updateSolutionWithThickness()
+{
+	foreach (HChain* chain, chains)
+	{
+		if (useThickness)
+		{
+			chain->half_thk = thickness / 2;
+			chain->base_offset = thickness / 2;
+		}
+		else
+		{
+			chain->half_thk = 0;
+			chain->base_offset = 0;
+		}
+	}
+
+	applySolution(selSlnIdx);
 }

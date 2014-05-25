@@ -32,9 +32,8 @@ ChainGraph::ChainGraph( FdNode* slave, PatchNode* master1, PatchNode* master2)
 	mFoldDuration = TIME_INTERVAL(1, 2);
 
 	// thickness
-	top_thk = 1;
-	base_thk = 1;
-	slave_thk = 1;
+	half_thk = 0;
+	base_offset = 0;
 }
 
 void ChainGraph::setupBasisOrientations()
@@ -90,23 +89,23 @@ void ChainGraph::fold( double t )
 	// adjust the position of top master
 	if (mMasters.size() == 2)
 	{
-		double h_thk = 2 * slave_thk * cos(half_angle);
+		double h_thk = 2 * half_thk * cos(half_angle);
 
 		double height = mMC2Trajectory.length();
-		double top_dt = top_thk / height;
-		double base_dt = base_thk / height;
+		double top_dt = half_thk / height;
+		double base_dt = base_offset / height;
 		Geom::Segment chainUpSeg_copy = chainUpSeg;
 		chainUpSeg_copy.cropRange01(base_dt, 1 - top_dt);
 		double h_length = chainUpSeg_copy.length() / mParts.size() * (1 - t);
 
 		int n = mParts.size();
-		double top_height = top_thk + base_thk + n * h_thk + n * h_length;
+		double top_height = half_thk + base_offset + n * h_thk + n * h_length;
 		mMasters.last()->mBox.Center = mMC2Trajectory.P1 - top_height * mMC2Trajectory.Direction;
 		mMasters.last()->createScaffold(true);
 	}
 }
 
-FdGraph* ChainGraph::getKeyframeScaffold( double t )
+FdGraph* ChainGraph::getKeyframe( double t )
 {
 	fold(t);
 	return (FdGraph*)this->clone();
@@ -170,15 +169,9 @@ void ChainGraph::createSlavePart(FoldOption* fn)
 	Structure::Graph::addNode(slave);
 
 	// self thickness
-	if (slave_thk > 0)
-	{
+	if (half_thk > 0)
 		if (slave->mType == FdNode::PATCH)
-		{
-			PatchNode* slave_patch = (PatchNode*)slave;
-			int aid = slave->mBox.getAxisId(slave_patch->mPatch.Normal);
-			slave->mBox.Extent[aid] = slave_thk;
-		}
-	}
+			((PatchNode*)slave)->setThickness(2 * half_thk);
 
 	// horizontal modification
 	Geom::Segment axisSeg = rootJointSegs[fn->jointAxisIdx];
@@ -192,8 +185,8 @@ void ChainGraph::createSlavePart(FoldOption* fn)
 
 	// vertical shrinking caused by master thickness
 	double height = mMC2Trajectory.length();
-	double top_dt = top_thk / height;
-	double base_dt = base_thk / height;
+	double top_dt = half_thk / height;
+	double base_dt = base_offset / height;
 	int vaid = slave->mBox.getAxisId(chainUpSeg.Direction);
 	if (dot(slave->mBox.Axis[vaid], chainUpSeg.Direction) > 0)
 		slave->mBox.scaleRange01(vaid, base_dt, 1-top_dt);
@@ -228,15 +221,15 @@ void ChainGraph::resetHingeLinks()
 
 	// shrink chain up segment for thickness
 	double height = mMC2Trajectory.length();
-	double top_dt = top_thk / height;
-	double base_dt = base_thk / height;
+	double top_dt = half_thk / height;
+	double base_dt = base_offset / height;
 	Geom::Segment chainUpSeg_copy = chainUpSeg;
 	chainUpSeg_copy.cropRange01(base_dt, 1 - top_dt);
 
 	// shift root joint segment for thickness
 	QVector<Geom::Segment> rootJointSegs_copy = rootJointSegs;
 	for (int i = 0; i < rootJointSegs_copy.size(); i++)
-		rootJointSegs_copy[i].translate(base_thk * chainUpSeg_copy.Direction);
+		rootJointSegs_copy[i].translate(base_offset * chainUpSeg_copy.Direction);
 
 	// create hinge links between mMaster[0] and mParts[0]
 	QVector<FdLink*> links;
@@ -246,8 +239,8 @@ void ChainGraph::resetHingeLinks()
 		Vector3 upV = chainUpSeg_copy.Direction;
 		Vector3 rV = rootRightVs[i];
 		Vector3 axisV = jseg.Direction;
-		Vector3 posR = jseg.P0 + slave_thk * rV;
-		Vector3 posL = jseg.P1 - slave_thk * rV;
+		Vector3 posR = jseg.P0 + half_thk * rV;
+		Vector3 posL = jseg.P1 - half_thk * rV;
 		Hinge* hingeR = new Hinge(mParts[0], mMasters[0], 
 			posR, upV,  rV, axisV, jseg.length());
 		Hinge* hingeL = new Hinge(mParts[0], mMasters[0], 
@@ -281,8 +274,8 @@ void ChainGraph::resetHingeLinks()
 			Vector3 upV = chainUpSeg.Direction;
 			Vector3 axisV = jseg.Direction;
 			Vector3 rV = rootRightVs[j];
-			Vector3 posR = jseg.P0 + slave_thk * rV;
-			Vector3 posL = jseg.P1 - slave_thk * rV;
+			Vector3 posR = jseg.P0 + half_thk * rV;
+			Vector3 posL = jseg.P1 - half_thk * rV;
 			Hinge* hingeR = new Hinge(part1, part2, 
 				posR, upV, -upV, axisV, jseg.length());
 			Hinge* hingeL = new Hinge(part1, part2, 

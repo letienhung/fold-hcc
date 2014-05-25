@@ -52,7 +52,7 @@ public slots:
 	void setNbSplits(int N);
 	void setNbChunks(int N);
 	void useThickness(int state);
-	void setThinkness(double thk);
+	void setThickness(double thk);
 
 	// fold
 	void foldabilize();

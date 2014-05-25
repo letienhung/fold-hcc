@@ -734,9 +734,9 @@ void DcGraph::foldabilize()
 	}
 
 	// merge them as single block to foldabilize
-	std::cout << "\n============MERGE INTERLOCKING============\n";
 	if (!intlkBlockIndices.isEmpty())
 	{
+		std::cout << "\n=====MERGE INTERLOCKING======\n";
 		QSet<int> sCluster;
 		foreach (int bidx, intlkBlockIndices)
 			sCluster += slaveClusters[bidx];
