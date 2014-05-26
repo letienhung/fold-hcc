@@ -344,14 +344,23 @@ void FdPlugin::unhideAllNodes()
 void FdPlugin::hideEdgeRods()
 {
 	FdGraph* activeFd = activeScaffold();
+	if (activeFd) activeFd->hideEdgeRods();
+	updateScene();
+}
+
+void FdPlugin::colorMasterSlave()
+{
+	FdGraph* activeFd = activeScaffold();
 	if (activeFd)
 	{
 		foreach (FdNode* n, activeFd->getFdNodes())
 		{
-			if (n->hasTag(EDGE_ROD_TAG))
-			{
-				n->isHidden = true;
-			}
+			QColor c = QColor::fromRgb(255, 110, 80);
+			if (n->hasTag(MASTER_TAG))
+				c = QColor::fromRgb(173, 173, 173);
+			c.setAlphaF(0.78);
+
+			n->mColor = c;
 		}
 	}
 

@@ -65,6 +65,9 @@ public:
 	void addDebugSectorCylinders(QVector<Geom::SectorCylinder>& scs);
 
 	void addDebugScaffold(FdGraph* ds);
+	
+	// rendering
+	void hideEdgeRods();
 
 public:
 	QString path;

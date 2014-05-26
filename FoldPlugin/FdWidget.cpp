@@ -64,6 +64,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 
 	// color
 	plugin->connect(ui->assignColor, SIGNAL(clicked()), SLOT(showColorDialog()));
+	plugin->connect(ui->colorMasterSlave, SIGNAL(clicked()), SLOT(colorMasterSlave()));
 
 	// snapshot
 	plugin->connect(ui->snapshot, SIGNAL(clicked()), SLOT(saveSnapshot()));

@@ -549,6 +549,10 @@ FdGraph* DcGraph::getKeyframe( double t )
 			activeOrigPosition = blocks[i]->baseMaster->center();
 			activeBaseMasterID = blocks[i]->baseMaster->mID;
 			showActiveBlockStuff = true;
+
+			// active slaves
+			foreach (FdNode* n, fblock->getFdNodes())
+				n->addTag(ACTIVE_TAG);
 		}
 	}
 
@@ -841,7 +845,17 @@ void DcGraph::generateKeyframes( int N )
 	{
 		FdGraph* kf = getKeyframe(i * step);
 		kf->unwrapBundleNodes();
+		kf->hideEdgeRods();
 		keyframes << kf;
+
+		// color
+		foreach (FdNode* n, kf->getFdNodes())
+		{
+			QColor c = (n->hasTag(ACTIVE_TAG)) ? 
+				QColor::fromRgb(255, 110, 80) : QColor::fromRgb(180, 180, 180);
+			c.setAlphaF(0.78);
+			n->mColor = c;
+		}
 	}
 }
 

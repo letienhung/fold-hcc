@@ -597,10 +597,24 @@ void FdGraph::unwrapBundleNodes()
 			BundleNode* bnode = (BundleNode*)n;
 			foreach (FdNode* cn, bnode->mNodes)
 			{
-				Structure::Graph::addNode(cn->clone());
+				Structure::Node* cn_copy = cn->clone();
+				Structure::Graph::addNode(cn_copy);
+				if (bnode->hasTag(MASTER_TAG))
+					cn_copy->addTag(MASTER_TAG);
 			}
 
 			removeNode(bnode->mID);
+		}
+	}
+}
+
+void FdGraph::hideEdgeRods()
+{
+	foreach (FdNode* n, getFdNodes())
+	{
+		if (n->hasTag(EDGE_ROD_TAG))
+		{
+			n->isHidden = true;
 		}
 	}
 }

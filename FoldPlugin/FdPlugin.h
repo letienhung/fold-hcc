@@ -67,6 +67,7 @@ public slots:
 	// color dialog
 	void showColorDialog();
 	void updateSelNodesColor(QColor c);
+	void colorMasterSlave();
 
 	// snapshot
 	void saveSnapshot();

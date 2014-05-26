@@ -28,6 +28,7 @@ typedef QPair<double, double> TimeInterval;
 #define MOC_GREATER "moc_greater"
 #define MOC_LESS "moc_less"
 #define DELETE_FOLD_OPTION	"deleteFoldOption"
+#define ACTIVE_TAG "isActive"
 
 // propagation
 #define FIXED_NODE_TAG "hasFixed"
