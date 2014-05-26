@@ -434,7 +434,7 @@ void FdGraph::drawSpecial()
 	{
 		QVector<Vector3> pnts = properties[AFR_CP].value<QVector<Vector3> >();
 		PointSoup ps;
-		foreach (Vector3 p, pnts) ps.addPoint(p, Qt::cyan);
+		foreach (Vector3 p, pnts) ps.addPoint(p, Qt::blue);
 		ps.draw();
 	}
 

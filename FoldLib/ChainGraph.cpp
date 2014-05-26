@@ -353,7 +353,7 @@ void ChainGraph::setupActiveLinks( FoldOption* fn )
 void ChainGraph::applyFoldOption( FoldOption* fn)
 {
 	// delete chain if fold option is null
-	if (fn == NULL) {
+	if (fn->hasTag(DELETE_FOLD_OPTION)) {
 		addTag(DELETED_TAG);
 		std::cout << "Chain: " << mID.toStdString() << " is deleted.\n";
 		return;

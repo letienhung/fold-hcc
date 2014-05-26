@@ -77,7 +77,8 @@ QVector<RodNode*> PatchNode::getEdgeRodNodes()
 	foreach (Geom::Segment edge, mPatch.getEdgeSegments())
 	{
 		// box
-		Geom::Frame frame(edge.Center, mPatch.Normal, edge.Direction);
+		Vector3 inwardV = (mPatch.Center - edge.Center).normalized();
+		Geom::Frame frame(edge.Center + r * inwardV, mPatch.Normal, edge.Direction);
 		Vector3 extent(r, edge.Extent, r);
 		Geom::Box box(frame, extent);
 

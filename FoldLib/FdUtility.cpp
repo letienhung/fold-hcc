@@ -533,7 +533,7 @@ bool extendRectangle2D( Geom::Rectangle2& rect, QVector<Vector2> &pnts )
 	}
 
 	// extend along y
-	double epsilon = 2 * ZERO_TOLERANCE_LOW;
+	double epsilon = 100 * ZERO_TOLERANCE_LOW;
 	double bottom = -maxDouble();
 	double top = maxDouble();
 	foreach (Vector2 pc, pnts_coord)

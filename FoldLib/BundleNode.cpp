@@ -215,3 +215,13 @@ void BundleNode::translate( Vector3 v )
 	foreach (FdNode* n, mNodes)
 		n->translate(v);
 }
+
+//void BundleNode::draw()
+//{
+//	foreach (FdNode* n, mNodes)
+//	{
+//		n->mColor = QColor::fromRgb(180, 180, 180);
+//		n->mColor.setAlphaF(0.78);
+//		n->draw();
+//	}
+//}

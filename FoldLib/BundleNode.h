@@ -12,6 +12,7 @@ public:
 
 	virtual Node* clone();
 
+	//void draw();
 	void drawMesh();
 	QString getMeshName();
 	void deformMesh();

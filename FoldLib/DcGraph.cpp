@@ -532,6 +532,7 @@ FdGraph* DcGraph::getKeyframe( double t )
 	QVector<FdGraph*> foldedBlocks;
 	QVector<Geom::Box> activeAFS;
 	QVector<Vector3> activeAFR_CP;
+	QVector<Vector3> acitveMaxFR_CP;
 	Vector3 activeOrigPosition;
 	QString activeBaseMasterID;
 	bool showActiveBlockStuff = false;
@@ -546,6 +547,7 @@ FdGraph* DcGraph::getKeyframe( double t )
 		{
 			activeAFS = blocks[i]->properties[AFS].value<QVector<Geom::Box> >();
 			activeAFR_CP = blocks[i]->properties[AFR_CP].value<QVector<Vector3> >();
+			acitveMaxFR_CP = blocks[i]->properties[MAXFR_CP].value<QVector<Vector3> >();
 			activeOrigPosition = blocks[i]->baseMaster->center();
 			activeBaseMasterID = blocks[i]->baseMaster->mID;
 			showActiveBlockStuff = true;
@@ -568,6 +570,7 @@ FdGraph* DcGraph::getKeyframe( double t )
 		for (int i = 0; i < activeAFR_CP.size(); i++ ) activeAFR_CP[i] += offsetV;
 		key_graph->properties[AFS].setValue(activeAFS);
 		//key_graph->properties[AFR_CP].setValue(activeAFR_CP);
+		//key_graph->properties[MAXFR_CP].setValue(acitveMaxFR_CP);
 	}
 
 	// debug

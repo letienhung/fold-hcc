@@ -144,8 +144,8 @@ void BlockGraph::computeMinFoldingRegion()
 		minFoldingRegion[top_master->mID] = min_region;
 
 		// debug
-		//foreach (int cid, masterUnderChainsMap[top_master->mID])
-			//chains[cid]->addDebugSegments(base_rect.get3DRectangle(min_region).getEdgeSegments());
+		//Geom::Rectangle min_region3 = base_rect.get3DRectangle(min_region);
+		//appendToVectorProperty<Geom::Segment>(MINFR, min_region3.getEdgeSegments());
 	}
 }
 
@@ -177,10 +177,10 @@ void BlockGraph::computeMaxFoldingRegion()
 		maxFoldingRegion[top_master->mID] = max_region;
 
 		// debug
-		//QVector<Vector3> pnts_proj3;
-		//foreach (Vector2 p2, pnts_proj) 
-		//	pnts_proj3 << base_rect.getPosition(p2);
-		//properties[MAXFR_CP].setValue(pnts_proj3);
+		QVector<Vector3> pnts_proj3;
+		foreach (Vector2 p2, pnts_proj) 
+			pnts_proj3 << base_rect.getPosition(p2);
+		properties[MAXFR_CP].setValue(pnts_proj3);
 	}
 }
 
@@ -415,10 +415,19 @@ FdGraph* BlockGraph::getSuperKeyframe( double t )
 	QVector<Vector2> pnts2 = base_rect.get2DConners();
 	if (hasTag(READY_TO_FOLD_TAG))
 	{// use folded parts
-		foreach (Structure::Node* n, keyframe->nodes)
+		foreach (FdNode* n, keyframe->getFdNodes())
 		{
-			Geom::Rectangle part_rect = ((PatchNode*)n)->mPatch;
-			pnts2 << base_rect.get2DRectangle(part_rect).getConners();
+			if (n->mType == FdNode::PATCH)
+			{
+				Geom::Rectangle part_rect = ((PatchNode*)n)->mPatch;
+				pnts2 << base_rect.get2DRectangle(part_rect).getConners();
+			}
+			else
+			{
+				Geom::Segment part_rod = ((RodNode*)n)->mRod;
+				pnts2 << base_rect.getProjCoordinates(part_rod.P0);
+				pnts2 << base_rect.getProjCoordinates(part_rod.P1);
+			}
 		}
 	}
 	else
