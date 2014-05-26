@@ -177,10 +177,11 @@ void BlockGraph::computeMaxFoldingRegion()
 		maxFoldingRegion[top_master->mID] = max_region;
 
 		// debug
-		QVector<Vector3> pnts_proj3;
-		foreach (Vector2 p2, pnts_proj) 
-			pnts_proj3 << base_rect.getPosition(p2);
-		properties[MAXFR_CP].setValue(pnts_proj3);
+		//QVector<Vector3> pnts_proj3;
+		//foreach (Vector2 p2, pnts_proj) 
+		//	pnts_proj3 << base_rect.getPosition(p2);
+		//properties[MAXFR].setValue(pnts_proj3);
+		properties[MAXFR].setValue(base_rect.get3DRectangle(max_region).getEdgeSamples(100));
 	}
 }
 
@@ -195,7 +196,8 @@ QVector<QString> BlockGraph::getInbetweenOutsideParts( FdGraph* superKeyframe, Q
 	FdNode* top_master = (FdNode*)superBlock->getNode(top_mid);
 	double t0 = timeLine.getProjTime(base_master->center());
 	double t1 = timeLine.getProjTime(top_master->center());
-	TimeInterval m1m2 = TIME_INTERVAL(t0, t1);
+	double epsilon = 0.05 * (t1 - t0);
+	TimeInterval m1m2 = TIME_INTERVAL(t0 + epsilon, t1 - epsilon);
 
 	// find parts in between m1 and m2
 	QVector<QString> inbetweens;
@@ -221,7 +223,7 @@ QVector<QString> BlockGraph::getInbetweenOutsideParts( FdGraph* superKeyframe, Q
 			double t0 = timeLine.getProjTime(sklt.P0);
 			double t1 = timeLine.getProjTime(sklt.P1);
 			if (t0 > t1) std::swap(t0, t1);
-			TimeInterval ti = TIME_INTERVAL(t0+ZERO_TOLERANCE_LOW, t1-ZERO_TOLERANCE_LOW);
+			TimeInterval ti = TIME_INTERVAL(t0, t1);
 
 			if (overlap(ti, m1m2))	inbetweens << n->mID;
 		}
@@ -315,7 +317,8 @@ void BlockGraph::computeAvailFoldingRegion( FdGraph* superKeyframe )
 		QVector<Vector3> samples_proj3;
 		foreach (Vector2 p2, samples_proj) 
 			samples_proj3 << base_rect.getPosition(p2);
-		properties[AFR_CP].setValue(samples_proj3);
+		//properties[AFR_CP].setValue(samples_proj3);
+		properties[AFR_CP].setValue(samples);
 	}
 
 	// restore the position of scaffold

@@ -107,6 +107,7 @@ void FdWidget::setChainList( QStringList labels )
 void FdWidget::setKeyframeSlider( int N )
 {
 	ui->keyframeSlider->setMaximum(N);
+	ui->nbKeyframeSlider->setText(QString::number(N));
 }
 
 void FdWidget::setSolutionList( int N )

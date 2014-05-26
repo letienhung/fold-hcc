@@ -38,7 +38,7 @@ typedef QPair<double, double> TimeInterval;
 #define AFS "availFoldingSpace"
 #define AFR_CP "AFR_constraint_points"
 #define FOLD_REGIONS "filtered_fold_regions"
-#define MAXFR_CP "MAXFR_constraint_points"
+#define MAXFR "MAXFondingRegion"
 #define MINFR "MINFoldingRegion"
 #define SHOW_AFS "showAFS"
 

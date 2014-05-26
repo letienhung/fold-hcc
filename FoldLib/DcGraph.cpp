@@ -532,7 +532,7 @@ FdGraph* DcGraph::getKeyframe( double t )
 	QVector<FdGraph*> foldedBlocks;
 	QVector<Geom::Box> activeAFS;
 	QVector<Vector3> activeAFR_CP;
-	QVector<Vector3> acitveMaxFR_CP;
+	QVector<Vector3> acitveMaxFR;
 	Vector3 activeOrigPosition;
 	QString activeBaseMasterID;
 	bool showActiveBlockStuff = false;
@@ -547,7 +547,7 @@ FdGraph* DcGraph::getKeyframe( double t )
 		{
 			activeAFS = blocks[i]->properties[AFS].value<QVector<Geom::Box> >();
 			activeAFR_CP = blocks[i]->properties[AFR_CP].value<QVector<Vector3> >();
-			acitveMaxFR_CP = blocks[i]->properties[MAXFR_CP].value<QVector<Vector3> >();
+			acitveMaxFR = blocks[i]->properties[MAXFR].value<QVector<Vector3> >();
 			activeOrigPosition = blocks[i]->baseMaster->center();
 			activeBaseMasterID = blocks[i]->baseMaster->mID;
 			showActiveBlockStuff = true;
@@ -568,9 +568,10 @@ FdGraph* DcGraph::getKeyframe( double t )
 		Vector3 offsetV = activeCurrPosition - activeOrigPosition;
 		for (int i = 0; i < activeAFS.size(); i++ ) activeAFS[i].translate(offsetV);
 		for (int i = 0; i < activeAFR_CP.size(); i++ ) activeAFR_CP[i] += offsetV;
+		for (int i = 0; i < acitveMaxFR.size(); i++ ) acitveMaxFR[i] += offsetV;
 		key_graph->properties[AFS].setValue(activeAFS);
 		//key_graph->properties[AFR_CP].setValue(activeAFR_CP);
-		//key_graph->properties[MAXFR_CP].setValue(acitveMaxFR_CP);
+		//key_graph->properties[MAXFR].setValue(acitveMaxFR);
 	}
 
 	// debug
@@ -711,7 +712,14 @@ void DcGraph::foldabilize()
 	std::cout << "\n\n============START============\n";
 	double currTime = 0.0;
 	FdGraph* currKeyframe = getSuperKeyframe(currTime);
-	int next_bid = getBestNextBlockIndex(currTime, currKeyframe);
+	int next_bid = getBestNextBlockIndex(currTime, currKeyframe);  
+	
+	
+	
+	//return;
+
+
+
 	while (next_bid >= 0 && next_bid < blocks.size())
 	{
 		std::cout << "Best next = " << blocks[next_bid]->mID.toStdString() << "\n";
@@ -815,13 +823,26 @@ int DcGraph::getBestNextBlockIndex(double currTime, FdGraph* currKeyframe)
 					// debug
 					//keyframes << next2Keyframe;
 					//addDebugBoxes(next2Block->getAFS());
+					if (next2_bid == 1)
+					{
+						properties[AFR_CP].setValue(next2Block->properties[AFR_CP].value<QVector<Vector3> >());
+						properties[MAXFR].setValue(next2Block->properties[MAXFR].value<QVector<Vector3> >());
+					}
+
 				}
 
 				// clean up
-				//delete next2Keyframe;
+				delete next2Keyframe;
 				next2Block->mFoldDuration = next2_ti;
 			}
 		}
+
+		
+
+		//return 0;
+
+
+
 
 		// update the best
 		if (score > 0 && score > best_score){
@@ -830,11 +851,11 @@ int DcGraph::getBestNextBlockIndex(double currTime, FdGraph* currKeyframe)
 		}
 
 		// very important: restore time interval
-		//delete nextKeyframe;
+		delete nextKeyframe;
 		nextBlock->mFoldDuration = next_ti;
 
 		// debug
-		std::cout << "best score = " << best_score << std::endl;
+		std::cout << blocks[next_bid]->mID.toStdString() << " : " << best_score << std::endl;
 	}
 	return best_next_bid;
 }
@@ -854,8 +875,9 @@ void DcGraph::generateKeyframes( int N )
 		// color
 		foreach (FdNode* n, kf->getFdNodes())
 		{
+			double grey = 200;
 			QColor c = (n->hasTag(ACTIVE_TAG)) ? 
-				QColor::fromRgb(255, 110, 80) : QColor::fromRgb(180, 180, 180);
+				QColor::fromRgb(255, 110, 80) : QColor::fromRgb(grey, grey, grey);
 			c.setAlphaF(0.78);
 			n->mColor = c;
 		}

@@ -66,8 +66,8 @@ void FoldManager::identifyMasters()
 
 	// threshold
 	double perpThr = 0.1;
-	double blockHeightThr = 0.15;
-	double adjacentThr = aabb.radius() * 0.1;
+	double masterHeightThr = 0.1;
+	double adjacentThr = aabb.radius() * 0.05;
 
 	// ==STEP 1==: nodes perp to squeezing direction
 	QVector<FdNode*> perpNodes;
@@ -115,7 +115,7 @@ void FoldManager::identifyMasters()
 	foreach (double pos, posNodeMap.uniqueKeys())
 	{
 		// create a new group
-		if (fabs(pos - prePos) > blockHeightThr && !perpGroup.isEmpty())
+		if (fabs(pos - prePos) > masterHeightThr && !perpGroup.isEmpty())
 		{
 			perpGroups << perpGroup;
 			perpGroup.clear();
@@ -287,7 +287,7 @@ void FoldManager::foldabilize()
 	if (!selDc) return;
 
 	// foldabilize
-	selDc->foldabilize();
+	selDc->foldabilize();  
 
 	// forward message
 	selDc->generateKeyframes(nbKeyframes);

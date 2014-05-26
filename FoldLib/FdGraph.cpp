@@ -434,13 +434,13 @@ void FdGraph::drawSpecial()
 	{
 		QVector<Vector3> pnts = properties[AFR_CP].value<QVector<Vector3> >();
 		PointSoup ps;
-		foreach (Vector3 p, pnts) ps.addPoint(p, Qt::blue);
+		foreach (Vector3 p, pnts) ps.addPoint(p, Qt::cyan);
 		ps.draw();
 	}
 
-	if (properties.contains(MAXFR_CP))
+	if (properties.contains(MAXFR))
 	{
-		QVector<Vector3> pnts = properties[MAXFR_CP].value<QVector<Vector3> >();
+		QVector<Vector3> pnts = properties[MAXFR].value<QVector<Vector3> >();
 		PointSoup ps;
 		foreach (Vector3 p, pnts) ps.addPoint(p, Qt::blue);
 		ps.draw();

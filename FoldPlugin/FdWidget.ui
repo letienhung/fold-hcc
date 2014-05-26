@@ -39,6 +39,45 @@
        <string>Tab 1</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_6">
+       <item row="1" column="0" colspan="2">
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="title">
+          <string>Visual options</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="2" column="2">
+           <widget class="QCheckBox" name="showMesh">
+            <property name="text">
+             <string>Mesh</string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QCheckBox" name="showScaffold">
+            <property name="text">
+             <string>Scaffold</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QCheckBox" name="showCuboids">
+            <property name="text">
+             <string>Cuboids</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
        <item row="2" column="0" colspan="2">
         <widget class="QGroupBox" name="groupBox_3">
          <property name="title">
@@ -98,19 +137,6 @@
             </property>
            </widget>
           </item>
-          <item row="5" column="0" colspan="4">
-           <widget class="QSlider" name="keyframeSlider">
-            <property name="minimum">
-             <number>0</number>
-            </property>
-            <property name="maximum">
-             <number>0</number>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
           <item row="4" column="0">
            <widget class="QCheckBox" name="showKeyframe">
             <property name="text">
@@ -132,6 +158,33 @@
             </property>
             <property name="maximum">
              <number>5</number>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="3" alignment="Qt::AlignRight">
+           <widget class="QLabel" name="nbKeyframeSlider">
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0" colspan="4">
+           <widget class="QSlider" name="keyframeSlider">
+            <property name="minimum">
+             <number>0</number>
+            </property>
+            <property name="maximum">
+             <number>0</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_12">
+            <property name="text">
+             <string>0</string>
             </property>
            </widget>
           </item>
@@ -237,46 +290,7 @@
          </layout>
         </widget>
        </item>
-       <item row="1" column="0" colspan="2">
-        <widget class="QGroupBox" name="groupBox_2">
-         <property name="title">
-          <string>Visual options</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_3">
-          <item row="2" column="2">
-           <widget class="QCheckBox" name="showMesh">
-            <property name="text">
-             <string>Mesh</string>
-            </property>
-            <property name="checked">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QCheckBox" name="showScaffold">
-            <property name="text">
-             <string>Scaffold</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QCheckBox" name="showCuboids">
-            <property name="text">
-             <string>Cuboids</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="3" column="0">
+       <item row="4" column="0">
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -289,28 +303,28 @@
          </property>
         </spacer>
        </item>
-       <item row="10" column="0">
+       <item row="11" column="0">
         <widget class="QPushButton" name="snapshot">
          <property name="text">
           <string>Snap Shot</string>
          </property>
         </widget>
        </item>
-       <item row="10" column="1">
+       <item row="11" column="1">
         <widget class="QPushButton" name="snapshotAll">
          <property name="text">
           <string>Snap Shot All Keyframes</string>
          </property>
         </widget>
        </item>
-       <item row="7" column="0" colspan="2">
+       <item row="8" column="0" colspan="2">
         <widget class="QPushButton" name="assignColor">
          <property name="text">
           <string>Assign Color</string>
          </property>
         </widget>
        </item>
-       <item row="8" column="0">
+       <item row="9" column="0">
         <widget class="QCheckBox" name="showAFS">
          <property name="text">
           <string>show AFS</string>
@@ -320,35 +334,35 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="0">
+       <item row="6" column="0">
         <widget class="QPushButton" name="hideSelNodes">
          <property name="text">
           <string>Hide</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
+       <item row="6" column="1">
         <widget class="QPushButton" name="unhideAllNodes">
          <property name="text">
           <string>Unhide All</string>
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
+       <item row="7" column="1">
         <widget class="QPushButton" name="hideEdgeRods">
          <property name="text">
           <string>Hide Edge Rods</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="0">
+       <item row="5" column="0">
         <widget class="QPushButton" name="colorMasterSlave">
          <property name="text">
           <string>Color Master-slave</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
+       <item row="5" column="1">
         <widget class="QPushButton" name="colorActiveBlock">
          <property name="text">
           <string>Color Active Block</string>
