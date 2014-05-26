@@ -1,0 +1,148 @@
+<!--?xml Version = "1.0"?-->
+<document>
+    <cN>13</cN>
+    <node>
+        <type>2</type>
+        <ID>m0</ID>
+        <box>
+            <c>20 0 0.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>85 20 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>m1</ID>
+        <box>
+            <c>-22.5709 0 30.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>27.5 20 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>s11</ID>
+        <box>
+            <c>-37.9318 0 15.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 20 15</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>m3</ID>
+        <box>
+            <c>50 0 20.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>40 20 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>s32</ID>
+        <box>
+            <c>49.5 0 10.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 20 10</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>s12</ID>
+        <box>
+            <c>-8.4318 0 15.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 20 15</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>s31</ID>
+        <box>
+            <c>20 0 10.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 20 10</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>s42</ID>
+        <box>
+            <c>38.4187 0 50.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 20 30</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>s41</ID>
+        <box>
+            <c>25 0 50.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 20 30</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>s043</ID>
+        <box>
+            <c>79.8692 0 10.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 20 10</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>s044</ID>
+        <box>
+            <c>73.0478 0 50.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 20 30</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>s045</ID>
+        <box>
+            <c>59.6291 0 50.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 20 30</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>m005</ID>
+        <box>
+            <c>48.6275 0 80.5683</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>30 20 0.5</e>
+        </box>
+    </node>
+    <cL>0</cL>
+</document>
