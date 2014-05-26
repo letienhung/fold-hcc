@@ -48,7 +48,7 @@ void DcGraph::createMasters(StrArray2D& masterGroups)
 	foreach( QVector<QString> masterGroup, masterGroups )
 	{
 		// merges to a patch or simply returns the single rod
-		FdNode* mf = merge(masterGroup);
+		FdNode* mf = wrapAsBundleNode(masterGroup);
 		QString mf_id = mf->mID;
 
 		// force to change type
@@ -252,7 +252,7 @@ QVector<FdNode*> DcGraph::mergeConnectedCoplanarParts( QVector<FdNode*> ns )
 	// merge each selected group
 	QVector<FdNode*> mnodes;
 	foreach(int i, subsetIndices)
-		mnodes << merge(copConnGroups[i].toList().toVector());
+		mnodes << wrapAsBundleNode(copConnGroups[i].toList().toVector());
 
 	return mnodes;
 }
@@ -839,7 +839,9 @@ void DcGraph::generateKeyframes( int N )
 	double step = 1.0 / (N-1);
 	for (int i = 0; i < N; i++)
 	{
-		keyframes << getKeyframe(i * step);
+		FdGraph* kf = getKeyframe(i * step);
+		kf->unwrapBundleNodes();
+		keyframes << kf;
 	}
 }
 

@@ -17,6 +17,8 @@ public:
 
 	bool isPerpTo(Vector3 v, double dotThreshold);
 
+	void setThickness(double thk);
+
 public:
 	Geom::Segment mRod;
 	QColor mRodColor;

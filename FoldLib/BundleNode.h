@@ -17,12 +17,21 @@ public:
 	void deformMesh();
 	void cloneMesh();
 
+	void setThickness(double thk);
+
 	void exportMesh(QFile &file, int& v_offset);
 
 	QVector<FdNode*> getPlainNodes();
 
 	FdNode* cloneChopped(Geom::Plane& chopper);
 	FdNode* cloneChopped(Geom::Plane& chopper1, Geom::Plane& chopper2);
+
+	// visual
+	void setShowCuboid(bool show);
+	void setShowScaffold(bool show);
+	void setShowMesh(bool show);
+
+	void translate(Vector3 v);
 
 public:
 	QVector<FdNode*> mNodes;

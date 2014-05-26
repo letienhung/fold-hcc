@@ -44,7 +44,7 @@ public:
 	bool contains(const Segment& other);
 
 	// visualization
-	void draw(double width = 3.0, QColor color = Qt::blue);
+	void draw(double width = 3.0, QColor color = Qt::blue, bool drawEnds = true);
 
 	// geometry
 	double length();

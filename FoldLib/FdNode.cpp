@@ -22,11 +22,13 @@ FdNode::FdNode(QString id, Geom::Box &b, MeshPtr m )
 	mColor.setAlphaF(0.78);
 	mType = NONE;
 
-	showCuboids = true;
+	showCuboid = true;
 	showScaffold = true;
 	showMesh = true;
 
 	mAid = 0;
+
+	isHidden = false;
 }
 
 FdNode::FdNode(FdNode& other)
@@ -40,11 +42,12 @@ FdNode::FdNode(FdNode& other)
 	mColor = other.mColor;
 	mType = other.mType;
 
-	showCuboids = true;
+	showCuboid = true;
 	showScaffold = true; 
 	showMesh = false;
 
 	mAid = other.mAid;
+	isHidden = other.isHidden;
 }
 
 
@@ -55,6 +58,8 @@ FdNode::~FdNode()
 
 void FdNode::draw()
 {
+	if (isHidden) return;
+
 	if (showScaffold)
 	{
 		drawScaffold();
@@ -65,7 +70,7 @@ void FdNode::draw()
 		drawMesh();
 	}
 
-	if (showCuboids)
+	if (showCuboid)
 	{
 		// faces
 		mBox.draw(mColor);
@@ -186,11 +191,6 @@ FdNode* FdNode::cloneChopped( Geom::Plane& chopper1, Geom::Plane& chopper2 )
 
 FdNode* FdNode::cloneChopped( Geom::Box& chopBox )
 {
-	// chop mesh
-	// Geom::Box chopBox = box;
-	// chopBox.Extent *= 1.001;
-	// SurfaceMeshModel* mesh = MeshBoolean::cork(mMesh.data(), chopBox, MeshBoolean::ISCT);
-
 	FdNode *choppedNode;
 	if (mType == FdNode::ROD)
 		choppedNode = new RodNode(mMesh->name, chopBox, mMesh);
@@ -297,4 +297,24 @@ void FdNode::translate( Vector3 t )
 {
 	mBox.translate(t);
 	createScaffold(true);
+}
+
+void FdNode::setThickness( double thk )
+{
+	// do nothing
+}
+
+void FdNode::setShowCuboid( bool show )
+{
+	showCuboid = show;
+}
+
+void FdNode::setShowScaffold( bool show )
+{
+	showScaffold = show;
+}
+
+void FdNode::setShowMesh( bool show )
+{
+	showMesh = show;
 }

@@ -26,7 +26,7 @@ BundleNode::BundleNode( QString id, Geom::Box& b, QVector<FdNode*> nodes )
 	}
 	mColor = maxColor;
 
-	properties["isBundle"] = true;
+	addTag(BUNDLE_TAG);
 }
 
 BundleNode::BundleNode(BundleNode& other)
@@ -178,4 +178,40 @@ void BundleNode::exportMesh(QFile &file, int& v_offset)
 	foreach(FdNode* n, mNodes){
 		n->exportMesh(file, v_offset);
 	}
+}
+
+void BundleNode::setThickness( double thk )
+{
+	PatchNode::setThickness(thk);
+
+	foreach (FdNode* n, mNodes)
+		n->setThickness(thk);
+}
+
+void BundleNode::setShowCuboid( bool show )
+{
+	FdNode::setShowCuboid(show);
+	foreach (FdNode* n, mNodes)
+		n->setShowCuboid(show);
+}
+
+void BundleNode::setShowScaffold( bool show )
+{
+	FdNode::setShowScaffold(show);
+	foreach (FdNode* n, mNodes)
+		n->setShowScaffold(show);
+}
+
+void BundleNode::setShowMesh( bool show )
+{
+	FdNode::setShowMesh(show);
+	foreach (FdNode* n, mNodes)
+		n->setShowMesh(show);
+}
+
+void BundleNode::translate( Vector3 v )
+{
+	FdNode::translate(v);
+	foreach (FdNode* n, mNodes)
+		n->translate(v);
 }

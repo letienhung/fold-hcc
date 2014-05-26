@@ -69,6 +69,11 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->connect(ui->snapshot, SIGNAL(clicked()), SLOT(saveSnapshot()));
 	plugin->connect(ui->snapshotAll, SIGNAL(clicked()), SLOT(saveSnapshotAll()));
 
+	// hide
+	plugin->connect(ui->hideSelNodes, SIGNAL(clicked()), SLOT(hideSelectedNodes()));
+	plugin->connect(ui->unhideAllNodes, SIGNAL(clicked()), SLOT(unhideAllNodes()));
+	plugin->connect(ui->hideEdgeRods, SIGNAL(clicked()), SLOT(hideEdgeRods()));
+
 	// test
 	plugin->connect(ui->test1, SIGNAL(clicked()), SLOT(test1()));
 	plugin->connect(ui->test2, SIGNAL(clicked()), SLOT(test2()));

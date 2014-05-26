@@ -82,11 +82,6 @@ BlockGraph::BlockGraph( QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& s
 
 	// selected solution
 	selSlnIdx = -1;
-
-	//////////////////////////////////////////////////////////////////////////
-	//QVector<Geom::Segment> normals;
-	//normals << Geom::Segment(baseMaster->mPatch.Center, baseMaster->mPatch.Center + 10 * baseMaster->mPatch.Normal);
-	//addDebugSegments(normals);
 }
 
 BlockGraph::~BlockGraph()

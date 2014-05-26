@@ -321,4 +321,41 @@ void FdPlugin::saveSnapshotAll()
 	}
 }
 
+void FdPlugin::hideSelectedNodes()
+{
+	foreach (FdNode* n, selectedFdNodes())
+		n->isHidden = true;
+
+	updateScene();
+}
+
+void FdPlugin::unhideAllNodes()
+{
+	FdGraph* activeFd = activeScaffold();
+	if (activeFd)
+	{
+		foreach (FdNode* n, activeFd->getFdNodes())
+			n->isHidden = false;
+	}
+
+	updateScene();
+}
+
+void FdPlugin::hideEdgeRods()
+{
+	FdGraph* activeFd = activeScaffold();
+	if (activeFd)
+	{
+		foreach (FdNode* n, activeFd->getFdNodes())
+		{
+			if (n->hasTag(EDGE_ROD_TAG))
+			{
+				n->isHidden = true;
+			}
+		}
+	}
+
+	updateScene();
+}
+
 Q_EXPORT_PLUGIN(FdPlugin)

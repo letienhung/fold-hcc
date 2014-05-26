@@ -72,6 +72,11 @@ public slots:
 	void saveSnapshot();
 	void saveSnapshotAll();
 
+	// hide
+	void hideSelectedNodes();
+	void unhideAllNodes();
+	void hideEdgeRods();
+
 	// debug
 	void test1();
 	void test2();

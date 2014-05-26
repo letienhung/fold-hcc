@@ -146,11 +146,11 @@ bool Geom::Segment::contains( const Segment& other )
 }
 
 
-void Geom::Segment::draw(double width, QColor color)
+void Geom::Segment::draw(double width, QColor color, bool drawEnds)
 {
 	LineSegments ls(width);
 	ls.addLine(P0, P1, color);
-	ls.draw();
+	ls.draw(drawEnds);
 }
 
 double Geom::Segment::length()

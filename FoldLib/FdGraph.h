@@ -26,12 +26,13 @@ public:
 	FdNode* addNode(MeshPtr mesh, Geom::Box& box);
 
 	// modifier
-	FdNode*			 merge(QVector<QString> nids);
+	void changeNodeType(FdNode* n);
+	void changeRodToPatch(RodNode* n, Vector3 v);
+	void translate(Vector3 v, bool withMesh = true);
+	void unwrapBundleNodes();
+	FdNode* wrapAsBundleNode(QVector<QString> nids);
 	QVector<FdNode*> split(QString nid, Geom::Plane& plane);
 	QVector<FdNode*> split(QString nid, QVector<Geom::Plane>& planes);
-	void			 changeNodeType(FdNode* n);
-	void			 changeRodToPatch(RodNode* n, Vector3 v);
-	void             translate(Vector3 v, bool withMesh = true);
 
 	// I/O
 	void saveToFile(QString fname);

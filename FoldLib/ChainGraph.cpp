@@ -100,8 +100,8 @@ void ChainGraph::fold( double t )
 
 		int n = mParts.size();
 		double top_height = half_thk + base_offset + n * h_thk + n * h_length;
-		mMasters.last()->mBox.Center = mMC2Trajectory.P1 - top_height * mMC2Trajectory.Direction;
-		mMasters.last()->createScaffold(true);
+		Vector3 newPos = mMC2Trajectory.P1 - top_height * mMC2Trajectory.Direction;
+		mMasters.last()->translate(newPos - mMasters.last()->center());
 	}
 }
 

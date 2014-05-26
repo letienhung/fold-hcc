@@ -24,7 +24,8 @@ public:
 	virtual QVector<FdNode*> getPlainNodes();
 
 	// visualization
-	bool showCuboids;
+	bool isHidden;
+	bool showCuboid;
 	bool showScaffold;
 	bool showMesh;
 	void draw();
@@ -51,14 +52,20 @@ public:
 	Vector3 center();
 
 	// modification
-	void translate(Vector3 t);
+	virtual void translate(Vector3 t);
 	FdNode* cloneChopped(Geom::Box& chopBox);
 	virtual FdNode* cloneChopped(Geom::Plane& chopper);
 	virtual FdNode* cloneChopped(Geom::Plane& chopper1, Geom::Plane& chopper2);
 	void deformToAttach(Geom::Plane& plane);
+	virtual void setThickness(double thk);
 	 
 	// relation with direction
 	virtual bool isPerpTo(Vector3 v, double dotThreshold);
+
+	// visual
+	virtual void setShowCuboid(bool show);
+	virtual void setShowScaffold(bool show);
+	virtual void setShowMesh(bool show);
 
 public:
 	Geom::Box origBox, mBox;

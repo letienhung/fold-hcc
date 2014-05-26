@@ -36,7 +36,7 @@ void RodNode::createScaffold(bool useAid)
 
 void RodNode::drawScaffold()
 {
-	mRod.draw(3.0, mRodColor);
+	mRod.draw(3.0, mRodColor, false);
 }
 
 bool RodNode::isPerpTo( Vector3 v, double dotThreshold )
@@ -48,4 +48,11 @@ bool RodNode::isPerpTo( Vector3 v, double dotThreshold )
 Structure::Node* RodNode::clone()
 {
 	return new RodNode(*this);
+}
+
+void RodNode::setThickness( double thk )
+{
+	int aid = mBox.getAxisId(mRod.Direction);
+	mBox.Extent[(aid+1)%3] = thk / 2;
+	mBox.Extent[(aid+2)%3] = thk / 2;
 }

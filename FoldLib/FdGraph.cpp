@@ -225,7 +225,7 @@ void FdGraph::draw()
 	drawSpecial();
 }
 
-FdNode* FdGraph::merge( QVector<QString> nids )
+FdNode* FdGraph::wrapAsBundleNode( QVector<QString> nids )
 {
 	// retrieve all nodes
 	QVector<FdNode*> ns;
@@ -244,14 +244,14 @@ FdNode* FdGraph::merge( QVector<QString> nids )
 	foreach (FdNode* n, ns)	plainNodes += n->getPlainNodes();
 	QString bid = getBundleName(plainNodes);
 	Geom::Box box = getBundleBox(plainNodes);
-	BundleNode* mergedNode = new BundleNode(bid, box, plainNodes); 
-	Structure::Graph::addNode(mergedNode);
+	BundleNode* bundleNode = new BundleNode(bid, box, plainNodes); 
+	Structure::Graph::addNode(bundleNode);
 
 	// remove original nodes
 	foreach (FdNode* n, ns)
 		Structure::Graph::removeNode(n->mID);
 
-	return mergedNode;
+	return bundleNode;
 }
 
 
@@ -359,19 +359,19 @@ QVector<FdNode*> FdGraph::split( QString nid, QVector<Geom::Plane>& planes )
 void FdGraph::showCuboids( bool show )
 {
 	foreach(FdNode* n, getFdNodes())
-		n->showCuboids = show;
+		n->setShowCuboid(show);
 }
 
 void FdGraph::showScaffold( bool show )
 {
 	foreach(FdNode* n, getFdNodes())
-		n->showScaffold = show;
+		n->setShowScaffold(show);
 }
 
 void FdGraph::showMeshes( bool show )
 {
 	foreach(FdNode* n, getFdNodes())
-		n->showMesh = show;
+		n->setShowMesh(show);
 }
 
 void FdGraph::changeNodeType( FdNode* n )
@@ -586,4 +586,21 @@ void FdGraph::addDebugScaffold( FdGraph* ds )
 
 	debugSs += ds;
 	properties["debugScaffolds"].setValue(debugSs);
+}
+
+void FdGraph::unwrapBundleNodes()
+{
+	foreach (Structure::Node* n, nodes)
+	{
+		if (n->hasTag(BUNDLE_TAG))
+		{
+			BundleNode* bnode = (BundleNode*)n;
+			foreach (FdNode* cn, bnode->mNodes)
+			{
+				Structure::Graph::addNode(cn->clone());
+			}
+
+			removeNode(bnode->mID);
+		}
+	}
 }
