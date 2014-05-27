@@ -72,6 +72,7 @@ public slots:
 	// snapshot
 	void saveSnapshot();
 	void saveSnapshotAll();
+	void exportSVG();
 
 	// hide
 	void hideSelectedNodes();

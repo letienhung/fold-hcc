@@ -33,7 +33,7 @@ public slots:
 	void setChainList(QStringList labels);
 	void setKeyframeSlider(int N);
 	void setSolutionList(int N);
-
+	
 signals:
 	void dcGraphSelectionChanged(QString id);
 	void blockSelectionChanged(QString id);

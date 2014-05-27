@@ -34,6 +34,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->f_manager->connect(ui->useThickness, SIGNAL(stateChanged(int)), SLOT(useThickness(int)));
 	plugin->f_manager->connect(ui->thickness, SIGNAL(valueChanged(double)), SLOT(setThickness(double)));
 	plugin->f_manager->connect(ui->foldabilize, SIGNAL(clicked()), SLOT(foldabilize()));
+	plugin->connect(ui->exportVector, SIGNAL(clicked()), SLOT(exportSVG()));
 
 	// decompose
 	plugin->f_manager->connect(ui->decompose, SIGNAL(clicked()), SLOT(decompose()));
@@ -162,3 +163,4 @@ void FdWidget::selectSolution()
 		emit(solutionSelectionChanged(idx));
 	}
 }
+

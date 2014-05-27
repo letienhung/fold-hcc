@@ -366,4 +366,46 @@ void FdPlugin::colorMasterSlave()
 	updateScene();
 }
 
+void FdPlugin::exportSVG()
+{
+	QVector<Geom::Segment> segs;
+	FdGraph* activeFd = activeScaffold();
+	if (!activeFd) return;
+
+	// SVG output file
+	QString filename = QFileDialog::getSaveFileName(0, tr("Save Current Scaffold"), NULL, tr("SVG file (*.svg)"));
+	
+	QFile file( filename );
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) return;
+	QTextStream out(&file);
+
+	// SVG Header
+	out << "<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>\n";
+
+	// Style
+	QString style = "stroke:#660000; fill:#FFAAFF; fill-opacity: 0.75; stroke-width: 1; stroke-miterlimit: round";
+
+	foreach (FdNode* n, activeFd->getFdNodes()){
+		if (n->mType == FdNode::PATCH)
+		{
+			/*// Edges
+			foreach (Geom::Segment seg, ((PatchNode*)n)->mPatch.getEdgeSegments()){
+				qglviewer::Vec proj0 = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(seg.P0) );
+				qglviewer::Vec proj1 = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(seg.P1) );
+				out << QString("<line x1='%1' y1='%2' x2='%3' y2='%4' style='%5' />").arg(proj0.x).arg(proj0.y).arg(proj1.x).arg(proj1.y).arg(style);
+			}*/
+
+			// Polygons
+			out << QString("\n<polygon points='");
+			foreach (Vector3 seg, ((PatchNode*)n)->mPatch.getConners()){
+				qglviewer::Vec proj = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(seg) );
+				out << QString("%1,%2 ").arg(proj.x).arg(proj.y);
+			}
+			out << QString("' style='%1'/>\n").arg( style );
+		}
+	}
+
+	out << "\n</svg>";
+}
+
 Q_EXPORT_PLUGIN(FdPlugin)
