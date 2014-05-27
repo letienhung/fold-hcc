@@ -7,52 +7,71 @@
 class ChainGraph : public FdGraph
 {
 public:
-	// constructor
     ChainGraph(FdNode* slave, PatchNode* base, PatchNode* top);
 
 	// fold options
 	QVector<FoldOption*> generateFoldOptions(int nSplits, int nUsedChunks, int nChunks);
-
-	// fold region
 	Geom::Rectangle getFoldRegion(FoldOption* fn);
 	Geom::Rectangle getMaxFoldRegion(bool right);
 
 	// modify chain
 	void applyFoldOption(FoldOption* fn);
-	void createSlavePart(FoldOption* fn);
-	QVector<Geom::Plane> generateCutPlanes(int nbSplit);
-	void sortChainParts();
-	void resetHingeLinks();
+	void resetChainParts(FoldOption* fn);
+	void resetHingeLinks(FoldOption* fn);
 	void setActiveLinks(FoldOption* fn);
 
 	// animation
 	void fold(double t);
 	FdGraph* getKeyframe(double t);
-
-	// setter
 	void setFoldDuration(double t0, double t1);
 
+	// helpers
+	Interval getShunkInterval();
+	double getShunkScale();
+	Geom::Segment getShrunkSlaveSeg();
+	Geom::Segment getShrunkTopTraj();
+	QVector<Geom::Plane> generateCutPlanes(FoldOption* fn);
+
 public:
-	PatchNode*			topMaster;
-	PatchNode*			baseMaster;
-	Geom::Segment		mMC2Trajectory;	// segment from m2's center to its projection on m1
-										// the trajectory of m2's center during folding
+	PatchNode*			topMaster;	// top
+	PatchNode*			baseMaster;	// base							
+	PatchNode*			origSlave;	// original slave
+	QVector<PatchNode*>	chainParts;	// sorted parts in the chain, from base to top
 
-	PatchNode*			mOrigSlave;		// original slave, which is split into chain parts
-	QVector<PatchNode*>	mParts;			// sorted parts in the chain, from base to top
+	//	topJoint				topCenter
+	//		|\						^
+	//		: \						|
+	//		:  \ slaveSeg			| topTraj
+	//		:   \					|
+	//		:    \					|
+	//		:-----> (x)baseJoint	|
+	//	    rightSeg			baseRect
+	Geom::Segment		baseJoint;	// joint between slave and base
+	Geom::Segment		topJoint;	// joint between slave and top
+	Geom::Segment		slaveSeg;	// 2D abstraction, perp to joints (base to top)
+	Geom::Segment		rightSeg;	// right direction, perp to joints
+	Vector3				rightSegV;	// direction of rightSeg
+	Geom::Segment		topTraj;	// trajectory of top's center during folding (base to top)
 
-	Geom::Segment		baseJoint;		// joint segment between slave and base
-	Geom::Segment		topJoint;		// joint segment between slave and top
-	Geom::Segment		UpSeg;		// perp segment on slave
-	Vector3				rightV;			// perp direction on base to the right
+	QVector<FdLink*>	rightLinks;	// right hinges 
+	QVector<FdLink*>	leftLinks;	// left hinges
+	QVector<FdLink*>	activeLinks;// active hinges
+	Interval			duration;	// time interval
+	bool				foldToRight;
 
-	// for each joint, there are two hinges: left and right
-	QVector<FdLink*> rightLinks;
-	QVector<FdLink*> leftLinks;
-	QVector<FdLink*> activeLinks;
-	TimeInterval mFoldDuration;
 
-	// thickness
-	double half_thk;
-	double base_offset;
+	//			topJoint				
+	//	half_thk  __|\___________			
+	//				::\				
+	//				:: \ 		
+	//				::  \			
+	//				::   \			
+	//				::	  \	slaveSeg		
+	//				::     \			
+	//				::      \			
+	//	     _______::_______\_______			
+	//	baseOffset	:--------->
+	//				 rightSeg	
+	double halfThk;		// thickness of slave and top master
+	double baseOffset;	// offset caused by thickness of base master and its super siblings
 };

@@ -35,7 +35,7 @@ public:
 	int nSplits;
 
 	// duration
-	TimeInterval duration;
+	Interval duration;
 
 	// fold region
 	Geom::Rectangle region;

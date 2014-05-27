@@ -59,7 +59,7 @@ public:
 	double getTimeLength();
 public:
 	// time interval
-	TimeInterval mFoldDuration;
+	Interval mFoldDuration;
 
 	// master related
 	PatchNode* baseMaster;

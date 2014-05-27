@@ -11,8 +11,8 @@ class FdGraph;
 
 // typedef
 typedef QVector< QVector<FdNode*> > FdNodeArray2D;
-typedef QPair<double, double> TimeInterval;
-#define	TIME_INTERVAL(a, b) qMakePair<double, double>(a, b)
+typedef QPair<double, double> Interval;
+#define	INTERVAL(a, b) qMakePair<double, double>(a, b)
 
 // tags
 #define BUNDLE_TAG "isBundle"
@@ -41,6 +41,7 @@ typedef QPair<double, double> TimeInterval;
 #define MAXFR "MAXFondingRegion"
 #define MINFR "MINFoldingRegion"
 #define SHOW_AFS "showAFS"
+#define DEBUG_PLANES "debugPlanes"
 
 // Qt meta type
 Q_DECLARE_METATYPE(Vector3)
@@ -57,6 +58,7 @@ Q_DECLARE_METATYPE(StringStringMap)
 typedef QMap<QString, QSet<QString> > StringSetMap;
 Q_DECLARE_METATYPE(StringSetMap)
 Q_DECLARE_METATYPE(QSet<QString>)
+Q_DECLARE_METATYPE(QVector<Geom::Plane>)
 
 // distance between fd nodes
 Geom::Segment getDistSegment( FdNode* n1, FdNode* n2 );
@@ -85,10 +87,10 @@ QString getBundleName(const QVector<FdNode*>& nodes);
 Geom::Box getBundleBox(const QVector<FdNode*>& nodes);
 
 // time intervals
-bool overlap(TimeInterval itv1, TimeInterval itv2);
-bool within(double t, TimeInterval itv);
-bool passed(double t, TimeInterval itv);
-double getLocalTime(double globalT, TimeInterval itv);
+bool overlap(Interval itv1, Interval itv2);
+bool within(double t, Interval itv);
+bool passed(double t, Interval itv);
+double getLocalTime(double globalT, Interval itv);
 
 // masters
 QVector<PatchNode*> getAllMasters(FdGraph* scaffold);

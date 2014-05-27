@@ -1,6 +1,7 @@
 #include "Plane.h"
 #include "Numeric.h"
 #include "Line.h"
+#include "CustomDrawObjects.h"
 
 Geom::Plane::Plane()
 {
@@ -101,5 +102,12 @@ void Geom::Plane::flip()
 Geom::Plane Geom::Plane::translated( Vector3 t )
 {
 	return Plane(Constant + t, Normal);
+}
+
+void Geom::Plane::draw()
+{
+	PlaneSoup ps;
+	ps.addPlane(Constant, Normal);
+	ps.draw();
 }
 

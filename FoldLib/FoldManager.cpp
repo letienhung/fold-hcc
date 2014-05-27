@@ -289,8 +289,6 @@ void FoldManager::foldabilize()
 	// foldabilize
 	selDc->foldabilize(); 
 	
-	//return;
-
 	// forward message
 	selDc->generateKeyframes(nbKeyframes);
 

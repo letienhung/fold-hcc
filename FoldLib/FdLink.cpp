@@ -19,7 +19,7 @@ FdLink::FdLink( FdNode* n1, FdNode* n2, Hinge* h)
 FdLink::FdLink( FdLink& other )
 	:Link(other)
 {
-	// to do: clone hinge
+	hinge = NULL;
 }
 
 FdLink::~FdLink()

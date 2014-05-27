@@ -464,6 +464,15 @@ void FdGraph::drawSpecial()
 			box.drawWireframe(2.0, color);
 		}
 	}
+
+	if (properties.contains(DEBUG_PLANES))
+	{
+		QVector<Geom::Plane> planes = properties[DEBUG_PLANES].value<QVector<Geom::Plane> >();
+		foreach (Geom::Plane p, planes)
+		{
+			p.draw();
+		}
+	}
 }
 
 

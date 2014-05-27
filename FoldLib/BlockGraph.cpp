@@ -197,7 +197,7 @@ QVector<QString> BlockGraph::getInbetweenOutsideParts( FdGraph* superKeyframe, Q
 	double t0 = timeLine.getProjTime(base_master->center());
 	double t1 = timeLine.getProjTime(top_master->center());
 	double epsilon = 0.05 * (t1 - t0);
-	TimeInterval m1m2 = TIME_INTERVAL(t0 + epsilon, t1 - epsilon);
+	Interval m1m2 = INTERVAL(t0 + epsilon, t1 - epsilon);
 
 	// find parts in between m1 and m2
 	QVector<QString> inbetweens;
@@ -223,7 +223,7 @@ QVector<QString> BlockGraph::getInbetweenOutsideParts( FdGraph* superKeyframe, Q
 			double t0 = timeLine.getProjTime(sklt.P0);
 			double t1 = timeLine.getProjTime(sklt.P1);
 			if (t0 > t1) std::swap(t0, t1);
-			TimeInterval ti = TIME_INTERVAL(t0, t1);
+			Interval ti = INTERVAL(t0, t1);
 
 			if (overlap(ti, m1m2))	inbetweens << n->mID;
 		}
@@ -352,7 +352,7 @@ FdGraph* BlockGraph::getKeyframe( double t )
 				foldedChains << NULL;
 			else
 			{
-				double localT = getLocalTime(t, chains[i]->mFoldDuration);
+				double localT = getLocalTime(t, chains[i]->duration);
 				foldedChains << chains[i]->getKeyframe(localT);
 			}
 		}
@@ -536,7 +536,7 @@ void BlockGraph::filterFoldOptions( QVector<FoldOption*>& options, int cid )
 			foreach (QString mid, masterTimeStamps.keys())
 			{
 				double mstamp = masterTimeStamps[mid];
-				if (!within(mstamp, chain->mFoldDuration)) continue;
+				if (!within(mstamp, chain->duration)) continue;
 
 				Geom::Rectangle m_rect = ((PatchNode*)getNode(mid))->mPatch;
 				if (fAreasIntersect(fn->region, m_rect))
@@ -844,13 +844,13 @@ void BlockGraph::updateSolutionWithThickness()
 	{
 		if (useThickness)
 		{
-			chain->half_thk = thickness / 2;
-			chain->base_offset = thickness / 2;
+			chain->halfThk = thickness / 2;
+			chain->baseOffset = thickness / 2;
 		}
 		else
 		{
-			chain->half_thk = 0;
-			chain->base_offset = 0;
+			chain->halfThk = 0;
+			chain->baseOffset = 0;
 		}
 	}
 

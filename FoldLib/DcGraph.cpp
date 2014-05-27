@@ -683,7 +683,7 @@ void DcGraph::foldabilize()
 	// greater than 1.0 means never be folded
 	foreach (BlockGraph* b, blocks)
 	{
-		b->mFoldDuration = TIME_INTERVAL(1.0, 2.0);
+		b->mFoldDuration = INTERVAL(1.0, 2.0);
 		b->removeTag(FOLDED_TAG);
 	}
 
@@ -714,7 +714,7 @@ void DcGraph::foldabilize()
 		next_block->addTag(FOLDED_TAG);
 		double timeLength = next_block->getTimeLength() * timeScale;
 		double nextTime = currTime + timeLength;
-		next_block->mFoldDuration = TIME_INTERVAL(currTime, nextTime);
+		next_block->mFoldDuration = INTERVAL(currTime, nextTime);
 
 		// get best next
 		std::cout << "\n============NEXT============\n";
@@ -745,7 +745,7 @@ void DcGraph::foldabilize()
 		
 		BlockGraph* mergedBlock = createBlock(sCluster);
 		mergedBlock->foldabilize(currKeyframe);
-		mergedBlock->mFoldDuration = TIME_INTERVAL(currTime, 1.0);
+		mergedBlock->mFoldDuration = INTERVAL(currTime, 1.0);
 	}
 
 	delete currKeyframe;
@@ -767,10 +767,10 @@ int DcGraph::getBestNextBlockIndex(double currTime, FdGraph* currKeyframe)
 		if (passed(currTime, nextBlock->mFoldDuration)) continue;
 
 		// predict the folding currBlock
-		TimeInterval next_ti = nextBlock->mFoldDuration;
+		Interval next_ti = nextBlock->mFoldDuration;
 		double timeLength = nextBlock->getTimeLength() * timeScale;
 		double nextTime = currTime + timeLength;
-		nextBlock->mFoldDuration = TIME_INTERVAL(currTime, nextTime);
+		nextBlock->mFoldDuration = INTERVAL(currTime, nextTime);
 		nextBlock->computeAvailFoldingRegion(currKeyframe);
 		FdGraph* nextKeyframe = getSuperKeyframe(nextTime);
 		// debug
@@ -793,10 +793,10 @@ int DcGraph::getBestNextBlockIndex(double currTime, FdGraph* currKeyframe)
 				if (passed(nextTime, next2Block->mFoldDuration)) continue;
 
 				// predict the folding of next2Block
-				TimeInterval next2_ti = next2Block->mFoldDuration;
+				Interval next2_ti = next2Block->mFoldDuration;
 				double timeLength = next2Block->getTimeLength() * timeScale;
 				double next2Time = nextTime + timeLength;
-				next2Block->mFoldDuration = TIME_INTERVAL(nextTime, next2Time);
+				next2Block->mFoldDuration = INTERVAL(nextTime, next2Time);
 				next2Block->computeAvailFoldingRegion(nextKeyframe);
 				FdGraph* next2Keyframe = getSuperKeyframe(next2Time);
 

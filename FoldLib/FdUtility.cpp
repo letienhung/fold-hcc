@@ -171,7 +171,7 @@ Geom::Segment detectJointSegment( PatchNode* slave, PatchNode* master )
 	return jointSeg;
 }
 
-double getLocalTime( double globalT, TimeInterval itv )
+double getLocalTime( double globalT, Interval itv )
 {
 	if (globalT <= itv.first) return 0;
 	else if(globalT > itv.first && globalT < itv.second)
@@ -286,13 +286,13 @@ bool hasIntersection( FdNode* slave, PatchNode* master, double thr )
 	return ratio > 0.05; // this is ugly but can avoid some cuts
 }
 
-bool overlap( TimeInterval itv1, TimeInterval itv2 )
+bool overlap( Interval itv1, Interval itv2 )
 {
 	return within(itv1.first, itv2) || within(itv1.second, itv2) ||
 		within(itv2.first, itv1) || within(itv2.second, itv1);
 }
 
-bool within( double t, TimeInterval itv )
+bool within( double t, Interval itv )
 {
 	return inRange(t, itv.first, itv.second);
 }
@@ -430,7 +430,7 @@ Geom::Rectangle2 computeAABB2D( QVector<Vector2> &pnts )
 	return Geom::Rectangle2(conners);
 }
 
-bool passed( double t, TimeInterval itv )
+bool passed( double t, Interval itv )
 {
 	return t >= itv.second;
 }

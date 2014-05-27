@@ -233,8 +233,20 @@ void FdPlugin::exportCurrent()
 	showMessage("Current mesh has been exported.");
 }
 
+#include "ChainGraph.h"
 void FdPlugin::test1()
 {
+	BlockGraph* selBlk = f_manager->getSelBlock();
+	if (selBlk)
+	{
+		FoldOption fn(true, 1, 0, 1, "hhh");
+		foreach (ChainGraph* chain, selBlk->chains)
+		{
+			chain->getFoldRegion(&fn);
+			chain->applyFoldOption(&fn);
+			chain->fold(0.5);
+		}
+	}
 }
 
 void FdPlugin::test2()
