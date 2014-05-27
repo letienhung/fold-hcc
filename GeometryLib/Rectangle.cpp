@@ -306,6 +306,11 @@ Geom::Rectangle Geom::Rectangle::getProjection( Rectangle& rect )
 	return get3DRectangle(get2DRectangle(rect));
 }
 
+Geom::Segment Geom::Rectangle::getProjection( Segment& s )
+{
+	return get3DSegment(get2DSegment(s));
+}
+
 SurfaceMesh::Vector3 Geom::Rectangle::getProjectedVector( Vector3 v )
 {
 	return getProjection(Center + v) - Center;

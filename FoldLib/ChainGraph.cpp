@@ -41,15 +41,17 @@ ChainGraph::ChainGraph( FdNode* slave, PatchNode* base, PatchNode* top)
 
 	// joint
 	baseJoint = detectJointSegment(mOrigSlave, baseMaster);
+	topJoint = detectJointSegment(mOrigSlave, topMaster);
+	if (dot(topJoint.Direction, baseJoint.Direction) < 0) topJoint.flip();
 
 	// upSeg
 	Vector3 baseP0 = baseJoint.P0;
 	QVector<Geom::Segment> edges = mOrigSlave->mPatch.getPerpEdges(baseJoint.Direction);
-	UpSeg = edges[0].contains(baseP0) ? edges[0] : edges[1];
-	if (UpSeg.getProjCoordinates(baseP0) > 0) UpSeg.flip();
+	upSeg = edges[0].contains(baseP0) ? edges[0] : edges[1];
+	if (upSeg.getProjCoordinates(baseP0) > 0) upSeg.flip();
 
 	// righV
-	Vector3 crossBaseJointUp = cross(baseJoint.Direction, UpSeg.Direction);
+	Vector3 crossBaseJointUp = cross(baseJoint.Direction, upSeg.Direction);
 	rightV = baseMaster->mPatch.getProjectedVector(crossBaseJointUp);
 	rightV.normalize();
 
@@ -92,7 +94,7 @@ void ChainGraph::fold( double t )
 	double height = mMC2Trajectory.length();
 	double top_dt = half_thk / height;
 	double base_dt = base_offset / height;
-	Geom::Segment chainUpSeg_copy = UpSeg;
+	Geom::Segment chainUpSeg_copy = upSeg;
 	chainUpSeg_copy.cropRange01(base_dt, 1 - top_dt);
 	double h_length = chainUpSeg_copy.length() / mParts.size() * (1 - t);
 
@@ -166,8 +168,8 @@ void ChainGraph::createSlavePart(FoldOption* fn)
 	double height = mMC2Trajectory.length();
 	double top_dt = half_thk / height;
 	double base_dt = base_offset / height;
-	int vaid = slave->mBox.getAxisId(UpSeg.Direction);
-	if (dot(slave->mBox.Axis[vaid], UpSeg.Direction) > 0)
+	int vaid = slave->mBox.getAxisId(upSeg.Direction);
+	if (dot(slave->mBox.Axis[vaid], upSeg.Direction) > 0)
 		slave->mBox.scaleRange01(vaid, base_dt, 1-top_dt);
 	else slave->mBox.scaleRange01(vaid, top_dt, 1-base_dt);
 
@@ -201,7 +203,7 @@ void ChainGraph::resetHingeLinks()
 	double height = mMC2Trajectory.length();
 	double top_dt = half_thk / height;
 	double base_dt = base_offset / height;
-	Geom::Segment upSegCopy = UpSeg;
+	Geom::Segment upSegCopy = upSeg;
 	upSegCopy.cropRange01(base_dt, 1 - top_dt);
 
 	// shift base joint segment for thickness
@@ -209,7 +211,7 @@ void ChainGraph::resetHingeLinks()
 	bJoint.translate(base_offset * upSegCopy.Direction);
 
 	// hinge links between master and slave
-	Vector3 upV = UpSeg.Direction;
+	Vector3 upV = upSeg.Direction;
 	Vector3 jointV = bJoint.Direction;
 	Vector3 posR = bJoint.P0 + half_thk * rightV;
 	Vector3 posL = bJoint.P1 - half_thk * rightV;
@@ -237,7 +239,7 @@ void ChainGraph::resetHingeLinks()
 		Vector3 deltaV =  pos - upSegCopy.P0;
 		Geom::Segment joint = bJoint.translated(deltaV);
 
-		Vector3 upV = UpSeg.Direction;
+		Vector3 upV = upSeg.Direction;
 		Vector3 jointV = joint.Direction;
 		Vector3 posR = joint.P0 + half_thk * rightV;
 		Vector3 posL = joint.P1 - half_thk * rightV;
@@ -315,26 +317,37 @@ void ChainGraph::setFoldDuration( double t0, double t1 )
 
 Geom::Rectangle ChainGraph::getFoldRegion( FoldOption* fn )
 {
-	// axis and rightV
-	Vector3 rV = rightV;
-	Geom::Segment seg1 = baseJoint;
-	if (!fn->rightSide) rV *= -1;
+	Geom::Rectangle base_rect = baseMaster->mPatch;
+	Geom::Segment topJointProj = base_rect.getProjection(topJoint);
+	
+	Vector3 dV = topJointProj.Center - baseJoint.Center;
+	double d = fabs(dot(dV, rightV));
+	double l = upSeg.length();
+	double offset = (l - d) / (fn->nSplits + 1);
+
+	Geom::Segment rightSeg, leftSeg;
+	if (fn->rightSide)
+	{
+		leftSeg = topJointProj;
+		rightSeg = baseJoint.translated(offset * rightV);
+	}
+	else
+	{
+		leftSeg = topJointProj.translated(-offset * rightV);
+		rightSeg = baseJoint;
+	}
 
 	// shrink along axisSeg
 	double t0 = fn->position;
 	double t1 = t0 + fn->scale;
-	seg1.cropRange01(t0, t1);
-	Geom::Segment seg2 = seg1;
+	leftSeg.cropRange01(t0, t1);
+	rightSeg.cropRange01(t0, t1);
 
-	// shift the axis along rightV
-	double width = UpSeg.length() / (fn->nSplits + 1);
-	seg2.translate(width * rV);
-
-	// shrink epsilon
+	// create fold region
 	Geom::Rectangle rect(QVector<Vector3>() 
-		<< seg1.P0	<< seg1.P1
-		<< seg2.P1  << seg2.P0 );
-	rect.scale(1 - ZERO_TOLERANCE_LOW);
+		<< leftSeg.P0	<< leftSeg.P1
+		<< rightSeg.P1  << rightSeg.P0 );
+	//rect.scale(1 - ZERO_TOLERANCE_LOW);
 	return rect;
 }
 
@@ -346,9 +359,8 @@ Geom::Rectangle ChainGraph::getMaxFoldRegion( bool right )
 
 QVector<Geom::Plane> ChainGraph::generateCutPlanes( int nbSplit )
 {
-	// plane of master0
+	// plane of base
 	Geom::Plane base_plane = baseMaster->mPatch.getPlane();
-	if (base_plane.whichSide(mOrigSlave->center()) < 0) base_plane.flip();
 
 	// thickness
 	Vector3 dv = base_offset * base_plane.Normal;
