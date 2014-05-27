@@ -34,7 +34,7 @@ FdPlugin::FdPlugin()
 	drawCuboid = true;
 	drawScaffold = true;
 	drawMesh = false;
-	drawAFS = true;
+	drawAFS = false;
 
 	// color dialog
 	qColorDialog = NULL;
@@ -355,11 +355,10 @@ void FdPlugin::colorMasterSlave()
 	{
 		foreach (FdNode* n, activeFd->getFdNodes())
 		{
-			QColor c = QColor::fromRgb(255, 110, 80);
-			if (n->hasTag(MASTER_TAG))
-				c = QColor::fromRgb(173, 173, 173);
+			double grey = 240;
+			QColor c = (n->hasTag(MASTER_TAG)) ? 
+				QColor::fromRgb(255, 110, 80) : QColor::fromRgb(grey, grey, grey);
 			c.setAlphaF(0.78);
-
 			n->mColor = c;
 		}
 	}

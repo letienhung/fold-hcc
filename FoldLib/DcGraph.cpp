@@ -868,14 +868,15 @@ void DcGraph::generateKeyframes( int N )
 	for (int i = 0; i < N; i++)
 	{
 		FdGraph* kf = getKeyframe(i * step);
+		keyframes << kf;
+
 		kf->unwrapBundleNodes();
 		kf->hideEdgeRods();
-		keyframes << kf;
 
 		// color
 		foreach (FdNode* n, kf->getFdNodes())
 		{
-			double grey = 200;
+			double grey = 240;
 			QColor c = (n->hasTag(ACTIVE_TAG)) ? 
 				QColor::fromRgb(255, 110, 80) : QColor::fromRgb(grey, grey, grey);
 			c.setAlphaF(0.78);
