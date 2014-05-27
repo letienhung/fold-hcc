@@ -31,15 +31,14 @@ Structure::Node* ChainNode::clone()
 
 //////////////////////////////////////////////////////////////////////////
 
-FoldOption::FoldOption( int hIdx, bool right, double s, double p, int n, QString id )
-	: Node(id), jointAxisIdx(hIdx), rightSide(right), scale(s), position(p), nSplits(n)
+FoldOption::FoldOption( bool right, double s, double p, int n, QString id )
+	: Node(id), rightSide(right), scale(s), position(p), nSplits(n)
 {
 }
 
 FoldOption::FoldOption( FoldOption &other )
 	: Node(other)
 {
-	jointAxisIdx = other.jointAxisIdx;
 	rightSide = other.rightSide;
 	scale = other.scale;
 	position = other.position;

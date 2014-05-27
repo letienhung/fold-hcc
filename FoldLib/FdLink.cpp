@@ -34,10 +34,10 @@ Structure::Link* FdLink::clone()
 
 void FdLink::draw()
 {
-	//if (properties["active"].toBool() && hinge)
-	//{
-	//	hinge->draw();
-	//}
+	if (hasTag(ACTIVE_HINGE_TAG) && hinge)
+	{
+		hinge->draw();
+	}
 }
 
 FdNode* FdLink::fix()

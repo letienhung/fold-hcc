@@ -1,13 +1,13 @@
 #include "FoldManager.h"
 #include "FdUtility.h"
-#include "HChain.h"
+#include "ChainGraph.h"
 
 #include <QFileDialog>
 #include <QDir>
 
 FoldManager::FoldManager()
 {
-	scaffold = NULL;
+	initScaffold = NULL;
 	dcScaffold = NULL;
 
 	selDcIdx = -1;
@@ -20,8 +20,6 @@ FoldManager::FoldManager()
 FoldManager::~FoldManager()
 {
 	clearDcGraphs();
-
-	if (dcScaffold) delete dcScaffold;
 }
 
 void FoldManager::clearDcGraphs()
@@ -37,7 +35,7 @@ void FoldManager::clearDcGraphs()
 // input
 void FoldManager::setScaffold( FdGraph* fdg )
 {
-	scaffold = fdg;
+	initScaffold = fdg;
 
 	clearDcGraphs();
 	updateDcList();
@@ -56,13 +54,9 @@ void FoldManager::setSqzV( QString sqzV_str )
 void FoldManager::identifyMasters()
 {
 	// squeezing direction
-	Geom::AABB aabb = scaffold->computeAABB();
+	Geom::AABB aabb = initScaffold->computeAABB();
 	Geom::Box box = aabb.box();
 	int sqzAId = aabb.box().getAxisId(sqzV);
-
-	// clone scaffold for composition
-	if (dcScaffold) delete dcScaffold;
-	dcScaffold = (FdGraph*)scaffold->clone();
 
 	// threshold
 	double perpThr = 0.1;
@@ -146,12 +140,18 @@ void FoldManager::identifyMasters()
 
 void FoldManager::decompose()
 {
+	// clone scaffold for composition
+	dcScaffold = (FdGraph*)initScaffold->clone();
+
 	// masters
 	identifyMasters();
 
 	// decompose
 	QString id = "Dc_" + QString::number(dcGraphs.size());
 	dcGraphs.push_back(new DcGraph(id, dcScaffold, masterIdGroups, sqzV));
+
+	// delete temp dc scaffold
+	delete dcScaffold;
 
 	// update ui
 	updateDcList();
@@ -275,7 +275,7 @@ FdGraph* FoldManager::activeScaffold()
 {
 	DcGraph* selLy = getSelDcGraph();
 	if (selLy)	return selLy->activeScaffold();
-	else		return scaffold;
+	else		return initScaffold;
 }
 
 void FoldManager::foldabilize()
@@ -287,7 +287,9 @@ void FoldManager::foldabilize()
 	if (!selDc) return;
 
 	// foldabilize
-	selDc->foldabilize();  
+	selDc->foldabilize(); 
+	
+	//return;
 
 	// forward message
 	selDc->generateKeyframes(nbKeyframes);

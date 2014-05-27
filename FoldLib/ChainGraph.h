@@ -7,23 +7,23 @@
 class ChainGraph : public FdGraph
 {
 public:
-	enum CHAIN_TYPE{T_CHAIN, H_CHAIN};
-
-public:
 	// constructor
-    ChainGraph(FdNode* slave, PatchNode* master1, PatchNode* master2);
-	void setupBasisOrientations();
+    ChainGraph(FdNode* slave, PatchNode* base, PatchNode* top);
 
-	// foldem
+	// fold options
 	QVector<FoldOption*> generateFoldOptions(int nSplits, int nUsedChunks, int nChunks);
 
+	// fold region
+	Geom::Rectangle getFoldRegion(FoldOption* fn);
+	Geom::Rectangle getMaxFoldRegion(bool right);
+
 	// modify chain
-	virtual void applyFoldOption(FoldOption* fn);
+	void applyFoldOption(FoldOption* fn);
 	void createSlavePart(FoldOption* fn);
-	virtual QVector<Geom::Plane> generateCutPlanes(int nbSplit) = 0;
+	QVector<Geom::Plane> generateCutPlanes(int nbSplit);
 	void sortChainParts();
 	void resetHingeLinks();
-	void setupActiveLinks(FoldOption* fn);
+	void setActiveLinks(FoldOption* fn);
 
 	// animation
 	void fold(double t);
@@ -33,25 +33,22 @@ public:
 	void setFoldDuration(double t0, double t1);
 
 public:
-	CHAIN_TYPE mType;
+	PatchNode*			topMaster;
+	PatchNode*			baseMaster;
+	Geom::Segment		mMC2Trajectory;	// segment from m2's center to its projection on m1
+										// the trajectory of m2's center during folding
 
-	QVector<PatchNode*>		mMasters;		// one or two masters: from low to high
-	Geom::Segment			mMC2Trajectory;	// segment from m2's center to its projection on m1
-											// the trajectory of m2's center during folding
+	PatchNode*			mOrigSlave;		// original slave, which is split into chain parts
+	QVector<PatchNode*>	mParts;			// sorted parts in the chain, from base to top
 
-	FdNode*					mOrigSlave;		// original part, which is split into chain parts
-	QVector<FdNode*>		mParts;			// sorted parts in the chain, from masters[0] to masters[1]
+	Geom::Segment		baseJoint;		// joint segment between slave and base
+	Geom::Segment		topJoint;		// joint segment between slave and top
+	Geom::Segment		UpSeg;		// perp segment on slave
+	Vector3				rightV;			// perp direction on base to the right
 
-	QVector<Geom::Segment>	rootJointSegs;	// hinge segments between mOrigPart and masters[0]
-	Geom::Segment			chainUpSeg;		// perp segment on mOrigPart
-	QVector<Vector3>		rootRightVs;	// perp direction on masters[0] to the right
-
-	// each joint has one(patch) or two(rod) joint axis
-	// for each joint axis, there are two hinge links
-	// \hingeLinks: 
-	//		1st dimension: joint
-	//		2nd dimension: hinge pairs [right: 2*j, left: 2*j+1] for joint axis j
-	QVector< QVector<FdLink*> > hingeLinks;
+	// for each joint, there are two hinges: left and right
+	QVector<FdLink*> rightLinks;
+	QVector<FdLink*> leftLinks;
 	QVector<FdLink*> activeLinks;
 	TimeInterval mFoldDuration;
 

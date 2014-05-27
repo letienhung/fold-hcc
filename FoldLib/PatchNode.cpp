@@ -11,14 +11,29 @@ PatchNode::PatchNode(QString id, Geom::Box &b, MeshPtr m)
 	createScaffold(false);
 }
 
-PatchNode::PatchNode(QString id, Geom::Box &b, Vector3 v, MeshPtr m)
-	: FdNode(id, b, m)
+PatchNode::PatchNode(RodNode* rodNode, Vector3 v)
+	: FdNode(rodNode->mID)
 {
 	mType = FdNode::PATCH;
 
+	// create new box
+	Vector3 X = rodNode->mRod.Direction;
+	Vector3 Y = cross(X, v).normalized();
+	Geom::Frame frame(rodNode->mBox.Center, X, Y);
+	double extX = rodNode->mRod.length() / 2;
+	int aid = rodNode->mBox.getAxisId(Y);
+	double extY = rodNode->mBox.Extent[aid];
+	mBox = Geom::Box(frame, Vector3(extX, extY, extY));
+
+	// mesh
+	mMesh = rodNode->mMesh;
+	encodeMesh();
+
+	// scaffold
 	mAid= mBox.getAxisId(v);
 	createScaffold(true);
 }
+
 
 PatchNode::PatchNode(PatchNode& other)
 	:FdNode(other)

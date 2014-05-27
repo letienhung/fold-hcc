@@ -14,6 +14,7 @@ public:
 	enum NODE_TYPE{NONE, ROD, PATCH};
 
 public:
+	FdNode(QString id = "");
     FdNode(QString id, Geom::Box &b, MeshPtr m);
 	FdNode(FdNode& other);
 	~FdNode();

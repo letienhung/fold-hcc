@@ -17,16 +17,13 @@ class FoldOption : public Structure::Node
 {
 public:
 	FoldOption(QString id);
-	FoldOption(int hIdx, bool right, double s, double p, int n, QString id);
+	FoldOption( bool right, double s, double p, int n, QString id);
 	FoldOption(FoldOption &other);
 	Node* clone();
 
 	double getCost();// cost
 
 public:
-	// idx of root segment
-	int jointAxisIdx;
-
 	// to which side to fold
 	bool rightSide;
 

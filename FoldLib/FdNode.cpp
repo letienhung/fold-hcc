@@ -10,6 +10,23 @@
 #include "PatchNode.h"
 #include "PcaOBB.h"
 
+FdNode::FdNode(QString id)
+	: Node(id)
+{
+	mColor = qRandomColor(); 
+	mColor.setAlphaF(0.78);
+	mType = NONE;
+
+	showCuboid = true;
+	showScaffold = true;
+	showMesh = true;
+
+	mAid = 0;
+
+	isHidden = false;
+
+}
+
 FdNode::FdNode(QString id, Geom::Box &b, MeshPtr m )
 	:Node(id)
 {

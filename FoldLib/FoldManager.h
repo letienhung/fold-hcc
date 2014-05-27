@@ -15,11 +15,11 @@ public:
 
 public:
 	// input
-	FdGraph* scaffold; 
+	FdGraph* initScaffold; 
 
 	// decomposition
 	Vector3 sqzV;
-	FdGraph* dcScaffold;
+	FdGraph* dcScaffold; // temp scaffold used for decomposition
 	StrArray2D masterIdGroups;
 	int selDcIdx;
 	QVector<DcGraph*> dcGraphs;

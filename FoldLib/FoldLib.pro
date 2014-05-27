@@ -47,8 +47,6 @@ HEADERS += \
     FoldManager.h \
     FdUtility.h \
     BlockGraph.h \
-    TChain.h \
-    HChain.h \
     ChainGraph.h \
     Hinge.h \
     BundleNode.h \
@@ -65,8 +63,6 @@ SOURCES += \
     FoldManager.cpp \
     FdUtility.cpp \
     BlockGraph.cpp \
-    TChain.cpp \
-    HChain.cpp \
     ChainGraph.cpp \
     Hinge.cpp \
     BundleNode.cpp \

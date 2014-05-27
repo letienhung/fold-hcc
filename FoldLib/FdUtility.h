@@ -65,7 +65,7 @@ double getDistance( FdNode* n, QVector<FdNode*> nset);
 
 // relation among fd nodes
 FdNodeArray2D getConnectedGroups( QVector<FdNode*> nodes, double disThr );
-QVector<Geom::Segment> detectJointSegments(FdNode* part, PatchNode* panel);
+Geom::Segment detectJointSegment(PatchNode* slave, PatchNode* master);
 bool hasIntersection(FdNode* slave, PatchNode* master, double thr);
 
 // helpers

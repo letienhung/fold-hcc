@@ -3,7 +3,7 @@
 #include <QFileInfo>
 #include "FdUtility.h"
 #include "SectorCylinder.h"
-#include "HChain.h"
+#include "ChainGraph.h"
 #include "IntrRect2Rect2.h"
 
 
@@ -376,27 +376,6 @@ void DcGraph::clusterSlaves()
 	}
 
 	// merge cycles who share slaves
-	//QMap<int, QSet<int> > merged_cycle_slaves;
-	//int count = 0;
-	//foreach (QSet<int> cs, cycle_slaves)
-	//{
-	//	foreach (int key, merged_cycle_slaves.keys())
-	//	{
-	//		QSet<int> isct = merged_cycle_slaves[key] & cs;
-	//		if (!isct.isEmpty()) 
-	//		{
-	//			// merge and remove old cluster
-	//			cs += merged_cycle_slaves[key];
-	//			merged_cycle_slaves.remove(key);
-	//		}
-	//	}
-
-	//	// create a new merged cluster
-	//	merged_cycle_slaves[count++] = cs;
-	//}
-
-	// save slave clusters 
-	//slaveClusters = merged_cycle_slaves.values().toVector();
 	mergeIsctSets(cycle_slaves, slaveClusters);
 	foreach (QSet<int> cs, slaveClusters)
 		foreach(int sid, cs) slaveVisited[sid] = true;
@@ -727,6 +706,11 @@ void DcGraph::foldabilize()
 		// foldabilize next block
 		BlockGraph* next_block = blocks[next_bid];
 		next_block->foldabilize(currKeyframe);
+
+
+		//return;
+
+
 		next_block->addTag(FOLDED_TAG);
 		double timeLength = next_block->getTimeLength() * timeScale;
 		double nextTime = currTime + timeLength;

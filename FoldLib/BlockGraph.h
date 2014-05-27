@@ -3,7 +3,7 @@
 #include "FdGraph.h"
 #include "FoldOptionGraph.h"
 
-class HChain;
+class ChainGraph;
 
 class BlockGraph : public FdGraph
 {
@@ -13,7 +13,7 @@ public:
 	~BlockGraph();
 
 	// selection
-	HChain* getSelChain();
+	ChainGraph* getSelChain();
 	FdGraph* activeScaffold();
 	void selectChain(QString id);
 	QStringList getChainLabels();
@@ -76,7 +76,7 @@ public:
 
 	// chains
 	int selChainIdx;
-	QVector<HChain*> chains;
+	QVector<ChainGraph*> chains;
 
 	// AABB of entire shape
 	Geom::Box shapeAABB;

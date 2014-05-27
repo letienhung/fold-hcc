@@ -389,12 +389,12 @@ void FdGraph::changeNodeType( FdNode* n )
 
 void FdGraph::changeRodToPatch( RodNode* rn, Vector3 v )
 {
-	PatchNode* pn = new PatchNode(rn->mID, rn->mBox, v, rn->mMesh);
+	PatchNode* pn = new PatchNode(rn,  v);
 	replaceNode(rn, pn);
 }
 
 void FdGraph::restoreConfiguration()
-{
+{ 
 	QQueue<FdNode*> activeNodes;
 	foreach(FdNode* fn, getFdNodes())
 		if (fn->hasTag(FIXED_NODE_TAG)) 

@@ -158,38 +158,17 @@ StrArray2D getIds( FdNodeArray2D nodeArray )
 	return idArray;
 }
 
-QVector<Geom::Segment> detectJointSegments( FdNode* part, PatchNode* panel )
+Geom::Segment detectJointSegment( PatchNode* slave, PatchNode* master )
 {
-	QVector<Geom::Segment> jointSegs;
+	Vector3 panelNormal = master->mPatch.Normal;
+	QVector<Geom::Segment> perpEdges = slave->mPatch.getPerpEdges(panelNormal);
 
-	if (part->mType == FdNode::PATCH)
-	{
-		PatchNode* partPatch = (PatchNode*)part;
-		Vector3 panelNormal = panel->mPatch.Normal;
-		QVector<Geom::Segment> perpEdges = partPatch->mPatch.getPerpEdges(panelNormal);
+	Geom::DistSegRect dsr1(perpEdges[0], master->mPatch);
+	Geom::DistSegRect dsr2(perpEdges[1], master->mPatch);
+	Geom::Segment jointSeg = (dsr1.get() < dsr2.get()) ? 
+							perpEdges[0] : perpEdges[1];
 
-		Geom::DistSegRect dsr1(perpEdges[0], panel->mPatch);
-		Geom::DistSegRect dsr2(perpEdges[1], panel->mPatch);
-		if (dsr1.get() < dsr2.get())	jointSegs << perpEdges[0];
-		else							jointSegs << perpEdges[1];
-	}
-	else if (part->mType == FdNode::ROD)
-	{
-		Geom::Segment distSeg = getDistSegment(part, panel);
-		Vector3 p = distSeg.P0;
-
-		Vector3 v1 = panel->mPatch.Axis[0];
-		int aid1 = part->mBox.getAxisId(v1);
-		double ext1 = part->mBox.getExtent(aid1);
-
-		Vector3 v2 = panel->mPatch.Axis[1];
-		int aid2 = part->mBox.getAxisId(v2);
-		double ext2 = part->mBox.getExtent(aid2);
-
-		jointSegs << Geom::Segment(p, v1, ext1) << Geom::Segment(p, v2, ext2);
-	}
-
-	return jointSegs;
+	return jointSeg;
 }
 
 double getLocalTime( double globalT, TimeInterval itv )

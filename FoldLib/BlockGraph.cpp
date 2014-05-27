@@ -3,7 +3,7 @@
 #include "IntrRectRect.h"
 #include "IntrRect2Rect2.h"
 #include "Numeric.h"
-#include "HChain.h"
+#include "ChainGraph.h"
 #include "CliquerAdapter.h"
 
 BlockGraph::BlockGraph( QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& ss, 
@@ -50,7 +50,7 @@ BlockGraph::BlockGraph( QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& s
 		}
 
 		// create chain
-		HChain* hc = new HChain(ss[i], (PatchNode*)getNode(mid_low), (PatchNode*)getNode(mid_high));
+		ChainGraph* hc = new ChainGraph(ss[i], (PatchNode*)getNode(mid_low), (PatchNode*)getNode(mid_high));
 		hc->setFoldDuration(masterTimeStamps[mid_low], masterTimeStamps[mid_high]);
 		chains << hc;
 
@@ -97,7 +97,7 @@ FdGraph* BlockGraph::activeScaffold()
 	else		   return this;
 }
 
-HChain* BlockGraph::getSelChain()
+ChainGraph* BlockGraph::getSelChain()
 {
 	if (selChainIdx >= 0 && selChainIdx < chains.size())
 		return chains[selChainIdx];
@@ -512,7 +512,7 @@ void BlockGraph::applySolution( int sid )
 
 void BlockGraph::filterFoldOptions( QVector<FoldOption*>& options, int cid )
 {
-	HChain* chain = chains[cid];
+	ChainGraph* chain = chains[cid];
 	QString top_mid_super = chainTopMasterMapSuper[cid];
 	Geom::Rectangle2 AFR = availFoldingRegion[top_mid_super];
 	AFR.Extent *= 1.01; // ugly way to avoid numerical issue
@@ -565,7 +565,7 @@ void BlockGraph::addNodesToCollisionGraph()
 	{
 		std::cout << "cid = " << cid << ": ";
 
-		HChain* chain = (HChain*)chains[cid];
+		ChainGraph* chain = (ChainGraph*)chains[cid];
 
 		// fold entity
 		ChainNode* cn = new ChainNode(cid, chain->mID);
@@ -840,7 +840,7 @@ void BlockGraph::setUseThickness(bool use)
 
 void BlockGraph::updateSolutionWithThickness()
 {
-	foreach (HChain* chain, chains)
+	foreach (ChainGraph* chain, chains)
 	{
 		if (useThickness)
 		{

@@ -3,29 +3,60 @@
 #include "RodNode.h"
 #include "Numeric.h"
 
-ChainGraph::ChainGraph( FdNode* slave, PatchNode* master1, PatchNode* master2)
+ChainGraph::ChainGraph( FdNode* slave, PatchNode* base, PatchNode* top)
 	: FdGraph(slave->mID)
 {
-	// clone parts
-	mOrigSlave = (FdNode*)slave->clone();
 
-	mParts << (FdNode*)mOrigSlave->clone();
+	// slave
+	if (slave->mType == FdNode::ROD)
+	{
+		// convert slave into patch if need
+		RodNode* slaveRod = (RodNode*)slave;
+		Vector3 rodV = slaveRod->mRod.Direction;
+		Vector3 baseV = base->mPatch.Normal;
+		Vector3 crossRodVBaseV = cross(rodV, baseV);
+		Vector3 slavePatchNorm;
+		if (crossRodVBaseV.norm() < 0.1)
+			slavePatchNorm = baseMaster->mPatch.Axis[0];
+		else
+			slavePatchNorm = cross(crossRodVBaseV, rodV);
+		slavePatchNorm.normalize();
+		
+		mOrigSlave = new PatchNode(slaveRod, slavePatchNorm);
+	}
+	else
+		mOrigSlave = (PatchNode*)slave->clone();
+
+	mParts << (PatchNode*)mOrigSlave->clone();
 	Structure::Graph::addNode(mParts[0]);
 
-	mMasters << (PatchNode*)master1->clone();
-	Graph::addNode(mMasters[0]);
-	if (master2)
-	{
-		mMasters << (PatchNode*)master2->clone();
-		Graph::addNode(mMasters[1]);
+	// masters
+	baseMaster = (PatchNode*)base->clone();
+	topMaster = (PatchNode*)top->clone();
+	Graph::addNode(baseMaster);
+	Graph::addNode(topMaster);
 
-		// relative position of two masters
-		Vector3 MC2onM1 = master1->mPatch.getProjection(master2->center());
-		mMC2Trajectory.set(master2->center(), MC2onM1);
-	}
+	Vector3 MC2onM1 = base->mPatch.getProjection(top->center());
+	mMC2Trajectory.set(top->center(), MC2onM1);
 
-	// setup base orientations
-	setupBasisOrientations();
+	// joint
+	baseJoint = detectJointSegment(mOrigSlave, baseMaster);
+
+	// upSeg
+	Vector3 baseP0 = baseJoint.P0;
+	QVector<Geom::Segment> edges = mOrigSlave->mPatch.getPerpEdges(baseJoint.Direction);
+	UpSeg = edges[0].contains(baseP0) ? edges[0] : edges[1];
+	if (UpSeg.getProjCoordinates(baseP0) > 0) UpSeg.flip();
+
+	// righV
+	Vector3 crossBaseJointUp = cross(baseJoint.Direction, UpSeg.Direction);
+	rightV = baseMaster->mPatch.getProjectedVector(crossBaseJointUp);
+	rightV.normalize();
+
+	//// debug
+	//addDebugSegment(baseJoint);
+	//addDebugSegment(UpSeg);
+	//addDebugSegment(Geom::Segment(baseJoint.P0, baseJoint.P0 + rightV));
 
 	// fold duration
 	// this time interval stops this chain from being folded
@@ -36,45 +67,14 @@ ChainGraph::ChainGraph( FdNode* slave, PatchNode* master1, PatchNode* master2)
 	base_offset = 0;
 }
 
-void ChainGraph::setupBasisOrientations()
-{
-	// detect hinges
-	rootJointSegs = detectJointSegments(mOrigSlave, mMasters[0]);
-
-	// upSeg
-	Geom::Segment jointSeg = rootJointSegs[0];
-	Vector3 origin = jointSeg.P0;
-	if (mOrigSlave->mType == FdNode::PATCH)
-	{
-		PatchNode* partPatch = (PatchNode*)mOrigSlave;
-		QVector<Geom::Segment> edges = partPatch->mPatch.getPerpEdges(jointSeg.Direction);
-		chainUpSeg = edges[0].contains(origin) ? edges[0] : edges[1];
-	}
-	else
-	{
-		RodNode* partRod = (RodNode*)mOrigSlave;
-		chainUpSeg = partRod->mRod;
-	}
-	if (chainUpSeg.getProjCoordinates(origin) > 0) chainUpSeg.flip();
-
-	// righV
-	foreach (Geom::Segment rjs, rootJointSegs)
-	{
-		Vector3 crossAxisV1 = cross(rjs.Direction, chainUpSeg.Direction);
-		Vector3 rV = mMasters[0]->mPatch.getProjectedVector(crossAxisV1);
-
-		rootRightVs.push_back(rV.normalized());
-	}
-}
-
 void ChainGraph::fold( double t )
 {
 	// free all nodes
 	foreach (Structure::Node* n, nodes)
 		n->removeTag(FIXED_NODE_TAG);
 
-	// fix masters[0]
-	mMasters.front()->addTag(FIXED_NODE_TAG);
+	// fix base
+	baseMaster->addTag(FIXED_NODE_TAG);
 
 	// hinge angle
 	// this works only for odd number of splits (even number of pieces)
@@ -87,22 +87,19 @@ void ChainGraph::fold( double t )
 	restoreConfiguration();
 
 	// adjust the position of top master
-	if (mMasters.size() == 2)
-	{
-		double h_thk = 2 * half_thk * cos(half_angle);
+	double h_thk = 2 * half_thk * cos(half_angle);
 
-		double height = mMC2Trajectory.length();
-		double top_dt = half_thk / height;
-		double base_dt = base_offset / height;
-		Geom::Segment chainUpSeg_copy = chainUpSeg;
-		chainUpSeg_copy.cropRange01(base_dt, 1 - top_dt);
-		double h_length = chainUpSeg_copy.length() / mParts.size() * (1 - t);
+	double height = mMC2Trajectory.length();
+	double top_dt = half_thk / height;
+	double base_dt = base_offset / height;
+	Geom::Segment chainUpSeg_copy = UpSeg;
+	chainUpSeg_copy.cropRange01(base_dt, 1 - top_dt);
+	double h_length = chainUpSeg_copy.length() / mParts.size() * (1 - t);
 
-		int n = mParts.size();
-		double top_height = half_thk + base_offset + n * h_thk + n * h_length;
-		Vector3 newPos = mMC2Trajectory.P1 - top_height * mMC2Trajectory.Direction;
-		mMasters.last()->translate(newPos - mMasters.last()->center());
-	}
+	int n = mParts.size();
+	double top_height = half_thk + base_offset + n * h_thk + n * h_length;
+	Vector3 newPos = mMC2Trajectory.P1 - top_height * mMC2Trajectory.Direction;
+	topMaster->translate(newPos - topMaster->center());
 }
 
 FdGraph* ChainGraph::getKeyframe( double t )
@@ -115,46 +112,31 @@ QVector<FoldOption*> ChainGraph::generateFoldOptions( int nSplits, int nUsedChun
 {
 	QVector<FoldOption*> options;
 
-	// patch chain
-	if (mOrigSlave->mType == FdNode::PATCH)
+	double chunkSize = 1.0/double(nChunks);
+	double usedSize = chunkSize * nUsedChunks;
+
+	// position
+	for (int i = 0; i <= nChunks - nUsedChunks; i++)
 	{
-		double chunkSize = 1.0/double(nChunks);
-		double usedSize = chunkSize * nUsedChunks;
+		double position = chunkSize * i;
 
-		// position
-		for (int i = 0; i <= nChunks - nUsedChunks; i++)
-		{
-			double position = chunkSize * i;
+		// left
+		QString fnid1 = QString("%1:%2_%3_L_%4").arg(mID).arg(nSplits).arg(nUsedChunks).arg(position);
+		FoldOption* fn1 = new FoldOption(false, usedSize, position, nSplits, fnid1);
+		options.push_back(fn1);
 
-			// left
-			QString fnid1 = QString("%1:%2_%3_L_%4").arg(mID).arg(nSplits).arg(nUsedChunks).arg(position);
-			FoldOption* fn1 = new FoldOption(0, false, usedSize, position, nSplits, fnid1);
-			options.push_back(fn1);
-
-			// right
-			QString fnid2 = QString("%1:%2_%3_R_%4").arg(mID).arg(nSplits).arg(nUsedChunks).arg(position);
-			FoldOption* fn2 = new FoldOption(0, true, usedSize, position, nSplits, fnid2);
-			options.push_back(fn2);
-		}
-
+		// right
+		QString fnid2 = QString("%1:%2_%3_R_%4").arg(mID).arg(nSplits).arg(nUsedChunks).arg(position);
+		FoldOption* fn2 = new FoldOption(true, usedSize, position, nSplits, fnid2);
+		options.push_back(fn2);
 	}
-	// rod chain
-	else
-	{
-		// root segment id
-		for (int j = 0; j < 2; j++)
-		{
-			// left
-			QString fnid1 = QString("%1:%2_L").arg(mID).arg(nSplits);
-			FoldOption* fn1 = new FoldOption(j, false, 1.0, 0.0, nSplits, fnid1);
-			options.push_back(fn1);
 
-			// right
-			QString fnid2 = QString("%1:%2_R").arg(mID).arg(nSplits);;
-			FoldOption* fn2 = new FoldOption(j, true, 1.0, 0.0, nSplits, fnid2);
-			options.push_back(fn2);
-		}
-	}	
+	// fold area
+	foreach (FoldOption* fn, options)
+	{
+		fn->region = getFoldRegion(fn);
+		fn->duration = mFoldDuration;
+	}
 
 	return options;
 }
@@ -162,24 +144,21 @@ QVector<FoldOption*> ChainGraph::generateFoldOptions( int nSplits, int nUsedChun
 void ChainGraph::createSlavePart(FoldOption* fn)
 {
 	// clear
-	foreach (FdNode* n, mParts) removeNode(n->mID);
+	foreach (PatchNode* n, mParts) removeNode(n->mID);
 
 	// clone original slave
-	FdNode* slave = (FdNode*)mOrigSlave->clone();
+	PatchNode* slave = (PatchNode*)mOrigSlave->clone();
 	Structure::Graph::addNode(slave);
 
 	// self thickness
-	if (half_thk > 0)
-		if (slave->mType == FdNode::PATCH)
-			((PatchNode*)slave)->setThickness(2 * half_thk);
+	if (half_thk > 0) slave->setThickness(2 * half_thk);
 
 	// horizontal modification
-	Geom::Segment axisSeg = rootJointSegs[fn->jointAxisIdx];
-	int haid = slave->mBox.getAxisId(axisSeg.Direction);
+	int haid = slave->mBox.getAxisId(baseJoint.Direction);
 	Vector3 boxAxis = slave->mBox.Axis[haid];
 	double t0 = fn->position;
 	double t1 = fn->position + fn->scale;
-	if (dot(axisSeg.Direction, boxAxis) < 0)
+	if (dot(baseJoint.Direction, boxAxis) < 0)
 		slave->mBox.scaleRange01(haid, 1-t1, 1-t0);
 	else slave->mBox.scaleRange01(haid, t0, t1);
 
@@ -187,23 +166,22 @@ void ChainGraph::createSlavePart(FoldOption* fn)
 	double height = mMC2Trajectory.length();
 	double top_dt = half_thk / height;
 	double base_dt = base_offset / height;
-	int vaid = slave->mBox.getAxisId(chainUpSeg.Direction);
-	if (dot(slave->mBox.Axis[vaid], chainUpSeg.Direction) > 0)
+	int vaid = slave->mBox.getAxisId(UpSeg.Direction);
+	if (dot(slave->mBox.Axis[vaid], UpSeg.Direction) > 0)
 		slave->mBox.scaleRange01(vaid, base_dt, 1-top_dt);
 	else slave->mBox.scaleRange01(vaid, top_dt, 1-base_dt);
 
 	// update mesh and scaffold
 	slave->deformMesh();
 	slave->createScaffold(true);
-
 }
 
 void ChainGraph::sortChainParts()
 {
-	QMap<double, FdNode*> distPartMap;
+	QMap<double, PatchNode*> distPartMap;
 
-	Geom::Plane panel_plane = mMasters[0]->mPatch.getPlane();
-	foreach(FdNode* n, mParts)
+	Geom::Plane panel_plane = baseMaster->mPatch.getPlane();
+	foreach(PatchNode* n, mParts)
 	{
 		double dist = panel_plane.signedDistanceTo(n->center());
 		distPartMap[fabs(dist)] = n;
@@ -215,136 +193,87 @@ void ChainGraph::sortChainParts()
 void ChainGraph::resetHingeLinks()
 {
 	// remove hinge links
+	rightLinks.clear(); leftLinks.clear();
 	foreach (Structure::Link* link, links)
 		Structure::Graph::removeLink(link);
-	hingeLinks.clear();
 
 	// shrink chain up segment for thickness
 	double height = mMC2Trajectory.length();
 	double top_dt = half_thk / height;
 	double base_dt = base_offset / height;
-	Geom::Segment chainUpSeg_copy = chainUpSeg;
-	chainUpSeg_copy.cropRange01(base_dt, 1 - top_dt);
+	Geom::Segment upSegCopy = UpSeg;
+	upSegCopy.cropRange01(base_dt, 1 - top_dt);
 
-	// shift root joint segment for thickness
-	QVector<Geom::Segment> rootJointSegs_copy = rootJointSegs;
-	for (int i = 0; i < rootJointSegs_copy.size(); i++)
-		rootJointSegs_copy[i].translate(base_offset * chainUpSeg_copy.Direction);
+	// shift base joint segment for thickness
+	Geom::Segment bJoint = baseJoint;
+	bJoint.translate(base_offset * upSegCopy.Direction);
 
-	// create hinge links between mMaster[0] and mParts[0]
-	QVector<FdLink*> links;
-	for (int i = 0; i < rootJointSegs_copy.size(); i++)
+	// hinge links between master and slave
+	Vector3 upV = UpSeg.Direction;
+	Vector3 jointV = bJoint.Direction;
+	Vector3 posR = bJoint.P0 + half_thk * rightV;
+	Vector3 posL = bJoint.P1 - half_thk * rightV;
+	Hinge* hingeR = new Hinge(mParts[0], baseMaster, 
+		posR, upV,  rightV, jointV, bJoint.length());
+	Hinge* hingeL = new Hinge(mParts[0], baseMaster, 
+		posL, upV, -rightV, -jointV, bJoint.length());
+
+	FdLink* linkR = new FdLink(mParts[0], baseMaster, hingeR);
+	FdLink* linkL = new FdLink(mParts[0], baseMaster, hingeL);
+	Graph::addLink(linkR);	
+	Graph::addLink(linkL);
+	rightLinks << linkR; 
+	leftLinks << linkL;
+
+	// hinge links between two parts in the chain
+	// there are no hinges for top master
+	double step = 2.0 / mParts.size();
+	for (int i = 1; i < mParts.size(); i++)
 	{
-		Geom::Segment jseg = rootJointSegs_copy[i];
-		Vector3 upV = chainUpSeg_copy.Direction;
-		Vector3 rV = rootRightVs[i];
-		Vector3 axisV = jseg.Direction;
-		Vector3 posR = jseg.P0 + half_thk * rV;
-		Vector3 posL = jseg.P1 - half_thk * rV;
-		Hinge* hingeR = new Hinge(mParts[0], mMasters[0], 
-			posR, upV,  rV, axisV, jseg.length());
-		Hinge* hingeL = new Hinge(mParts[0], mMasters[0], 
-			posL, upV, -rV, -axisV, jseg.length());
+		PatchNode* part1 = mParts[i];
+		PatchNode* part2 = mParts[i-1];
 
-		FdLink* linkR = new FdLink(mParts[0], mMasters[0], hingeR);
-		FdLink* linkL = new FdLink(mParts[0], mMasters[0], hingeL);
-		links << linkR << linkL;
+		Vector3 pos = upSegCopy.getPosition(-1 + step * i);
+		Vector3 deltaV =  pos - upSegCopy.P0;
+		Geom::Segment joint = bJoint.translated(deltaV);
 
-		Graph::addLink(linkR);
+		Vector3 upV = UpSeg.Direction;
+		Vector3 jointV = joint.Direction;
+		Vector3 posR = joint.P0 + half_thk * rightV;
+		Vector3 posL = joint.P1 - half_thk * rightV;
+		Hinge* hingeR = new Hinge(part1, part2, 
+			posR, upV, -upV, jointV, joint.length());
+		Hinge* hingeL = new Hinge(part1, part2, 
+			posL, upV, -upV, -jointV, joint.length());
+
+		FdLink* linkR = new FdLink(part1, part2, hingeR);
+		FdLink* linkL = new FdLink(part1, part2, hingeL);
+		Graph::addLink(linkR);	
 		Graph::addLink(linkL);
+		rightLinks << linkR; 
+		leftLinks << linkL;
 	}
-	hingeLinks << links;
-	links.clear();
-
-	// create hinge links between two parts in the chain
-	int nbParts = mParts.size();
-	double step = 2.0 / nbParts;
-	for (int i = 1; i < nbParts; i++) // each joint
-	{
-		Vector3 pos = chainUpSeg_copy.getPosition(-1 + step * i);
-		Vector3 deltaV =  pos - chainUpSeg_copy.P0;
-
-		FdNode* part1 = mParts[i];
-		FdNode* part2 = mParts[i-1];
-
-		// create a pair of links for each joint segment
-		for (int j = 0; j < rootJointSegs_copy.size(); j++)
-		{
-			Geom::Segment jseg = rootJointSegs_copy[j].translated(deltaV);
-			Vector3 upV = chainUpSeg.Direction;
-			Vector3 axisV = jseg.Direction;
-			Vector3 rV = rootRightVs[j];
-			Vector3 posR = jseg.P0 + half_thk * rV;
-			Vector3 posL = jseg.P1 - half_thk * rV;
-			Hinge* hingeR = new Hinge(part1, part2, 
-				posR, upV, -upV, axisV, jseg.length());
-			Hinge* hingeL = new Hinge(part1, part2, 
-				posL, upV, -upV, -axisV, jseg.length());
-
-			FdLink* linkR = new FdLink(part1, part2, hingeR);
-			FdLink* linkL = new FdLink(part1, part2, hingeL);
-
-			links << linkR << linkL;
-
-			Graph::addLink(linkR);
-			Graph::addLink(linkL);
-		}
-
-		hingeLinks << links;
-		links.clear();
-	}
-
-	//// create hinge links between mMasters[1] and mParts.last()
-	//if (mMasters.size() == 2)
-	//{
-	//	for (int i = 0; i < rootJointSegs_copy.size(); i++)
-	//	{
-	//		Geom::Segment jseg = rootJointSegs_copy[i].translated(chainUpSeg_copy.P1 - chainUpSeg_copy.P0);
-	//		Vector3 upV = chainUpSeg.Direction;
-	//		Vector3 rV = rootRightVs[i];
-	//		Vector3 axisV = jseg.Direction;
-	//		Vector3 posR = jseg.P1 + slave_thk * rV;
-	//		Vector3 posL = jseg.P0 - slave_thk * rV;
-	//		Hinge* hingeR = new Hinge(mParts.last(), mMasters[1], 
-	//			posR, -upV,  rV, -axisV, jseg.length());
-	//		Hinge* hingeL = new Hinge(mParts.last(), mMasters[1], 
-	//			posL, -upV, -rV, axisV, jseg.length());
-
-	//		FdLink* linkR = new FdLink(mParts.last(), mMasters[1], hingeR);
-	//		FdLink* linkL = new FdLink(mParts.last(), mMasters[1], hingeL);
-	//		links << linkR << linkL;
-
-	//		Graph::addLink(linkR);
-	//		Graph::addLink(linkL);
-	//	}
-
-	//	hingeLinks << links;
-	//}
 }
 
-void ChainGraph::setupActiveLinks( FoldOption* fn )
+void ChainGraph::setActiveLinks( FoldOption* fn )
 {
 	// clear
 	activeLinks.clear();
 
-	// hinge index for given joint axis
-	int hidx_right = 2 * fn->jointAxisIdx;
-	int hidx_left = hidx_right + 1;
-
-	// right side: even(right) odd(left)
-	// left side: reverse
-	int hidx_even = (fn->rightSide)? hidx_right : hidx_left;
-	int hidx_odd = (fn->rightSide)? hidx_left : hidx_right;
-
 	// set hinge for each joint
-	for (int i = 0; i < hingeLinks.size(); i++)
+	for (int i = 0; i < rightLinks.size(); i++)
 	{
-		// inactive all hinges
-		foreach(FdLink* l, hingeLinks[i])
-			l->removeTag(ACTIVE_HINGE_TAG);
+		// inactive both hinges
+		rightLinks[i]->removeTag(ACTIVE_HINGE_TAG);
+		leftLinks[i]->removeTag(ACTIVE_HINGE_TAG);
 
-		int hidx = (i % 2) ? hidx_odd : hidx_even;
-		FdLink* activeLink = hingeLinks[i][hidx];
+		// active link
+		FdLink* activeLink;
+		if (i % 2 == 0)
+			activeLink = (fn->rightSide) ? rightLinks[i] : leftLinks[i];
+		else
+			activeLink = (fn->rightSide) ? leftLinks[i] : rightLinks[i];
+
 		activeLink->addTag(ACTIVE_HINGE_TAG);
 		activeLinks << activeLink;
 	}
@@ -363,17 +292,81 @@ void ChainGraph::applyFoldOption( FoldOption* fn)
 	removeTag(DELETED_TAG); 
 
 	createSlavePart(fn);
-	mParts = FdGraph::split(mOrigSlave->mID, generateCutPlanes(fn->nSplits));
+
+	mParts.clear();
+	QVector<Geom::Plane> cutPlanes = generateCutPlanes(fn->nSplits);
+	QVector<FdNode*> splitNodes = FdGraph::split(mOrigSlave->mID, cutPlanes);
+	foreach (FdNode* n, splitNodes) mParts << (PatchNode*)n;
+
 	sortChainParts();
 	resetHingeLinks();
-	setupActiveLinks(fn);
+
+	setActiveLinks(fn);
 }
 
 void ChainGraph::setFoldDuration( double t0, double t1 )
 {
 	if (t0 > t1) std::swap(t0, t1);
 	t0 += ZERO_TOLERANCE_LOW;
-	t1 -= ZERO_TOLERANCE_LOW;
+	t1 -= ZERO_TOLERANCE_LOW; 
 
 	mFoldDuration = TIME_INTERVAL(t0, t1);
+}
+
+Geom::Rectangle ChainGraph::getFoldRegion( FoldOption* fn )
+{
+	// axis and rightV
+	Vector3 rV = rightV;
+	Geom::Segment seg1 = baseJoint;
+	if (!fn->rightSide) rV *= -1;
+
+	// shrink along axisSeg
+	double t0 = fn->position;
+	double t1 = t0 + fn->scale;
+	seg1.cropRange01(t0, t1);
+	Geom::Segment seg2 = seg1;
+
+	// shift the axis along rightV
+	double width = UpSeg.length() / (fn->nSplits + 1);
+	seg2.translate(width * rV);
+
+	// shrink epsilon
+	Geom::Rectangle rect(QVector<Vector3>() 
+		<< seg1.P0	<< seg1.P1
+		<< seg2.P1  << seg2.P0 );
+	rect.scale(1 - ZERO_TOLERANCE_LOW);
+	return rect;
+}
+
+Geom::Rectangle ChainGraph::getMaxFoldRegion( bool right )
+{
+	FoldOption fn(right, 1.0, 0.0, 1, "");
+	return getFoldRegion(&fn);
+}
+
+QVector<Geom::Plane> ChainGraph::generateCutPlanes( int nbSplit )
+{
+	// plane of master0
+	Geom::Plane base_plane = baseMaster->mPatch.getPlane();
+	if (base_plane.whichSide(mOrigSlave->center()) < 0) base_plane.flip();
+
+	// thickness
+	Vector3 dv = base_offset * base_plane.Normal;
+	base_plane.translate(dv);
+
+	// step to shift up
+	double height = mMC2Trajectory.length() - base_offset - half_thk;
+	double step = height / (nbSplit + 1);
+
+	// create planes
+	QVector<Geom::Plane> cutPlanes;
+	for (int i = 0; i < nbSplit; i++)
+	{
+		Vector3 deltaV = (i+1) * step * base_plane.Normal;
+		cutPlanes << base_plane.translated(deltaV);
+	}
+
+	// to-do: is N is even, cutting will be different
+
+	return cutPlanes;
 }

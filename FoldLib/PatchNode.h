@@ -8,7 +8,7 @@ class PatchNode : public FdNode
 {
 public:
     PatchNode(QString id, Geom::Box &b, MeshPtr m);
-	PatchNode(QString id, Geom::Box &b, Vector3 v, MeshPtr m);
+	PatchNode(RodNode* rodNode, Vector3 v);
 	PatchNode(PatchNode &other);
 	virtual Node* clone();
 
