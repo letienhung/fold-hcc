@@ -6,6 +6,8 @@
  * Licensed under the GNU GPL, read the file LICENSE for details.
  */
 
+#pragma warning(disable:4010)
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -1692,7 +1694,7 @@ boolean clique_print_time(int level, int i, int n, int max,
 				"(%2.2f s/round)\n",
 				i,n,max,realtime,
 				(realtime-prev_time)/(i-prev_i));
-		prev_time=realtime;
+        prev_time=(float)realtime;
 		prev_i=i;
 		prev_max=max;
 		prev_level=level;
@@ -1735,7 +1737,7 @@ boolean clique_print_time_always(int level, int i, int n, int max,
 	else
 		fprintf(fp,"%3d/%d (max %2d)  %2.2f s  (%2.2f s/round)\n",
 			i,n,max,realtime,(realtime-prev_time)/(i-prev_i));
-	prev_time=realtime;
+    prev_time=(float)realtime;
 	prev_i=i;
 
 	return TRUE;

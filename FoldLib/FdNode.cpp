@@ -222,7 +222,7 @@ void FdNode::cloneMesh()
 	}
 
 	Surface_mesh::Face_iterator fit, fend = mMesh.data()->faces_end();
-	for (fit = mMesh.data()->faces_begin(); fit != fend; fit++)
+    for (fit = mMesh.data()->faces_begin(); fit != fend; ++fit)
 	{
 		std::vector<Vertex> pnts; 
 		Surface_mesh::Vertex_around_face_circulator vit = mMesh.data()->vertices(fit), vend = vit;
@@ -301,6 +301,7 @@ void FdNode::translate( Vector3 t )
 
 void FdNode::setThickness( double thk )
 {
+    Q_UNUSED(thk)
 	// do nothing
 }
 

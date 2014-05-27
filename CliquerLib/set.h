@@ -6,6 +6,8 @@
  * Licensed under the GNU GPL, read the file LICENSE for details.
  */
 
+#pragma warning(disable:4018)
+
 #ifndef CLIQUER_SET_H
 #define CLIQUER_SET_H
 

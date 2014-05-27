@@ -948,7 +948,7 @@ void DcGraph::selectKeyframe( int idx )
 
 BlockGraph* DcGraph::mergeBlocks( QVector<BlockGraph*> blocks )
 {
-	BlockGraph* mergedBlock;
+    BlockGraph* mergedBlock = NULL;
 
 	return mergedBlock;
 }
