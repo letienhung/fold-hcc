@@ -109,30 +109,22 @@ void ChainGraph::fold( double t )
 		// right side of topTraj
 		double x = d - bProj;
 		double y = (n - 1) * a;
-		double angleXY = acos(x/y);
-		
+		double beta = M_PI_2 - acos(x/y);
+		activeLinks[0]->hinge->angle = alpha;
+		activeLinks[1]->hinge->angle = alpha + beta;
+		for (int i = 2; i < activeLinks.size(); i++)
+			activeLinks[i]->hinge->angle = M_PI;
 	}
 	else
 	{
+		double cos_beta = (b * cos(alpha) - d) / a;
+		double beta = acos(RANGED(0, cos_beta, 1));
+		if (foldToRight) std::swap(alpha, beta);
 
-	}
-
-
-
-
-	double cos_beta = (b * cos(alpha) - d) / a;
-	double beta = acos(RANGED(0, cos_beta, 1));
-	if (foldToRight) std::swap(alpha, beta);
-
-	std::cout << "hinge0: " << activeLinks[0]->hinge->angle << " ==> " << alpha << "\n";
-	activeLinks[0]->hinge->angle = alpha;
-	std::cout << "hinge1: " << activeLinks[1]->hinge->angle << " ==> " << alpha + beta << "\n";
-	activeLinks[1]->hinge->angle = alpha + beta;
-	for (int i = 2; i < activeLinks.size(); i++)
-		activeLinks[i]->hinge->angle = 2 * beta;
-
-	// restore configuration
-	restoreConfiguration();
+		activeLinks[0]->hinge->angle = alpha;
+		activeLinks[1]->hinge->angle = alpha + beta;
+		for (int i = 2; i < activeLinks.size(); i++)
+			activeLinks[i]->hinge->angle = 2 * beta;
 
 	// adjust the position of top master
 	double ha = a * sin(beta);
@@ -140,22 +132,31 @@ void ChainGraph::fold( double t )
 	double topH = (n - 1) * ha + hb;
 	Vector3 topPos = topTraj.P0 + topH * topTraj.Direction;
 	topMaster->translate(topPos - topMaster->center());
+	}
+
+
+
+
+
+	// restore configuration
+	restoreConfiguration();
+
 
 	//if ( t > 0.45 && t < 0.55)
-	{
-		std::cout << "\n\nsl = " << sl << "\n"
-			<< "d = " << d << "\n"
-			<< "a = " << a << "\n"
-			<< "b = " << b << "\n"
-			<< "alpha = " << alpha << "\n"
-			<< "beta = " << beta << "\n"
-			<< "ha = " << ha << "\n"
-			<< "hb = " << hb << "\n"
-			<< "topH = " << topH << "\n"
-			<< "topPos = " << topPos << "\n"
-			<< "TopTraj.Norm = "  << topTraj.Direction << "\n"
-			<< "topCenter = " << topMaster->mBox.Center;
-	}
+	//{
+	//	std::cout << "\n\nsl = " << sl << "\n"
+	//		<< "d = " << d << "\n"
+	//		<< "a = " << a << "\n"
+	//		<< "b = " << b << "\n"
+	//		<< "alpha = " << alpha << "\n"
+	//		<< "beta = " << beta << "\n"
+	//		<< "ha = " << ha << "\n"
+	//		<< "hb = " << hb << "\n"
+	//		<< "topH = " << topH << "\n"
+	//		<< "topPos = " << topPos << "\n"
+	//		<< "TopTraj.Norm = "  << topTraj.Direction << "\n"
+	//		<< "topCenter = " << topMaster->mBox.Center;
+	//}
 }
 
 FdGraph* ChainGraph::getKeyframe( double t )
