@@ -27,6 +27,12 @@ public:
 	// keyframes
 	int nbKeyframes;
 
+	// parameters
+	int nbSplits;
+	int nbChunks;
+	double thickness;
+	bool useThickness;
+
 public:
 	// update Ui
 	void updateDcList();
@@ -51,8 +57,9 @@ public slots:
 	void setSqzV (QString sqzV_str);
 	void setNbSplits(int N);
 	void setNbChunks(int N);
-	void useThickness(int state);
+	void setUseThickness(int state);
 	void setThickness(double thk);
+	void setParameters();
 
 	// fold
 	void foldabilize();

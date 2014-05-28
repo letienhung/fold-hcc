@@ -400,8 +400,8 @@ Geom::Rectangle ChainGraph::getFoldRegion( FoldOption* fn )
 		<< leftSeg.P0	<< leftSeg.P1
 		<< rightSeg.P1  << rightSeg.P0 );
 
-	addDebugSegment(leftSeg);
-	addDebugSegment(rightSeg);
+	//addDebugSegment(leftSeg);
+	//addDebugSegment(rightSeg);
 
 	return region;
 }
@@ -452,7 +452,7 @@ QVector<Geom::Plane> ChainGraph::generateCutPlanes( FoldOption* fn )
 	}
 
 	// debug
-	appendToVectorProperty<Geom::Plane>(DEBUG_PLANES, cutPlanes);
+	//appendToVectorProperty<Geom::Plane>(DEBUG_PLANES, cutPlanes);
 
 	return cutPlanes;
 }

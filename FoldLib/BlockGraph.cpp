@@ -573,7 +573,7 @@ void BlockGraph::addNodesToCollisionGraph()
 
 		// fold options
 		QVector<FoldOption*> options;
-		for (int nS = 1; nS <= nbSplits; nS += 2)
+		for (int nS = 3; nS <= nbSplits; nS += 2)
 			for (int nUsedChunks = nbChunks; nUsedChunks >= 1; nUsedChunks-- )
 				options << chain->generateFoldOptions(nS, nUsedChunks, nbChunks);
 		FoldOption* delete_fn = new FoldOption(chain->mID + "_delete");

@@ -15,6 +15,11 @@ FoldManager::FoldManager()
 	sqzV = Vector3(0, 0, 1);
 
 	nbKeyframes = 25;
+
+	nbSplits = 1;
+	nbChunks = 1;
+	useThickness = false;
+	thickness = 0;
 }
 
 FoldManager::~FoldManager()
@@ -280,11 +285,17 @@ FdGraph* FoldManager::activeScaffold()
 
 void FoldManager::foldabilize()
 {
+	if (initScaffold == NULL)
+		return;
+
 	// decompose
 	decompose();
 	selDcIdx = 0;
 	DcGraph* selDc = getSelDcGraph();
 	if (!selDc) return;
+
+	// parameters
+	setParameters();
 
 	// foldabilize
 	selDc->foldabilize(); 
@@ -388,29 +399,36 @@ void FoldManager::setNbKeyframes(int N)
 
 void FoldManager::setNbSplits( int N )
 {
-	foreach (DcGraph* dc, dcGraphs)
-		foreach (BlockGraph* b, dc->blocks)
-			b->setNbSplits(N);
+	nbSplits = N;
+	if (!dcGraphs.isEmpty()) setParameters();
 }
 
 void FoldManager::setNbChunks( int N )
 {
-	foreach (DcGraph* dc, dcGraphs)
-		foreach (BlockGraph* b, dc->blocks)
-			b->setNbChunks(N);
+	nbChunks = N;
+	if (!dcGraphs.isEmpty()) setParameters();
 }
 
-void FoldManager::useThickness( int state )
+void FoldManager::setUseThickness( int state )
 {
-	bool use = (state == Qt::Checked);
-	foreach (DcGraph* dc, dcGraphs)
-		foreach (BlockGraph* b, dc->blocks)
-			b->setUseThickness(use);
+	useThickness = (state == Qt::Checked);
+	if (!dcGraphs.isEmpty()) setParameters();
 }
 
 void FoldManager::setThickness( double thk )
 {
+	thickness = thk;
+	if (!dcGraphs.isEmpty()) setParameters();
+}
+
+void FoldManager::setParameters()
+{
 	foreach (DcGraph* dc, dcGraphs)
-		foreach (BlockGraph* b, dc->blocks)
-			b->setThickness(thk);
+	foreach (BlockGraph* b, dc->blocks)
+	{
+		b->setNbSplits(nbSplits);
+		b->setNbChunks(nbChunks);
+		b->setUseThickness(useThickness);
+		b->setThickness(thickness);
+	}
 }
