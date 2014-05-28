@@ -239,7 +239,7 @@ void FdPlugin::test1()
 	BlockGraph* selBlk = f_manager->getSelBlock();
 	if (selBlk)
 	{
-		FoldOption fn(true, 1, 0, 1, "hhh");
+		FoldOption fn(false, 1, 0, 1, "hhh");
 		double thickness = 0;
 		foreach (ChainGraph* chain, selBlk->chains)
 		{

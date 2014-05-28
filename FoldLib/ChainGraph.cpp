@@ -96,17 +96,37 @@ void ChainGraph::fold( double t )
 	baseMaster->addTag(FIXED_NODE_TAG);
 
 	// hinge angles
-	double d = rightSeg.length() * getShunkScale();
-	double sl = getShrunkSlaveSeg().length();
+	double d = rightSeg.length();
+	double sl = slaveSeg.length();
 	int n = chainParts.size();
+	double alpha = acos(d / sl) * (1 - t);
+
 	double a = (sl - d) / n;
 	double b = d + a;
-	double alpha = acos(d / sl) * (1 - t);
+	double bProj = b * cos(alpha);
+	if (bProj <= d)
+	{
+		// right side of topTraj
+		double x = d - bProj;
+		double y = (n - 1) * a;
+		double angleXY = acos(x/y);
+		
+	}
+	else
+	{
+
+	}
+
+
+
+
 	double cos_beta = (b * cos(alpha) - d) / a;
 	double beta = acos(RANGED(0, cos_beta, 1));
 	if (foldToRight) std::swap(alpha, beta);
 
+	std::cout << "hinge0: " << activeLinks[0]->hinge->angle << " ==> " << alpha << "\n";
 	activeLinks[0]->hinge->angle = alpha;
+	std::cout << "hinge1: " << activeLinks[1]->hinge->angle << " ==> " << alpha + beta << "\n";
 	activeLinks[1]->hinge->angle = alpha + beta;
 	for (int i = 2; i < activeLinks.size(); i++)
 		activeLinks[i]->hinge->angle = 2 * beta;
@@ -115,10 +135,9 @@ void ChainGraph::fold( double t )
 	restoreConfiguration();
 
 	// adjust the position of top master
-	double c = 2 * halfThk;
-	double ha = a * sin(beta) + c * cos(beta);
-	double hb = b * sin(alpha) + c * cos(alpha);
-	double topH = (n - 1) * ha + hb + halfThk + baseOffset;
+	double ha = a * sin(beta);
+	double hb = b * sin(alpha);
+	double topH = (n - 1) * ha + hb;
 	Vector3 topPos = topTraj.P0 + topH * topTraj.Direction;
 	topMaster->translate(topPos - topMaster->center());
 
@@ -128,7 +147,6 @@ void ChainGraph::fold( double t )
 			<< "d = " << d << "\n"
 			<< "a = " << a << "\n"
 			<< "b = " << b << "\n"
-			<< "c = " << c << "\n"
 			<< "alpha = " << alpha << "\n"
 			<< "beta = " << beta << "\n"
 			<< "ha = " << ha << "\n"
@@ -194,9 +212,6 @@ void ChainGraph::resetChainParts(FoldOption* fn)
 	PatchNode* slave = (PatchNode*)origSlave->clone();
 	Structure::Graph::addNode(slave);
 
-	// self thickness
-	if (halfThk > 0) slave->setThickness(2 * halfThk);
-
 	// horizontal modification
 	int aid_h = slave->mBox.getAxisId(baseJoint.Direction);
 	Vector3 boxAxis = slave->mBox.Axis[aid_h];
@@ -205,13 +220,6 @@ void ChainGraph::resetChainParts(FoldOption* fn)
 	if (dot(baseJoint.Direction, boxAxis) > 0)
 		slave->mBox.scaleRange01(aid_h, t0, t1);
 	else slave->mBox.scaleRange01(aid_h, 1-t1, 1-t0);
-
-	// vertical shrinking caused by master thickness
-	Interval it = getShrunkInterval();
-	int aid_v = slave->mBox.getAxisId(slaveSeg.Direction);
-	if (dot(slave->mBox.Axis[aid_v], slaveSeg.Direction) > 0)
-		slave->mBox.scaleRange01(aid_v, it.first, it.second);
-	else slave->mBox.scaleRange01(aid_v, 1-it.second, 1-it.first);
 
 	// update mesh and scaffold
 	slave->deformMesh();
@@ -244,20 +252,14 @@ void ChainGraph::resetHingeLinks(FoldOption* fn)
 	foreach (Structure::Link* link, links)
 		Structure::Graph::removeLink(link);
 
-	// shift base joint segment for thickness
-	Geom::Segment bJoint = baseJoint;
-	bJoint.translate(baseOffset * slaveSeg.Direction);
-
 	// hinge links between base and slave
+	Geom::Segment bJoint = baseJoint;
 	Vector3 upV = slaveSeg.Direction;
 	Vector3 jointV = bJoint.Direction;
-	Vector3 rV = origSlave->mPatch.Normal;
-	Vector3 posR = bJoint.P0 + halfThk * rV;
-	Vector3 posL = bJoint.P1 - halfThk * rV;
 	Hinge* hingeR = new Hinge(chainParts[0], baseMaster, 
-		posR, upV,  rV, jointV, bJoint.length());
+		bJoint.P0, upV,  rightSegV, jointV, bJoint.length());
 	Hinge* hingeL = new Hinge(chainParts[0], baseMaster, 
-		posL, upV, -rV, -jointV, bJoint.length());
+		bJoint.P1, upV, -rightSegV, -jointV, bJoint.length());
 
 	FdLink* linkR = new FdLink(chainParts[0], baseMaster, hingeR);
 	FdLink* linkL = new FdLink(chainParts[0], baseMaster, hingeL);
@@ -267,8 +269,8 @@ void ChainGraph::resetHingeLinks(FoldOption* fn)
 	leftLinks << linkL;
 
 	// hinge links between two parts in the chain
-	double l = getShrunkSlaveSeg().length();
-	double d = getShunkScale() * rightSeg.length();
+	double l = slaveSeg.length();
+	double d = rightSeg.length();
 	double step = (l - d) / (fn->nSplits + 1);
 	if (!fn->rightSide){
 		bJoint.translate(d * slaveSeg.Direction);
@@ -276,18 +278,16 @@ void ChainGraph::resetHingeLinks(FoldOption* fn)
 
 	for (int i = 1; i < chainParts.size(); i++)
 	{
-		bJoint.translate(step * slaveSeg.Direction);
-
 		PatchNode* part1 = chainParts[i];
 		PatchNode* part2 = chainParts[i-1];
+
+		bJoint.translate(step * slaveSeg.Direction);
 		Vector3 upV = slaveSeg.Direction;
 		Vector3 jointV = bJoint.Direction;
-		Vector3 posR = bJoint.P0 + halfThk * rV;
-		Vector3 posL = bJoint.P1 - halfThk * rV;
 		Hinge* hingeR = new Hinge(part1, part2, 
-			posR, upV, -upV, jointV, bJoint.length());
+			bJoint.P0, upV, -upV, jointV, bJoint.length());
 		Hinge* hingeL = new Hinge(part1, part2, 
-			posL, upV, -upV, -jointV, bJoint.length());
+			bJoint.P1, upV, -upV, -jointV, bJoint.length());
 
 		FdLink* linkR = new FdLink(part1, part2, hingeR);
 		FdLink* linkL = new FdLink(part1, part2, hingeL);
