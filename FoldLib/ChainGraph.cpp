@@ -25,7 +25,6 @@ ChainGraph::ChainGraph( FdNode* slave, PatchNode* base, PatchNode* top)
 	}
 	else
 		origSlave = (PatchNode*)slave->clone();
-
 	chainParts << (PatchNode*)origSlave->clone();
 	Structure::Graph::addNode(chainParts[0]);
 
@@ -56,6 +55,10 @@ ChainGraph::ChainGraph( FdNode* slave, PatchNode* base, PatchNode* top)
 		Vector3 crossJointUp = cross(baseJoint.Direction, slaveSeg.Direction);
 		rightSegV = base_rect.getProjectedVector(crossJointUp);
 	}
+
+	// flip slave patch so that its norm is to the right
+	if (dot(origSlave->mPatch.Normal, rightSegV) < 0)
+		origSlave->mPatch.flipNormal();
 
 	// upV x rightV = jointV
 	Vector3 crossUpRight = cross(slaveSeg.Direction, rightSeg.Direction);
@@ -100,7 +103,7 @@ void ChainGraph::fold( double t )
 	double b = d + a;
 	double alpha = acos(d / sl) * (1 - t);
 	double cos_beta = (b * cos(alpha) - d) / a;
-	double beta = acos(cos_beta);
+	double beta = acos(RANGED(0, cos_beta, 1));
 	if (foldToRight) std::swap(alpha, beta);
 
 	activeLinks[0]->hinge->angle = alpha;
@@ -118,6 +121,23 @@ void ChainGraph::fold( double t )
 	double topH = (n - 1) * ha + hb + halfThk + baseOffset;
 	Vector3 topPos = topTraj.P0 + topH * topTraj.Direction;
 	topMaster->translate(topPos - topMaster->center());
+
+	//if ( t > 0.45 && t < 0.55)
+	{
+		std::cout << "\n\nsl = " << sl << "\n"
+			<< "d = " << d << "\n"
+			<< "a = " << a << "\n"
+			<< "b = " << b << "\n"
+			<< "c = " << c << "\n"
+			<< "alpha = " << alpha << "\n"
+			<< "beta = " << beta << "\n"
+			<< "ha = " << ha << "\n"
+			<< "hb = " << hb << "\n"
+			<< "topH = " << topH << "\n"
+			<< "topPos = " << topPos << "\n"
+			<< "TopTraj.Norm = "  << topTraj.Direction << "\n"
+			<< "topCenter = " << topMaster->mBox.Center;
+	}
 }
 
 FdGraph* ChainGraph::getKeyframe( double t )
@@ -187,7 +207,7 @@ void ChainGraph::resetChainParts(FoldOption* fn)
 	else slave->mBox.scaleRange01(aid_h, 1-t1, 1-t0);
 
 	// vertical shrinking caused by master thickness
-	Interval it = getShunkInterval();
+	Interval it = getShrunkInterval();
 	int aid_v = slave->mBox.getAxisId(slaveSeg.Direction);
 	if (dot(slave->mBox.Axis[aid_v], slaveSeg.Direction) > 0)
 		slave->mBox.scaleRange01(aid_v, it.first, it.second);
@@ -211,6 +231,10 @@ void ChainGraph::resetChainParts(FoldOption* fn)
 		distPartMap[fabs(dist)] = n;
 	}
 	chainParts = distPartMap.values().toVector();
+
+	// debug
+	//addDebugSegment(getShrunkTopTraj());
+	//addDebugSegment(getShrunkSlaveSeg());
 }
 
 void ChainGraph::resetHingeLinks(FoldOption* fn)
@@ -224,10 +248,10 @@ void ChainGraph::resetHingeLinks(FoldOption* fn)
 	Geom::Segment bJoint = baseJoint;
 	bJoint.translate(baseOffset * slaveSeg.Direction);
 
-	// hinge links between master and slave
+	// hinge links between base and slave
 	Vector3 upV = slaveSeg.Direction;
 	Vector3 jointV = bJoint.Direction;
-	Vector3 rV = rightSegV;
+	Vector3 rV = origSlave->mPatch.Normal;
 	Vector3 posR = bJoint.P0 + halfThk * rV;
 	Vector3 posL = bJoint.P1 - halfThk * rV;
 	Hinge* hingeR = new Hinge(chainParts[0], baseMaster, 
@@ -245,7 +269,6 @@ void ChainGraph::resetHingeLinks(FoldOption* fn)
 	// hinge links between two parts in the chain
 	double l = getShrunkSlaveSeg().length();
 	double d = getShunkScale() * rightSeg.length();
-	double h = getShrunkTopTraj().length();
 	double step = (l - d) / (fn->nSplits + 1);
 	if (!fn->rightSide){
 		bJoint.translate(d * slaveSeg.Direction);
@@ -419,7 +442,7 @@ QVector<Geom::Plane> ChainGraph::generateCutPlanes( FoldOption* fn )
 Geom::Segment ChainGraph::getShrunkSlaveSeg()
 {
 	Geom::Segment seg = slaveSeg;
-	Interval it = getShunkInterval();
+	Interval it = getShrunkInterval();
 	seg.cropRange01(it.first, it.second);
 
 	return seg;
@@ -427,20 +450,20 @@ Geom::Segment ChainGraph::getShrunkSlaveSeg()
 
 double ChainGraph::getShunkScale()
 {
-	Interval it = getShunkInterval();
+	Interval it = getShrunkInterval();
 	return 1 - it.first - (1 - it.second);
 }
 
 Geom::Segment ChainGraph::getShrunkTopTraj()
 {
 	Geom::Segment seg = topTraj;
-	Interval it = getShunkInterval();
+	Interval it = getShrunkInterval();
 	seg.cropRange01(it.first, it.second);
 
 	return seg;
 }
 
-Interval ChainGraph::getShunkInterval()
+Interval ChainGraph::getShrunkInterval()
 {
 	double height = topTraj.length();
 	double top_dt = halfThk / height;

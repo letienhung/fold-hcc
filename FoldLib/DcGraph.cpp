@@ -708,8 +708,6 @@ void DcGraph::foldabilize()
 		next_block->foldabilize(currKeyframe);
 
 
-		//return;
-
 
 		next_block->addTag(FOLDED_TAG);
 		double timeLength = next_block->getTimeLength() * timeScale;

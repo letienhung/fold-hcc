@@ -26,7 +26,7 @@ public:
 	void setFoldDuration(double t0, double t1);
 
 	// helpers
-	Interval getShunkInterval();
+	Interval getShrunkInterval();
 	double getShunkScale();
 	Geom::Segment getShrunkSlaveSeg();
 	Geom::Segment getShrunkTopTraj();

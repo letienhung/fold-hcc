@@ -240,11 +240,16 @@ void FdPlugin::test1()
 	if (selBlk)
 	{
 		FoldOption fn(true, 1, 0, 1, "hhh");
+		double thickness = 0;
 		foreach (ChainGraph* chain, selBlk->chains)
 		{
-			chain->getFoldRegion(&fn);
+			chain->halfThk = thickness * 0.5;
+			chain->baseOffset = thickness * 0.5;
+			//chain->topMaster->setThickness(thickness);
+			//chain->baseMaster->setThickness(thickness);
+			//chain->getFoldRegion(&fn);
 			chain->applyFoldOption(&fn);
-			chain->fold(0.5);
+			chain->fold(0);
 		}
 	}
 }
