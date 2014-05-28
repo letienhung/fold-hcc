@@ -104,27 +104,52 @@ void ChainGraph::fold( double t )
 	double a = (sl - d) / n;
 	double b = d + a;
 	double bProj = b * cos(alpha);
+	double beta;
+	// no return
 	if (bProj <= d)
 	{
-		// right side of topTraj
-		double x = d - bProj;
-		double y = (n - 1) * a;
-		double beta = M_PI_2 - acos(x/y);
-		activeLinks[0]->hinge->angle = alpha;
-		activeLinks[1]->hinge->angle = alpha + beta;
-		for (int i = 2; i < activeLinks.size(); i++)
-			activeLinks[i]->hinge->angle = M_PI;
+		double cos_beta = (d - bProj)/((n - 1) * a);
+		beta = acos(cos_beta);
+
+		if (foldToRight)
+		{
+			activeLinks[0]->hinge->angle = M_PI - beta;
+			for (int i = 1; i < activeLinks.size()-1; i++)
+				activeLinks[i]->hinge->angle = M_PI;
+			activeLinks.last()->hinge->angle = alpha + M_PI - beta;
+		}
+		else
+		{
+			activeLinks[0]->hinge->angle = alpha;
+			activeLinks[1]->hinge->angle = alpha + M_PI - beta;
+			for (int i = 2; i < activeLinks.size(); i++)
+				activeLinks[i]->hinge->angle = M_PI;
+		}
 	}
+	// return
 	else
 	{
 		double cos_beta = (b * cos(alpha) - d) / a;
-		double beta = acos(RANGED(0, cos_beta, 1));
-		if (foldToRight) std::swap(alpha, beta);
+		beta = acos(RANGED(0, cos_beta, 1));
 
-		activeLinks[0]->hinge->angle = alpha;
-		activeLinks[1]->hinge->angle = alpha + beta;
-		for (int i = 2; i < activeLinks.size(); i++)
-			activeLinks[i]->hinge->angle = 2 * beta;
+		if (foldToRight)
+		{
+			activeLinks[0]->hinge->angle = beta;
+			for (int i = 1; i < activeLinks.size()-1; i++)
+				activeLinks[i]->hinge->angle = 2 * beta;
+			activeLinks.last()->hinge->angle = alpha + beta;
+		}
+		else
+		{
+			activeLinks[0]->hinge->angle = alpha;
+			activeLinks[1]->hinge->angle = alpha + beta;
+			for (int i = 2; i < activeLinks.size(); i++)
+				activeLinks[i]->hinge->angle = 2 * beta;
+		}
+	}
+
+	// restore configuration
+	restoreConfiguration();
 
 	// adjust the position of top master
 	double ha = a * sin(beta);
@@ -132,14 +157,6 @@ void ChainGraph::fold( double t )
 	double topH = (n - 1) * ha + hb;
 	Vector3 topPos = topTraj.P0 + topH * topTraj.Direction;
 	topMaster->translate(topPos - topMaster->center());
-	}
-
-
-
-
-
-	// restore configuration
-	restoreConfiguration();
 
 
 	//if ( t > 0.45 && t < 0.55)
