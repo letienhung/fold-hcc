@@ -20,18 +20,19 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->g_manager->connect(ui->loadScaffold, SIGNAL(clicked()), SLOT(loadScaffold()));
 
 	// visual options
-	plugin->connect(ui->showKeyframe, SIGNAL(stateChanged(int)), SLOT(showKeyframe(int)));
-	plugin->connect(ui->showFolded, SIGNAL(stateChanged(int)), SLOT(showFolded(int)));
-	plugin->connect(ui->showCuboids, SIGNAL(stateChanged(int)), SLOT(showCuboid(int)));
-	plugin->connect(ui->showScaffold, SIGNAL(stateChanged(int)), SLOT(showScaffold(int)));
-	plugin->connect(ui->showMesh, SIGNAL(stateChanged(int)), SLOT(showMesh(int)));
-	plugin->connect(ui->showAFS, SIGNAL(stateChanged(int)), SLOT(showAFS(int)));
+	plugin->connect(ui->showDecomp, SIGNAL(stateChanged(int)), SLOT(setShowDecomp(int)));
+	plugin->connect(ui->showKeyframe, SIGNAL(stateChanged(int)), SLOT(setShowKeyframe(int)));
+
+	plugin->connect(ui->showCuboid, SIGNAL(stateChanged(int)), SLOT(setShowCuboid(int)));
+	plugin->connect(ui->showScaffold, SIGNAL(stateChanged(int)), SLOT(setShowScaffold(int)));
+	plugin->connect(ui->showMesh, SIGNAL(stateChanged(int)), SLOT(setShowMesh(int)));
+	plugin->connect(ui->showAFS, SIGNAL(stateChanged(int)), SLOT(setShowAFS(int)));
 
 	// foldabilize
 	plugin->f_manager->connect(ui->sqzV, SIGNAL(currentIndexChanged(QString)), SLOT(setSqzV(QString)));
 	plugin->f_manager->connect(ui->nbSplits, SIGNAL(valueChanged(int)), SLOT(setNbSplits(int)));
 	plugin->f_manager->connect(ui->nbChunks, SIGNAL(valueChanged(int)), SLOT(setNbChunks(int)));
-	plugin->f_manager->connect(ui->useThickness, SIGNAL(stateChanged(int)), SLOT(useThickness(int)));
+	plugin->f_manager->connect(ui->useThickness, SIGNAL(stateChanged(int)), SLOT(setUseThickness(int)));
 	plugin->f_manager->connect(ui->thickness, SIGNAL(valueChanged(double)), SLOT(setThickness(double)));
 	plugin->f_manager->connect(ui->foldabilize, SIGNAL(clicked()), SLOT(foldabilize()));
 	plugin->connect(ui->exportVector, SIGNAL(clicked()), SLOT(exportSVG()));
@@ -39,10 +40,10 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	// decompose
 	plugin->f_manager->connect(ui->decompose, SIGNAL(clicked()), SLOT(decompose()));
 	this->connect(plugin->f_manager, SIGNAL(DcGraphsChanged(QStringList)), SLOT(setDcGraphList(QStringList)));
-	this->connect(plugin->f_manager, SIGNAL(blocksChanged(QStringList)), SLOT(setLayerList(QStringList)));
+	this->connect(plugin->f_manager, SIGNAL(blocksChanged(QStringList)), SLOT(setBlockList(QStringList)));
 	this->connect(plugin->f_manager, SIGNAL(chainsChanged(QStringList)), SLOT(setChainList(QStringList)));
-	this->connect(ui->DcList, SIGNAL(itemSelectionChanged()), SLOT(selectDcGraph()));
-	this->connect(ui->layerList, SIGNAL(itemSelectionChanged()), SLOT(selectBlock()));
+	this->connect(ui->dcList, SIGNAL(itemSelectionChanged()), SLOT(selectDcGraph()));
+	this->connect(ui->blockList, SIGNAL(itemSelectionChanged()), SLOT(selectBlock()));
 	this->connect(ui->chainList, SIGNAL(itemSelectionChanged()), SLOT(selectChain()));
 	plugin->f_manager->connect(this, SIGNAL(dcGraphSelectionChanged(QString)), SLOT(selectDcGraph(QString)));
 	plugin->f_manager->connect(this, SIGNAL(blockSelectionChanged(QString)), SLOT(selectBlock(QString)));
@@ -50,11 +51,10 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->f_manager->connect(ui->clearDcList, SIGNAL(clicked()), SLOT(clearDcGraphs()));
 
 	// selected block
-	plugin->f_manager->connect(ui->foldbzSelBlock, SIGNAL(clicked()), SLOT(foldbzSelBlock()));
 	this->connect(plugin->f_manager, SIGNAL(solutionsChanged(int)), SLOT(setSolutionList(int)));
-	plugin->f_manager->connect(ui->exportCollFOG, SIGNAL(clicked()), SLOT(exportCollFOG()));
 	this->connect(ui->slnList, SIGNAL(itemSelectionChanged()), SLOT(selectSolution()));
 	plugin->f_manager->connect(this, SIGNAL(solutionSelectionChanged(int)), SLOT(selectSolution(int)));
+	plugin->f_manager->connect(ui->exportCollFOG, SIGNAL(clicked()), SLOT(exportCollFOG()));
 
 	// key frames
 	plugin->f_manager->connect(ui->nbKeyframes, SIGNAL(valueChanged(int)), SLOT(setNbKeyframes(int)));
@@ -89,14 +89,14 @@ FdWidget::~FdWidget()
 
 void FdWidget::setDcGraphList( QStringList labels )
 {
-	ui->DcList->clear();
-	ui->DcList->addItems(labels);
+	ui->dcList->clear();
+	ui->dcList->addItems(labels);
 }
 
-void FdWidget::setLayerList( QStringList labels )
+void FdWidget::setBlockList( QStringList labels )
 {
-	ui->layerList->clear();
-	ui->layerList->addItems(labels);
+	ui->blockList->clear();
+	ui->blockList->addItems(labels);
 }
 
 void FdWidget::setChainList( QStringList labels )
@@ -124,7 +124,7 @@ void FdWidget::setSolutionList( int N )
 
 void FdWidget::selectDcGraph()
 {
-	QList<QListWidgetItem *> selItems = ui->DcList->selectedItems();
+	QList<QListWidgetItem *> selItems = ui->dcList->selectedItems();
 
 	if (!selItems.isEmpty())
 	{
@@ -134,7 +134,7 @@ void FdWidget::selectDcGraph()
 
 void FdWidget::selectBlock()
 {
-	QList<QListWidgetItem *> selItems = ui->layerList->selectedItems();
+	QList<QListWidgetItem *> selItems = ui->blockList->selectedItems();
 
 	if (!selItems.isEmpty())
 	{

@@ -168,16 +168,23 @@ FdGraph* FoldManager::activeScaffold()
 	else		return scaffold;
 }
 
+void FoldManager::decompose()
+{
+	selDcIdx = dcGraphs.size();
+	QString id = "Dc_" + QString::number(selDcIdx);
+	dcGraphs.push_back(new DcGraph(id, scaffold, sqzV));
+
+	updateDcList();
+}
+
 void FoldManager::foldabilize()
 {
 	if (scaffold == NULL)
 		return;
 
 	// decompose
-	selDcIdx = dcGraphs.size();
-	QString id = "Dc_" + QString::number(selDcIdx);
-	DcGraph* selDc = new DcGraph(id, scaffold, sqzV);
-	dcGraphs.push_back(selDc);
+	decompose();
+	DcGraph* selDc = getSelDcGraph();
 	
 	// parameters
 	setParameters();

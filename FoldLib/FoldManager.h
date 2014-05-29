@@ -59,6 +59,9 @@ public slots:
 	void setThickness(double thk);
 	void setParameters();
 
+	// decompose
+	void decompose();
+
 	// fold
 	void foldabilize();
 

@@ -30,13 +30,15 @@ public:
 	GraphManager* g_manager;
 	FoldManager* f_manager;
 
-	bool drawAABB;
-	bool drawCuboid;
-	bool drawScaffold;
-	bool drawMesh;
-	bool drawFolded;
-	bool drawKeyframe;
-	bool drawAFS;
+	bool showDecomp;
+	bool showKeyframe;
+
+	bool showAABB;
+	bool showCuboid;
+	bool showScaffold;
+	bool showMesh;
+	bool showAFS;
+
 	bool drawNodeOrder;
 
 	QColorDialog* qColorDialog;
@@ -52,13 +54,14 @@ public slots:
 	void resetMesh();
 
 	// show options
-	void showAABB(int state);
-	void showCuboid(int state);
-	void showScaffold(int state);
-	void showMesh(int state);
-	void showFolded(int state);
-	void showKeyframe(int state);
-	void showAFS(int state);
+	void setShowDecomp(int state);
+	void setShowKeyframe(int state);
+
+	void setShowAABB(int state);
+	void setShowCuboid(int state);
+	void setShowScaffold(int state);
+	void setShowMesh(int state);
+	void setShowAFS(int state);
 
 	// scene and message
 	void updateScene();

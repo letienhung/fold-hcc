@@ -16,10 +16,13 @@ DcGraph::DcGraph(QString id, FdGraph* scaffold, Vector3 v)
 
 	// decomposition
 	createMasters();
-	computeMasterOrderConstraints();
 	createSlaves();
 	clusterSlaves();
 	createBlocks();
+
+	// master order constraints
+	// to-do: order constraints among all parts
+	computeMasterOrderConstraints();
 
 	// time scale
 	double totalDuration = 0;
@@ -100,11 +103,11 @@ FdNodeArray2D DcGraph::getPerpConnGroups()
 
 	// ==STEP 3==: perp & connected groups
 	FdNodeArray2D perpConnGroups;
-	for (int i = 0; i < perpGroups.size()-1; i++){
+	perpConnGroups << perpGroups.front(); // ground
+	for (int i = 1; i < perpGroups.size(); i++){
 		foreach(QVector<FdNode*> connGroup, getConnectedGroups(perpGroups[i], connThr))
 			perpConnGroups << connGroup;
 	}
-	perpConnGroups << perpGroups.last(); // ground
 
 	return perpConnGroups;
 }

@@ -29,7 +29,7 @@ public slots:
 
 	// to Ui
 	void setDcGraphList(QStringList labels);
-	void setLayerList(QStringList labels);
+	void setBlockList(QStringList labels);
 	void setChainList(QStringList labels);
 	void setKeyframeSlider(int N);
 	void setSolutionList(int N);

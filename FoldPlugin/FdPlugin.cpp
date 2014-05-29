@@ -28,13 +28,13 @@ FdPlugin::FdPlugin()
 	this->connect(f_manager, SIGNAL(message(QString)), SLOT(showStatus(QString)));
 	
 	// visual tags
-	drawKeyframe = false;
-	drawFolded = false;
-	drawAABB = false;
-	drawCuboid = true;
-	drawScaffold = true;
-	drawMesh = false;
-	drawAFS = false;
+	showKeyframe = false;
+	showDecomp = false;
+	showAABB = false;
+	showCuboid = true;
+	showScaffold = true;
+	showMesh = false;
+	showAFS = false;
 	drawNodeOrder = false;
 
 	// color dialog
@@ -92,12 +92,12 @@ void FdPlugin::updateScene()
 	FdGraph* active = activeScaffold();
 	if (active)
 	{
-		active->showAABB = drawAABB;
-		active->showCuboids(drawCuboid);
-		active->showScaffold(drawScaffold);
-		active->showMeshes(drawMesh);
+		active->showAABB = showAABB;
+		active->showCuboids(showCuboid);
+		active->showScaffold(showScaffold);
+		active->showMeshes(showMesh);
 
-		if (drawAFS) active->addTag(SHOW_AFS);
+		if (showAFS) active->addTag(SHOW_AFS);
 		else active->removeTag(SHOW_AFS);
 	}
 
@@ -124,9 +124,12 @@ void FdPlugin::resetScene()
 
 FdGraph* FdPlugin::activeScaffold()
 {
-	if (drawKeyframe) return f_manager->getSelKeyframe();
-
-	return (drawFolded ? f_manager->activeScaffold() : g_manager->scaffold);
+	if (showKeyframe) 
+		return f_manager->getSelKeyframe();
+	else if (showDecomp)
+		return f_manager->activeScaffold();
+	else
+		return g_manager->scaffold;
 }
 
 void FdPlugin::resetMesh()
@@ -192,46 +195,46 @@ QVector<FdNode*> FdPlugin::selectedFdNodes()
 
 
 
-void FdPlugin::showFolded( int state )
+void FdPlugin::setShowDecomp( int state )
 {
-	drawFolded = (state == Qt::Checked);
+	showDecomp = (state == Qt::Checked);
 	updateScene();
 }
 
-void FdPlugin::showAABB( int state )
+void FdPlugin::setShowAABB( int state )
 {
-	drawAABB = (state == Qt::Checked);
+	showAABB = (state == Qt::Checked);
 	updateScene();
 }
 
-void FdPlugin::showCuboid( int state )
+void FdPlugin::setShowCuboid( int state )
 {
-	drawCuboid = (state == Qt::Checked);
+	showCuboid = (state == Qt::Checked);
 	updateScene();
 }
 
-void FdPlugin::showScaffold( int state )
+void FdPlugin::setShowScaffold( int state )
 {
-	drawScaffold = (state == Qt::Checked);
+	showScaffold = (state == Qt::Checked);
 	updateScene();
 }
 
-void FdPlugin::showMesh( int state )
+void FdPlugin::setShowMesh( int state )
 {
-	drawMesh = (state == Qt::Checked);
+	showMesh = (state == Qt::Checked);
 	updateScene();
 }
 
-void FdPlugin::showKeyframe( int state )
+void FdPlugin::setShowKeyframe( int state )
 {
-	drawKeyframe = (state == Qt::Checked);
+	showKeyframe = (state == Qt::Checked);
 	updateScene();
 }
 
 
-void FdPlugin::showAFS( int state )
+void FdPlugin::setShowAFS( int state )
 {
-	drawAFS = (state == Qt::Checked);
+	showAFS = (state == Qt::Checked);
 	updateScene();
 }
 
@@ -335,7 +338,7 @@ void FdPlugin::saveSnapshotAll()
 	DcGraph* selDc = f_manager->getSelDcGraph();
 	if (!selDc) return;
 
-	drawKeyframe = true;
+	showKeyframe = true;
 	QString filename = selDc->path + "/snapshot";
 	drawArea()->setSnapshotFormat("PNG");
 	drawArea()->setSnapshotQuality(100);
@@ -470,7 +473,7 @@ bool FdPlugin::keyPressEvent(QKeyEvent* event)
 		foreach(FdNode * n, selectedFdNodes()) selectedNodeNames << n->mID;
 
 		// We are changing keyframes
-		if (drawKeyframe && f_manager->getSelDcGraph()) selGraphs = f_manager->getSelDcGraph()->keyframes;
+		if (showKeyframe && f_manager->getSelDcGraph()) selGraphs = f_manager->getSelDcGraph()->keyframes;
 		
 		foreach(FdGraph* g, selGraphs)
 		{
