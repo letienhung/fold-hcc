@@ -3,29 +3,29 @@
     <cN>5</cN>
     <node>
         <type>2</type>
-        <ID>Box001</ID>
+        <ID>ground</ID>
         <box>
             <c>0 0 0.5</c>
             <x>0 0 1</x>
             <y>0 1 0</y>
-            <z>1 0 0</z>
+            <z>-1 0 0</z>
             <e>0.5 15 30</e>
         </box>
     </node>
     <node>
         <type>2</type>
-        <ID>Box002</ID>
+        <ID>top</ID>
         <box>
             <c>0 0 20.5</c>
             <x>0 0 1</x>
             <y>0 1 0</y>
-            <z>1 0 0</z>
+            <z>-1 0 0</z>
             <e>0.5 15 30</e>
         </box>
     </node>
     <node>
         <type>2</type>
-        <ID>Box003</ID>
+        <ID>left</ID>
         <box>
             <c>-15.4794 0 10.392</c>
             <x>-0.958795 0 0.2841</x>
@@ -36,23 +36,23 @@
     </node>
     <node>
         <type>2</type>
-        <ID>Box004</ID>
+        <ID>right</ID>
         <box>
             <c>15.4794 0 10.392</c>
             <x>0.958795 0 0.284099</x>
             <y>0 1 0</y>
-            <z>0.284099 0 -0.958795</z>
+            <z>-0.284099 0 0.958795</z>
             <e>0.500003 15 10.0001</e>
         </box>
     </node>
     <node>
         <type>2</type>
-        <ID>Box005</ID>
+        <ID>middle</ID>
         <box>
             <c>0 0 10.8553</c>
             <x>0 0 1</x>
             <y>0 1 0</y>
-            <z>1 0 0</z>
+            <z>-1 0 0</z>
             <e>10 0.5 18.5</e>
         </box>
     </node>

@@ -507,14 +507,16 @@ void DcGraph::selectBlock( QString id )
 
 FdGraph* DcGraph::getKeyframe( double t )
 {
+	bool showActive = false;	
+	Vector3 aOrigPos;
+	QString aBaseMID;
+	QVector<Geom::Box> aAFS;
+	QVector<Vector3> aAFR_CP;
+	QVector<Vector3> aMaxFR;
+	QVector<Geom::Rectangle> aFR; 
+	
 	// folded blocks
 	QVector<FdGraph*> foldedBlocks;
-	QVector<Geom::Box> activeAFS;
-	QVector<Vector3> activeAFR_CP;
-	QVector<Vector3> acitveMaxFR;
-	Vector3 activeOrigPosition;
-	QString activeBaseMasterID;
-	bool showActiveBlockStuff = false;
 	for (int i = 0; i < blocks.size(); i++)
 	{
 		double lt = getLocalTime(t, blocks[i]->mFoldDuration);
@@ -524,13 +526,14 @@ FdGraph* DcGraph::getKeyframe( double t )
 		// debug: active block
 		if (lt > 0 && lt < 1)
 		{
-			activeAFS = blocks[i]->properties[AFS].value<QVector<Geom::Box> >();
-			activeAFR_CP = blocks[i]->properties[AFR_CP].value<QVector<Vector3> >();
-			acitveMaxFR = blocks[i]->properties[MAXFR].value<QVector<Vector3> >();
-			activeOrigPosition = blocks[i]->baseMaster->center();
-			activeBaseMasterID = blocks[i]->baseMaster->mID;
-			showActiveBlockStuff = true;
-
+			showActive = true;
+			aOrigPos = blocks[i]->baseMaster->center();
+			aBaseMID = blocks[i]->baseMaster->mID;
+			//aAFS = blocks[i]->properties[AFS].value<QVector<Geom::Box> >();
+			//aAFR_CP = blocks[i]->properties[AFR_CP].value<QVector<Vector3> >();
+			//aMaxFR = blocks[i]->properties[MAXFR].value<QVector<Vector3> >();
+			//aFR = blocks[i]->properties[FOLD_REGIONS].value<QVector<Geom::Rectangle>>();
+			
 			// active slaves
 			foreach (FdNode* n, fblock->getFdNodes())
 				n->addTag(ACTIVE_TAG);
@@ -541,16 +544,18 @@ FdGraph* DcGraph::getKeyframe( double t )
 	FdGraph *key_graph = combineDecomposition(foldedBlocks, baseMaster->mID, masterBlockMap);
 
 	// debug
-	if (showActiveBlockStuff)
+	if (showActive)
 	{
-		Vector3 activeCurrPosition = ((PatchNode*)key_graph->getNode(activeBaseMasterID))->center();
-		Vector3 offsetV = activeCurrPosition - activeOrigPosition;
-		for (int i = 0; i < activeAFS.size(); i++ ) activeAFS[i].translate(offsetV);
-		for (int i = 0; i < activeAFR_CP.size(); i++ ) activeAFR_CP[i] += offsetV;
-		for (int i = 0; i < acitveMaxFR.size(); i++ ) acitveMaxFR[i] += offsetV;
-		key_graph->properties[AFS].setValue(activeAFS);
-		//key_graph->properties[AFR_CP].setValue(activeAFR_CP);
-		//key_graph->properties[MAXFR].setValue(acitveMaxFR);
+		Vector3 activeCurrPosition = ((PatchNode*)key_graph->getNode(aBaseMID))->center();
+		Vector3 offsetV = activeCurrPosition - aOrigPos;
+		//for (int i = 0; i < aAFS.size(); i++ ) aAFS[i].translate(offsetV);
+		//key_graph->properties[AFS].setValue(aAFS);
+		//for (int i = 0; i < aAFR_CP.size(); i++ ) aAFR_CP[i] += offsetV;
+		//key_graph->properties[AFR_CP].setValue(aAFR_CP);
+		//for (int i = 0; i < aMaxFR.size(); i++ ) aMaxFR[i] += offsetV;
+		//key_graph->properties[MAXFR].setValue(aMaxFR);
+		//for (int i = 0; i < aFR.size(); i++ ) aFR[i].translate(offsetV);
+		//key_graph->properties[FOLD_REGIONS].setValue(aFR);
 	}
 
 	// debug

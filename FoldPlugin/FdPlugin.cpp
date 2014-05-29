@@ -248,8 +248,9 @@ void FdPlugin::test1()
 			//chain->topMaster->setThickness(thickness);
 			//chain->baseMaster->setThickness(thickness);
 			//chain->getFoldRegion(&fn);
-			chain->applyFoldOption(&fn);
-			chain->fold(0);
+			//chain->applyFoldOption(&fn);
+			//chain->fold(0);
+			chain->getFoldRegion(&fn);
 		}
 	}
 }

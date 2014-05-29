@@ -45,16 +45,13 @@ ChainGraph::ChainGraph( FdNode* slave, PatchNode* base, PatchNode* top)
 	slaveSeg = edges[0].contains(bJointP0) ? edges[0] : edges[1];
 	if (slaveSeg.getProjCoordinates(bJointP0) > 0) slaveSeg.flip();
 
-	// rightSeg
+	// rightSeg and direction
 	Geom::Rectangle base_rect = baseMaster->mPatch;
 	Geom::Segment topJointProj = base_rect.getProjection(topJoint);
 	rightSeg = Geom::Segment(topJointProj.P0, baseJoint.P0);
-	if (rightSeg.length() > ZERO_TOLERANCE_LOW)
-		rightSegV = rightSeg.Direction;
-	else{
-		Vector3 crossJointUp = cross(baseJoint.Direction, slaveSeg.Direction);
-		rightSegV = base_rect.getProjectedVector(crossJointUp);
-	}
+	rightSegV = cross(baseJoint.Direction, slaveSeg.Direction);
+	rightSegV = base_rect.getProjectedVector(rightSegV);
+	rightSegV.normalize();
 
 	// flip slave patch so that its norm is to the right
 	if (dot(origSlave->mPatch.Normal, rightSegV) < 0)
@@ -396,8 +393,8 @@ Geom::Rectangle ChainGraph::getFoldRegion( FoldOption* fn )
 		<< leftSeg.P0	<< leftSeg.P1
 		<< rightSeg.P1  << rightSeg.P0 );
 
-	//addDebugSegment(leftSeg);
-	//addDebugSegment(rightSeg);
+	// debug
+	addDebugSegments(region.getEdgeSegments());
 
 	return region;
 }

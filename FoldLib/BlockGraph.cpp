@@ -586,6 +586,7 @@ void BlockGraph::addNodesToCollisionGraph()
 		std::cout << "#options = " << options.size();
 		filterFoldOptions(options, cid);
 		std::cout << " ==> " << options.size() << std::endl;
+		foreach (FoldOption* fn, options) frs << fn->region;
 
 		// links
 		foreach(FoldOption* fn, options)
