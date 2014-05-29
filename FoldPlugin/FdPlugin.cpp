@@ -239,7 +239,7 @@ void FdPlugin::test1()
 	BlockGraph* selBlk = f_manager->getSelBlock();
 	if (selBlk)
 	{
-		FoldOption fn(false, 1, 0, 1, "hhh");
+		FoldOption fn(true, 1, 0, 1, "hhh");
 		double thickness = 0;
 		foreach (ChainGraph* chain, selBlk->chains)
 		{
@@ -249,7 +249,7 @@ void FdPlugin::test1()
 			//chain->baseMaster->setThickness(thickness);
 			//chain->getFoldRegion(&fn);
 			chain->applyFoldOption(&fn);
-			chain->fold(0.7);
+			chain->fold(0);
 		}
 	}
 }

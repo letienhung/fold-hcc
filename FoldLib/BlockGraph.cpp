@@ -402,8 +402,10 @@ FdGraph* BlockGraph::getKeyframe( double t )
 FdGraph* BlockGraph::getSuperKeyframe( double t )
 {
 	// regular key frame w\o thickness
+	bool origUseThk = useThickness;
 	setUseThickness(false);
 	FdGraph* keyframe = getKeyframe(t);
+	setUseThickness(origUseThk);
 
 	// do nothing if the block is NOT fully folded
 	if (1 - t > ZERO_TOLERANCE_LOW) return keyframe;
@@ -573,7 +575,7 @@ void BlockGraph::addNodesToCollisionGraph()
 
 		// fold options
 		QVector<FoldOption*> options;
-		for (int nS = 3; nS <= nbSplits; nS += 2)
+		for (int nS = 1; nS <= nbSplits; nS += 2)
 			for (int nUsedChunks = nbChunks; nUsedChunks >= 1; nUsedChunks-- )
 				options << chain->generateFoldOptions(nS, nUsedChunks, nbChunks);
 		FoldOption* delete_fn = new FoldOption(chain->mID + "_delete");

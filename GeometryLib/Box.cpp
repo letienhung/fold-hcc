@@ -79,6 +79,8 @@ Geom::Box::Box(const Frame& f, const Vector3& ext)
 	Axis.clear();
 	Axis << f.r << f.s << f.t;
 	Extent = ext;
+	normalizeAxis();
+	makeRightHanded();
 }
 
 Geom::Box::Box(const Rectangle& rect, const Vector3& n, const double& height)
@@ -98,6 +100,9 @@ Geom::Box &Geom::Box::operator =(const Box &b)
 	Center = b.Center;
 	Axis = b.Axis;
 	Extent = b.Extent;
+
+	normalizeAxis();
+	makeRightHanded();
 
     return *this;
 }

@@ -180,10 +180,6 @@ FdGraph* ChainGraph::getKeyframe( double t )
 {
 	fold(t);
 
-	//FdGraph* keyframe = new FdGraph(mID);
-	//foreach (FdNode* n, getFdNodes())
-	//	keyframe->Structure::Graph::addNode(n->clone());
-
 	return (FdGraph*)this->clone();
 }
 

@@ -58,6 +58,6 @@ public:
 private:
 	void updateDihedralVectors(bool hXFixed);
 	void updateDihedralFrames();
-	HingeRecordInBox createLinkRecord(Geom::Box& node_box);
+	HingeRecordInBox createHingeRecord(Geom::Box& node_box);
 	void recoverLink(HingeRecordInBox lr, Geom::Box& node_box);
 };

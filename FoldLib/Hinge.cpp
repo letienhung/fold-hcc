@@ -28,8 +28,8 @@ Hinge::Hinge( FdNode* n1, FdNode* n2, Point o, Vec3d x, Vector3 y, Vector3 z, do
 	Geom::Frame node2_frame = node2->mBox.getFrame();
 
 	// create link record in node frames
-	hinge_record1 = createLinkRecord(node1->mBox);
-	hinge_record2 = createLinkRecord(node2->mBox);
+	hinge_record1 = createHingeRecord(node1->mBox);
+	hinge_record2 = createHingeRecord(node2->mBox);
 
 	// create node records in dihedral frames
 	n1_frecord = zxFrame.encodeFrame(node1_frame);
@@ -37,7 +37,7 @@ Hinge::Hinge( FdNode* n1, FdNode* n2, Point o, Vec3d x, Vector3 y, Vector3 z, do
 }
 
 
-Hinge::HingeRecordInBox Hinge::createLinkRecord( Geom::Box& node_box )
+Hinge::HingeRecordInBox Hinge::createHingeRecord( Geom::Box& node_box )
 {
 	HingeRecordInBox lr;
 	lr.c_box = node_box.getCoordinates(Origin);
@@ -121,13 +121,13 @@ void Hinge::updateDihedralVectors( bool hXFixed )
 {
 	if (hXFixed)
 	{
-		Vector3 crossZX = cross(hZ, hX);
-		hY = (cos(angle) * hX + sin(angle) * crossZX).normalized();
+		Vector3 Y = cross(hZ, hX);
+		hY = (cos(angle) * hX + sin(angle) * Y).normalized();
 	}
 	else
 	{
-		Vector3 crossYZ = cross(hY, hZ);
-		hX = (cos(angle) * hY + sin(angle) * crossYZ).normalized();
+		Vector3 X = cross(hY, hZ);
+		hX = (cos(angle) * hY + sin(angle) * X).normalized();
 	}
 }
 
@@ -135,8 +135,12 @@ void Hinge::updateDihedralVectors( bool hXFixed )
 void Hinge::draw()
 {
 	FrameSoup fs(zExtent);
-	fs.addFrame( hX, hY, hZ, Origin);
+	//fs.addFrame( hX, hY, hZ, Origin);
+	fs.addFrame(zxFrame.r, zxFrame.s, zxFrame.t, zxFrame.c);
+	fs.addFrame(zyFrame.r, zyFrame.s, zyFrame.t, zyFrame.c);
 	fs.draw();
+
+
 }
 
 void Hinge::setState( int s )
