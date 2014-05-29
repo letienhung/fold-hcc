@@ -71,6 +71,7 @@ Geom::Segment detectJointSegment(PatchNode* slave, PatchNode* master);
 bool hasIntersection(FdNode* slave, PatchNode* master, double thr);
 
 // helpers
+QVector<QString> getIds(QVector<FdNode*> nodes);
 StrArray2D getIds(FdNodeArray2D nodeArray);
 
 // relation with plan

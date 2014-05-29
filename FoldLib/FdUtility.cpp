@@ -146,16 +146,16 @@ double getDistance( FdNode* n, QVector<FdNode*> nset )
 
 StrArray2D getIds( FdNodeArray2D nodeArray )
 {
-	StrArray2D idArray;
-	QVector<QString> ids;
-	foreach (QVector<FdNode*> ns, nodeArray)
-	{
-		ids.clear();
-		foreach(FdNode* n, ns)	ids.push_back(n->mID);
-		idArray.push_back(ids);
-	}
+	StrArray2D idArray2D;
+	foreach (QVector<FdNode*> ns, nodeArray) idArray2D << getIds(ns);
+	return idArray2D;
+}
 
-	return idArray;
+QVector<QString> getIds( QVector<FdNode*> nodes )
+{
+	QVector<QString> ids;
+	foreach(FdNode* n, nodes)	ids.push_back(n->mID);
+	return ids;
 }
 
 Geom::Segment detectJointSegment( PatchNode* slave, PatchNode* master )

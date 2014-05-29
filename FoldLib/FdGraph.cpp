@@ -387,10 +387,11 @@ void FdGraph::changeNodeType( FdNode* n )
 	replaceNode(n, new_node);
 }
 
-void FdGraph::changeRodToPatch( RodNode* rn, Vector3 v )
+PatchNode* FdGraph::changeRodToPatch( RodNode* rn, Vector3 v )
 {
 	PatchNode* pn = new PatchNode(rn,  v);
 	replaceNode(rn, pn);
+	return pn;
 }
 
 void FdGraph::restoreConfiguration()
@@ -547,7 +548,7 @@ void FdGraph::addDebugSegments( QVector<Geom::Segment>& segs )
 
 double FdGraph::getConnectivityThr()
 {
-	return 0.05 * computeAABB().radius();
+	return 0.1 * computeAABB().radius();
 }
 
 

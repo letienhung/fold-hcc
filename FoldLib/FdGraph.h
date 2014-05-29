@@ -27,7 +27,7 @@ public:
 
 	// modifier
 	void changeNodeType(FdNode* n);
-	void changeRodToPatch(RodNode* n, Vector3 v);
+	PatchNode* changeRodToPatch(RodNode* n, Vector3 v);
 	void translate(Vector3 v, bool withMesh = true);
 	void unwrapBundleNodes();
 	FdNode* wrapAsBundleNode(QVector<QString> nids);

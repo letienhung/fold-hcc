@@ -7,8 +7,7 @@
 
 FoldManager::FoldManager()
 {
-	initScaffold = NULL;
-	dcScaffold = NULL;
+	scaffold = NULL;
 
 	selDcIdx = -1;
 
@@ -40,7 +39,7 @@ void FoldManager::clearDcGraphs()
 // input
 void FoldManager::setScaffold( FdGraph* fdg )
 {
-	initScaffold = fdg;
+	scaffold = fdg;
 
 	clearDcGraphs();
 	updateDcList();
@@ -53,120 +52,6 @@ void FoldManager::setSqzV( QString sqzV_str )
 	if (sqzV_str == "X") sqzV[0] = 1;
 	if (sqzV_str == "Y") sqzV[1] = 1;
 	if (sqzV_str == "Z") sqzV[2] = 1;
-}
-
-
-void FoldManager::identifyMasters()
-{
-	// squeezing direction
-	Geom::AABB aabb = initScaffold->computeAABB();
-	Geom::Box box = aabb.box();
-	int sqzAId = aabb.box().getAxisId(sqzV);
-
-	// threshold
-	double perpThr = 0.1;
-	double masterHeightThr = 0.1;
-	double adjacentThr = aabb.radius() * 0.05;
-
-	// ==STEP 1==: nodes perp to squeezing direction
-	QVector<FdNode*> perpNodes;
-	foreach (FdNode* n, dcScaffold->getFdNodes())
-	{
-		// perp node
-		if (n->isPerpTo(sqzV, perpThr))	
-		{
-			perpNodes << n;
-		}
-		// virtual rod nodes from patch edges
-		else if (n->mType == FdNode::PATCH)
-		{
-			PatchNode* pn = (PatchNode*)n;
-			foreach(RodNode* rn, pn->getEdgeRodNodes())
-			{
-				// add virtual rod nodes 
-				if (rn->isPerpTo(sqzV, perpThr)) 
-				{
-					perpNodes << rn;
-					dcScaffold->Structure::Graph::addNode(rn);
-					rn->addTag(EDGE_ROD_TAG);
-				}
-				// delete if not need
-				else
-					delete rn;
-			}
-		}
-	}
-
-	// ==STEP 2==: group perp nodes
-	// perp positions
-	Geom::Box shapeBox = dcScaffold->computeAABB().box();
-	Geom::Segment skeleton = shapeBox.getSkeleton(sqzAId);
-	QMultiMap<double, FdNode*> posNodeMap;
-	foreach (FdNode* n, perpNodes)
-	{
-		posNodeMap.insert(skeleton.getProjCoordinates(n->mBox.Center), n);
-	}
-
-	// group
-	FdNodeArray2D perpGroups;
-	QVector<FdNode*> perpGroup;
-	double prePos = 0;
-	foreach (double pos, posNodeMap.uniqueKeys())
-	{
-		// create a new group
-		if (fabs(pos - prePos) > masterHeightThr && !perpGroup.isEmpty())
-		{
-			perpGroups << perpGroup;
-			perpGroup.clear();
-		}
-
-		// add to current group
-		foreach(FdNode* n, posNodeMap.values(pos))	perpGroup.push_back(n);
-
-		prePos = pos;
-	}
-	// last group
-	if (!perpGroup.isEmpty()) perpGroups.push_back(perpGroup);
-
-	// ==STEP 3==: master groups
-	FdNodeArray2D masterGroups;
-	foreach (QVector<FdNode*> pgroup, perpGroups)
-	{
-		// cluster based on adjacency
-		foreach(QVector<FdNode*> cgroup, getConnectedGroups(pgroup, adjacentThr))
-		{
-			masterGroups << cgroup;
-		}
-	}
-
-	// store ids of master groups
-	masterIdGroups = getIds(masterGroups);
-}
-
-void FoldManager::decompose()
-{
-	// clone scaffold for composition
-	dcScaffold = (FdGraph*)initScaffold->clone();
-
-	// masters
-	identifyMasters();
-
-	// decompose
-	QString id = "Dc_" + QString::number(dcGraphs.size());
-	dcGraphs.push_back(new DcGraph(id, dcScaffold, masterIdGroups, sqzV));
-
-	// delete temp dc scaffold
-	delete dcScaffold;
-
-	// update ui
-	updateDcList();
-}
-
-void FoldManager::foldbzSelBlock()
-{
-	DcGraph* selDc = getSelDcGraph();
-	if (selDc)
-		selDc->foldbzSelBlock();
 }
 
 void FoldManager::selectDcGraph( QString id )
@@ -280,20 +165,20 @@ FdGraph* FoldManager::activeScaffold()
 {
 	DcGraph* selLy = getSelDcGraph();
 	if (selLy)	return selLy->activeScaffold();
-	else		return initScaffold;
+	else		return scaffold;
 }
 
 void FoldManager::foldabilize()
 {
-	if (initScaffold == NULL)
+	if (scaffold == NULL)
 		return;
 
 	// decompose
-	decompose();
-	selDcIdx = 0;
-	DcGraph* selDc = getSelDcGraph();
-	if (!selDc) return;
-
+	selDcIdx = dcGraphs.size();
+	QString id = "Dc_" + QString::number(selDcIdx);
+	DcGraph* selDc = new DcGraph(id, scaffold, sqzV);
+	dcGraphs.push_back(selDc);
+	
 	// parameters
 	setParameters();
 

@@ -15,12 +15,9 @@ public:
 
 public:
 	// input
-	FdGraph* initScaffold; 
+	FdGraph* scaffold; 
 
 	// decomposition
-	Vector3 sqzV;
-	FdGraph* dcScaffold; // temp scaffold used for decomposition
-	StrArray2D masterIdGroups;
 	int selDcIdx;
 	QVector<DcGraph*> dcGraphs;
 
@@ -28,10 +25,11 @@ public:
 	int nbKeyframes;
 
 	// parameters
+	Vector3 sqzV;
 	int nbSplits;
 	int nbChunks;
-	double thickness;
 	bool useThickness;
+	double thickness;
 
 public:
 	// update Ui
@@ -63,15 +61,10 @@ public slots:
 
 	// fold
 	void foldabilize();
-	void foldbzSelBlock();
 
 	// keyframes
 	void setNbKeyframes(int N);
 	void generateKeyframes();
-
-	// decomposition
-	void identifyMasters();
-	void decompose();
 
 	// output
 	void exportCollFOG();

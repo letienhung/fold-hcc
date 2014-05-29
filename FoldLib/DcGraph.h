@@ -12,12 +12,14 @@
 class DcGraph : public FdGraph
 {
 public:
-    DcGraph(QString id, FdGraph* scaffold, StrArray2D masterGroups, Vector3 v);
+    DcGraph(QString id, FdGraph* scaffold, Vector3 v);
 	~DcGraph();
 
 public:
-	// masters
+	// squeezing direction
 	Vector3 sqzV;
+
+	// masters
 	PatchNode* baseMaster;
 	QVector<PatchNode*> masters;
 	QMap<QString, QSet<QString> > masterOrderGreater;
@@ -45,7 +47,8 @@ public:
 
 public:
 	// decomposition
-	void createMasters(StrArray2D& masterGroups);
+	void createMasters();
+	FdNodeArray2D getPerpConnGroups();
 	void computeMasterOrderConstraints();
 
 	void createSlaves(); 

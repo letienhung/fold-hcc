@@ -1,17 +1,6 @@
 <!--?xml Version = "1.0"?-->
 <document>
-    <cN>5</cN>
-    <node>
-        <type>2</type>
-        <ID>ground</ID>
-        <box>
-            <c>0 0 0.5</c>
-            <x>0 0 1</x>
-            <y>0 1 0</y>
-            <z>-1 0 0</z>
-            <e>0.5 15 30</e>
-        </box>
-    </node>
+    <cN>4</cN>
     <node>
         <type>2</type>
         <ID>top</ID>

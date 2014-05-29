@@ -7,15 +7,15 @@
 #include "IntrRect2Rect2.h"
 
 
-DcGraph::DcGraph(QString id, FdGraph* scaffold, StrArray2D masterGroups, Vector3 v)
+DcGraph::DcGraph(QString id, FdGraph* scaffold, Vector3 v)
 	: FdGraph(*scaffold) // clone the FdGraph
 {
 	path = QFileInfo(path).absolutePath();
 	mID = id;
+	sqzV = v;
 
 	// decomposition
-	sqzV = v;
-	createMasters(masterGroups);
+	createMasters();
 	computeMasterOrderConstraints();
 	createSlaves();
 	clusterSlaves();
@@ -42,30 +42,102 @@ DcGraph::~DcGraph()
 	foreach (BlockGraph* l, blocks)	delete l;
 }
 
-void DcGraph::createMasters(StrArray2D& masterGroups)
+FdNodeArray2D DcGraph::getPerpConnGroups()
+{
+	// squeezing direction
+	Geom::AABB aabb = computeAABB();
+	Geom::Box box = aabb.box();
+	int sqzAId = aabb.box().getAxisId(sqzV);
+
+	// threshold
+	double perpThr = 0.1;
+	double connThr = getConnectivityThr();
+
+	// ==STEP 1==: nodes perp to squeezing direction
+	QVector<FdNode*> perpNodes;
+	foreach (FdNode* n, getFdNodes())
+	{
+		// perp node
+		if (n->isPerpTo(sqzV, perpThr))	perpNodes << n;
+		// virtual rod nodes from patch edges
+		else if (n->mType == FdNode::PATCH)
+		{
+			PatchNode* pn = (PatchNode*)n;
+			foreach(RodNode* rn, pn->getEdgeRodNodes())
+			{
+				// add virtual rod nodes 
+				if (rn->isPerpTo(sqzV, perpThr)) {
+					Structure::Graph::addNode(rn);
+					perpNodes << rn;
+					rn->addTag(EDGE_ROD_TAG);
+				}
+				// delete if not need
+				else delete rn;
+			}
+		}
+	}
+
+	// ==STEP 2==: group perp nodes
+	// perp positions
+	Geom::Box shapeBox = computeAABB().box();
+	Geom::Segment skeleton = shapeBox.getSkeleton(sqzAId);
+	double perpGroupThr = connThr / skeleton.length();
+	QMultiMap<double, FdNode*> posNodeMap;
+	foreach (FdNode* n, perpNodes){
+		posNodeMap.insert(skeleton.getProjCoordinates(n->mBox.Center), n);
+	}
+	FdNodeArray2D perpGroups;
+	QList<double> perpPos = posNodeMap.uniqueKeys();
+	double pos0 = perpPos.front();
+	perpGroups << posNodeMap.values(pos0).toVector();
+	for (int i = 1; i < perpPos.size(); i++)
+	{
+		QVector<FdNode*> currNodes = posNodeMap.values(perpPos[i]).toVector();
+		if (fabs(perpPos[i] - perpPos[i-1]) < perpGroupThr)
+			perpGroups.last() += currNodes;	// append to current group
+		else perpGroups << currNodes;		// create new group
+	}
+
+	// ==STEP 3==: perp & connected groups
+	FdNodeArray2D perpConnGroups;
+	for (int i = 0; i < perpGroups.size()-1; i++){
+		foreach(QVector<FdNode*> connGroup, getConnectedGroups(perpGroups[i], connThr))
+			perpConnGroups << connGroup;
+	}
+	perpConnGroups << perpGroups.last(); // ground
+
+	return perpConnGroups;
+}
+
+void DcGraph::createMasters()
 {
 	// merge master groups into patches
-	foreach( QVector<QString> masterGroup, masterGroups )
+	foreach( QVector<FdNode*> pcGroup, getPerpConnGroups() )
 	{
-		// merges to a patch or simply returns the single rod
-		FdNode* mf = wrapAsBundleNode(masterGroup);
-		QString mf_id = mf->mID;
+		PatchNode* master;
 
-		// force to change type
-		if (mf->mType == FdNode::ROD) 
-			changeRodToPatch((RodNode*)mf, sqzV);
-		mf = (FdNode*)getNode(mf_id);
-		PatchNode* mp = (PatchNode*)mf;
+		// single node
+		if (pcGroup.size() == 1)
+		{
+			FdNode* n = pcGroup.front();
+			if (n->mType == FdNode::PATCH)
+				master = (PatchNode*)n;
+			else
+				master = changeRodToPatch((RodNode*)n, sqzV);
+		}
+		// group nodes
+		else
+			master = (PatchNode*)wrapAsBundleNode(getIds(pcGroup));
 
 		// consistent normal with sqzV
-		if (dot(mp->mPatch.Normal, sqzV) < 0)
-			mp->mPatch.flipNormal();
+		if (dot(master->mPatch.Normal, sqzV) < 0)
+			master->mPatch.flipNormal();
 
 		// tag
-		mp->addTag(MASTER_TAG);
+		master->addTag(MASTER_TAG);
 
 		// save
-		masters.push_back(mp);
+		masters << master;
 	}
 }
 
