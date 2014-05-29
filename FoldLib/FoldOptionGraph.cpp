@@ -62,7 +62,7 @@ double FoldOption::getCost()
 {
 	double cost1 = nSplits;
 	double cost2 = 1 - scale;
-	double cost = cost1 + cost2;
+	double cost = 0.01 * cost1 + cost2;
 
 	if (hasTag(DELETE_FOLD_OPTION))
 		cost = 10;

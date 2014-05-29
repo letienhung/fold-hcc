@@ -374,7 +374,7 @@ void FdPlugin::colorMasterSlave()
 		foreach (FdNode* n, activeFd->getFdNodes())
 		{
 			double grey = 240;
-			QColor c = (n->hasTag(MASTER_TAG)) ? 
+			QColor c = (!n->hasTag(MASTER_TAG)) ? 
 				QColor::fromRgb(255, 110, 80) : QColor::fromRgb(grey, grey, grey);
 			c.setAlphaF(0.78);
 			n->mColor = c;
