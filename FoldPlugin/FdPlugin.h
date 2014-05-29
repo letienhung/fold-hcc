@@ -13,7 +13,7 @@ class FdPlugin : public SurfaceMeshModePlugin
 	Q_OBJECT
 	Q_INTERFACES(ModePlugin)
 
-	// Plugin interfaces
+	// Plug-in interfaces
     QIcon icon(){ return QIcon(":/images/icon.png"); }
 	void create();
 	void destroy();
@@ -21,6 +21,9 @@ class FdPlugin : public SurfaceMeshModePlugin
 
 	void drawWithNames();
 	bool postSelection(const QPoint& point);
+
+	// Keyboard / mouse
+	bool keyPressEvent(QKeyEvent* event);
 
 public:
 	FdWidget* widget;
@@ -34,6 +37,7 @@ public:
 	bool drawFolded;
 	bool drawKeyframe;
 	bool drawAFS;
+	bool drawNodeOrder;
 
 	QColorDialog* qColorDialog;
 public:

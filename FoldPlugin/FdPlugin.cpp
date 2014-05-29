@@ -35,6 +35,7 @@ FdPlugin::FdPlugin()
 	drawScaffold = true;
 	drawMesh = false;
 	drawAFS = false;
+	drawNodeOrder = false;
 
 	// color dialog
 	qColorDialog = NULL;
@@ -67,7 +68,16 @@ void FdPlugin::destroy()
 void FdPlugin::decorate()
 {
 	if (activeScaffold())
+	{
 		activeScaffold()->draw();
+
+		if( drawNodeOrder ){
+			foreach(FdNode * n, activeScaffold()->getFdNodes()){
+				qglviewer::Vec center = drawArea()->camera()->projectedCoordinatesOf(qglviewer::Vec(n->center()));
+				drawArea()->renderText( center.x, center.y, QString("[%1]").arg(activeScaffold()->nodes.indexOf(n)) );
+			}
+		}
+	}
 }
 
 void FdPlugin::drawWithNames()
@@ -386,44 +396,105 @@ void FdPlugin::colorMasterSlave()
 
 void FdPlugin::exportSVG()
 {
+	drawArea()->setMinimumSize(800, 800);
+	drawArea()->setMaximumSize(800, 800);
+
 	QVector<Geom::Segment> segs;
 	FdGraph* activeFd = activeScaffold();
 	if (!activeFd) return;
 
 	// SVG output file
 	QString filename = QFileDialog::getSaveFileName(0, tr("Save Current Scaffold"), NULL, tr("SVG file (*.svg)"));
-	
-	QFile file( filename );
-	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) return;
-	QTextStream out(&file);
+	{
+		QFile file( filename );
+		if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) return;
+		QTextStream out(&file);
 
-	// SVG Header
-	out << "<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>\n";
+		// SVG Header
+		out << "<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>\n";
 
-	// Style
-	QString style = "stroke:#660000; fill:#FFAAFF; fill-opacity: 0.75; stroke-width: 1; stroke-miterlimit: round";
+		// Style
+		QString style = "fill-opacity: 0.78; stroke-width: 1; stroke-miterlimit: round; ";
 
-	foreach (FdNode* n, activeFd->getFdNodes()){
-		if (n->mType == FdNode::PATCH)
-		{
-			/*// Edges
-			foreach (Geom::Segment seg, ((PatchNode*)n)->mPatch.getEdgeSegments()){
-				qglviewer::Vec proj0 = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(seg.P0) );
-				qglviewer::Vec proj1 = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(seg.P1) );
-				out << QString("<line x1='%1' y1='%2' x2='%3' y2='%4' style='%5' />").arg(proj0.x).arg(proj0.y).arg(proj1.x).arg(proj1.y).arg(style);
-			}*/
+		QVector<FdNode*> fdnodes = activeFd->getFdNodes();
+		std::reverse(fdnodes.begin(), fdnodes.end());
 
-			// Polygons
-			out << QString("\n<polygon points='");
-			foreach (Vector3 seg, ((PatchNode*)n)->mPatch.getConners()){
-				qglviewer::Vec proj = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(seg) );
-				out << QString("%1,%2 ").arg(proj.x).arg(proj.y);
+		foreach (FdNode* n, fdnodes){
+			if (n->mType == FdNode::PATCH)
+			{
+				/*// Edges
+				foreach (Geom::Segment seg, ((PatchNode*)n)->mPatch.getEdgeSegments()){
+					qglviewer::Vec proj0 = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(seg.P0) );
+					qglviewer::Vec proj1 = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(seg.P1) );
+					out << QString("<line x1='%1' y1='%2' x2='%3' y2='%4' style='%5' />").arg(proj0.x).arg(proj0.y).arg(proj1.x).arg(proj1.y).arg(style);
+				}*/
+
+				// Polygons
+				out << QString("\n<polygon points='");
+				foreach (Vector3 seg, ((PatchNode*)n)->mPatch.getConners()){
+					qglviewer::Vec proj = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(seg) );
+					out << QString("%1,%2 ").arg(proj.x).arg(proj.y);
+				}
+				out << QString("' style='%1'/>\n").arg( style + QString("fill:%1; stroke:%2").arg( n->mColor.name() ).arg( n->mColor.darker().name() ) );
 			}
-			out << QString("' style='%1'/>\n").arg( style );
 		}
+
+		out << "\n</svg>";
 	}
 
-	out << "\n</svg>";
+	system( filename.toAscii() );
+}
+
+bool FdPlugin::keyPressEvent(QKeyEvent* event)
+{
+	// View save / restore
+	if( event->modifiers().testFlag(Qt::ControlModifier) && 
+		(event->key() == Qt::Key_W || event->key() == Qt::Key_E) )
+	{
+		drawArea()->setStateFileName("customcamera.xml");
+		if( event->key() == Qt::Key_W ) drawArea()->saveStateToFile();
+		else drawArea()->restoreStateFromFile();
+		updateScene();
+	}
+
+	// Rearranging nodes
+	FdGraph* scaffold = activeScaffold();
+
+	if( event->modifiers().testFlag(Qt::ControlModifier) && 
+		(event->key() == Qt::Key_F || event->key() == Qt::Key_B) )
+	{
+		QVector<FdGraph*> selGraphs; 
+		selGraphs << scaffold;
+
+		QStringList selectedNodeNames;
+		foreach(FdNode * n, selectedFdNodes()) selectedNodeNames << n->mID;
+
+		// We are changing keyframes
+		if (drawKeyframe && f_manager->getSelDcGraph()) selGraphs = f_manager->getSelDcGraph()->keyframes;
+		
+		foreach(FdGraph* g, selGraphs)
+		{
+			drawNodeOrder = true;
+
+			foreach(QString nid, selectedNodeNames)
+			{
+				Structure::Node * node = g->getNode(nid);
+				int idx = g->nodes.indexOf(node);
+				g->nodes.remove(idx);
+
+				if( event->key() == Qt::Key_F )
+					g->nodes.insert(std::max(0, idx - 1), node); // front
+				else
+					g->nodes.insert(std::min(idx + 1, g->nodes.size()), node); // back
+			}
+		}
+
+		updateScene();
+
+		return true;
+	}
+
+	return false;
 }
 
 Q_EXPORT_PLUGIN(FdPlugin)
