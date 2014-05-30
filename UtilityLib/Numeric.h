@@ -43,3 +43,5 @@ Vector3 perpVector(const Vector3& n);
 
 double minDouble();
 double maxDouble();
+
+bool solveQuadratic(double a, double b, double c, double& root1, double &root2);

@@ -129,3 +129,14 @@ bool areCollinear( const Vector3& v0, const Vector3& v1 )
 {
 	return cross(v0, v1).norm() < ZERO_TOLERANCE_LOW;
 }
+
+bool solveQuadratic( double a, double b, double c, double& root1, double &root2 )
+{
+	double d2 = b*b - 4*a*c;
+	if (d2 < 0 ) return false;
+
+	double d = sqrt(d2);
+	root1 = (-b + d) / (2 * a);
+	root2 = (-b - d) / (2 * a);
+	return true;
+}

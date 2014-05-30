@@ -56,9 +56,14 @@ ChainGraph::ChainGraph( FdNode* slave, PatchNode* base, PatchNode* top)
 	Geom::Rectangle base_rect = baseMaster->mPatch;
 	Geom::Segment topJointProj = base_rect.getProjection(topJoint);
 	rightSeg = Geom::Segment(topJointProj.P0, baseJoint.P0);
-	rightSegV = cross(baseJoint.Direction, slaveSeg.Direction);
-	rightSegV = base_rect.getProjectedVector(rightSegV);
+	if (rightSeg.length() / slaveSeg.length() < 0.001){
+		rightSegV = cross(baseJoint.Direction, slaveSeg.Direction);
+		rightSegV = base_rect.getProjectedVector(rightSegV);
+	}
+	else
+		rightSegV = rightSeg.Direction;
 	rightSegV.normalize();
+
 
 	//std::cout << "rV = "; print(rightSegV);
 
@@ -92,10 +97,11 @@ ChainGraph::ChainGraph( FdNode* slave, PatchNode* base, PatchNode* top)
 	// side
 	foldToRight = true;
 
-	//// debug
-	//addDebugSegment(baseJoint);
-	//addDebugSegment(UpSeg);
-	//addDebugSegment(Geom::Segment(baseJoint.P0, baseJoint.P0 + rightV));
+	// debug
+	addDebugSegment(baseJoint);
+	addDebugSegment(slaveSeg);
+	addDebugSegment(rightSeg);
+	addDebugSegment(Geom::Segment(baseJoint.P0, baseJoint.P0 + rightSegV));
 }
 
 void ChainGraph::fold( double t )
@@ -107,22 +113,50 @@ void ChainGraph::fold( double t )
 	// fix base
 	baseMaster->addTag(FIXED_NODE_TAG);
 
-	// hinge angles
-	double d = rightSeg.length();
-	double sl = slaveSeg.length();
+	// constant
 	int n = chainParts.size();
-	double a = (sl - d) / n;
+	double L = slaveSeg.length();
+	double d = rightSeg.length();
+	double a = (L - d) / n;
 	double b = d + a;
+	double A = (n - 1) * a;
 
-	double alpha = acos(d / sl) * (1 - t);
+	// height threshold
+	double aa = 1;
+	double bb = -2 * A;
+	double cc = A * A + d * d - b * b;
+	double H = topTraj.length();
+	double h = (1 - t) * H;
+	double h1, h2;
+	if (!solveQuadratic(aa, bb, cc, h1, h2)) {
+		std::cout << "Quadratic solver error! \ n";
+		return;
+	}
+	double H_thr = (h1 > 0 && h1 < H)? h1 : h2;
 
-	double bProj = b * cos(alpha);
-	double beta;
 	// no return
-	if (bProj <= d)
+	if (h >= H_thr)
 	{
-		double cos_beta = (d - bProj)/((n - 1) * a);
-		beta = acos(cos_beta);
+		double x = 2 * b * h;
+		double y = 2 * b * d;
+		double z = d * d + h * h + b * b - A * A;
+		double aa = x * x + y * y;
+		double bb = -2 * y * z;
+		double cc = z * z - x * x;
+
+		double cos_alpha1, cos_alpha2; 
+		if (!solveQuadratic(aa, bb, cc, cos_alpha1, cos_alpha2)) {
+			std::cout << "Quadratic solver error! \ n";
+			return;
+		}
+		double alpha1 = acos(RANGED(0, cos_alpha1, 1));
+		double alpha2 = acos(RANGED(0, cos_alpha2, 1));
+		double Alpha = acos(d / L);
+		double alpha = (alpha1 > 0 && alpha1 < Alpha)? alpha1 : alpha2;
+
+		double bProj = b * cos(alpha);
+		double cos_beta = (d - bProj) / A;
+		double beta = acos(cos_beta);
 
 		if (foldToRight)
 		{
@@ -142,6 +176,11 @@ void ChainGraph::fold( double t )
 	// return
 	else
 	{
+		double alpha = acos(d / L) * (1 - t);
+
+		double bProj = b * cos(alpha);
+		double beta;
+
 		double cos_beta = (bProj - d) / a;
 		beta = acos(RANGED(0, cos_beta, 1));
 
@@ -165,11 +204,12 @@ void ChainGraph::fold( double t )
 	restoreConfiguration();
 
 	// adjust the position of top master
-	double ha = a * sin(beta);
-	double hb = b * sin(alpha);
-	double topH = (n - 1) * ha + hb;
-	Vector3 topPos = topTraj.P0 + topH * topTraj.Direction;
+	//double ha = a * sin(beta);
+	//double hb = b * sin(alpha);
+	//double topH = (n - 1) * ha + hb;
+	Vector3 topPos = topTraj.P0 + h * topTraj.Direction;
 	topMaster->translate(topPos - topMaster->center());
+	
 
 
 	//if ( t > 0.45 && t < 0.55)
