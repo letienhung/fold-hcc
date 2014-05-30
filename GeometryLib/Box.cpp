@@ -118,6 +118,9 @@ void Geom::Box::setFrame( Frame f )
 	this->Axis[0] = f.r;
 	this->Axis[1] = f.s;
 	this->Axis[2] = f.t;
+
+	normalizeAxis();
+	makeRightHanded();
 }
 
 Vector3 Geom::Box::getCoordinates( Vector3 p )

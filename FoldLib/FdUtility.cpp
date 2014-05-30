@@ -11,6 +11,8 @@
 #include "MinOBB.h"
 #include "PcaOBB.h"
 
+#include <iomanip>
+
 FdNodeArray2D getConnectedGroups( QVector<FdNode*> nodes, double disThr )
 {
 	FdNodeArray2D clusters;
@@ -536,4 +538,23 @@ bool extendRectangle2D( Geom::Rectangle2& rect, QVector<Vector2> &pnts )
 				<< rect.getPosition(Vector2(left, top));
 	rect =  Geom::Rectangle2(new_conners);
 	return true;
+}
+
+void print( Vector3 v )
+{
+	std::cout << std::setprecision(3) << v[0] << "  " << v[1] << "  " << v[2] << "  \n";
+}
+
+void print( Geom::Box box)
+{
+	std::cout << "Center = ";
+	print(box.Center);
+	std::cout << "Extent = ";
+	print(box.Extent);
+	std::cout << "X = ";
+	print(box.Axis[0]);
+	std::cout << "Y = ";
+	print(box.Axis[1]);
+	std::cout << "Z = ";
+	print(box.Axis[2]);
 }

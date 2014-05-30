@@ -16,6 +16,21 @@ Hinge::Hinge( FdNode* n1, FdNode* n2, Point o, Vec3d x, Vector3 y, Vector3 z, do
 	hZ = z.normalized();
 	zExtent = extent;
 
+	
+	//std::cout << "creating Hinge: \n";
+	//std::cout << "hX = ";
+	//print(hX);
+	//std::cout << "hY = ";
+	//print(hY);
+	//std::cout << "hZ = ";
+	//print(hZ);
+
+	//std::cout << "box1: \n";
+	//print(node1->mBox);
+	//std::cout << "box2: \n";
+	//print(node2->mBox);
+
+
 	// update dihedral frames and angle
 	state = UNFOLDED;
 	double dotProd = dot(hX, hY);
@@ -135,9 +150,9 @@ void Hinge::updateDihedralVectors( bool hXFixed )
 void Hinge::draw()
 {
 	FrameSoup fs(zExtent);
-	//fs.addFrame( hX, hY, hZ, Origin);
-	fs.addFrame(zxFrame.r, zxFrame.s, zxFrame.t, zxFrame.c);
-	fs.addFrame(zyFrame.r, zyFrame.s, zyFrame.t, zyFrame.c);
+	fs.addFrame( hX, hY, hZ, Origin);
+	//fs.addFrame(zxFrame.r, zxFrame.s, zxFrame.t, zxFrame.c);
+	//fs.addFrame(zyFrame.r, zyFrame.s, zyFrame.t, zyFrame.c);
 	fs.draw();
 
 

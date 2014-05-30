@@ -597,10 +597,10 @@ FdGraph* DcGraph::getKeyframe( double t )
 			showActive = true;
 			aOrigPos = blocks[i]->baseMaster->center();
 			aBaseMID = blocks[i]->baseMaster->mID;
-			aAFS = blocks[i]->properties[AFS].value<QVector<Geom::Box> >();
+			//aAFS = blocks[i]->properties[AFS].value<QVector<Geom::Box> >();
 			//aAFR_CP = blocks[i]->properties[AFR_CP].value<QVector<Vector3> >();
 			//aMaxFR = blocks[i]->properties[MAXFR].value<QVector<Vector3> >();
-			aFR = blocks[i]->properties[FOLD_REGIONS].value<QVector<Geom::Rectangle>>();
+			//aFR = blocks[i]->properties[FOLD_REGIONS].value<QVector<Geom::Rectangle>>();
 			
 			// active slaves
 			foreach (FdNode* n, fblock->getFdNodes())
@@ -616,14 +616,14 @@ FdGraph* DcGraph::getKeyframe( double t )
 	{
 		Vector3 activeCurrPosition = ((PatchNode*)key_graph->getNode(aBaseMID))->center();
 		Vector3 offsetV = activeCurrPosition - aOrigPos;
-		for (int i = 0; i < aAFS.size(); i++ ) aAFS[i].translate(offsetV);
-		key_graph->properties[AFS].setValue(aAFS);
+		//for (int i = 0; i < aAFS.size(); i++ ) aAFS[i].translate(offsetV);
+		//key_graph->properties[AFS].setValue(aAFS);
 		//for (int i = 0; i < aAFR_CP.size(); i++ ) aAFR_CP[i] += offsetV;
 		//key_graph->properties[AFR_CP].setValue(aAFR_CP);
 		//for (int i = 0; i < aMaxFR.size(); i++ ) aMaxFR[i] += offsetV;
 		//key_graph->properties[MAXFR].setValue(aMaxFR);
-		for (int i = 0; i < aFR.size(); i++ ) aFR[i].translate(offsetV);
-		key_graph->properties[FOLD_REGIONS].setValue(aFR);
+		//for (int i = 0; i < aFR.size(); i++ ) aFR[i].translate(offsetV);
+		//key_graph->properties[FOLD_REGIONS].setValue(aFR);
 	}
 
 	// debug

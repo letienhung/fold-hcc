@@ -38,12 +38,19 @@ ChainGraph::ChainGraph( FdNode* slave, PatchNode* base, PatchNode* top)
 	baseJoint = detectJointSegment(origSlave, baseMaster);
 	topJoint = detectJointSegment(origSlave, topMaster);
 	if (dot(topJoint.Direction, baseJoint.Direction) < 0) topJoint.flip();
+	
+	//std::cout << "Block constructor\n";
+	//std::cout << "basejV = "; print(baseJoint.Direction);
+	//std::cout << "topjV = ";print(topJoint.Direction);
 
 	// slaveSeg
 	Vector3 bJointP0 = baseJoint.P0;
 	QVector<Geom::Segment> edges = origSlave->mPatch.getPerpEdges(baseJoint.Direction);
 	slaveSeg = edges[0].contains(bJointP0) ? edges[0] : edges[1];
 	if (slaveSeg.getProjCoordinates(bJointP0) > 0) slaveSeg.flip();
+	
+	//std::cout << "upV = "; print(slaveSeg.Direction);
+
 
 	// rightSeg and direction
 	Geom::Rectangle base_rect = baseMaster->mPatch;
@@ -53,15 +60,23 @@ ChainGraph::ChainGraph( FdNode* slave, PatchNode* base, PatchNode* top)
 	rightSegV = base_rect.getProjectedVector(rightSegV);
 	rightSegV.normalize();
 
+	//std::cout << "rV = "; print(rightSegV);
+
+
 	// flip slave patch so that its norm is to the right
 	if (dot(origSlave->mPatch.Normal, rightSegV) < 0)
 		origSlave->mPatch.flipNormal();
 
+
 	// upV x rightV = jointV
-	Vector3 crossUpRight = cross(slaveSeg.Direction, rightSeg.Direction);
+	Vector3 crossUpRight = cross(slaveSeg.Direction, rightSegV);
 	if (dot(crossUpRight, baseJoint.Direction) < 0){
 		baseJoint.flip(); topJoint.flip();
 	}
+
+
+	//std::cout << "Block constructor: fixed\njointV = ";
+	//print(baseJoint.Direction);
 
 	// topTraj
 	Vector3 topCenterProj = base_rect.getProjection(top->center());
@@ -96,10 +111,11 @@ void ChainGraph::fold( double t )
 	double d = rightSeg.length();
 	double sl = slaveSeg.length();
 	int n = chainParts.size();
-	double alpha = acos(d / sl) * (1 - t);
-
 	double a = (sl - d) / n;
 	double b = d + a;
+
+	double alpha = acos(d / sl) * (1 - t);
+
 	double bProj = b * cos(alpha);
 	double beta;
 	// no return
@@ -126,7 +142,7 @@ void ChainGraph::fold( double t )
 	// return
 	else
 	{
-		double cos_beta = (b * cos(alpha) - d) / a;
+		double cos_beta = (bProj - d) / a;
 		beta = acos(RANGED(0, cos_beta, 1));
 
 		if (foldToRight)
@@ -269,6 +285,17 @@ void ChainGraph::resetHingeLinks(FoldOption* fn)
 	Vector3 jointV = bJoint.Direction;
 	Hinge* hingeR = new Hinge(chainParts[0], baseMaster, 
 		bJoint.P0, upV,  rightSegV, jointV, bJoint.length());
+
+
+
+	//std::cout << "\nCreating Hinges \nupV = ";
+	//print(upV);
+	//std::cout << "rightV = ";
+	//print(rightSegV);
+	//std::cout << "jointV = ";
+	//print(jointV);
+
+
 	Hinge* hingeL = new Hinge(chainParts[0], baseMaster, 
 		bJoint.P1, upV, -rightSegV, -jointV, bJoint.length());
 

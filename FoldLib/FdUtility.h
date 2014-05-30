@@ -147,3 +147,6 @@ QVector<QSet<int> > mergeIsctSets(QVector<QSet<T> > &sets, QVector<QSet<T> > &me
 	merged_sets = merged_sets_map.values().toVector();
 	return merged_idx_map.values().toVector();
 }
+
+void print(Vector3 v);
+void print(Geom::Box box);

@@ -480,7 +480,7 @@ void BlockGraph::foldabilize(FdGraph* superKeyframe)
 	std::cout << "===add edges===\n";
 	addEdgesToCollisionGraph();
 
-	exportCollFOG();
+	//exportCollFOG();
 
 	// find optimal solution
 	std::cout << "\n==maximum idependent set==\n";
