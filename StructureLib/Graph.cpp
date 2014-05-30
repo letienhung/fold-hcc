@@ -294,7 +294,7 @@ QVector<Structure::Node*> Structure::Graph::getConnectedNodes( Node* seed )
 	return cnodes;
 }
 
-QVector< QVector<Structure::Node*> > Structure::Graph::getNodesOfConnectedSubgraphs()
+QVector< QVector<Structure::Node*> > Structure::Graph::getConnectedComponents()
 {
 	QString visitedTag = "hasVisited";
 

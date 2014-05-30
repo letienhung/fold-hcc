@@ -12,7 +12,7 @@ class FdGraph;
 // typedef
 typedef QVector< QVector<FdNode*> > FdNodeArray2D;
 typedef QPair<double, double> Interval;
-#define	INTERVAL(a, b) qMakePair<double, double>(a, b)
+#define	INTERVAL(negDist, posDist) qMakePair<double, double>(negDist, posDist)
 
 // tags
 #define BUNDLE_TAG "isBundle"

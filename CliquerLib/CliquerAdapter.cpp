@@ -103,14 +103,6 @@ QVector<QVector<int> > CliquerAdapter::getMaxWeightedCliques()
 
 		QVector<int> qClique;
 		int w = 0;
-		//int i = -1;
-		//while ( (i = set_return_next(clique,i)) >= 0 )
-		//{
-		//	qClique << i;
-		//	w += weights[i];
-		//	std::cout << i << " ";
-		//}
-
 		for (int i = 0; i < graph->n; i++)
 		{
 			if (SET_CONTAINS(clique,i))
@@ -124,7 +116,7 @@ QVector<QVector<int> > CliquerAdapter::getMaxWeightedCliques()
 		std::cout << "\t: w = " << w << "\n";
 
 		qCliques << qClique;
-		set_free(clique);
+		//set_free(clique);
 	}
 
 	return qCliques;

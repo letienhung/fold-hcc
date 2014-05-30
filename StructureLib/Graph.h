@@ -40,7 +40,7 @@ public:
 	QVector<Link*> getLinks(QString nid);
 	QVector<Node*> getNeighbourNodes(Node* node);
 	QVector<Node*> getConnectedNodes(Node* seed);
-	QVector< QVector<Node*> > getNodesOfConnectedSubgraphs();
+	QVector< QVector<Node*> > getConnectedComponents();
 	QVector<Node*> getNodesWithTag(QString tag);
 
 	// Visualize

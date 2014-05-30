@@ -480,6 +480,8 @@ void BlockGraph::foldabilize(FdGraph* superKeyframe)
 	std::cout << "===add edges===\n";
 	addEdgesToCollisionGraph();
 
+	exportCollFOG();
+
 	// find optimal solution
 	std::cout << "\n==maximum idependent set==\n";
 	findOptimalSolution();
@@ -578,15 +580,17 @@ void BlockGraph::addNodesToCollisionGraph()
 		for (int nS = 1; nS <= nbSplits; nS += 2)
 			for (int nUsedChunks = nbChunks; nUsedChunks >= 1; nUsedChunks-- )
 				options << chain->generateFoldOptions(nS, nUsedChunks, nbChunks);
-		FoldOption* delete_fn = new FoldOption(chain->mID + "_delete");
-		delete_fn->addTag(DELETE_FOLD_OPTION);
-		options << delete_fn;
 
 		// filter
 		std::cout << "#options = " << options.size();
 		filterFoldOptions(options, cid);
 		std::cout << " ==> " << options.size() << std::endl;
 		foreach (FoldOption* fn, options) frs << fn->region;
+
+		// delete option
+		FoldOption* delete_fn = new FoldOption(chain->mID + "_delete");
+		delete_fn->addTag(DELETE_FOLD_OPTION);
+		options << delete_fn;
 
 		// links
 		foreach(FoldOption* fn, options)

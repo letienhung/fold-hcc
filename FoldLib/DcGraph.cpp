@@ -114,8 +114,10 @@ FdNodeArray2D DcGraph::getPerpConnGroups()
 
 void DcGraph::createMasters()
 {
+	FdNodeArray2D perpConnGroups = getPerpConnGroups();
+
 	// merge master groups into patches
-	foreach( QVector<FdNode*> pcGroup, getPerpConnGroups() )
+	foreach( QVector<FdNode*> pcGroup,  perpConnGroups)
 	{
 		PatchNode* master;
 
@@ -335,15 +337,12 @@ QVector<FdNode*> DcGraph::mergeConnectedCoplanarParts( QVector<FdNode*> ns )
 void DcGraph::createSlaves()
 {
 	// split slave parts by master patches
-	double adjacentThr = getConnectivityThr();
-	foreach (PatchNode* master, masters)
-	{
+	double connThr = getConnectivityThr();
+	foreach (PatchNode* master, masters) {
 		foreach(FdNode* n, getFdNodes())
 		{
 			if (n->hasTag(MASTER_TAG)) continue;
-
-			// split slave if it intersects the master
-			if(hasIntersection(n, master, adjacentThr))
+			if(hasIntersection(n, master, connThr))
 				split(n->mID, master->mPatch.getPlane());
 		}
 	}
@@ -353,47 +352,43 @@ void DcGraph::createSlaves()
 	updateSlaveMasterRelation();
 
 	// connectivity among slave parts
-	for (int i = 0; i < slaves.size(); i++)
-	{
+	for (int i = 0; i < slaves.size(); i++)	{
 		for (int j = i+1; j < slaves.size(); j++)
 		{
-			// skip slave parts connecting to the same master
+			// no connection among siblings (attach to same master)
 			if (!(slave2master[i] & slave2master[j]).isEmpty()) 
 				continue;
 
 			// add connectivity
-			if (getDistance(slaves[i], slaves[j]) < adjacentThr)
-			{
+			if (getDistance(slaves[i], slaves[j]) < connThr)
 				FdGraph::addLink(slaves[i], slaves[j]);
-			}
 		}
 	}
 
-	// merge connected and coplanar slave parts
-	foreach (QVector<Structure::Node*> connGroup, getNodesOfConnectedSubgraphs())
+	// merge connected & coplanar slave parts
+	foreach (QVector<Structure::Node*> component, getConnectedComponents())
 	{
-		// skip single node
-		// two cases: master; T-slave that only connects to master
-		if (connGroup.size() == 1) continue;
+		// skip single node, either master or slave
+		if (component.size() == 1) continue;
 
-		// convert to fd Nodes
-		QVector<FdNode*> fdConnGroup;
-		foreach(Structure::Node* n, connGroup) fdConnGroup << (FdNode*)n;
-
-		mergeConnectedCoplanarParts(fdConnGroup);
+		// fit patches
+		QVector<FdNode*> componentFd;
+		foreach(Structure::Node* n, component) componentFd << (FdNode*)n;
+		mergeConnectedCoplanarParts(componentFd);
 	}
-
+	 
 	// slave-master relation after merging
 	updateSlaves();
 	updateSlaveMasterRelation();
 
 	// remove unbounded slaves: unlikely to happen
+	int nDeleted = 0;
 	for (int i = 0; i < slaves.size();i++)
 	{
 		if (slave2master[i].size() != 2)
 		{
-			slaves.remove(i);
-			i--;
+			slaves.remove(i-nDeleted);
+			nDeleted++;
 		}
 	}
 
@@ -477,8 +472,6 @@ void DcGraph::clusterSlaves()
 		slaveClusters << cluster;
 	}
 }
-
-
 
 BlockGraph* DcGraph::createBlock( QSet<int> sCluster )
 {
@@ -604,10 +597,10 @@ FdGraph* DcGraph::getKeyframe( double t )
 			showActive = true;
 			aOrigPos = blocks[i]->baseMaster->center();
 			aBaseMID = blocks[i]->baseMaster->mID;
-			//aAFS = blocks[i]->properties[AFS].value<QVector<Geom::Box> >();
+			aAFS = blocks[i]->properties[AFS].value<QVector<Geom::Box> >();
 			//aAFR_CP = blocks[i]->properties[AFR_CP].value<QVector<Vector3> >();
 			//aMaxFR = blocks[i]->properties[MAXFR].value<QVector<Vector3> >();
-			//aFR = blocks[i]->properties[FOLD_REGIONS].value<QVector<Geom::Rectangle>>();
+			aFR = blocks[i]->properties[FOLD_REGIONS].value<QVector<Geom::Rectangle>>();
 			
 			// active slaves
 			foreach (FdNode* n, fblock->getFdNodes())
@@ -623,14 +616,14 @@ FdGraph* DcGraph::getKeyframe( double t )
 	{
 		Vector3 activeCurrPosition = ((PatchNode*)key_graph->getNode(aBaseMID))->center();
 		Vector3 offsetV = activeCurrPosition - aOrigPos;
-		//for (int i = 0; i < aAFS.size(); i++ ) aAFS[i].translate(offsetV);
-		//key_graph->properties[AFS].setValue(aAFS);
+		for (int i = 0; i < aAFS.size(); i++ ) aAFS[i].translate(offsetV);
+		key_graph->properties[AFS].setValue(aAFS);
 		//for (int i = 0; i < aAFR_CP.size(); i++ ) aAFR_CP[i] += offsetV;
 		//key_graph->properties[AFR_CP].setValue(aAFR_CP);
 		//for (int i = 0; i < aMaxFR.size(); i++ ) aMaxFR[i] += offsetV;
 		//key_graph->properties[MAXFR].setValue(aMaxFR);
-		//for (int i = 0; i < aFR.size(); i++ ) aFR[i].translate(offsetV);
-		//key_graph->properties[FOLD_REGIONS].setValue(aFR);
+		for (int i = 0; i < aFR.size(); i++ ) aFR[i].translate(offsetV);
+		key_graph->properties[FOLD_REGIONS].setValue(aFR);
 	}
 
 	// debug
@@ -932,14 +925,14 @@ void DcGraph::generateKeyframes( int N )
 		FdGraph* kf = getKeyframe(i * step);
 		keyframes << kf;
 
-		kf->unwrapBundleNodes();
-		kf->hideEdgeRods();
+		//kf->unwrapBundleNodes();
+		//kf->hideEdgeRods();
 
 		// color
 		foreach (FdNode* n, kf->getFdNodes())
 		{
 			double grey = 240;
-			QColor c = (n->hasTag(ACTIVE_TAG)) ? 
+			QColor c = (n->hasTag(ACTIVE_TAG) && !n->hasTag(MASTER_TAG)) ? 
 				QColor::fromRgb(255, 110, 80) : QColor::fromRgb(grey, grey, grey);
 			c.setAlphaF(0.78);
 			n->mColor = c;

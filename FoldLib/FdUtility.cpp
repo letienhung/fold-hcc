@@ -266,24 +266,23 @@ bool hasIntersection( FdNode* slave, PatchNode* master, double thr )
 	if (getDistance(slave, master) > thr) return false;
 
 	// check whether slave locates on both sides of master
-	double minDist = maxDouble();
-	double maxDist = -maxDouble();
+	double leftEnd = maxDouble();
+	double rightEnd = -maxDouble();
 	foreach (Vector3 p, slave->mBox.getConnerPoints())
 	{
-		double dist = master->mPatch.getPlane().signedDistanceTo(p);
-		if (dist < minDist) minDist = dist;
-		if (dist > maxDist) maxDist = dist;
+		double sd = master->mPatch.getPlane().signedDistanceTo(p);
+		if (sd < leftEnd) leftEnd = sd;
+		if (sd > rightEnd) rightEnd = sd;
 	}
 
 	// one side
-	if (minDist * maxDist >= 0) return false;
-
+	if (leftEnd * rightEnd >= 0) return false;
 	// two sides
-	double a = fabs(minDist);
-	double b = fabs(maxDist);
-	double ratio = a / (a + b);
-	if (ratio > 0.5) ratio  = 1 - ratio;
-	return ratio > 0.05; // this is ugly but can avoid some cuts
+	else
+	{
+		double shorterEnd = Min(fabs(leftEnd), fabs(rightEnd));
+		return shorterEnd > thr;
+	}
 }
 
 bool overlap( Interval itv1, Interval itv2 )
