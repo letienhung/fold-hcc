@@ -13,7 +13,7 @@
 FdNode::FdNode(QString id)
 	: Node(id)
 {
-	mColor = qRandomColor(); 
+	mColor = qRandomColor3(0,0.5,0.7); 
 	mColor.setAlphaF(0.78);
 	mType = NONE;
 
@@ -35,7 +35,7 @@ FdNode::FdNode(QString id, Geom::Box &b, MeshPtr m )
 	mBox = b;
 	encodeMesh();
 
-	mColor = qRandomColor(); 
+	mColor = qRandomColor3(0,0.5,0.7);
 	mColor.setAlphaF(0.78);
 	mType = NONE;
 
@@ -106,8 +106,9 @@ void FdNode::drawMesh()
 	if (mMesh.isNull()) return;
 
 	deformMesh();
-    QuickMeshDraw::drawMeshSolid(mMesh.data());//, QColor(102,178,255,255));//QColor(255,128,0,255));
-	QuickMeshDraw::drawMeshWireFrame(mMesh.data());
+    QuickMeshDraw::drawMeshSolid(mMesh.data(), QColor(236,236,236));//, QColor(102,178,255,255));//QColor(255,128,0,255));
+	//QuickMeshDraw::drawMeshWireFrame(mMesh.data());
+	//QuickMeshDraw::drawMeshSharpEdges(mMesh.data(), QColor(0,0,0,255), 4);
 }
 
 void FdNode::encodeMesh()

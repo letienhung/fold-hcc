@@ -11,6 +11,11 @@
 #include <QFileInfo>
 #include <QFileDialog>
 
+// Helpful functor
+struct CompareFdNode{
+	bool operator()( FdNode* a, FdNode* b ){ return a->mBox.Center.z() < b->mBox.Center.z(); }
+};
+
 FdPlugin::FdPlugin()
 {
 	widget = NULL;
@@ -420,25 +425,53 @@ void FdPlugin::exportSVG()
 		QString style = "fill-opacity: 0.78; stroke-width: 1; stroke-miterlimit: round; ";
 
 		QVector<FdNode*> fdnodes = activeFd->getFdNodes();
-		std::reverse(fdnodes.begin(), fdnodes.end());
+
+		if(this->showCuboid)
+		{
+			std::sort( fdnodes.begin(), fdnodes.end(), CompareFdNode() );
+		}
+		else
+		{
+			std::reverse(fdnodes.begin(), fdnodes.end());
+		}
 
 		foreach (FdNode* n, fdnodes){
 			if (n->mType == FdNode::PATCH)
 			{
-				/*// Edges
-				foreach (Geom::Segment seg, ((PatchNode*)n)->mPatch.getEdgeSegments()){
-					qglviewer::Vec proj0 = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(seg.P0) );
-					qglviewer::Vec proj1 = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(seg.P1) );
-					out << QString("<line x1='%1' y1='%2' x2='%3' y2='%4' style='%5' />").arg(proj0.x).arg(proj0.y).arg(proj1.x).arg(proj1.y).arg(style);
-				}*/
+				if( this->showCuboid )
+				{
+					QVector<Geom::Rectangle> rects = n->mBox.getFaceRectangles();
+					std::sort( rects.begin(), rects.end(), Geom::CompareRectangle() );
 
-				// Polygons
-				out << QString("\n<polygon points='");
-				foreach (Vector3 seg, ((PatchNode*)n)->mPatch.getConners()){
-					qglviewer::Vec proj = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(seg) );
-					out << QString("%1,%2 ").arg(proj.x).arg(proj.y);
+					foreach(Geom::Rectangle r, rects)
+					{
+						out << QString("\n<polygon points='");
+						foreach (Vector3 p, r.getConners())
+						{
+							qglviewer::Vec proj = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(p) );
+							out << QString("%1,%2 ").arg(proj.x).arg(proj.y);
+						}
+						out << QString("' style='%1'/>\n").arg( style + QString("fill:%1; stroke:%2").arg( n->mColor.name() ).arg( n->mColor.darker().name() ) );
+					}
 				}
-				out << QString("' style='%1'/>\n").arg( style + QString("fill:%1; stroke:%2").arg( n->mColor.name() ).arg( n->mColor.darker().name() ) );
+
+				if( this->showScaffold )
+				{
+					/*// Edges
+					foreach (Geom::Segment seg, ((PatchNode*)n)->mPatch.getEdgeSegments()){
+						qglviewer::Vec proj0 = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(seg.P0) );
+						qglviewer::Vec proj1 = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(seg.P1) );
+						out << QString("<line x1='%1' y1='%2' x2='%3' y2='%4' style='%5' />").arg(proj0.x).arg(proj0.y).arg(proj1.x).arg(proj1.y).arg(style);
+					}*/
+
+					// Polygons
+					out << QString("\n<polygon points='");
+					foreach (Vector3 seg, ((PatchNode*)n)->mPatch.getConners()){
+						qglviewer::Vec proj = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(seg) );
+						out << QString("%1,%2 ").arg(proj.x).arg(proj.y);
+					}
+					out << QString("' style='%1'/>\n").arg( style + QString("fill:%1; stroke:%2").arg( n->mColor.name() ).arg( n->mColor.darker().name() ) );
+				}
 			}
 		}
 

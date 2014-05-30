@@ -83,4 +83,11 @@ public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
+struct CompareRectangle{
+	bool operator()(const Rectangle& a,const Rectangle& b){
+		if(a.Center.z() == b.Center.z()) return a.Center.y() > b.Center.y();
+		return a.Center.z() < b.Center.z();
+	}
+};
+
 }
