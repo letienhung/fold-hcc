@@ -111,6 +111,10 @@ bool extendRectangle2D(Geom::Rectangle2& rect, QVector<Vector2> &pnts);
 // volume
 double volume(QList<Geom::Box> boxes);
 
+QVector<double> findRoots(QVector<double>& coeff);
+QVector<double> findRoots(double a, double b, double c);
+QVector<double> findRoots(double a, double b, double c, double d, double e);
+
 // cluster intersecting sets
 // return clustered set idx; merged sets are stored in \p merged_sets
 template <class T>

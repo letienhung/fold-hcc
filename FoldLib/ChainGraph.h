@@ -9,6 +9,10 @@ class ChainGraph : public FdGraph
 public:
     ChainGraph(FdNode* slave, PatchNode* base, PatchNode* top);
 
+	// set up
+	void computeOrientations();
+	void computePhaseSeparator();
+
 	// fold options
 	QVector<FoldOption*> generateFoldOptions(int nSplits, int nUsedChunks, int nChunks);
 	Geom::Rectangle getFoldRegion(FoldOption* fn);
@@ -22,6 +26,10 @@ public:
 
 	// animation
 	void fold(double t);
+	void foldUniformHeight(double t);
+	void foldUniformAngle(double t);
+
+	// key frame
 	FdGraph* getKeyframe(double t);
 	void setFoldDuration(double t0, double t1);
 
@@ -57,8 +65,10 @@ public:
 	QVector<FdLink*>	leftLinks;	// left hinges
 	QVector<FdLink*>	activeLinks;// active hinges
 	Interval			duration;	// time interval
-	bool				foldToRight;
-
+	bool				foldToRight;// folding side
+	bool				isInclined; // inclined
+	double				heightSep;	// the height separates phase I and II
+	double				angleSep;	// angle between b and base
 
 	//			topJoint				
 	//	half_thk  __|\___________			

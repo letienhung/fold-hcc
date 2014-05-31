@@ -34,58 +34,8 @@ ChainGraph::ChainGraph( FdNode* slave, PatchNode* base, PatchNode* top)
 	Graph::addNode(baseMaster);
 	Graph::addNode(topMaster);
 
-	// joints
-	baseJoint = detectJointSegment(origSlave, baseMaster);
-	topJoint = detectJointSegment(origSlave, topMaster);
-	if (dot(topJoint.Direction, baseJoint.Direction) < 0) topJoint.flip();
-	
-	//std::cout << "Block constructor\n";
-	//std::cout << "basejV = "; print(baseJoint.Direction);
-	//std::cout << "topjV = ";print(topJoint.Direction);
-
-	// slaveSeg
-	Vector3 bJointP0 = baseJoint.P0;
-	QVector<Geom::Segment> edges = origSlave->mPatch.getPerpEdges(baseJoint.Direction);
-	slaveSeg = edges[0].contains(bJointP0) ? edges[0] : edges[1];
-	if (slaveSeg.getProjCoordinates(bJointP0) > 0) slaveSeg.flip();
-	
-	//std::cout << "upV = "; print(slaveSeg.Direction);
-
-
-	// rightSeg and direction
-	Geom::Rectangle base_rect = baseMaster->mPatch;
-	Geom::Segment topJointProj = base_rect.getProjection(topJoint);
-	rightSeg = Geom::Segment(topJointProj.P0, baseJoint.P0);
-	if (rightSeg.length() / slaveSeg.length() < 0.001){
-		rightSegV = cross(baseJoint.Direction, slaveSeg.Direction);
-		rightSegV = base_rect.getProjectedVector(rightSegV);
-	}
-	else
-		rightSegV = rightSeg.Direction;
-	rightSegV.normalize();
-
-
-	//std::cout << "rV = "; print(rightSegV);
-
-
-	// flip slave patch so that its norm is to the right
-	if (dot(origSlave->mPatch.Normal, rightSegV) < 0)
-		origSlave->mPatch.flipNormal();
-
-
-	// upV x rightV = jointV
-	Vector3 crossUpRight = cross(slaveSeg.Direction, rightSegV);
-	if (dot(crossUpRight, baseJoint.Direction) < 0){
-		baseJoint.flip(); topJoint.flip();
-	}
-
-
-	//std::cout << "Block constructor: fixed\njointV = ";
-	//print(baseJoint.Direction);
-
-	// topTraj
-	Vector3 topCenterProj = base_rect.getProjection(top->center());
-	topTraj = Geom::Segment(topCenterProj, top->center());
+	// set up orientations
+	computeOrientations();
 
 	// fold duration
 	duration = INTERVAL(1, 2);
@@ -97,22 +47,57 @@ ChainGraph::ChainGraph( FdNode* slave, PatchNode* base, PatchNode* top)
 	// side
 	foldToRight = true;
 
-	// debug
-	addDebugSegment(baseJoint);
-	addDebugSegment(slaveSeg);
-	addDebugSegment(rightSeg);
-	addDebugSegment(Geom::Segment(baseJoint.P0, baseJoint.P0 + rightSegV));
+	//// debug
+	//addDebugSegment(baseJoint);
+	//addDebugSegment(slaveSeg);
+	//addDebugSegment(rightSeg);
+	//addDebugSegment(Geom::Segment(baseJoint.P0, baseJoint.P0 + rightSegV));
 }
 
-void ChainGraph::fold( double t )
+void ChainGraph::computeOrientations()
 {
-	// free all nodes
-	foreach (Structure::Node* n, nodes)
-		n->removeTag(FIXED_NODE_TAG);
+	// joints
+	baseJoint = detectJointSegment(origSlave, baseMaster);
+	topJoint = detectJointSegment(origSlave, topMaster);
+	if (dot(topJoint.Direction, baseJoint.Direction) < 0) topJoint.flip();
 
-	// fix base
-	baseMaster->addTag(FIXED_NODE_TAG);
+	// slaveSeg
+	Vector3 bJointP0 = baseJoint.P0;
+	QVector<Geom::Segment> edges = origSlave->mPatch.getPerpEdges(baseJoint.Direction);
+	slaveSeg = edges[0].contains(bJointP0) ? edges[0] : edges[1];
+	if (slaveSeg.getProjCoordinates(bJointP0) > 0) slaveSeg.flip();
 
+	// rightSeg and direction
+	Geom::Rectangle base_rect = baseMaster->mPatch;
+	Geom::Segment topJointProj = base_rect.getProjection(topJoint);
+	rightSeg = Geom::Segment(topJointProj.P0, baseJoint.P0);
+	if (rightSeg.length() / slaveSeg.length() < 0.01){
+		isInclined = false;
+		rightSegV = cross(baseJoint.Direction, slaveSeg.Direction);
+		rightSegV = base_rect.getProjectedVector(rightSegV);
+	}else{
+		isInclined = true;
+		rightSegV = rightSeg.Direction;
+	}
+	rightSegV.normalize();
+
+	// flip slave patch so that its norm is to the right
+	if (dot(origSlave->mPatch.Normal, rightSegV) < 0)
+		origSlave->mPatch.flipNormal();
+
+	// upV x rightV = jointV
+	Vector3 crossUpRight = cross(slaveSeg.Direction, rightSegV);
+	if (dot(crossUpRight, baseJoint.Direction) < 0){
+		baseJoint.flip(); topJoint.flip();
+	}
+
+	// topTraj
+	Vector3 topCenterProj = base_rect.getProjection(topMaster->center());
+	topTraj = Geom::Segment(topCenterProj, topMaster->center());
+}
+
+void ChainGraph::computePhaseSeparator()
+{
 	// constant
 	int n = chainParts.size();
 	double L = slaveSeg.length();
@@ -121,42 +106,42 @@ void ChainGraph::fold( double t )
 	double b = d + a;
 	double A = (n - 1) * a;
 
-	// height threshold
+	// height
 	double aa = 1;
 	double bb = -2 * A;
 	double cc = A * A + d * d - b * b;
 	double H = topTraj.length();
-	double h = (1 - t) * H;
-	double h1, h2;
-	if (!solveQuadratic(aa, bb, cc, h1, h2)) {
-		std::cout << "Quadratic solver error! \ n";
+	QVector<double> roots = findRoots(aa, bb, cc);
+	if (roots.size() != 2){
+		std::cout << "Quadratic roots: no roots for HeightSep \n";
 		return;
+	}else{
+		heightSep = (roots.front() > 0 && roots.front() < H)? 
+			roots.front() : roots.last();
 	}
-	double H_thr = (h1 > 0 && h1 < H)? h1 : h2;
 
+	// angle
+	double sin_angle = heightSep - A;
+	angleSep = asin(RANGED(0, sin_angle, 1));
+}
+
+void ChainGraph::foldUniformAngle( double t )
+{
+	// hinge angles
+	double d = rightSeg.length();
+	double sl = slaveSeg.length();
+	int n = chainParts.size();
+	double alpha = acos(d / sl) * (1 - t);
+
+	double a = (sl - d) / n;
+	double b = d + a;
+	double bProj = b * cos(alpha);
+	double beta;
 	// no return
-	if (h >= H_thr)
+	if (bProj <= d)
 	{
-		double x = 2 * b * h;
-		double y = 2 * b * d;
-		double z = d * d + h * h + b * b - A * A;
-		double aa = x * x + y * y;
-		double bb = -2 * y * z;
-		double cc = z * z - x * x;
-
-		double cos_alpha1, cos_alpha2; 
-		if (!solveQuadratic(aa, bb, cc, cos_alpha1, cos_alpha2)) {
-			std::cout << "Quadratic solver error! \ n";
-			return;
-		}
-		double alpha1 = acos(RANGED(0, cos_alpha1, 1));
-		double alpha2 = acos(RANGED(0, cos_alpha2, 1));
-		double Alpha = acos(d / L);
-		double alpha = (alpha1 > 0 && alpha1 < Alpha)? alpha1 : alpha2;
-
-		double bProj = b * cos(alpha);
-		double cos_beta = (d - bProj) / A;
-		double beta = acos(cos_beta);
+		double cos_beta = (d - bProj)/((n - 1) * a);
+		beta = acos(cos_beta);
 
 		if (foldToRight)
 		{
@@ -176,14 +161,113 @@ void ChainGraph::fold( double t )
 	// return
 	else
 	{
-		double alpha = acos(d / L) * (1 - t);
-
-		double bProj = b * cos(alpha);
-		double beta;
-
-		double cos_beta = (bProj - d) / a;
+		double cos_beta = (b * cos(alpha) - d) / a;
 		beta = acos(RANGED(0, cos_beta, 1));
 
+		if (foldToRight)
+		{
+			activeLinks[0]->hinge->angle = beta;
+			for (int i = 1; i < activeLinks.size()-1; i++)
+				activeLinks[i]->hinge->angle = 2 * beta;
+			activeLinks.last()->hinge->angle = alpha + beta;
+		}
+		else
+		{
+			activeLinks[0]->hinge->angle = alpha;
+			activeLinks[1]->hinge->angle = alpha + beta;
+			for (int i = 2; i < activeLinks.size(); i++)
+				activeLinks[i]->hinge->angle = 2 * beta;
+		}
+	}
+
+	// restore configuration
+	restoreConfiguration();
+
+	// adjust the position of top master
+	double ha = a * sin(beta);
+	double hb = b * sin(alpha);
+	double topH = (n - 1) * ha + hb;
+	Vector3 topPos = topTraj.P0 + topH * topTraj.Direction;
+	topMaster->translate(topPos - topMaster->center());
+}
+
+void ChainGraph::foldUniformHeight( double t )
+{
+	// constant
+	int n = chainParts.size();
+	double L = slaveSeg.length();
+	double d = rightSeg.length();
+	double a = (L - d) / n;
+	double b = d + a;
+	double A = (n - 1) * a;
+	double H = topTraj.length();
+	double h = (1 - t) * H;
+	// phase-I: no return
+	if (h >= heightSep)
+	{
+		Interval alpha_it = INTERVAL(angleSep, acos(RANGED(0, d/L ,1)));
+		double x = 2 * b * h;
+		double y = 2 * b * d;
+		double z = d * d + h * h + b * b - A * A;
+		double aa = x * x + y * y;
+		double bb = -2 * y * z;
+		double cc = z * z - x * x;
+
+		double alpha = 0;
+		QVector<double> roots = findRoots(aa, bb, cc);
+		foreach (double r, roots){
+			alpha = acos(RANGED(0, r, 1));
+			if (within(alpha, alpha_it)) break;
+		}
+
+		double cos_beta = (d - b * cos(alpha)) / A;
+		double beta = acos(RANGED(0, cos_beta, 1));
+
+		// set angles
+		if (foldToRight)
+		{
+			activeLinks[0]->hinge->angle = M_PI - beta;
+			for (int i = 1; i < activeLinks.size()-1; i++)
+				activeLinks[i]->hinge->angle = M_PI;
+			activeLinks.last()->hinge->angle = alpha + M_PI - beta;
+		}
+		else
+		{
+			activeLinks[0]->hinge->angle = alpha;
+			activeLinks[1]->hinge->angle = alpha + M_PI - beta;
+			for (int i = 2; i < activeLinks.size(); i++)
+				activeLinks[i]->hinge->angle = M_PI;
+		}
+	}
+	// phase-II: return
+	else
+	{
+		Interval alpha_it = INTERVAL(0, angleSep);
+		double B =  b * b * n * (n-2);
+		double C = -2 * b * d * (n-1) * (n-1);
+		double D = A * A - h * h - b * b - (n-1) * (n-1) * d * d;
+		double E = 4 * b * b * h * h - 2 * B * D + C * C;
+		double F = -2 * C * D;
+		double G = D * D - 4 * b * b * h * h;
+		double K = 2 * B * C;
+		QVector<double> roots = findRoots(B * B, K, E, F, G);
+
+		double alpha, beta;
+		foreach (double r, roots)
+		{
+			alpha = acos(RANGED(0, r, 1));
+			if (within(alpha, alpha_it))
+			{
+				double cos_beta = (b * cos(alpha) - d) / a;
+				beta = acos(RANGED(0, cos_beta, 1));
+
+				double hh = A * sin(beta) + b * sin(alpha);
+				if (fabs(h - hh) < ZERO_TOLERANCE_LOW)
+					break;
+			}
+		}
+
+		// set angles
 		if (foldToRight)
 		{
 			activeLinks[0]->hinge->angle = beta;
@@ -209,7 +293,23 @@ void ChainGraph::fold( double t )
 	//double topH = (n - 1) * ha + hb;
 	Vector3 topPos = topTraj.P0 + h * topTraj.Direction;
 	topMaster->translate(topPos - topMaster->center());
-	
+}
+
+void ChainGraph::fold( double t )
+{
+	// free all nodes
+	foreach (Structure::Node* n, nodes)
+		n->removeTag(FIXED_NODE_TAG);
+
+	// fix base
+	baseMaster->addTag(FIXED_NODE_TAG);
+
+
+	//if (isInclined) foldUniformHeight(t);
+	//else foldUniformAngle(t);
+	foldUniformHeight(t);
+
+
 
 
 	//if ( t > 0.45 && t < 0.55)
@@ -417,6 +517,8 @@ void ChainGraph::applyFoldOption( FoldOption* fn)
 	resetChainParts(fn);
 	resetHingeLinks(fn);
 	setActiveLinks(fn);
+
+	computePhaseSeparator();
 }
 
 void ChainGraph::setFoldDuration( double t0, double t1 )

@@ -11,6 +11,8 @@
 #include "MinOBB.h"
 #include "PcaOBB.h"
 
+#include "RootFinder.h"
+
 #include <iomanip>
 
 FdNodeArray2D getConnectedGroups( QVector<FdNode*> nodes, double disThr )
@@ -557,4 +559,31 @@ void print( Geom::Box box)
 	print(box.Axis[1]);
 	std::cout << "Z = ";
 	print(box.Axis[2]);
+}
+
+QVector<double> findRoots( QVector<double>& coeff )
+{
+	// remove zero coeff
+	int n;
+	for (n = 0; n < coeff.size(); n++)
+		if (coeff[n] != 0) break;
+	coeff.remove(0, n);
+
+	// reverse order
+	std::vector<double> coeff_std;
+	for (int i = coeff.size()-1; i >= 0; i--) coeff_std.push_back(coeff[i]);
+
+	std::vector<double> roots_std = RootFinder::find_roots(coeff_std);
+
+	return QVector<double>::fromStdVector(roots_std);
+}
+
+QVector<double> findRoots( double a, double b, double c )
+{
+	return findRoots(QVector<double>() << a << b << c);
+}
+
+QVector<double> findRoots( double a, double b, double c, double d, double e )
+{
+	return findRoots(QVector<double>() << a << b << c << d << e);
 }
