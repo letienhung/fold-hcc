@@ -24,6 +24,7 @@ public:
 	bool contains(Segment s);
     bool contains(Rectangle& other);
 	bool containsOneEdge(Rectangle& other);
+	int	 whichSide(Vector3 p);
 
 	// geometry
 	static int EDGE[4][2];
@@ -32,6 +33,8 @@ public:
 	Plane   getPlane();
 	int		getClosestAxisId(Vector3 v);
 	int		getPerpAxisId(Vector3 v);
+	Vector3 getPerpAxis(Vector3 v);
+	Segment	getSkeleton(Vector3 v);
 	QVector<Segment>  getEdgeSegments();
 	QVector<Segment>  getPerpEdges(Vector3 v);
 	QVector<Vector2>  get2DConners();

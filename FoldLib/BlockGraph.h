@@ -44,7 +44,7 @@ public:
 	// thickness
 	void setThickness(double thk);
 	void setUseThickness(bool use);
-	void updateSolutionWithThickness();
+	void setChainThickness();
 	void computeMasterNbUnderLayers();
 
 	// foldem

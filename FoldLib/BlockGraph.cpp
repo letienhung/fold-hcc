@@ -833,7 +833,7 @@ void BlockGraph::setThickness( double thk )
 {
 	thickness = thk;
 	if (useThickness)
-		updateSolutionWithThickness();
+		setChainThickness();
 }
 
 void BlockGraph::setUseThickness(bool use)
@@ -841,11 +841,11 @@ void BlockGraph::setUseThickness(bool use)
 	if (useThickness != use)
 	{
 		useThickness = use;
-		updateSolutionWithThickness();
+		setChainThickness();
 	}
 }
 
-void BlockGraph::updateSolutionWithThickness()
+void BlockGraph::setChainThickness()
 {
 	foreach (ChainGraph* chain, chains)
 	{
@@ -861,6 +861,8 @@ void BlockGraph::updateSolutionWithThickness()
 		}
 	}
 
+	// update solution if there are any
+	// will do nothing if solutions are not ready
 	applySolution(selSlnIdx);
 }
 

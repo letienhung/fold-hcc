@@ -333,6 +333,11 @@ int Geom::Rectangle::getPerpAxisId( Vector3 v )
 	return (dotVAxis0 > dotVAxis1) ? 1 : 0;
 }
 
+Vector3 Geom::Rectangle::getPerpAxis( Vector3 v )
+{
+	return Axis[getPerpAxisId(v)];
+}
+
 Geom::Rectangle Geom::Rectangle::get3DRectangle( Rectangle2 &rect2 )
 {
 	QVector<Vector3> conners;
@@ -398,4 +403,16 @@ QVector<Vector3> Geom::Rectangle::getGridSamples( double w )
 		}
 	}
 	return samples;
+}
+
+Geom::Segment Geom::Rectangle::getSkeleton( Vector3 v )
+{
+	int aid = getClosestAxisId(v);
+	Vector3 ev = Extent[aid] * Axis[aid];
+	return Geom::Segment(Center - ev, Center + ev);
+}
+
+int Geom::Rectangle::whichSide( Vector3 p )
+{
+	return getPlane().whichSide(p);
 }

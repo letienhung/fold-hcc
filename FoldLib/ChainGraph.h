@@ -24,10 +24,11 @@ public:
 	void resetHingeLinks(FoldOption* fn);
 	void setActiveLinks(FoldOption* fn);
 
-	// animation
+	// folding
 	void fold(double t);
 	void foldUniformHeight(double t);
 	void foldUniformAngle(double t);
+	void addThickness(FdGraph* keyframe);
 
 	// key frame
 	FdGraph* getKeyframe(double t);

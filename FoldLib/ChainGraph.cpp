@@ -63,8 +63,8 @@ void ChainGraph::computeOrientations()
 
 	// slaveSeg
 	Vector3 bJointP0 = baseJoint.P0;
-	QVector<Geom::Segment> edges = origSlave->mPatch.getPerpEdges(baseJoint.Direction);
-	slaveSeg = edges[0].contains(bJointP0) ? edges[0] : edges[1];
+	Geom::Rectangle slave_rect = origSlave->mPatch;
+	slaveSeg = slave_rect.getSkeleton(slave_rect.getPerpAxis(baseJoint.Direction));
 	if (slaveSeg.getProjCoordinates(bJointP0) > 0) slaveSeg.flip();
 
 	// rightSeg and direction
@@ -107,18 +107,7 @@ void ChainGraph::computePhaseSeparator()
 	double A = (n - 1) * a;
 
 	// height
-	double aa = 1;
-	double bb = -2 * A;
-	double cc = A * A + d * d - b * b;
-	double H = topTraj.length();
-	QVector<double> roots = findRoots(aa, bb, cc);
-	if (roots.size() != 2){
-		std::cout << "Quadratic roots: no roots for HeightSep \n";
-		return;
-	}else{
-		heightSep = (roots.front() > 0 && roots.front() < H)? 
-			roots.front() : roots.last();
-	}
+	heightSep = A + sqrt(b * b - d * d);
 
 	// angle
 	double sin_angle = heightSep - A;
@@ -179,9 +168,6 @@ void ChainGraph::foldUniformAngle( double t )
 				activeLinks[i]->hinge->angle = 2 * beta;
 		}
 	}
-
-	// restore configuration
-	restoreConfiguration();
 
 	// adjust the position of top master
 	double ha = a * sin(beta);
@@ -301,16 +287,60 @@ void ChainGraph::foldUniformHeight( double t )
 		}
 	}
 
-	// restore configuration
-	restoreConfiguration();
-
 	// adjust the position of top master
-	//double ha = a * sin(beta);
-	//double hb = b * sin(alpha);
-	//double topH = (n - 1) * ha + hb;
 	Vector3 topPos = topTraj.P0 + h * topTraj.Direction;
 	topMaster->translate(topPos - topMaster->center());
 }
+
+void ChainGraph::addThickness(FdGraph* keyframe)
+{
+	for (int i = 0; i < chainParts.size(); i++)
+	{
+		// compute offset caused by thickness between part_i and part_i_1
+		Vector3 offset(0, 0, 0);
+		Vector3 v1(0, 0, 0), v2(0, 0, 0);
+		Geom::Rectangle rect1 = chainParts[i]->mPatch;
+		if (i == 0)
+		{
+			v2 = baseMaster->mPatch.Normal;
+
+			double dotNN = dot(rect1.Normal, v2);
+			if ( dotNN > ZERO_TOLERANCE_LOW) v1 = rect1.Normal;
+			else if (dotNN < -ZERO_TOLERANCE_LOW) v1 = -rect1.Normal;
+
+			offset = halfThk * v1 + baseOffset * v2;
+		}
+		else
+		{
+			Geom::Rectangle rect2 = chainParts[i-1]->mPatch;
+
+			int side2to1 = rect1.whichSide(rect2.Center);
+			if (side2to1 == 1) v1 = -rect1.Normal;
+			else if (side2to1 == -1) v1 = rect1.Normal;
+
+			int side1to2 = rect2.whichSide(rect1.Center);
+			if (side1to2 == 1) v2 = -rect2.Normal;
+			else if (side1to2 == -1) v2 = rect2.Normal;
+
+			offset = halfThk * (v1 - v2);
+		}
+
+		// translate parts above
+		for (int j = i; j < chainParts.size(); j++)
+		{
+			FdNode* key_part = (FdNode*)keyframe->getNode(chainParts[j]->mID);
+			key_part->translate(offset);
+		}
+	}
+
+	// set thickness to chain parts
+	for (int i = 0; i < chainParts.size(); i++)
+	{
+		FdNode* key_part = (FdNode*)keyframe->getNode(chainParts[i]->mID);
+		key_part->setThickness(2 * halfThk);
+	}
+}
+
 
 void ChainGraph::fold( double t )
 {
@@ -321,36 +351,26 @@ void ChainGraph::fold( double t )
 	// fix base
 	baseMaster->addTag(FIXED_NODE_TAG);
 
-
-	//if (isInclined) foldUniformHeight(t);
-	//else foldUniformAngle(t);
+	// set up hinge angles and top position
 	foldUniformHeight(t);
 
-
-
-
-	//if ( t > 0.45 && t < 0.55)
-	//{
-	//	std::cout << "\n\nsl = " << sl << "\n"
-	//		<< "d = " << d << "\n"
-	//		<< "a = " << a << "\n"
-	//		<< "b = " << b << "\n"
-	//		<< "alpha = " << alpha << "\n"
-	//		<< "beta = " << beta << "\n"
-	//		<< "ha = " << ha << "\n"
-	//		<< "hb = " << hb << "\n"
-	//		<< "topH = " << topH << "\n"
-	//		<< "topPos = " << topPos << "\n"
-	//		<< "TopTraj.Norm = "  << topTraj.Direction << "\n"
-	//		<< "topCenter = " << topMaster->mBox.Center;
-	//}
+	// restore configuration
+	restoreConfiguration();
 }
 
 FdGraph* ChainGraph::getKeyframe( double t )
 {
+	// fold w\o thickness
 	fold(t);
 
-	return (FdGraph*)this->clone();
+	// copy key frame
+	FdGraph* keyframe = (FdGraph*)this->clone();
+
+	// thickness
+	if (halfThk > 0)
+		addThickness(keyframe);
+
+	return keyframe;
 }
 
 QVector<FoldOption*> ChainGraph::generateFoldOptions( int nSplits, int nUsedChunks, int nChunks )
@@ -396,7 +416,7 @@ void ChainGraph::resetChainParts(FoldOption* fn)
 	PatchNode* slave = (PatchNode*)origSlave->clone();
 	Structure::Graph::addNode(slave);
 
-	// horizontal modification
+	// shrink along joint direction
 	int aid_h = slave->mBox.getAxisId(baseJoint.Direction);
 	Vector3 boxAxis = slave->mBox.Axis[aid_h];
 	double t0 = fn->position;

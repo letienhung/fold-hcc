@@ -36,7 +36,7 @@ namespace RootFinder
 
 	bool is_zero(double x)
 	{
-		const double error_tolerance = 0.0000001;
+		const double error_tolerance = 0.0001;
 		return (std::fabs(x) < error_tolerance);
 	}
 
