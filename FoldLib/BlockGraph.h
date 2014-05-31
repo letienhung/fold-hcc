@@ -19,7 +19,7 @@ public:
 	QStringList getChainLabels();
 
 	// key frame
-	FdGraph* getKeyframe(double t);
+	FdGraph* getKeyframe(double t, bool useThk);
 	FdGraph* getSuperKeyframe(double t);
 	void computeSuperBlock(FdGraph* superKeyframe);
 
@@ -43,8 +43,6 @@ public:
 
 	// thickness
 	void setThickness(double thk);
-	void setUseThickness(bool use);
-	void setChainThickness();
 	void computeMasterNbUnderLayers();
 
 	// foldem

@@ -72,11 +72,9 @@ void ChainGraph::computeOrientations()
 	Geom::Segment topJointProj = base_rect.getProjection(topJoint);
 	rightSeg = Geom::Segment(topJointProj.P0, baseJoint.P0);
 	if (rightSeg.length() / slaveSeg.length() < 0.01){
-		isInclined = false;
 		rightSegV = cross(baseJoint.Direction, slaveSeg.Direction);
 		rightSegV = base_rect.getProjectedVector(rightSegV);
 	}else{
-		isInclined = true;
 		rightSegV = rightSeg.Direction;
 	}
 	rightSegV.normalize();
@@ -357,23 +355,16 @@ void ChainGraph::fold( double t )
 	restoreConfiguration();
 }
 
-FdGraph* ChainGraph::getKeyframe( double t )
+FdGraph* ChainGraph::getKeyframe( double t, bool useThk )
 {
 	// fold w\o thickness
 	fold(t);
 
-	// copy key frame
+	// key frame
 	FdGraph* keyframe = (FdGraph*)this->clone();
 
-	//addDebugScaffold((FdGraph*)keyframe->clone());
-
 	// thickness
-	if (halfThk > 0)
-		addThickness(keyframe);
-
-	addDebugScaffold(keyframe);
-	fold(0);
-
+	if (useThk) addThickness(keyframe);
 
 	return keyframe;
 }
@@ -632,64 +623,29 @@ Geom::Rectangle ChainGraph::getMaxFoldRegion( bool right )
 
 QVector<Geom::Plane> ChainGraph::generateCutPlanes( FoldOption* fn )
 {
-	// base plane
-	Geom::Plane plane0 = baseMaster->mPatch.getPlane();
-	plane0.translate(baseOffset * plane0.Normal);
+	// constants
+	double L = slaveSeg.length();
+	double d = rightSeg.length();
+	double h = topTraj.length();
+	double a = (L - d) / fn->nSplits;
+	double b = d + a;
+	double sin_alpha = h / L;
+	double step = a * sin_alpha;
 
-	// scales
-	double l = getShrunkSlaveSeg().length();
-	double d = getShunkScale() * rightSeg.length();
-	double h = getShrunkTopTraj().length();
-	double step = (l - d) / (fn->nSplits + 1);
-	double vstep = step * h / l;
-	if (!fn->rightSide){
-		double offset = d * h / l;
-		plane0.translate(offset * plane0.Normal);
-	}
+	// two ways of cutting
+	Geom::Plane top_plane = topMaster->mPatch.getPlane();
+	Geom::Plane base_plane = baseMaster->mPatch.getPlane();
+	Geom::Plane plane0 = (!fn->rightSide) ? base_plane : top_plane;
+	Vector3 stepV = step * base_plane.Normal;
+	if (fn->rightSide) stepV *= -1;
 
 	// cut planes
 	QVector<Geom::Plane> cutPlanes;
 	for (int i = 1; i <= fn->nSplits; i++)
 	{
-		Vector3 offsetV = i * vstep * plane0.Normal;
-		cutPlanes << plane0.translated(offsetV);
+		Vector3 deltaV = i * stepV;
+		cutPlanes << plane0.translated(deltaV);
 	}
 
-	// debug
-	//appendToVectorProperty<Geom::Plane>(DEBUG_PLANES, cutPlanes);
-
 	return cutPlanes;
-}
-
-Geom::Segment ChainGraph::getShrunkSlaveSeg()
-{
-	Geom::Segment seg = slaveSeg;
-	Interval it = getShrunkInterval();
-	seg.cropRange01(it.first, it.second);
-
-	return seg;
-}
-
-double ChainGraph::getShunkScale()
-{
-	Interval it = getShrunkInterval();
-	return 1 - it.first - (1 - it.second);
-}
-
-Geom::Segment ChainGraph::getShrunkTopTraj()
-{
-	Geom::Segment seg = topTraj;
-	Interval it = getShrunkInterval();
-	seg.cropRange01(it.first, it.second);
-
-	return seg;
-}
-
-Interval ChainGraph::getShrunkInterval()
-{
-	double height = topTraj.length();
-	double top_dt = halfThk / height;
-	double base_dt = baseOffset / height;
-
-	return INTERVAL(base_dt, 1 - top_dt);
 }

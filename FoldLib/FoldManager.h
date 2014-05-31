@@ -28,7 +28,6 @@ public:
 	Vector3 sqzV;
 	int nbSplits;
 	int nbChunks;
-	bool useThickness;
 	double thickness;
 
 public:
@@ -55,7 +54,6 @@ public slots:
 	void setSqzV (QString sqzV_str);
 	void setNbSplits(int N);
 	void setNbChunks(int N);
-	void setUseThickness(int state);
 	void setThickness(double thk);
 	void setParameters();
 

@@ -17,7 +17,6 @@ FoldManager::FoldManager()
 
 	nbSplits = 1;
 	nbChunks = 1;
-	useThickness = false;
 	thickness = 0;
 }
 
@@ -304,12 +303,6 @@ void FoldManager::setNbChunks( int N )
 	if (!dcGraphs.isEmpty()) setParameters();
 }
 
-void FoldManager::setUseThickness( int state )
-{
-	useThickness = (state == Qt::Checked);
-	if (!dcGraphs.isEmpty()) setParameters();
-}
-
 void FoldManager::setThickness( double thk )
 {
 	thickness = thk;
@@ -323,7 +316,6 @@ void FoldManager::setParameters()
 	{
 		b->setNbSplits(nbSplits);
 		b->setNbChunks(nbChunks);
-		b->setUseThickness(useThickness);
 		b->setThickness(thickness);
 	}
 }

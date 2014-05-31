@@ -32,7 +32,6 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->f_manager->connect(ui->sqzV, SIGNAL(currentIndexChanged(QString)), SLOT(setSqzV(QString)));
 	plugin->f_manager->connect(ui->nbSplits, SIGNAL(valueChanged(int)), SLOT(setNbSplits(int)));
 	plugin->f_manager->connect(ui->nbChunks, SIGNAL(valueChanged(int)), SLOT(setNbChunks(int)));
-	plugin->f_manager->connect(ui->useThickness, SIGNAL(stateChanged(int)), SLOT(setUseThickness(int)));
 	plugin->f_manager->connect(ui->thickness, SIGNAL(valueChanged(double)), SLOT(setThickness(double)));
 	plugin->f_manager->connect(ui->foldabilize, SIGNAL(clicked()), SLOT(foldabilize()));
 	plugin->connect(ui->exportVector, SIGNAL(clicked()), SLOT(exportSVG()));

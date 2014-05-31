@@ -18,11 +18,15 @@ public:
 	Geom::Rectangle getFoldRegion(FoldOption* fn);
 	Geom::Rectangle getMaxFoldRegion(bool right);
 
+	// time interval
+	void setFoldDuration(double t0, double t1);
+
 	// modify chain
 	void applyFoldOption(FoldOption* fn);
 	void resetChainParts(FoldOption* fn);
 	void resetHingeLinks(FoldOption* fn);
 	void setActiveLinks(FoldOption* fn);
+	QVector<Geom::Plane> generateCutPlanes(FoldOption* fn);
 
 	// folding
 	void fold(double t);
@@ -31,15 +35,7 @@ public:
 	void addThickness(FdGraph* keyframe);
 
 	// key frame
-	FdGraph* getKeyframe(double t);
-	void setFoldDuration(double t0, double t1);
-
-	// helpers
-	Interval getShrunkInterval();
-	double getShunkScale();
-	Geom::Segment getShrunkSlaveSeg();
-	Geom::Segment getShrunkTopTraj();
-	QVector<Geom::Plane> generateCutPlanes(FoldOption* fn);
+	FdGraph* getKeyframe(double t, bool useThk);
 
 public:
 	PatchNode*			topMaster;	// top
@@ -67,7 +63,6 @@ public:
 	QVector<FdLink*>	activeLinks;// active hinges
 	Interval			duration;	// time interval
 	bool				foldToRight;// folding side
-	bool				isInclined; // inclined
 	double				heightSep;	// the height separates phase I and II
 	double				angleSep;	// angle between b and base
 

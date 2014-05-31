@@ -588,7 +588,7 @@ FdGraph* DcGraph::getKeyframe( double t )
 	for (int i = 0; i < blocks.size(); i++)
 	{
 		double lt = getLocalTime(t, blocks[i]->mFoldDuration);
-		FdGraph* fblock = blocks[i]->getKeyframe(lt);
+		FdGraph* fblock = blocks[i]->getKeyframe(lt, true);
 		foldedBlocks << fblock;
 
 		// debug: active block
@@ -643,10 +643,12 @@ FdGraph* DcGraph::getSuperKeyframe( double t )
 	// super key frame for each block
 	QVector<FdGraph*> foldedBlocks;
 	QSet<QString> foldedParts;
-	for (int i = 0; i < blocks.size(); i++){
+	for (int i = 0; i < blocks.size(); i++)
+	{
 		double lt = getLocalTime(t, blocks[i]->mFoldDuration);
 		FdGraph* fblock = blocks[i]->getSuperKeyframe(lt);
 		foldedBlocks << fblock;
+
 		// keep track of all folded parts
 		foreach (Structure::Node* n, fblock->nodes)
 			if (n->hasTag(FOLDED_TAG)) foldedParts << n->mID;

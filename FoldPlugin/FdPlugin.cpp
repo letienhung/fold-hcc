@@ -270,7 +270,7 @@ void FdPlugin::test1()
 			chain->baseOffset = thickness * 0.5;
 			chain->topMaster->setThickness(thickness);
 			chain->baseMaster->setThickness(thickness);
-			chain->getKeyframe(0.5);
+			chain->getKeyframe(0.5, true);
 
 			break;;
 		}

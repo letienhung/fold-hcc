@@ -336,7 +336,7 @@ void BlockGraph::exportCollFOG()
 	}
 }
 
-FdGraph* BlockGraph::getKeyframe( double t )
+FdGraph* BlockGraph::getKeyframe( double t, bool useThk )
 {
 	FdGraph* keyframe = NULL;
 
@@ -353,7 +353,7 @@ FdGraph* BlockGraph::getKeyframe( double t )
 			else
 			{
 				double localT = getLocalTime(t, chains[i]->duration);
-				foldedChains << chains[i]->getKeyframe(localT);
+				foldedChains << chains[i]->getKeyframe(localT, useThk);
 			}
 		}
 
@@ -361,7 +361,7 @@ FdGraph* BlockGraph::getKeyframe( double t )
 		keyframe = combineDecomposition(foldedChains, baseMaster->mID, masterChainsMap);
 
 		// thickness of masters
-		if (useThickness){
+		if (useThk){
 			foreach (PatchNode* m, getAllMasters(keyframe))
 				m->setThickness(thickness);
 		}
@@ -377,10 +377,13 @@ FdGraph* BlockGraph::getKeyframe( double t )
 
 		// collapse to base
 		Geom::Rectangle base_rect = baseMaster->mPatch;
-		if (t > 0.5){
-			foreach (FdNode* n, keyframe->getFdNodes()){
-				if (n->hasTag(MASTER_TAG)) {
-					// leave base master untouched
+		if (t > 0.5)
+		{
+			foreach (FdNode* n, keyframe->getFdNodes())
+			{
+				if (n->hasTag(MASTER_TAG)) 
+				{
+					// skip base master
 					if (n->mID == baseMaster->mID)	continue;
 
 					// move other masters onto base master
@@ -388,7 +391,8 @@ FdGraph* BlockGraph::getKeyframe( double t )
 					Vector3 up = base_rect.Normal;
 					Vector3 offset = dot(c2c, up) * up;
 					n->translate(offset);
-				}else {
+				}else
+				{
 					// remove slave nodes
 					keyframe->removeNode(n->mID);
 				}
@@ -402,10 +406,7 @@ FdGraph* BlockGraph::getKeyframe( double t )
 FdGraph* BlockGraph::getSuperKeyframe( double t )
 {
 	// regular key frame w\o thickness
-	bool origUseThk = useThickness;
-	setUseThickness(false);
-	FdGraph* keyframe = getKeyframe(t);
-	setUseThickness(origUseThk);
+	FdGraph* keyframe = getKeyframe(t, false);
 
 	// do nothing if the block is NOT fully folded
 	if (1 - t > ZERO_TOLERANCE_LOW) return keyframe;
@@ -832,38 +833,11 @@ void BlockGraph::setNbChunks( int N )
 void BlockGraph::setThickness( double thk )
 {
 	thickness = thk;
-	if (useThickness)
-		setChainThickness();
-}
-
-void BlockGraph::setUseThickness(bool use)
-{
-	if (useThickness != use)
+	foreach (ChainGraph* chain, chains)	
 	{
-		useThickness = use;
-		setChainThickness();
+		chain->halfThk = thickness / 2;
+		chain->baseOffset = thickness / 2;
 	}
-}
-
-void BlockGraph::setChainThickness()
-{
-	foreach (ChainGraph* chain, chains)
-	{
-		if (useThickness)
-		{
-			chain->halfThk = thickness / 2;
-			chain->baseOffset = thickness / 2;
-		}
-		else
-		{
-			chain->halfThk = 0;
-			chain->baseOffset = 0;
-		}
-	}
-
-	// update solution if there are any
-	// will do nothing if solutions are not ready
-	applySolution(selSlnIdx);
 }
 
 void BlockGraph::computeMasterNbUnderLayers()
