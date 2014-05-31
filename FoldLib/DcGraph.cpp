@@ -927,7 +927,7 @@ void DcGraph::generateKeyframes( int N )
 		FdGraph* kf = getKeyframe(i * step);
 		keyframes << kf;
 
-		//kf->unwrapBundleNodes();
+		kf->unwrapBundleNodes();
 		//kf->hideEdgeRods();
 
 		// color

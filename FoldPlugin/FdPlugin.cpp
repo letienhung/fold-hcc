@@ -439,27 +439,27 @@ void FdPlugin::exportSVG()
 			std::reverse(fdnodes.begin(), fdnodes.end());
 		}
 
-		foreach (FdNode* n, fdnodes){
-			if (n->mType == FdNode::PATCH)
+		foreach (FdNode* n, fdnodes)
+		{
+			if( this->showCuboid )
 			{
-				if( this->showCuboid )
+				QVector<Geom::Rectangle> rects = n->mBox.getFaceRectangles();
+				std::sort( rects.begin(), rects.end(), Geom::CompareRectangle() );
+
+				foreach(Geom::Rectangle r, rects)
 				{
-					QVector<Geom::Rectangle> rects = n->mBox.getFaceRectangles();
-					std::sort( rects.begin(), rects.end(), Geom::CompareRectangle() );
-
-					foreach(Geom::Rectangle r, rects)
+					out << QString("\n<polygon points='");
+					foreach (Vector3 p, r.getConners())
 					{
-						out << QString("\n<polygon points='");
-						foreach (Vector3 p, r.getConners())
-						{
-							qglviewer::Vec proj = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(p) );
-							out << QString("%1,%2 ").arg(proj.x).arg(proj.y);
-						}
-						out << QString("' style='%1'/>\n").arg( style + QString("fill:%1; stroke:%2").arg( n->mColor.name() ).arg( n->mColor.darker().name() ) );
+						qglviewer::Vec proj = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(p) );
+						out << QString("%1,%2 ").arg(proj.x).arg(proj.y);
 					}
+					out << QString("' style='%1'/>\n").arg( style + QString("fill:%1; stroke:%2").arg( n->mColor.name() ).arg( n->mColor.darker().name() ) );
 				}
-
-				if( this->showScaffold )
+			}
+			else if( this->showScaffold )
+			{
+				if (n->mType == FdNode::PATCH)
 				{
 					/*// Edges
 					foreach (Geom::Segment seg, ((PatchNode*)n)->mPatch.getEdgeSegments()){

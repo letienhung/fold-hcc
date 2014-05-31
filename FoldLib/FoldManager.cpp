@@ -16,7 +16,7 @@ FoldManager::FoldManager()
 	nbKeyframes = 25;
 
 	nbSplits = 1;
-	nbChunks = 1;
+	nbChunks = 2;
 	thickness = 0;
 }
 
