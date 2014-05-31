@@ -290,17 +290,25 @@ void ChainGraph::foldUniformHeight( double t )
 	topMaster->translate(topPos - topMaster->center());
 }
 
-void ChainGraph::addThickness(FdGraph* keyframe)
+void ChainGraph::addThickness(FdGraph* keyframe, double t)
 {
-	for (int i = 0; i < chainParts.size(); i++)
+	// get parts in key frame
+	QVector<PatchNode*> keyParts;
+	keyParts << (PatchNode*)keyframe->getNode(baseMaster->mID);
+	foreach (PatchNode* cpart, chainParts) keyParts << (PatchNode*)keyframe->getNode(cpart->mID);
+	keyParts << (PatchNode*)keyframe->getNode(topMaster->mID);
+
+	// move parts up for thickness
+	for (int i = 1; i < keyParts.size(); i++)
 	{
 		// compute offset caused by thickness between part_i and part_i_1
 		Vector3 offset(0, 0, 0);
 		Vector3 v1(0, 0, 0), v2(0, 0, 0);
-		Geom::Rectangle rect1 = chainParts[i]->mPatch;
-		if (i == 0)
+		if (i == 1)
 		{
-			v2 = baseMaster->mPatch.Normal;
+			// base
+			Geom::Rectangle rect1 = keyParts[i]->mPatch;
+			v2 = keyParts[0]->mPatch.Normal; //up
 
 			double dotNN = dot(rect1.Normal, v2);
 			if ( dotNN > ZERO_TOLERANCE_LOW) v1 = rect1.Normal;
@@ -308,35 +316,52 @@ void ChainGraph::addThickness(FdGraph* keyframe)
 
 			offset = halfThk * v1 + baseOffset * v2;
 		}
+		else if (i == keyParts.size() - 1)
+		{
+			// top
+			v1 = keyParts[0]->mPatch.Normal; //up
+			Geom::Rectangle rect2 = keyParts[i-1]->mPatch;
+			
+			double dotNN = dot(v1, rect2.Normal);
+			if (dotNN > ZERO_TOLERANCE_LOW) v2 = -rect2.Normal;
+			else if (dotNN < -ZERO_TOLERANCE_LOW) v2 = rect2.Normal;
+
+			offset = halfThk * (v1 - v2);
+		}
 		else
 		{
-			Geom::Rectangle rect2 = chainParts[i-1]->mPatch;
+			// chain parts
+			Geom::Rectangle rect1 = keyParts[i]->mPatch;
+			Geom::Rectangle rect2 = keyParts[i-1]->mPatch;
 
-			int side2to1 = rect1.whichSide(rect2.Center);
-			if (side2to1 == 1) v1 = -rect1.Normal;
-			else if (side2to1 == -1) v1 = rect1.Normal;
+			// flattened
+			if (1 - t < ZERO_TOLERANCE_LOW)
+			{
+				v1 = baseMaster->mPatch.Normal;
+				v2 = -v1;
+			}
+			else
+			{
+				int side2to1 = rect1.whichSide(rect2.Center);
+				if (side2to1 == 1) v1 = -rect1.Normal;
+				else if (side2to1 == -1) v1 = rect1.Normal;
 
-			int side1to2 = rect2.whichSide(rect1.Center);
-			if (side1to2 == 1) v2 = -rect2.Normal;
-			else if (side1to2 == -1) v2 = rect2.Normal;
+				int side1to2 = rect2.whichSide(rect1.Center);
+				if (side1to2 == 1) v2 = -rect2.Normal;
+				else if (side1to2 == -1) v2 = rect2.Normal;
+			}
 
 			offset = halfThk * (v1 - v2);
 		}
 
 		// translate parts above
-		for (int j = i; j < chainParts.size(); j++)
-		{
-			FdNode* key_part = (FdNode*)keyframe->getNode(chainParts[j]->mID);
-			key_part->translate(offset);
-		}
+		for (int j = i; j < keyParts.size(); j++)
+			keyParts[j]->translate(offset);
 	}
 
 	// set thickness to chain parts
-	for (int i = 0; i < chainParts.size(); i++)
-	{
-		FdNode* key_part = (FdNode*)keyframe->getNode(chainParts[i]->mID);
-		key_part->setThickness(2 * halfThk);
-	}
+	for (int i = 1; i < keyParts.size()-1; i++)
+		keyParts[i]->setThickness(2 * halfThk);
 }
 
 void ChainGraph::fold( double t )
@@ -364,7 +389,7 @@ FdGraph* ChainGraph::getKeyframe( double t, bool useThk )
 	FdGraph* keyframe = (FdGraph*)this->clone();
 
 	// thickness
-	if (useThk) addThickness(keyframe);
+	if (useThk) addThickness(keyframe, t);
 
 	return keyframe;
 }

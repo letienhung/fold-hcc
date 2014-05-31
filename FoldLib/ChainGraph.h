@@ -32,7 +32,7 @@ public:
 	void fold(double t);
 	void foldUniformHeight(double t);
 	void foldUniformAngle(double t);
-	void addThickness(FdGraph* keyframe);
+	void addThickness(FdGraph* keyframe, double t);
 
 	// key frame
 	FdGraph* getKeyframe(double t, bool useThk);
