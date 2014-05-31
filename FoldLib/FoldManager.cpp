@@ -125,6 +125,9 @@ BlockGraph* FoldManager::getSelBlock()
 
 void FoldManager::generateKeyframes()
 {
+	// thickness
+	setParameters();
+
 	// selected dc graph
 	DcGraph* selDc = getSelDcGraph();
 	if (!selDc) return;

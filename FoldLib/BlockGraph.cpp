@@ -77,7 +77,7 @@ BlockGraph::BlockGraph( QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& s
 	nbChunks = 2;
 
 	// thickness
-	thickness = 0;
+	thickness = 2;
 	useThickness = false;
 
 	// selected solution

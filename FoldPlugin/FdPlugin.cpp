@@ -258,22 +258,20 @@ void FdPlugin::test1()
 	if (selBlk)
 	{
 		FoldOption fn(true, 1, 0, 5, "hhh");
-		double thickness = 0;
 		for(int i = 0; i < selBlk->chains.size(); i++)
 		{
 
 			ChainGraph* chain = selBlk->chains[i];
+			chain->applyFoldOption(&fn);
+			//chain->fold(0.5);
 
-
+			double thickness = 2;
 			chain->halfThk = thickness * 0.5;
 			chain->baseOffset = thickness * 0.5;
-			//chain->topMaster->setThickness(thickness);
-			//chain->baseMaster->setThickness(thickness);
-			//chain->getFoldRegion(&fn);
+			chain->topMaster->setThickness(thickness);
+			chain->baseMaster->setThickness(thickness);
+			chain->getKeyframe(0.5);
 
-			//chain->baseMaster->mBox.print();
-			chain->applyFoldOption(&fn);
-			chain->fold(0.5);
 			break;;
 		}
 	}

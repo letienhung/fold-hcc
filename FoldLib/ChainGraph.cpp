@@ -341,7 +341,6 @@ void ChainGraph::addThickness(FdGraph* keyframe)
 	}
 }
 
-
 void ChainGraph::fold( double t )
 {
 	// free all nodes
@@ -366,9 +365,15 @@ FdGraph* ChainGraph::getKeyframe( double t )
 	// copy key frame
 	FdGraph* keyframe = (FdGraph*)this->clone();
 
+	//addDebugScaffold((FdGraph*)keyframe->clone());
+
 	// thickness
 	if (halfThk > 0)
 		addThickness(keyframe);
+
+	addDebugScaffold(keyframe);
+	fold(0);
+
 
 	return keyframe;
 }
