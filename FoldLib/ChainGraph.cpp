@@ -374,7 +374,8 @@ void ChainGraph::fold( double t )
 	baseMaster->addTag(FIXED_NODE_TAG);
 
 	// set up hinge angles and top position
-	foldUniformHeight(t);
+	//foldUniformHeight(t);
+	foldUniformAngle(t);
 
 	// restore configuration
 	restoreConfiguration();

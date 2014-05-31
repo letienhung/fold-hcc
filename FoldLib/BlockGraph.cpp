@@ -51,7 +51,10 @@ BlockGraph::BlockGraph( QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& s
 
 		// create chain
 		ChainGraph* hc = new ChainGraph(ss[i], (PatchNode*)getNode(mid_low), (PatchNode*)getNode(mid_high));
-		hc->setFoldDuration(masterTimeStamps[mid_low], masterTimeStamps[mid_high]);
+		//hc->setFoldDuration(masterTimeStamps[mid_low], masterTimeStamps[mid_high]);
+		double t0 = 1.0 - masterTimeStamps[mid_high];
+		double t1 = 1.0 - masterTimeStamps[mid_low];
+		hc->setFoldDuration(t0, t1);
 		chains << hc;
 
 		// map from master id to chain idx set
@@ -541,7 +544,7 @@ void BlockGraph::filterFoldOptions( QVector<FoldOption*>& options, int cid )
 			foreach (QString mid, masterTimeStamps.keys())
 			{
 				double mstamp = masterTimeStamps[mid];
-				if (!within(mstamp, chain->duration)) continue;
+				if (!within(1-mstamp, chain->duration)) continue;
 
 				Geom::Rectangle m_rect = ((PatchNode*)getNode(mid))->mPatch;
 				if (fAreasIntersect(fn->region, m_rect))
