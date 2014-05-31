@@ -563,19 +563,25 @@ void print( Geom::Box box)
 
 QVector<double> findRoots( QVector<double>& coeff )
 {
+	QVector<double> roots;
+
 	// remove zero coeff
 	int n;
 	for (n = 0; n < coeff.size(); n++)
-		if (coeff[n] != 0) break;
+		if (!RootFinder::is_zero(coeff[n])) break;
 	coeff.remove(0, n);
 
 	// reverse order
-	std::vector<double> coeff_std;
-	for (int i = coeff.size()-1; i >= 0; i--) coeff_std.push_back(coeff[i]);
+	if (coeff.size() >= 2)
+	{
+		std::vector<double> coeff_std;
+		for (int i = coeff.size()-1; i >= 0; i--) coeff_std.push_back(coeff[i]);
 
-	std::vector<double> roots_std = RootFinder::find_roots(coeff_std);
+		std::vector<double> roots_std = RootFinder::find_roots(coeff_std);
+		roots = QVector<double>::fromStdVector(roots_std);
+	}
 
-	return QVector<double>::fromStdVector(roots_std);
+	return roots;
 }
 
 QVector<double> findRoots( double a, double b, double c )

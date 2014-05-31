@@ -205,7 +205,8 @@ void ChainGraph::foldUniformHeight( double t )
 	// phase-I: no return
 	if (h >= heightSep)
 	{
-		Interval alpha_it = INTERVAL(angleSep, acos(RANGED(0, d/L ,1)));
+		double alpha_orig = acos(RANGED(0, d/L ,1));
+		Interval alpha_it = INTERVAL(angleSep, alpha_orig);
 		double x = 2 * b * h;
 		double y = 2 * b * d;
 		double z = d * d + h * h + b * b - A * A;
@@ -219,6 +220,7 @@ void ChainGraph::foldUniformHeight( double t )
 			alpha = acos(RANGED(0, r, 1));
 			if (within(alpha, alpha_it)) break;
 		}
+		if (alpha == 0) alpha = alpha_orig; //set original angle if no roots found
 
 		double cos_beta = (d - b * cos(alpha)) / A;
 		double beta = acos(RANGED(0, cos_beta, 1));
@@ -250,21 +252,36 @@ void ChainGraph::foldUniformHeight( double t )
 		double F = -2 * C * D;
 		double G = D * D - 4 * b * b * h * h;
 		double K = 2 * B * C;
-		QVector<double> roots = findRoots(B * B, K, E, F, G);
 
-		double alpha, beta;
+		double alpha = 0, beta = 0;
+		QVector<double> roots = findRoots(B * B, K, E, F, G);
 		foreach (double r, roots)
 		{
+			if (r < 0) continue;
+	
 			alpha = acos(RANGED(0, r, 1));
 			if (within(alpha, alpha_it))
 			{
-				double cos_beta = (b * cos(alpha) - d) / a;
+				double cos_beta = (b * r - d) / a;
 				beta = acos(RANGED(0, cos_beta, 1));
 
 				double hh = A * sin(beta) + b * sin(alpha);
 				if (fabs(h - hh) < ZERO_TOLERANCE_LOW)
 					break;
 			}
+		}
+		// angles are sensitive to noise at very beginning or end
+		if (t < 0.01)
+		{	
+			alpha = angleSep; 
+			double cos_beta = (b * cos(alpha) - d) / a;
+			beta = acos(RANGED(0, cos_beta, 1));
+		}
+		if (1 - t < 0.01)
+		{
+			alpha = 0;
+			double cos_beta = (b * cos(alpha) - d) / a;
+			beta = acos(RANGED(0, cos_beta, 1));
 		}
 
 		// set angles

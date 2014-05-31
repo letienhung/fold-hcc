@@ -273,7 +273,7 @@ void FdPlugin::test1()
 
 			//chain->baseMaster->mBox.print();
 			chain->applyFoldOption(&fn);
-			chain->fold(0.5);
+			chain->fold(1 - 0.0000001);
 			break;;
 		}
 	}
