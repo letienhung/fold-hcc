@@ -264,6 +264,7 @@ void FdPlugin::test1()
 			ChainGraph* chain = selBlk->chains[i];
 			chain->applyFoldOption(&fn);
 			//chain->fold(0.5);
+			continue;
 
 			double thickness = 2;
 			chain->halfThk = thickness * 0.5;
@@ -272,7 +273,6 @@ void FdPlugin::test1()
 			chain->baseMaster->setThickness(thickness);
 			chain->getKeyframe(0.5, true);
 
-			break;;
 		}
 	}
 }

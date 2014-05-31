@@ -627,17 +627,18 @@ QVector<Geom::Plane> ChainGraph::generateCutPlanes( FoldOption* fn )
 	double L = slaveSeg.length();
 	double d = rightSeg.length();
 	double h = topTraj.length();
-	double a = (L - d) / fn->nSplits;
-	double b = d + a;
+	double a = (L - d) / (fn->nSplits + 1);
 	double sin_alpha = h / L;
 	double step = a * sin_alpha;
 
-	// two ways of cutting
-	Geom::Plane top_plane = topMaster->mPatch.getPlane();
-	Geom::Plane base_plane = baseMaster->mPatch.getPlane();
-	Geom::Plane plane0 = (!fn->rightSide) ? base_plane : top_plane;
-	Vector3 stepV = step * base_plane.Normal;
-	if (fn->rightSide) stepV *= -1;
+	// cut at lower end
+	Geom::Plane plane0 =  baseMaster->mPatch.getPlane();
+	Vector3 stepV = step * plane0.Normal;
+	// cut at higher end
+	if (!fn->rightSide) {
+		plane0.translate(topTraj.P1 - topTraj.P0);
+		stepV *= -1;
+	}
 
 	// cut planes
 	QVector<Geom::Plane> cutPlanes;
