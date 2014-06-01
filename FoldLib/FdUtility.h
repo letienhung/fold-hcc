@@ -43,6 +43,18 @@ typedef QPair<double, double> Interval;
 #define SHOW_AFS "showAFS"
 #define DEBUG_PLANES "debugPlanes"
 
+// statistics
+#define NB_SPLIT "nbSplits"
+#define NB_CHUNKS "nbChunks"
+#define SQZ_DIRECTION "sqzDirection"
+#define NB_MASTER "nbMasters"
+#define NB_SLAVE "nbSlaves"
+#define NB_BLOCK "nbBlocks"
+#define NB_HINGES "nbHinges"
+#define SHRINKED_AREA "shrinkedArea"
+#define FD_TIME "fdTime"
+#define SPACE_SAVING "spaceSaving"
+
 // Qt meta type
 Q_DECLARE_METATYPE(Vector3)
 Q_DECLARE_METATYPE(QVector<Vector3>)

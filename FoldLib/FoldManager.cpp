@@ -5,6 +5,8 @@
 #include <QFileDialog>
 #include <QDir>
 
+#include <QElapsedTimer>
+
 FoldManager::FoldManager()
 {
 	scaffold = NULL;
@@ -184,6 +186,10 @@ void FoldManager::foldabilize()
 	if (scaffold == NULL)
 		return;
 
+// start
+QElapsedTimer timer;
+timer.start();
+
 	// decompose
 	decompose();
 	DcGraph* selDc = getSelDcGraph();
@@ -194,11 +200,52 @@ void FoldManager::foldabilize()
 	// foldabilize
 	selDc->foldabilize(); 
 	
+// timer
+int fdTime = timer.elapsed();
+
 	// forward message
 	selDc->generateKeyframes(nbKeyframes);
 
 	// emit signals
 	updateKeyframeSlider();
+
+	// save statistics in first key frame
+	if (!selDc->keyframes.isEmpty())
+	{
+		FdGraph* firstKeyframe = selDc->keyframes.front();
+		FdGraph* lasterKeyframe = selDc->keyframes.last();
+
+		firstKeyframe->properties[NB_SPLIT] = nbSplits;
+		firstKeyframe->properties[NB_CHUNKS] = nbChunks;
+		firstKeyframe->properties[SQZ_DIRECTION].setValue(sqzV);
+
+		firstKeyframe->properties[NB_MASTER] = selDc->masters.size();
+		firstKeyframe->properties[NB_SLAVE] = selDc->slaves.size();
+		firstKeyframe->properties[NB_BLOCK] = selDc->blocks.size();
+
+		double origVol = scaffold->computeAABB().box().volume();
+		double fdVol = lasterKeyframe->computeAABB().box().volume();
+		firstKeyframe->properties[SPACE_SAVING] = 1 - fdVol / origVol;
+
+		firstKeyframe->properties[FD_TIME] = fdTime;
+
+		int nbHinges = 0;
+		double shinkedArea = 0, totalArea = 0;
+		foreach(BlockGraph* block, selDc->blocks)
+		{
+			foreach (ChainGraph* chain, block->chains)
+			{
+				nbHinges += chain->nbHinges;
+				shinkedArea += chain->shrinkedArea;
+				totalArea += chain->patchArea;
+			}
+		}
+		foreach (PatchNode* m, selDc->masters) 
+			totalArea += m->mPatch.area();
+
+		firstKeyframe->properties[NB_HINGES] = nbHinges;
+		firstKeyframe->properties[SHRINKED_AREA] = shinkedArea/totalArea;
+	}
 }
 
 void FoldManager::updateDcList()

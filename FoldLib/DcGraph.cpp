@@ -768,12 +768,6 @@ void DcGraph::foldabilize()
 	FdGraph* currKeyframe = getSuperKeyframe(currTime);
 	int next_bid = getBestNextBlockIndex(currTime, currKeyframe);  
 	
-	
-	
-	//return;
-
-
-
 	while (next_bid >= 0 && next_bid < blocks.size())
 	{
 		std::cout << "Best next = " << blocks[next_bid]->mID.toStdString() << "\n";
@@ -928,7 +922,7 @@ void DcGraph::generateKeyframes( int N )
 		keyframes << kf;
 
 		kf->unwrapBundleNodes();
-		//kf->hideEdgeRods();
+		kf->hideEdgeRods();
 
 		// color
 		foreach (FdNode* n, kf->getFdNodes())

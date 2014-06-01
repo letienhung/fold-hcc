@@ -257,7 +257,7 @@ void FdPlugin::test1()
 	BlockGraph* selBlk = f_manager->getSelBlock();
 	if (selBlk)
 	{
-		FoldOption fn(true, 1, 0, 5, "hhh");
+		FoldOption fn("hhh", true, 1, 0, 5, 0);
 		for(int i = 0; i < selBlk->chains.size(); i++)
 		{
 
@@ -426,7 +426,7 @@ void FdPlugin::exportSVG()
 		out << "<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>\n";
 
 		// Style
-		QString style = "fill-opacity: 0.78; stroke-width: 1; stroke-miterlimit: round; ";
+		QString style = "fill-opacity: 0.78; stroke-width: 0.25; stroke-miterlimit: round; ";
 
 		QVector<FdNode*> fdnodes = activeFd->getFdNodes();
 
@@ -441,11 +441,15 @@ void FdPlugin::exportSVG()
 
 		foreach (FdNode* n, fdnodes)
 		{
+			// skip hidden stuff for clean rendering
+			if (n->hasTag(EDGE_ROD_TAG)) continue;
+
 			if( this->showCuboid )
 			{
+				out << "<g>\n";
+
 				QVector<Geom::Rectangle> rects = n->mBox.getFaceRectangles();
 				std::sort( rects.begin(), rects.end(), Geom::CompareRectangle() );
-
 				foreach(Geom::Rectangle r, rects)
 				{
 					out << QString("\n<polygon points='");
@@ -456,6 +460,8 @@ void FdPlugin::exportSVG()
 					}
 					out << QString("' style='%1'/>\n").arg( style + QString("fill:%1; stroke:%2").arg( n->mColor.name() ).arg( n->mColor.darker().name() ) );
 				}
+
+				out << "</g>\n";
 			}
 			else if( this->showScaffold )
 			{
@@ -480,6 +486,33 @@ void FdPlugin::exportSVG()
 		}
 
 		out << "\n</svg>";
+	}
+
+
+	// save statics
+	if (activeFd->hasTag(FD_TIME))
+	{
+		QString filepath = QFileInfo(filename).absolutePath();
+		QString staFilename = filepath + "/stastics.txt";
+
+		QFile file( staFilename );
+		if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) return;
+		QTextStream out(&file);
+
+		Vector3 sqzV = activeFd->properties[SQZ_DIRECTION].value<Vector3>();
+		out << QString("%1 = %2, %3, %4\n").arg(SQZ_DIRECTION).arg(sqzV[0]).arg(sqzV[1]).arg(sqzV[2]);
+		out << QString("%1 = %2\n").arg(NB_SPLIT).arg(activeFd->properties[NB_SPLIT].value<int>());
+		out << QString("%1 = %2\n\n").arg(NB_CHUNKS).arg(activeFd->properties[NB_CHUNKS].value<int>());
+
+		out << QString("%1 = %2\n").arg(NB_MASTER).arg(activeFd->properties[NB_MASTER].value<int>());
+		out << QString("%1 = %2\n").arg(NB_SLAVE).arg(activeFd->properties[NB_SLAVE].value<int>());
+		out << QString("%1 = %2\n\n").arg(NB_BLOCK).arg(activeFd->properties[NB_BLOCK].value<int>());
+
+		out << QString("%1 = %2\n").arg(FD_TIME).arg(activeFd->properties[FD_TIME].value<int>());
+		out << QString("%1 = %2\n\n").arg(SPACE_SAVING).arg(activeFd->properties[SPACE_SAVING].value<double>());
+		
+		out << QString("%1 = %2\n").arg(NB_HINGES).arg(activeFd->properties[NB_HINGES].value<int>());
+		out << QString("%1 = %2\n").arg(SHRINKED_AREA).arg(activeFd->properties[SHRINKED_AREA].value<double>());
 	}
 
 	system( filename.toAscii() );

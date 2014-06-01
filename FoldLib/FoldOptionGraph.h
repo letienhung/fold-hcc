@@ -17,7 +17,7 @@ class FoldOption : public Structure::Node
 {
 public:
 	FoldOption(QString id);
-	FoldOption( bool right, double s, double p, int n, QString id);
+	FoldOption( QString id, bool right, double s, double p, int n, double area);
 	FoldOption(FoldOption &other);
 	Node* clone();
 
@@ -39,6 +39,9 @@ public:
 
 	// fold region
 	Geom::Rectangle region;
+
+	// patch area
+	double patchArea;
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW

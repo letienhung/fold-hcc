@@ -47,11 +47,19 @@ ChainGraph::ChainGraph( FdNode* slave, PatchNode* base, PatchNode* top)
 	// side
 	foldToRight = true;
 
+	// patch area
+	patchArea = origSlave->mPatch.area();
+
 	//// debug
 	//addDebugSegment(baseJoint);
 	//addDebugSegment(slaveSeg);
 	//addDebugSegment(rightSeg);
 	//addDebugSegment(Geom::Segment(baseJoint.P0, baseJoint.P0 + rightSegV));
+}
+
+ChainGraph::~ChainGraph()
+{
+
 }
 
 void ChainGraph::computeOrientations()
@@ -409,12 +417,12 @@ QVector<FoldOption*> ChainGraph::generateFoldOptions( int nSplits, int nUsedChun
 
 		// left
 		QString fnid1 = QString("%1:%2_%3_L_%4").arg(mID).arg(nSplits).arg(nUsedChunks).arg(position);
-		FoldOption* fn1 = new FoldOption(false, usedSize, position, nSplits, fnid1);
+		FoldOption* fn1 = new FoldOption(fnid1, false, usedSize, position, nSplits, patchArea);
 		options.push_back(fn1);
 
 		// right
 		QString fnid2 = QString("%1:%2_%3_R_%4").arg(mID).arg(nSplits).arg(nUsedChunks).arg(position);
-		FoldOption* fn2 = new FoldOption(true, usedSize, position, nSplits, fnid2);
+		FoldOption* fn2 = new FoldOption(fnid2, true, usedSize, position, nSplits, patchArea);
 		options.push_back(fn2);
 	}
 
@@ -578,6 +586,10 @@ void ChainGraph::applyFoldOption( FoldOption* fn)
 	setActiveLinks(fn);
 
 	computePhaseSeparator();
+
+	// statistics
+	nbHinges = fn->nSplits + 2;
+	shrinkedArea = fn->patchArea * (1 - fn->scale);
 }
 
 void ChainGraph::setFoldDuration( double t0, double t1 )
@@ -629,7 +641,7 @@ Geom::Rectangle ChainGraph::getFoldRegion( FoldOption* fn )
 
 Geom::Rectangle ChainGraph::getMaxFoldRegion( bool right )
 {
-	FoldOption fn(right, 1.0, 0.0, 1, "");
+	FoldOption fn("", right, 1.0, 0.0, 1, patchArea);
 	return getFoldRegion(&fn);
 }
 

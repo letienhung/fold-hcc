@@ -8,6 +8,7 @@ class ChainGraph : public FdGraph
 {
 public:
     ChainGraph(FdNode* slave, PatchNode* base, PatchNode* top);
+	~ChainGraph();
 
 	// set up
 	void computeOrientations();
@@ -80,4 +81,8 @@ public:
 	//				 rightSeg	
 	double halfThk;		// thickness of slave and top master
 	double baseOffset;	// offset caused by thickness of base master and its super siblings
+
+	int nbHinges;
+	double shrinkedArea;
+	double patchArea;
 };

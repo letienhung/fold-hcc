@@ -31,8 +31,8 @@ Structure::Node* ChainNode::clone()
 
 //////////////////////////////////////////////////////////////////////////
 
-FoldOption::FoldOption( bool right, double s, double p, int n, QString id )
-	: Node(id), rightSide(right), scale(s), position(p), nSplits(n)
+FoldOption::FoldOption( QString id, bool right, double s, double p, int n, double area )
+	: Node(id), rightSide(right), scale(s), position(p), nSplits(n), patchArea(area)
 {
 }
 
@@ -43,6 +43,8 @@ FoldOption::FoldOption( FoldOption &other )
 	scale = other.scale;
 	position = other.position;
 	nSplits = other.nSplits;
+	patchArea = other.patchArea;
+	
 }
 
 FoldOption::FoldOption(QString id)
