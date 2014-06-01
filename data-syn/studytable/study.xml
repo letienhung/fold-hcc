@@ -1,6 +1,6 @@
 <!--?xml Version = "1.0"?-->
 <document>
-    <cN>11</cN>
+    <cN>9</cN>
     <node>
         <type>2</type>
         <ID>Box001</ID>
@@ -98,28 +98,6 @@
             <y>0 1 0</y>
             <z>0 0 1</z>
             <e>25.5 10 0.5</e>
-        </box>
-    </node>
-    <node>
-        <type>2</type>
-        <ID>Box011</ID>
-        <box>
-            <c>12.5 5 25.25</c>
-            <x>1 0 0</x>
-            <y>0 1 0</y>
-            <z>0 0 1</z>
-            <e>0.5 10 5.25</e>
-        </box>
-    </node>
-    <node>
-        <type>2</type>
-        <ID>Box012</ID>
-        <box>
-            <c>-13.4854 5 37.8825</c>
-            <x>1 0 0</x>
-            <y>0 1 0</y>
-            <z>0 0 1</z>
-            <e>0.5 10 7.5</e>
         </box>
     </node>
     <cL>0</cL>

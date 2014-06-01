@@ -487,7 +487,7 @@ QMap<QString, double> getTimeStampsNormalized( QVector<PatchNode*> pnodes, Vecto
 bool extendRectangle2D( Geom::Rectangle2& rect, QVector<Vector2> &pnts )
 {
 	// shrink seed rect to avoid pnts on edges
-	rect.Extent *= 0.5;
+	rect.Extent *= 0.9;
 
 	// do nothing if seed rect contains any pnts
 	foreach (Vector2 p, pnts) 
@@ -515,14 +515,15 @@ bool extendRectangle2D( Geom::Rectangle2& rect, QVector<Vector2> &pnts )
 	}
 
 	// extend along y
-	double epsilon = 2 * ZERO_TOLERANCE_LOW;
+	//double epsilon = 2 * ZERO_TOLERANCE_LOW;
 	//double epsilon = 0.01 * (right - left);
 	double bottom = -maxDouble();
 	double top = maxDouble();
 	foreach (Vector2 pc, pnts_coord)
 	{
 		// keep the extent along x
-		if (inRange(pc.x(), left + epsilon, right - epsilon))
+		//if (inRange(pc.x(), left + epsilon, right - epsilon))
+		if (inRange(pc.x(), -1, 1))
 		{
 			double y = pc.y();
 			// tightest bound on left

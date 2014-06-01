@@ -69,7 +69,7 @@ double FoldOption::getCost()
 	if (hasTag(DELETE_FOLD_OPTION))
 		cost = 10;
 
-	return cost;
+	return cost;// * patchArea;
 }
 
 

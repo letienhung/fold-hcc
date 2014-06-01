@@ -8,6 +8,7 @@ namespace Geom{
 	{
 	public:
 		static bool test(Rectangle2& rect1, Rectangle2& rect2);
+		static bool test2(Rectangle2& rect1, Rectangle2& rect2);
 	};
 
 

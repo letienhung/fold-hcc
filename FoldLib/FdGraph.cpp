@@ -548,7 +548,7 @@ void FdGraph::addDebugSegments( QVector<Geom::Segment>& segs )
 
 double FdGraph::getConnectivityThr()
 {
-	return 0.1 * computeAABB().radius();
+	return 0.2 * computeAABB().radius();
 }
 
 
