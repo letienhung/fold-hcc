@@ -1,5 +1,6 @@
 #include "FdPlugin.h"
 #include "FdWidget.h"
+#include "ui_FdWidget.h"
 #include "StarlabDrawArea.h"
 
 #include "Graph.h"
@@ -408,86 +409,119 @@ void FdPlugin::colorMasterSlave()
 
 void FdPlugin::exportSVG()
 {
-	drawArea()->setMinimumSize(800, 800);
-	drawArea()->setMaximumSize(800, 800);
+	int documentSize = 800;
+
+	drawArea()->setMinimumSize(documentSize, documentSize);
+	drawArea()->setMaximumSize(documentSize, documentSize);
 
 	QVector<Geom::Segment> segs;
 	FdGraph* activeFd = activeScaffold();
 	if (!activeFd) return;
 
-	// SVG output file
-	QString filename = QFileDialog::getSaveFileName(0, tr("Save Current Scaffold"), NULL, tr("SVG file (*.svg)"));
+	QVector<FdGraph *> activeFds;
+	activeFds << activeFd;
+
+	QString filename, basefilename;
+	int ci = 0;
+	if(widget->ui->isSVGsequence->isChecked())
 	{
-		QFile file( filename );
-		if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) return;
-		QTextStream out(&file);
+		activeFds.clear();
 
-		// SVG Header
-		out << "<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>\n";
-
-		// Style
-		QString style = "fill-opacity: 0.78; stroke-width: 0.25; stroke-miterlimit: round; ";
-
-		QVector<FdNode*> fdnodes = activeFd->getFdNodes();
-
-		if(this->showCuboid)
-		{
-			std::sort( fdnodes.begin(), fdnodes.end(), CompareFdNode() );
-		}
-		else
-		{
-			std::reverse(fdnodes.begin(), fdnodes.end());
-		}
-
-		foreach (FdNode* n, fdnodes)
-		{
-			// skip hidden stuff for clean rendering
-			if (n->hasTag(EDGE_ROD_TAG)) continue;
-
-			if( this->showCuboid )
-			{
-				out << "<g>\n";
-
-				QVector<Geom::Rectangle> rects = n->mBox.getFaceRectangles();
-				std::sort( rects.begin(), rects.end(), Geom::CompareRectangle() );
-				foreach(Geom::Rectangle r, rects)
-				{
-					out << QString("\n<polygon points='");
-					foreach (Vector3 p, r.getConners())
-					{
-						qglviewer::Vec proj = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(p) );
-						out << QString("%1,%2 ").arg(proj.x).arg(proj.y);
-					}
-					out << QString("' style='%1'/>\n").arg( style + QString("fill:%1; stroke:%2").arg( n->mColor.name() ).arg( n->mColor.darker().name() ) );
-				}
-
-				out << "</g>\n";
-			}
-			else if( this->showScaffold )
-			{
-				if (n->mType == FdNode::PATCH)
-				{
-					/*// Edges
-					foreach (Geom::Segment seg, ((PatchNode*)n)->mPatch.getEdgeSegments()){
-						qglviewer::Vec proj0 = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(seg.P0) );
-						qglviewer::Vec proj1 = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(seg.P1) );
-						out << QString("<line x1='%1' y1='%2' x2='%3' y2='%4' style='%5' />").arg(proj0.x).arg(proj0.y).arg(proj1.x).arg(proj1.y).arg(style);
-					}*/
-
-					// Polygons
-					out << QString("\n<polygon points='");
-					foreach (Vector3 seg, ((PatchNode*)n)->mPatch.getConners()){
-						qglviewer::Vec proj = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(seg) );
-						out << QString("%1,%2 ").arg(proj.x).arg(proj.y);
-					}
-					out << QString("' style='%1'/>\n").arg( style + QString("fill:%1; stroke:%2").arg( n->mColor.name() ).arg( n->mColor.darker().name() ) );
-				}
-			}
-		}
-
-		out << "\n</svg>";
+		// keyframes
+		QVector<FdGraph*> selGraphs; 
+		if (showKeyframe && f_manager->getSelDcGraph()) selGraphs = f_manager->getSelDcGraph()->keyframes;
+		foreach(FdGraph* g, selGraphs) activeFds << g;
 	}
 
+	foreach( FdGraph * afd, activeFds )
+	{
+		// output file
+		if(filename.length() < 1) 
+		{
+			filename = QFileDialog::getSaveFileName(0, tr("Save Current Scaffold"), NULL, tr("SVG file (*.svg)"));
+			basefilename = filename;
+			basefilename.chop(4);
+		}
+
+		// Sequence case
+		if( widget->ui->isSVGsequence->isChecked() )
+		{
+			filename = basefilename + QString("%1").arg(QString::number(ci++), 3, '0') + ".svg";
+		}
+
+		// Export SVG
+		{
+			QFile file( filename );
+			if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) return;
+			QTextStream out(&file);
+
+			// SVG Header
+			out << "<svg " + QString("width='%1' height='%2'").arg(documentSize).arg(documentSize) + " xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>\n";
+
+			// Style
+			QString style = "fill-opacity='0.78' stroke-width='0.25' stroke-linecap='round' stroke-linejoin='round' ";
+
+			QVector<FdNode*> fdnodes = afd->getFdNodes();
+
+			if(this->showCuboid)
+			{
+				std::sort( fdnodes.begin(), fdnodes.end(), CompareFdNode() );
+			}
+			else
+			{
+				std::reverse(fdnodes.begin(), fdnodes.end());
+			}
+
+			foreach (FdNode* n, fdnodes)
+			{
+				// skip hidden stuff for clean rendering
+				if (n->hasTag(EDGE_ROD_TAG)) continue;
+
+				if( this->showCuboid )
+				{
+					out << "<g>\n";
+
+					QVector<Geom::Rectangle> rects = n->mBox.getFaceRectangles();
+					std::sort( rects.begin(), rects.end(), Geom::CompareRectangle() );
+					foreach(Geom::Rectangle r, rects)
+					{
+						out << QString("\n<polygon points='");
+						foreach (Vector3 p, r.getConners())
+						{
+							qglviewer::Vec proj = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(p) );
+							out << QString("%1,%2 ").arg(proj.x).arg(proj.y);
+						}
+						out << QString("' %1/>\n").arg( style + QString("fill='%1' stroke='%2'").arg( n->mColor.name() ).arg( n->mColor.darker().name() ) );
+					}
+
+					out << "</g>\n";
+				}
+				else if( this->showScaffold )
+				{
+					if (n->mType == FdNode::PATCH)
+					{
+						/*// Edges
+						foreach (Geom::Segment seg, ((PatchNode*)n)->mPatch.getEdgeSegments()){
+							qglviewer::Vec proj0 = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(seg.P0) );
+							qglviewer::Vec proj1 = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(seg.P1) );
+							out << QString("<line x1='%1' y1='%2' x2='%3' y2='%4' style='%5' />").arg(proj0.x).arg(proj0.y).arg(proj1.x).arg(proj1.y).arg(style);
+						}*/
+
+						// Polygons
+						out << QString("\n<polygon points='");
+						foreach (Vector3 seg, ((PatchNode*)n)->mPatch.getConners()){
+							qglviewer::Vec proj = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(seg) );
+							out << QString("%1,%2 ").arg(proj.x).arg(proj.y);
+						}
+						out << QString("' %1/>\n").arg( style + QString("fill='%1' stroke='%2'").arg( n->mColor.name() ).arg( n->mColor.darker().name() ) );
+					}
+				}
+			}
+
+			out << "\n</svg>";
+		}
+
+	}
 
 	// save statics
 	if (activeFd->hasTag(FD_TIME))

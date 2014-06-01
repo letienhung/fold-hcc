@@ -16,8 +16,10 @@ public:
     explicit FdWidget(FdPlugin *fp, QWidget *parent = 0);
     ~FdWidget();
 
+public:
+	Ui::FdWidget *ui;
+
 private:
-    Ui::FdWidget *ui;
 	FdPlugin *plugin;
 
 public slots:
