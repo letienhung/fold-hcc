@@ -71,6 +71,7 @@ BlockGraph::BlockGraph( QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& s
 
 	// shape AABB
 	shapeAABB = shape_aabb;
+	shapeAABB.Extent[2] *= 2;;
 
 	// super block
 	superBlock = NULL;

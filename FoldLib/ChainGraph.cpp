@@ -79,20 +79,23 @@ void ChainGraph::computeOrientations()
 	Geom::Rectangle base_rect = baseMaster->mPatch;
 	Geom::Segment topJointProj = base_rect.getProjection(topJoint);
 	rightSeg = Geom::Segment(topJointProj.P0, baseJoint.P0);
-	rightSegV = cross(baseJoint.Direction, slaveSeg.Direction);
-	rightSegV = base_rect.getProjectedVector(rightSegV);
-	if (rightSeg.length() > 0.01 && dot(rightSegV, rightSeg.Direction) < 0) rightSegV *= -1;
+	if (rightSeg.length() / slaveSeg.length() < 0.01){
+		rightSegV = cross(baseJoint.Direction, slaveSeg.Direction);
+		rightSegV = base_rect.getProjectedVector(rightSegV);
+	}else{
+		rightSegV = rightSeg.Direction;
+	}
 	rightSegV.normalize();
 
 	// flip slave patch so that its norm is to the right
 	if (dot(origSlave->mPatch.Normal, rightSegV) < 0)
 		origSlave->mPatch.flipNormal();
 
-	//// upV x rightV = jointV
-	//Vector3 crossUpRight = cross(slaveSeg.Direction, rightSegV);
-	//if (dot(crossUpRight, baseJoint.Direction) < 0){
-	//	baseJoint.flip(); topJoint.flip();
-	//}
+	// upV x rightV = jointV
+	Vector3 crossUpRight = cross(slaveSeg.Direction, rightSegV);
+	if (dot(crossUpRight, baseJoint.Direction) < 0){
+		baseJoint.flip(); topJoint.flip();
+	}
 
 	// topTraj
 	Vector3 topCenterProj = base_rect.getProjection(topMaster->center());
