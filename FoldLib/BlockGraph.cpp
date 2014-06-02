@@ -89,6 +89,9 @@ BlockGraph::BlockGraph( QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& s
 
 	// cost weight
 	costWeight = 0.05;
+
+	// single block
+	isAlone = false;
 }
 
 BlockGraph::~BlockGraph()
@@ -601,7 +604,7 @@ void BlockGraph::addNodesToCollisionGraph()
 
 		// filter
 		std::cout << "#options = " << options.size();
-		filterFoldOptions(options, cid);
+		if (!isAlone) filterFoldOptions(options, cid);
 		std::cout << " ==> " << options.size() << std::endl;
 		foreach (FoldOption* fn, options) frs << fn->region;
 

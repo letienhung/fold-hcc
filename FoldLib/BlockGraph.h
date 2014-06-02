@@ -110,5 +110,8 @@ public:
 
 	// cost weight
 	double costWeight;
+
+	// single block
+	bool isAlone;
 }; 
 

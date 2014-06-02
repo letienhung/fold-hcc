@@ -531,6 +531,11 @@ void DcGraph::createBlocks()
 	{
 		createBlock(slaveClusters[i]);
 	}
+
+	if (blocks.size() == 1)
+	{
+		blocks.front()->isAlone = true;
+	}
 }
 
 BlockGraph* DcGraph::getSelBlock()
