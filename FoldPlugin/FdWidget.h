@@ -36,6 +36,8 @@ public slots:
 	void setKeyframeSlider(int N);
 	void setSolutionList(int N);
 	
+	void forceShowKeyFrame();
+
 signals:
 	void dcGraphSelectionChanged(QString id);
 	void blockSelectionChanged(QString id);

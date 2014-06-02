@@ -86,6 +86,11 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->connect(ui->test2, SIGNAL(clicked()), SLOT(test2()));
 }
 
+void FdWidget::forceShowKeyFrame()
+{
+	ui->showKeyframe->setChecked(true);
+	ui->keyframeSlider->setValue(0);
+}
 
 FdWidget::~FdWidget()
 {
@@ -114,6 +119,8 @@ void FdWidget::setKeyframeSlider( int N )
 {
 	ui->keyframeSlider->setMaximum(N);
 	ui->nbKeyframeSlider->setText(QString::number(N));
+
+	if(N > 1) forceShowKeyFrame();
 }
 
 void FdWidget::setSolutionList( int N )
