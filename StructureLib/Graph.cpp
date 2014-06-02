@@ -266,55 +266,47 @@ QVector<Structure::Node*> Structure::Graph::getNeighbourNodes( Node* node )
 	return neighbours;
 }
 
-QVector<Structure::Node*> Structure::Graph::getConnectedNodes( Node* seed )
+QVector< QVector<Structure::Node*> > Structure::Graph::getComponents()
 {
-	QVector<Node*> cnodes;
-	QQueue<Node*> activeNodes;
-	activeNodes << seed;
+	QVector< QVector<Structure::Node*> > cs;
 
-	QString visitedTag = "hasVisited";
-	while (!activeNodes.isEmpty())
-	{
-		Node* curr = activeNodes.dequeue();
-		cnodes << curr;
-		curr->addTag(visitedTag);
-		
-		foreach (Node* nei, getNeighbourNodes(curr))
-		{
-			if (!nei->hasTag(visitedTag))
-			{
-				activeNodes.enqueue(nei);
-			}
-		}
-	}
-
-	// clear tags
+	// set tag
+	QString visitedTag = "visitedtagforgraphcomponent";
 	foreach (Node* n, nodes) n->removeTag(visitedTag);
 
-	return cnodes;
-}
-
-QVector< QVector<Structure::Node*> > Structure::Graph::getConnectedComponents()
-{
-	QString visitedTag = "hasVisited";
-
-	QVector< QVector<Structure::Node*> > result;
+	// find all components
 	foreach(Node* n, nodes)
 	{
 		if (n->hasTag(visitedTag)) continue;
 
 		// nodes connecting to n
-		QVector<Node*> cnodes = getConnectedNodes(n);
-		foreach (Node* cn, cnodes) cn->addTag(visitedTag);
+		QVector<Node*> component;
+		QQueue<Node*> activeNodes;
+		activeNodes.enqueue(n);
+		while (!activeNodes.isEmpty())
+		{
+			Node* curr = activeNodes.dequeue();
+			component << curr;
+			curr->addTag(visitedTag);
+
+			foreach (Node* nei, getNeighbourNodes(curr))
+			{
+				if (!nei->hasTag(visitedTag))
+				{
+					activeNodes.enqueue(nei);
+					nei->addTag(visitedTag);
+				}
+			}
+		}
 
 		// store
-		result << cnodes;
+		cs << component;
 	}
 
-	// clear tags
+	// clean up
 	foreach (Node* n, nodes) n->removeTag(visitedTag);
 
-	return result;
+	return cs;
 }
 
 QVector<Structure::Node*> Structure::Graph::getNodesWithTag( QString tag )

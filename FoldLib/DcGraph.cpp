@@ -369,7 +369,7 @@ void DcGraph::createSlaves()
 	}
 
 	// merge connected & coplanar slave parts
-	foreach (QVector<Structure::Node*> component, getConnectedComponents())
+	foreach (QVector<Structure::Node*> component, getComponents())
 	{
 		// skip single node, either master or slave
 		if (component.size() == 1) continue;

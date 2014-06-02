@@ -586,6 +586,13 @@ void BlockGraph::addNodesToCollisionGraph()
 	// fold entities and options
 	QVector<Geom::Rectangle> frs;
 	Geom::Rectangle base_rect = baseMaster->mPatch;
+
+	// hacking
+	Geom::Rectangle2 fakeAFR = base_rect.get2DRectangle(base_rect);
+	foreach (QString key, availFoldingRegion.keys())
+		availFoldingRegion[key] = fakeAFR;
+	
+
 	for(int cid = 0; cid < chains.size(); cid++)
 	{
 		std::cout << "cid = " << cid << ": ";
@@ -654,71 +661,96 @@ void BlockGraph::addEdgesToCollisionGraph()
 
 void BlockGraph::findOptimalSolution()
 {
-	// get all folding nodes
-	QVector<FoldOption*> fns = collFog->getAllFoldOptions();
+	foldSolutions.clear();
+	QVector<FoldOption*> sln_dummy;
+	for (int i = 0; i < chains.size(); i++) sln_dummy << NULL;
 
-	if (fns.isEmpty())
+	QVector<QVector<Structure::Node*> > components = collFog->getComponents();
+	foreach (QVector<Structure::Node*> collComponent, components)
 	{
-		std::cout << mID.toStdString() << ": collision graph is empty.\n";
-		return;
-	}
+		// get all folding nodes
+		QVector<FoldOption*> fns;
+		foreach(Structure::Node* n, collComponent)
+			if (n->properties["type"].toString() == "option")
+				fns << (FoldOption*)n;
+		if (fns.isEmpty())
+		{
+			std::cout << mID.toStdString() << ": collision graph is empty.\n";
+			return;
+		}
 
-	// the dual adjacent matrix
-	QVector<bool> dumpy(fns.size(), true);
-	QVector< QVector<bool> > conn(fns.size(), dumpy);
-	for (int i = 0; i < fns.size(); i++){
-		// the i-th node
-		FoldOption* fn = fns[i];
+		// trivial case
+		if (fns.size() == 1)
+		{
+			FoldOption* fn = fns[0];
+			ChainNode* cn = collFog->getChainNode(fn->mID);
+			sln_dummy[cn->chainIdx] = fn;
+			continue;
+		}
 
-		// diagonal entry
-		conn[i][i] = false;
+		// the dual adjacent matrix
+		QVector<bool> dumpy(fns.size(), true);
+		QVector< QVector<bool> > conn(fns.size(), dumpy);
+		for (int i = 0; i < fns.size(); i++){
+			// the i-th node
+			FoldOption* fn = fns[i];
 
-		// other fold options
-		for (int j = i+1; j < fns.size(); j++){
-			// the j-th node
-			FoldOption* other_fn = fns[j];
+			// diagonal entry
+			conn[i][i] = false;
 
-			// connect siblings and colliding folding options
-			if (collFog->areSiblings(fn->mID, other_fn->mID) ||
-				collFog->verifyLinkType(fn->mID, other_fn->mID, "collision")){
-					conn[i][j] = false;	conn[j][i] = false;
+			// other fold options
+			for (int j = i+1; j < fns.size(); j++){
+				// the j-th node
+				FoldOption* other_fn = fns[j];
+
+				// connect siblings and colliding folding options
+				if (collFog->areSiblings(fn->mID, other_fn->mID) ||
+					collFog->verifyLinkType(fn->mID, other_fn->mID, "collision")){
+						conn[i][j] = false;	conn[j][i] = false;
+				}
+			}
+		}
+
+		// find maximum weighted clique
+		double maxCost = 0;
+		QVector<double> costs;
+		foreach (FoldOption* fn, fns){
+			double cost = computeCost(fn);
+			costs << cost;
+			if (cost > maxCost) maxCost = cost;
+		}
+		maxCost += 1;
+
+		QVector<double> weights;
+		foreach(double cost, costs) weights.push_back(maxCost - cost);
+		CliquerAdapter cliquer(conn, weights);
+		QVector<QVector<int> > qs = cliquer.getMaxWeightedCliques();
+
+
+		if (!qs.isEmpty())
+		{
+			//// count chain number
+			//int nbC = 0;
+			//foreach (Structure::Node* nn, collComponent)
+			//{
+			//	if (nn->properties["type"].toString() == "entity")
+			//		nbC++;
+			//}
+
+			//if (qs.front().size() != nbC)
+			//{
+			//	int a = 0;
+			//}
+			foreach(int idx, qs.front())
+			{
+				FoldOption* fn = fns[idx];
+				ChainNode* cn = collFog->getChainNode(fn->mID);
+				sln_dummy[cn->chainIdx] = fn;
 			}
 		}
 	}
 
-	// find maximum weighted clique
-	double maxCost = -1;
-	QVector<double> costs;
-	foreach (FoldOption* fn, fns){
-		double cost = computeCost(fn);
-		costs << cost;
-		if (cost > maxCost) maxCost = cost;
-	}
-	maxCost += 1;
-
-	QVector<double> weights;
-	foreach(double cost, costs) 
-		weights.push_back(maxCost - cost);
-
-	CliquerAdapter cliquer(conn, weights);
-	QVector<QVector<int> > qs = cliquer.getMaxWeightedCliques();
-
-	// fold solutions
-	foldSolutions.clear();
-	QVector<FoldOption*> sln_dummy;
-	for (int i = 0; i < chains.size(); i++) sln_dummy << NULL;
-	for (int sid = 0; sid < qs.size(); sid++)
-	{
-		QVector<FoldOption*> solution = sln_dummy;
-		foreach(int idx, qs[sid])
-		{
-			FoldOption* fn = fns[idx];
-			ChainNode* cn = collFog->getChainNode(fn->mID);
-			solution[cn->chainIdx] = fn;
-		}
-
-		foldSolutions << solution;
-	}
+	foldSolutions << sln_dummy;
 }
 
 double BlockGraph::getTimeLength()
