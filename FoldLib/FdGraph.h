@@ -42,9 +42,6 @@ public:
 	// aabb
 	Geom::AABB computeAABB();
 
-	// threshold
-	double getConnectivityThr();
-
 	// visualization
 	void draw();
 	void showCuboids(bool show);

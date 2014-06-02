@@ -824,16 +824,6 @@ QVector<Geom::Box> BlockGraph::getAFS()
 	return afs;
 }
 
-void BlockGraph::setNbSplits( int N )
-{
-	nbSplits = N;
-}
-
-void BlockGraph::setNbChunks( int N )
-{
-	nbChunks = N;
-}
-
 void BlockGraph::setThickness( double thk )
 {
 	thickness = thk;

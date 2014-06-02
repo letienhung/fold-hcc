@@ -30,6 +30,9 @@ public:
 	int nbChunks;
 	double thickness;
 
+	double connThrRatio;
+	Vector3 aabbScale;
+
 public:
 	// update Ui
 	void updateDcList();
@@ -55,6 +58,10 @@ public slots:
 	void setNbSplits(int N);
 	void setNbChunks(int N);
 	void setThickness(double thk);
+	void setConnThrRatio(double thr);
+	void setAabbX(double x);
+	void setAabbY(double y);
+	void setAabbZ(double z);
 	void setParameters();
 
 	// decompose

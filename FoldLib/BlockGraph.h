@@ -38,8 +38,6 @@ public:
 	void filterFoldOptions(QVector<FoldOption*>& options, int cid);
 	void addEdgesToCollisionGraph();
 	void exportCollFOG();
-	void setNbSplits(int N);
-	void setNbChunks(int N);
 
 	// thickness
 	void setThickness(double thk);

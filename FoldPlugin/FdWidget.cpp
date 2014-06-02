@@ -75,6 +75,12 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->connect(ui->unhideAllNodes, SIGNAL(clicked()), SLOT(unhideAllNodes()));
 	plugin->connect(ui->hideEdgeRods, SIGNAL(clicked()), SLOT(hideEdgeRods()));
 
+	// threshold
+	plugin->f_manager->connect(ui->connThrRation, SIGNAL(valueChanged(double)), SLOT(setConnThrRatio()));
+	plugin->f_manager->connect(ui->aabbX, SIGNAL(valueChanged(double)), SLOT(setAabbX(double)));
+	plugin->f_manager->connect(ui->aabbY, SIGNAL(valueChanged(double)), SLOT(setAabbY(double)));
+	plugin->f_manager->connect(ui->aabbZ, SIGNAL(valueChanged(double)), SLOT(setAabbZ(double)));
+
 	// test
 	plugin->connect(ui->test1, SIGNAL(clicked()), SLOT(test1()));
 	plugin->connect(ui->test2, SIGNAL(clicked()), SLOT(test2()));

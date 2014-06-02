@@ -18,8 +18,10 @@ FoldManager::FoldManager()
 	nbKeyframes = 25;
 
 	nbSplits = 1;
-	nbChunks = 2;
+	nbChunks = 1;
 	thickness = 0;
+
+	aabbScale = Vector3(1, 1, 1);
 }
 
 FoldManager::~FoldManager()
@@ -358,11 +360,38 @@ void FoldManager::setThickness( double thk )
 
 void FoldManager::setParameters()
 {
-	foreach (DcGraph* dc, dcGraphs)
-	foreach (BlockGraph* b, dc->blocks)
-	{
-		b->setNbSplits(nbSplits);
-		b->setNbChunks(nbChunks);
-		b->setThickness(thickness);
+	Geom::Box constrainAABB = scaffold->computeAABB().box();
+	constrainAABB.scale(aabbScale);
+	foreach (DcGraph* dc, dcGraphs){
+		foreach (BlockGraph* b, dc->blocks)
+		{
+			b->nbSplits = nbSplits;
+			b->nbChunks = nbChunks;
+			b->setThickness(thickness);
+
+			b->shapeAABB = constrainAABB;
+		}
+
+		dc->connThrRatio = connThrRatio;
 	}
+}
+
+void FoldManager::setConnThrRatio(double thr)
+{
+	connThrRatio = thr;
+}
+
+void FoldManager::setAabbX( double x )
+{
+	aabbScale[0] = x;
+}
+
+void FoldManager::setAabbY( double y )
+{
+	aabbScale[1] = y;
+}
+
+void FoldManager::setAabbZ( double z )
+{
+	aabbScale[2] = z;
 }

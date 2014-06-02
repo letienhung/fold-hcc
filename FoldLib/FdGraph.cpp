@@ -546,12 +546,6 @@ void FdGraph::addDebugSegments( QVector<Geom::Segment>& segs )
 	properties["debugSegs"].setValue(debugSegs);
 }
 
-double FdGraph::getConnectivityThr()
-{
-	return 0.2 * computeAABB().radius();
-}
-
-
 void FdGraph::addDebugBox( Geom::Box box )
 {
 	addDebugBoxes(QVector<Geom::Box>() << box);

@@ -45,7 +45,13 @@ public:
 	int keyframeIdx;
 	QVector<FdGraph*> keyframes;
 
+	// threshold
+	double connThrRatio;
+
 public:
+	// threshold
+	double getConnectivityThr();
+
 	// decomposition
 	void createMasters();
 	FdNodeArray2D getPerpConnGroups();

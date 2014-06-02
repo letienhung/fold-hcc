@@ -13,6 +13,8 @@ DcGraph::DcGraph(QString id, FdGraph* scaffold, Vector3 v)
 	path = QFileInfo(path).absolutePath();
 	mID = id;
 	sqzV = v;
+	// threshold
+	connThrRatio = 0.1;
 
 	// decomposition
 	createMasters();
@@ -32,6 +34,7 @@ DcGraph::DcGraph(QString id, FdGraph* scaffold, Vector3 v)
 	// selection
 	selBlockIdx = -1;
 	keyframeIdx = -1;
+
 
 	//////////////////////////////////////////////////////////////////////////
 	//QVector<Geom::Segment> normals;
@@ -1002,4 +1005,9 @@ BlockGraph* DcGraph::mergeBlocks( QVector<BlockGraph*> blocks )
     BlockGraph* mergedBlock = NULL;
 
 	return mergedBlock;
+}
+
+double DcGraph::getConnectivityThr()
+{
+	return connThrRatio * computeAABB().radius();
 }
