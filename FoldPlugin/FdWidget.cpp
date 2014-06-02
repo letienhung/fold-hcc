@@ -36,6 +36,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->f_manager->connect(ui->foldabilize, SIGNAL(clicked()), SLOT(foldabilize()));
 	plugin->connect(ui->exportVector, SIGNAL(clicked()), SLOT(exportSVG()));
 	plugin->f_manager->connect(ui->exportStat, SIGNAL(clicked()), SLOT(exportStat()));
+	plugin->connect(ui->exportPNG, SIGNAL(clicked()), SLOT(exportPNG()));
 
 	// decompose
 	plugin->f_manager->connect(ui->decompose, SIGNAL(clicked()), SLOT(decompose()));

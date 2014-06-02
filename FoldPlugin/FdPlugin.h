@@ -71,6 +71,7 @@ public slots:
 	// export
 	void exportCurrent();
 	void exportSVG();
+	void exportPNG();
 
 	// color dialog
 	void showColorDialog();

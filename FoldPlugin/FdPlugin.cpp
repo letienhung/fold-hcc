@@ -416,6 +416,29 @@ void FdPlugin::colorMasterSlave()
 	updateScene();
 }
 
+void FdPlugin::exportPNG()
+{
+	DcGraph* selDc = f_manager->getSelDcGraph();
+	if (!selDc) return;
+
+	showKeyframe = true;
+
+	QString filename = QFileDialog::getSaveFileName(0, tr("Save Current Scaffold"), NULL, tr("PNG file (*.png)"));
+	QString basefilename = filename;
+	basefilename.chop(4);
+
+	for (int i = 0; i < selDc->keyframes.size(); i++)
+	{	
+		filename = basefilename + QString("%1").arg(QString::number(i), 3, '0') + ".png";
+		f_manager->selectKeyframe(i);
+		updateScene();
+		
+		qApp->processEvents();
+		drawArea()->grabFrameBuffer(true).save(filename);
+		qApp->processEvents();
+	}
+}
+
 void FdPlugin::exportSVG()
 {
 	int documentSize = 800;
@@ -423,7 +446,6 @@ void FdPlugin::exportSVG()
 	drawArea()->setMinimumSize(documentSize, documentSize);
 	drawArea()->setMaximumSize(documentSize, documentSize);
 
-	QVector<Geom::Segment> segs;
 	FdGraph* activeFd = activeScaffold();
 	if (!activeFd) return;
 
@@ -586,6 +608,5 @@ bool FdPlugin::keyPressEvent(QKeyEvent* event)
 
 	return false;
 }
-
 
 Q_EXPORT_PLUGIN(FdPlugin)

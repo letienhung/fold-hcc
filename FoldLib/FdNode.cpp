@@ -96,7 +96,7 @@ void FdNode::draw()
 		if(isSelected)	
 			mBox.drawWireframe(4.0, Qt::yellow);
 		else
-			mBox.drawWireframe(1.0, mColor.darker());
+			mBox.drawWireframe(2.0, mColor.darker());
 	}
 }
 
