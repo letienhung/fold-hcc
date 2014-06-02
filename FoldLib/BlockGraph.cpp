@@ -86,6 +86,9 @@ BlockGraph::BlockGraph( QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& s
 
 	// selected solution
 	selSlnIdx = -1;
+
+	// cost weight
+	costWeight = 0.05;
 }
 
 BlockGraph::~BlockGraph()
@@ -684,7 +687,7 @@ void BlockGraph::findOptimalSolution()
 	double maxCost = -1;
 	QVector<double> costs;
 	foreach (FoldOption* fn, fns){
-		double cost = fn->getCost();
+		double cost = computeCost(fn);
 		costs << cost;
 		if (cost > maxCost) maxCost = cost;
 	}
@@ -881,4 +884,21 @@ void BlockGraph::computeMasterNbUnderLayers()
 		// store
 		masterNbUnderLayers[mid] = nbLayers;
 	}
+}
+
+double BlockGraph::computeCost( FoldOption* fn )
+{
+	double cost;
+	if (fn->hasTag(DELETE_FOLD_OPTION))
+	{
+		cost = 10;
+	}
+	else
+	{
+		double cost1 = fn->nSplits;
+		double cost2 = 1 - fn->scale;
+		cost = costWeight * cost1 + cost2;
+	}
+
+	return cost;
 }

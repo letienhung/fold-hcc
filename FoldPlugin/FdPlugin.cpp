@@ -532,32 +532,6 @@ void FdPlugin::exportSVG()
 
 	}
 
-	// save statics
-	if (activeFd->hasTag(FD_TIME))
-	{
-		QString filepath = QFileInfo(filename).absolutePath();
-		QString staFilename = filepath + "/stastics.txt";
-
-		QFile file( staFilename );
-		if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) return;
-		QTextStream out(&file);
-
-		Vector3 sqzV = activeFd->properties[SQZ_DIRECTION].value<Vector3>();
-		out << QString("%1 = %2, %3, %4\n").arg(SQZ_DIRECTION).arg(sqzV[0]).arg(sqzV[1]).arg(sqzV[2]);
-		out << QString("%1 = %2\n").arg(NB_SPLIT).arg(activeFd->properties[NB_SPLIT].value<int>());
-		out << QString("%1 = %2\n\n").arg(NB_CHUNKS).arg(activeFd->properties[NB_CHUNKS].value<int>());
-
-		out << QString("%1 = %2\n").arg(NB_MASTER).arg(activeFd->properties[NB_MASTER].value<int>());
-		out << QString("%1 = %2\n").arg(NB_SLAVE).arg(activeFd->properties[NB_SLAVE].value<int>());
-		out << QString("%1 = %2\n\n").arg(NB_BLOCK).arg(activeFd->properties[NB_BLOCK].value<int>());
-
-		out << QString("%1 = %2\n").arg(FD_TIME).arg(activeFd->properties[FD_TIME].value<int>());
-		out << QString("%1 = %2\n\n").arg(SPACE_SAVING).arg(activeFd->properties[SPACE_SAVING].value<double>());
-		
-		out << QString("%1 = %2\n").arg(NB_HINGES).arg(activeFd->properties[NB_HINGES].value<int>());
-		out << QString("%1 = %2\n").arg(SHRINKED_AREA).arg(activeFd->properties[SHRINKED_AREA].value<double>());
-	}
-
 	system( filename.toAscii() );
 }
 
@@ -612,5 +586,6 @@ bool FdPlugin::keyPressEvent(QKeyEvent* event)
 
 	return false;
 }
+
 
 Q_EXPORT_PLUGIN(FdPlugin)

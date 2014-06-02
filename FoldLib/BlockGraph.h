@@ -53,6 +53,7 @@ public:
 
 	// helper
 	double getTimeLength();
+	double computeCost(FoldOption* fn);
 public:
 	// time interval
 	Interval mFoldDuration;
@@ -106,5 +107,8 @@ public:
 	bool useThickness;
 	double thickness;
 	QMap<QString, int> masterNbUnderLayers;
+
+	// cost weight
+	double costWeight;
 }; 
 

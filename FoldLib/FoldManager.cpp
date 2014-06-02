@@ -17,11 +17,14 @@ FoldManager::FoldManager()
 
 	nbKeyframes = 25;
 
-	nbSplits = 1;
+	nbSplits = 1; 
 	nbChunks = 2;
 	thickness = 0;
 
+	connThrRatio = 0.05;
 	aabbScale = Vector3(1, 1, 1);
+
+	costWeight = 0.05;
 }
 
 FoldManager::~FoldManager()
@@ -211,25 +214,22 @@ int fdTime = timer.elapsed();
 	// emit signals
 	updateKeyframeSlider();
 
-	// save statistics in first key frame
-	if (!selDc->keyframes.isEmpty())
+	// save statistics in initial scaffold
 	{
-		FdGraph* firstKeyframe = selDc->keyframes.front();
+		stat.properties[NB_SPLIT] = nbSplits;
+		stat.properties[NB_CHUNKS] = nbChunks;
+		stat.properties[SQZ_DIRECTION].setValue(sqzV);
+
+		stat.properties[NB_MASTER] = selDc->masters.size();
+		stat.properties[NB_SLAVE] = selDc->slaves.size();
+		stat.properties[NB_BLOCK] = selDc->blocks.size();
+
 		FdGraph* lasterKeyframe = selDc->keyframes.last();
-
-		firstKeyframe->properties[NB_SPLIT] = nbSplits;
-		firstKeyframe->properties[NB_CHUNKS] = nbChunks;
-		firstKeyframe->properties[SQZ_DIRECTION].setValue(sqzV);
-
-		firstKeyframe->properties[NB_MASTER] = selDc->masters.size();
-		firstKeyframe->properties[NB_SLAVE] = selDc->slaves.size();
-		firstKeyframe->properties[NB_BLOCK] = selDc->blocks.size();
-
 		double origVol = scaffold->computeAABB().box().volume();
 		double fdVol = lasterKeyframe->computeAABB().box().volume();
-		firstKeyframe->properties[SPACE_SAVING] = 1 - fdVol / origVol;
+		stat.properties[SPACE_SAVING] = 1 - fdVol / origVol;
 
-		firstKeyframe->properties[FD_TIME] = fdTime;
+		stat.properties[FD_TIME] = fdTime;
 
 		int nbHinges = 0;
 		double shinkedArea = 0, totalArea = 0;
@@ -245,9 +245,15 @@ int fdTime = timer.elapsed();
 		foreach (PatchNode* m, selDc->masters) 
 			totalArea += m->mPatch.area();
 
-		firstKeyframe->properties[NB_HINGES] = nbHinges;
-		firstKeyframe->properties[SHRINKED_AREA] = shinkedArea/totalArea;
+		stat.properties[NB_HINGES] = nbHinges;
+		stat.properties[SHRINKED_AREA] = shinkedArea/totalArea;
+
+		stat.properties[CONN_THR_RATIO] = connThrRatio;
+		stat.properties[CONSTRAIN_AABB_SCALE].setValue(aabbScale);
+
+		stat.properties[COST_WEIGHT] = costWeight;
 	}
+
 }
 
 void FoldManager::updateDcList()
@@ -370,6 +376,8 @@ void FoldManager::setParameters()
 			b->setThickness(thickness);
 
 			b->shapeAABB = constrainAABB;
+
+			b->costWeight = costWeight;
 		}
 
 		dc->connThrRatio = connThrRatio;
@@ -394,4 +402,42 @@ void FoldManager::setAabbY( double y )
 void FoldManager::setAabbZ( double z )
 {
 	aabbScale[2] = z;
+}
+
+void FoldManager::exportStat()
+{
+	if (stat.hasTag(FD_TIME))
+	{
+		QString filename = QFileDialog::getSaveFileName(0, tr("Save Statistics"), NULL, tr("Txt file (*.txt)"));
+
+		QFile file( filename );
+		if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) return;
+		QTextStream out(&file);
+
+		Vector3 sqzV = stat.properties[SQZ_DIRECTION].value<Vector3>();
+		out << QString("%1 = %2, %3, %4\n").arg(SQZ_DIRECTION).arg(sqzV[0]).arg(sqzV[1]).arg(sqzV[2]);
+		out << QString("%1 = %2\n").arg(NB_SPLIT).arg(stat.properties[NB_SPLIT].value<int>());
+		out << QString("%1 = %2\n\n").arg(NB_CHUNKS).arg(stat.properties[NB_CHUNKS].value<int>());
+
+		out << QString("%1 = %2\n").arg(NB_MASTER).arg(stat.properties[NB_MASTER].value<int>());
+		out << QString("%1 = %2\n").arg(NB_SLAVE).arg(stat.properties[NB_SLAVE].value<int>());
+		out << QString("%1 = %2\n\n").arg(NB_BLOCK).arg(stat.properties[NB_BLOCK].value<int>());
+
+		out << QString("%1 = %2\n").arg(FD_TIME).arg(stat.properties[FD_TIME].value<int>());
+		out << QString("%1 = %2\n\n").arg(SPACE_SAVING).arg(stat.properties[SPACE_SAVING].value<double>());
+
+		out << QString("%1 = %2\n").arg(NB_HINGES).arg(stat.properties[NB_HINGES].value<int>());
+		out << QString("%1 = %2\n\n").arg(SHRINKED_AREA).arg(stat.properties[SHRINKED_AREA].value<double>());
+
+		Vector3 scale = stat.properties[CONSTRAIN_AABB_SCALE].value<Vector3>();
+		out << QString("%1 = %2, %3, %4\n").arg(CONSTRAIN_AABB_SCALE).arg(scale[0]).arg(scale[1]).arg(scale[2]);
+		out << QString("%1 = %2\n\n").arg(CONN_THR_RATIO).arg(stat.properties[CONN_THR_RATIO].value<double>());
+
+		out << QString("%1 = %2\n").arg(COST_WEIGHT).arg(stat.properties[COST_WEIGHT].value<double>());
+	}
+}
+
+void FoldManager::setCostWeight( double w )
+{
+	costWeight = w;
 }

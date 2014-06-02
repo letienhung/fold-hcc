@@ -55,6 +55,10 @@ typedef QPair<double, double> Interval;
 #define FD_TIME "fdTime"
 #define SPACE_SAVING "spaceSaving"
 
+#define CONN_THR_RATIO "connThrRatio"
+#define CONSTRAIN_AABB_SCALE "constrainAabbScale"
+#define COST_WEIGHT "costWeight"
+
 // Qt meta type
 Q_DECLARE_METATYPE(Vector3)
 Q_DECLARE_METATYPE(QVector<Vector3>)

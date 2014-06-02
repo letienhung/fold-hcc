@@ -70,6 +70,7 @@ public slots:
 
 	// export
 	void exportCurrent();
+	void exportSVG();
 
 	// color dialog
 	void showColorDialog();
@@ -79,7 +80,6 @@ public slots:
 	// snapshot
 	void saveSnapshot();
 	void saveSnapshotAll();
-	void exportSVG();
 
 	// hide
 	void hideSelectedNodes();

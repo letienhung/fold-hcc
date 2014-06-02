@@ -21,8 +21,6 @@ public:
 	FoldOption(FoldOption &other);
 	Node* clone();
 
-	double getCost();// cost
-
 public:
 	// to which side to fold
 	bool rightSide;

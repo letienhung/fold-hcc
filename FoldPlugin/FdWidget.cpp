@@ -35,6 +35,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->f_manager->connect(ui->thickness, SIGNAL(valueChanged(double)), SLOT(setThickness(double)));
 	plugin->f_manager->connect(ui->foldabilize, SIGNAL(clicked()), SLOT(foldabilize()));
 	plugin->connect(ui->exportVector, SIGNAL(clicked()), SLOT(exportSVG()));
+	plugin->f_manager->connect(ui->exportStat, SIGNAL(clicked()), SLOT(exportStat()));
 
 	// decompose
 	plugin->f_manager->connect(ui->decompose, SIGNAL(clicked()), SLOT(decompose()));
@@ -80,6 +81,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->f_manager->connect(ui->aabbX, SIGNAL(valueChanged(double)), SLOT(setAabbX(double)));
 	plugin->f_manager->connect(ui->aabbY, SIGNAL(valueChanged(double)), SLOT(setAabbY(double)));
 	plugin->f_manager->connect(ui->aabbZ, SIGNAL(valueChanged(double)), SLOT(setAabbZ(double)));
+	plugin->f_manager->connect(ui->costWeight, SIGNAL(valueChanged(double)), SLOT(setCostWeight(double)));
 
 	// test
 	plugin->connect(ui->test1, SIGNAL(clicked()), SLOT(test1()));

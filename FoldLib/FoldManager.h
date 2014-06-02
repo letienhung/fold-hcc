@@ -29,9 +29,12 @@ public:
 	int nbSplits;
 	int nbChunks;
 	double thickness;
-
 	double connThrRatio;
 	Vector3 aabbScale;
+	double costWeight;
+
+	// statistics
+	Structure::PropertyMap stat;
 
 public:
 	// update Ui
@@ -62,6 +65,7 @@ public slots:
 	void setAabbX(double x);
 	void setAabbY(double y);
 	void setAabbZ(double z);
+	void setCostWeight(double w);
 	void setParameters();
 
 	// decompose
@@ -77,6 +81,7 @@ public slots:
 	// output
 	void exportCollFOG();
 	void exportResultMesh();
+	void exportStat();
 
 	// selection signal from Ui
 	void selectDcGraph(QString id);

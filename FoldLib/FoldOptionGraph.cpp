@@ -60,18 +60,6 @@ Structure::Node* FoldOption::clone()
 	return new FoldOption(*this);
 }
 
-double FoldOption::getCost()
-{
-	double cost1 = nSplits;
-	double cost2 = 1 - scale;
-	double cost = 0.01 * cost1 + cost2;
-
-	if (hasTag(DELETE_FOLD_OPTION))
-		cost = 10;
-
-	return cost;// * patchArea;
-}
-
 
 //////////////////////////////////////////////////////////////////////////
 
