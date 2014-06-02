@@ -468,7 +468,7 @@ bool BlockGraph::fAreasIntersect( Geom::Rectangle& rect1, Geom::Rectangle& rect2
 	Geom::Rectangle2 r1 = base_rect.get2DRectangle(rect1);
 	Geom::Rectangle2 r2 = base_rect.get2DRectangle(rect2);
 
-	return Geom::IntrRect2Rect2::test2(r1, r2);
+	return Geom::IntrRect2Rect2::test(r1, r2);
 }
 
 void BlockGraph::foldabilize(FdGraph* superKeyframe)
