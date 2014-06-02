@@ -486,26 +486,7 @@ void FdPlugin::exportSVG()
 				// skip hidden stuff for clean rendering
 				if (n->hasTag(EDGE_ROD_TAG)) continue;
 
-				if( this->showCuboid )
-				{
-					out << "<g>\n";
-
-					QVector<Geom::Rectangle> rects = n->mBox.getFaceRectangles();
-					std::sort( rects.begin(), rects.end(), Geom::CompareRectangle() );
-					foreach(Geom::Rectangle r, rects)
-					{
-						out << QString("\n<polygon points='");
-						foreach (Vector3 p, r.getConners())
-						{
-							qglviewer::Vec proj = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(p) );
-							out << QString("%1,%2 ").arg(proj.x).arg(proj.y);
-						}
-						out << QString("' %1/>\n").arg( style + QString("fill='%1' stroke='%2'").arg( n->mColor.name() ).arg( n->mColor.darker().name() ) );
-					}
-
-					out << "</g>\n";
-				}
-				else if( this->showScaffold )
+				if( this->showScaffold )
 				{
 					if (n->mType == FdNode::PATCH)
 					{
@@ -524,6 +505,25 @@ void FdPlugin::exportSVG()
 						}
 						out << QString("' %1/>\n").arg( style + QString("fill='%1' stroke='%2'").arg( n->mColor.name() ).arg( n->mColor.darker().name() ) );
 					}
+				}
+				else if( this->showCuboid )
+				{
+					out << "<g>\n";
+
+					QVector<Geom::Rectangle> rects = n->mBox.getFaceRectangles();
+					std::sort( rects.begin(), rects.end(), Geom::CompareRectangle() );
+					foreach(Geom::Rectangle r, rects)
+					{
+						out << QString("\n<polygon points='");
+						foreach (Vector3 p, r.getConners())
+						{
+							qglviewer::Vec proj = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(p) );
+							out << QString("%1,%2 ").arg(proj.x).arg(proj.y);
+						}
+						out << QString("' %1/>\n").arg( style + QString("fill='%1' stroke='%2'").arg( n->mColor.name() ).arg( n->mColor.darker().name() ) );
+					}
+
+					out << "</g>\n";
 				}
 			}
 
