@@ -4,11 +4,21 @@
 #include "CustomDrawObjects.h"
 #include "RodNode.h"
 
-PatchNode::PatchNode(QString id, Geom::Box &b, MeshPtr m)
+PatchNode::PatchNode(QString id, Geom::Box &b, MeshPtr m, Vector3 v)
 	: FdNode(id, b, m)
 {
 	mType = FdNode::PATCH;
-	createScaffold(false);
+
+	if (v.norm() < ZERO_TOLERANCE_LOW)
+	{
+		createScaffold(false);
+	}
+	else
+	{
+		// specify the normal of patch to be v
+		mAid = b.getAxisId(v);
+		createScaffold(true);
+	}
 }
 
 PatchNode::PatchNode(RodNode* rodNode, Vector3 v)

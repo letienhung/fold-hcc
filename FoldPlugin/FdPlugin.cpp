@@ -366,7 +366,19 @@ void FdPlugin::hideSelectedNodes()
 {
 	QVector<FdNode*> snodes = selectedFdNodes();
 	foreach (FdNode* n, snodes)
+	{
 		n->isHidden = true;
+
+		// hide this node on all key frames
+		if (showKeyframe)
+		{
+			foreach (FdGraph* kf, f_manager->getSelDcGraph()->keyframes)
+			{
+				FdNode* kn = (FdNode*)kf->getNode(n->mID);
+				kn->isHidden = true;
+			}
+		}
+	}
 
 	if( snodes.isEmpty() ){
 		activeScaffold()->properties.clear();

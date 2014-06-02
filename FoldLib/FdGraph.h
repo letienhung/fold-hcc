@@ -30,7 +30,7 @@ public:
 	PatchNode* changeRodToPatch(RodNode* n, Vector3 v);
 	void translate(Vector3 v, bool withMesh = true);
 	void unwrapBundleNodes();
-	FdNode* wrapAsBundleNode(QVector<QString> nids);
+	FdNode* wrapAsBundleNode(QVector<QString> nids, Vector3 v = Vector3(0, 0, 0));
 	QVector<FdNode*> split(QString nid, Geom::Plane& plane);
 	QVector<FdNode*> split(QString nid, QVector<Geom::Plane>& planes);
 

@@ -7,7 +7,7 @@ class RodNode;
 class PatchNode : public FdNode
 {
 public:
-    PatchNode(QString id, Geom::Box &b, MeshPtr m);
+    PatchNode(QString id, Geom::Box &b, MeshPtr m, Vector3 v = Vector3(0, 0, 0));
 	PatchNode(RodNode* rodNode, Vector3 v);
 	PatchNode(PatchNode &other);
 	virtual Node* clone();

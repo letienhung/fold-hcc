@@ -2,8 +2,8 @@
 #include "FdUtility.h"
 #include "Numeric.h"
 
-BundleNode::BundleNode( QString id, Geom::Box& b, QVector<FdNode*> nodes )
-	:PatchNode(id, b, MeshPtr(NULL))
+BundleNode::BundleNode( QString id, Geom::Box& b, QVector<FdNode*> nodes, Vector3 v )
+	:PatchNode(id, b, MeshPtr(NULL),  v)
 {
 	foreach (FdNode* n, nodes)
 		mNodes << (FdNode*)n->clone();

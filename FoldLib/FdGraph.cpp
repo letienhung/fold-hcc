@@ -225,7 +225,7 @@ void FdGraph::draw()
 	drawSpecial();
 }
 
-FdNode* FdGraph::wrapAsBundleNode( QVector<QString> nids )
+FdNode* FdGraph::wrapAsBundleNode( QVector<QString> nids, Vector3 v )
 {
 	// retrieve all nodes
 	QVector<FdNode*> ns;
@@ -240,11 +240,11 @@ FdNode* FdGraph::wrapAsBundleNode( QVector<QString> nids )
 	if (ns.size() == 1) return ns[0];
 
 	// merge into a bundle node
-	QVector<FdNode*> plainNodes;
-	foreach (FdNode* n, ns)	plainNodes += n->getPlainNodes();
-	QString bid = getBundleName(plainNodes);
-	Geom::Box box = getBundleBox(plainNodes);
-	BundleNode* bundleNode = new BundleNode(bid, box, plainNodes); 
+	QVector<FdNode*> subNodes;
+	foreach (FdNode* n, ns)	subNodes += n->getPlainNodes();
+	QString bid = getBundleName(subNodes);
+	Geom::Box box = getBundleBox(subNodes);
+	BundleNode* bundleNode = new BundleNode(bid, box, subNodes, v); 
 	Structure::Graph::addNode(bundleNode);
 
 	// remove original nodes

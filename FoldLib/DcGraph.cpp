@@ -135,7 +135,7 @@ void DcGraph::createMasters()
 		}
 		// group nodes
 		else
-			master = (PatchNode*)wrapAsBundleNode(getIds(pcGroup));
+			master = (PatchNode*)wrapAsBundleNode(getIds(pcGroup), sqzV);
 
 		// consistent normal with sqzV
 		if (dot(master->mPatch.Normal, sqzV) < 0)
