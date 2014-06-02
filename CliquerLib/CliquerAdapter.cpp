@@ -90,6 +90,8 @@ QVector<QVector<int> > CliquerAdapter::getMaxWeightedCliques()
 
 	// call Cliquer
 	set_t s[1024];
+	for(int i = 0; i < 1024; i++) s[i] = NULL;
+
 	clique_default_options->clique_list=s;
 	clique_default_options->clique_list_length=1024;
 	int n = clique_find_all(graph,0,0,true,NULL);
@@ -100,6 +102,7 @@ QVector<QVector<int> > CliquerAdapter::getMaxWeightedCliques()
 	for (int ci = 0; ci < n; ci++)
 	{
 		set_t clique = s[ci];
+		if(!clique) continue;
 
 		QVector<int> qClique;
 		int w = 0;

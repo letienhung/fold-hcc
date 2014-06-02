@@ -4,11 +4,13 @@
 #include "Numeric.h"
 
 ChainGraph::ChainGraph( FdNode* slave, PatchNode* base, PatchNode* top)
-	: FdGraph(slave->mID)
+	: FdGraph(slave->mID), baseMaster(NULL), origSlave(NULL), topMaster(NULL)
 {
 	// slave
 	if (slave->mType == FdNode::ROD)
 	{
+		if(!baseMaster) return;
+
 		// convert slave into patch if need
 		RodNode* slaveRod = (RodNode*)slave;
 		Vector3 rodV = slaveRod->mRod.Direction;
@@ -302,6 +304,8 @@ void ChainGraph::foldUniformHeight( double t )
 
 void ChainGraph::addThickness(FdGraph* keyframe, double t)
 {
+	if(!baseMaster) return;
+
 	// get parts in key frame
 	QVector<PatchNode*> keyParts;
 	keyParts << (PatchNode*)keyframe->getNode(baseMaster->mID);
@@ -376,6 +380,8 @@ void ChainGraph::addThickness(FdGraph* keyframe, double t)
 
 void ChainGraph::fold( double t )
 {
+	if(!baseMaster) return;
+
 	// free all nodes
 	foreach (Structure::Node* n, nodes)
 		n->removeTag(FIXED_NODE_TAG);
@@ -444,6 +450,8 @@ void ChainGraph::resetChainParts(FoldOption* fn)
 	foreach (PatchNode* n, chainParts) removeNode(n->mID);
 	chainParts.clear();
 
+	if(!origSlave) return;
+
 	// clone original slave
 	PatchNode* slave = (PatchNode*)origSlave->clone();
 	Structure::Graph::addNode(slave);
@@ -492,9 +500,8 @@ void ChainGraph::resetHingeLinks(FoldOption* fn)
 	Geom::Segment bJoint = baseJoint;
 	Vector3 upV = slaveSeg.Direction;
 	Vector3 jointV = bJoint.Direction;
-	Hinge* hingeR = new Hinge(chainParts[0], baseMaster, 
-		bJoint.P0, upV,  rightSegV, jointV, bJoint.length());
-
+	if(chainParts.empty()) return;
+	Hinge* hingeR = new Hinge(chainParts[0], baseMaster, bJoint.P0, upV,  rightSegV, jointV, bJoint.length());
 
 
 	//std::cout << "\nCreating Hinges \nupV = ";
@@ -605,6 +612,8 @@ void ChainGraph::setFoldDuration( double t0, double t1 )
 
 Geom::Rectangle ChainGraph::getFoldRegion( FoldOption* fn )
 {
+	if(!baseMaster) return Geom::Rectangle();
+
 	Geom::Rectangle base_rect = baseMaster->mPatch;
 	Geom::Segment topJointProj = base_rect.getProjection(topJoint);
 

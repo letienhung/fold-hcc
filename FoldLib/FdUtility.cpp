@@ -368,6 +368,8 @@ FdGraph* combineDecomposition( QVector<FdGraph*> decmps, QString baseMid,
 			// translate
 			FdGraph* decmp = decmps[decmp_id];
 			PatchNode* oldMaster = (PatchNode*)decmp->getNode(curr_mid);
+			if(!oldMaster) return NULL;
+
 			Vector3 delta = currPos - oldMaster->center();
 			decmp->translate(delta);
 

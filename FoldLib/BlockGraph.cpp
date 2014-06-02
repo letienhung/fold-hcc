@@ -269,7 +269,10 @@ void BlockGraph::computeAvailFoldingRegion( FdGraph* superKeyframe )
 {
 	// align scaffold with this block
 	Vector3 pos_block = baseMaster->center();
-	Vector3 pos_keyframe = ((FdNode*)superKeyframe->getNode(baseMaster->mID))->center();
+	FdNode* fnode = (FdNode*)superKeyframe->getNode(baseMaster->mID);
+	if(!fnode) return;
+
+	Vector3 pos_keyframe = fnode->center();
 	Vector3 offset = pos_block - pos_keyframe;
 	superKeyframe->translate(offset, false);
 
@@ -356,7 +359,8 @@ FdGraph* BlockGraph::getKeyframe( double t, bool useThk )
 				foldedChains << NULL;
 			else
 			{
-				double localT = getLocalTime(t, chains[i]->duration);
+				ChainGraph* cgraph = chains[i];
+				double localT = getLocalTime(t, cgraph->duration);
 				foldedChains << chains[i]->getKeyframe(localT, useThk);
 			}
 		}
@@ -734,6 +738,9 @@ double BlockGraph::getAvailFoldingVolume()
 	foreach (QString key, availFoldingRegion.keys())
 		conners << availFoldingRegion[key].getConners();
 	Geom::Rectangle2 aabb2 = computeAABB2D(conners);
+
+	if( !_finite(aabb2.Extent.x()) ) 
+		return 0;
 
 	// pixelize folding region
 	Geom::Rectangle aabb3 = base_rect.get3DRectangle(aabb2);

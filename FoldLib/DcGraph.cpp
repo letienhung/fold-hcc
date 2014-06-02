@@ -615,6 +615,7 @@ FdGraph* DcGraph::getKeyframe( double t )
 
 	// shift layers and add nodes into scaffold
 	FdGraph *key_graph = combineDecomposition(foldedBlocks, baseMaster->mID, masterBlockMap);
+	if(!key_graph) return NULL;
 
 	// debug
 	if (showActive)
@@ -663,9 +664,15 @@ FdGraph* DcGraph::getSuperKeyframe( double t )
 
 	// combine
 	FdGraph *keyframe = combineDecomposition(foldedBlocks, baseMaster->mID, masterBlockMap);
+	if(!keyframe) return NULL;
+
 	foreach (FdGraph* b, foldedBlocks) delete b;
 	foreach (QString fp, foldedParts)
-		keyframe->getNode(fp)->addTag(FOLDED_TAG);
+	{
+		FdNode * fnode = (FdNode*)keyframe->getNode(fp);
+		if(!fnode) continue;
+		keyframe->addTag(FOLDED_TAG);
+	}
 
 	// super nodes and their children
 	QVector<PatchNode*> superPatches;
