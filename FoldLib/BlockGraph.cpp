@@ -364,6 +364,8 @@ FdGraph* BlockGraph::getKeyframe( double t, bool useThk )
 		// combine 
 		keyframe = combineDecomposition(foldedChains, baseMaster->mID, masterChainsMap);
 
+		if(!keyframe) return NULL;
+
 		// thickness of masters
 		if (useThk){
 			foreach (PatchNode* m, getAllMasters(keyframe))
@@ -411,6 +413,7 @@ FdGraph* BlockGraph::getSuperKeyframe( double t )
 {
 	// regular key frame w\o thickness
 	FdGraph* keyframe = getKeyframe(t, false);
+	if(!keyframe) return NULL;
 
 	// do nothing if the block is NOT fully folded
 	if (1 - t > ZERO_TOLERANCE_LOW) return keyframe;
@@ -511,9 +514,12 @@ void BlockGraph::applySolution( int sid )
 	for (int i = 0; i < chains.size(); i++)
 	{
 		FoldOption* fn = foldSolutions[sid][i];
-		chains[i]->applyFoldOption(fn);
-
-		if (fn)	fn->addTag(SELECTED_TAG);
+		
+		if(fn)	
+		{
+			chains[i]->applyFoldOption(fn);
+			fn->addTag(SELECTED_TAG);
+		}
 	}
 
 	addTag(READY_TO_FOLD_TAG);

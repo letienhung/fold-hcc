@@ -314,8 +314,13 @@ FdGraph* combineDecomposition( QVector<FdGraph*> decmps, QString baseMid,
 {
 	// trivial combination
 	if (decmps.size() == 1)
-		return (FdGraph*)decmps.front()->clone();
+	{
+		FdGraph * f = decmps.front();
+		if(!f) return NULL;
 
+		FdGraph * fdg = (FdGraph*)f->clone();
+		return fdg;
+	}
 
 	// combined tags
 	QMap<QString, bool> masterCombined;

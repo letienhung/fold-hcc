@@ -592,6 +592,8 @@ FdGraph* DcGraph::getKeyframe( double t )
 	{
 		double lt = getLocalTime(t, blocks[i]->mFoldDuration);
 		FdGraph* fblock = blocks[i]->getKeyframe(lt, true);
+		if(!fblock) return NULL;
+
 		foldedBlocks << fblock;
 
 		// debug: active block
@@ -651,6 +653,8 @@ FdGraph* DcGraph::getSuperKeyframe( double t )
 		double lt = getLocalTime(t, blocks[i]->mFoldDuration);
 		FdGraph* fblock = blocks[i]->getSuperKeyframe(lt);
 		foldedBlocks << fblock;
+
+		if(!fblock) return NULL;
 
 		// keep track of all folded parts
 		foreach (Structure::Node* n, fblock->nodes)
@@ -791,6 +795,12 @@ void DcGraph::foldabilize()
 		currTime = nextTime;
 		delete currKeyframe;
 		currKeyframe = getSuperKeyframe(currTime);
+
+		if(!currKeyframe){
+			std::cout << "Warning: cannot fold on this direction.\n";
+			return;
+		}
+
 		next_bid = getBestNextBlockIndex(currTime, currKeyframe);
 	}
 
@@ -922,6 +932,8 @@ void DcGraph::generateKeyframes( int N )
 	for (int i = 0; i < N; i++)
 	{
 		FdGraph* kf = getKeyframe(i * step);
+		if(!kf) return;
+
 		keyframes << kf;
 
 		kf->unwrapBundleNodes();

@@ -159,6 +159,8 @@ void ChainGraph::foldUniformAngle( double t )
 		double cos_beta = (b * cos(alpha) - d) / a;
 		beta = acos(RANGED(0, cos_beta, 1));
 
+		if(!activeLinks.size()) return;
+
 		if (foldToRight)
 		{
 			activeLinks[0]->hinge->angle = beta;
