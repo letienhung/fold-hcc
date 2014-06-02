@@ -364,8 +364,17 @@ void FdPlugin::saveSnapshotAll()
 
 void FdPlugin::hideSelectedNodes()
 {
-	foreach (FdNode* n, selectedFdNodes())
+	QVector<FdNode*> snodes = selectedFdNodes();
+	foreach (FdNode* n, snodes)
 		n->isHidden = true;
+
+	if( snodes.isEmpty() ){
+		activeScaffold()->properties.clear();
+		if (showKeyframe && f_manager->getSelDcGraph()) 
+			foreach(FdGraph * fgraph, f_manager->getSelDcGraph()->keyframes){
+				fgraph->properties.clear();
+		}
+	}
 
 	updateScene();
 }
