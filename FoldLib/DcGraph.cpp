@@ -356,35 +356,35 @@ void DcGraph::createSlaves()
 	updateSlaves();
 	updateSlaveMasterRelation();
 
-	// connectivity among slave parts
-	for (int i = 0; i < slaves.size(); i++)	{
-		for (int j = i+1; j < slaves.size(); j++)
-		{
-			// no connection among siblings (attach to same master)
-			if (!(slave2master[i] & slave2master[j]).isEmpty()) 
-				continue;
+	//// connectivity among slave parts
+	//for (int i = 0; i < slaves.size(); i++)	{
+	//	for (int j = i+1; j < slaves.size(); j++)
+	//	{
+	//		// no connection among siblings (attach to same master)
+	//		if (!(slave2master[i] & slave2master[j]).isEmpty()) 
+	//			continue;
 
-			// add connectivity
-			if (getDistance(slaves[i], slaves[j]) < connThr)
-				FdGraph::addLink(slaves[i], slaves[j]);
-		}
-	}
+	//		// add connectivity
+	//		if (getDistance(slaves[i], slaves[j]) < connThr)
+	//			FdGraph::addLink(slaves[i], slaves[j]);
+	//	}
+	//}
 
-	// merge connected & coplanar slave parts
-	foreach (QVector<Structure::Node*> component, getComponents())
-	{
-		// skip single node, either master or slave
-		if (component.size() == 1) continue;
+	//// merge connected & coplanar slave parts
+	//foreach (QVector<Structure::Node*> component, getComponents())
+	//{
+	//	// skip single node, either master or slave
+	//	if (component.size() == 1) continue;
 
-		// fit patches
-		QVector<FdNode*> componentFd;
-		foreach(Structure::Node* n, component) componentFd << (FdNode*)n;
-		mergeConnectedCoplanarParts(componentFd);
-	}
-	 
-	// slave-master relation after merging
-	updateSlaves();
-	updateSlaveMasterRelation();
+	//	// fit patches
+	//	QVector<FdNode*> componentFd;
+	//	foreach(Structure::Node* n, component) componentFd << (FdNode*)n;
+	//	mergeConnectedCoplanarParts(componentFd);
+	//}
+	// 
+	//// slave-master relation after merging
+	//updateSlaves();
+	//updateSlaveMasterRelation();
 
 	// remove unbounded slaves: unlikely to happen
 	int nDeleted = 0;
