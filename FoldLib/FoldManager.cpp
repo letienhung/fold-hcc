@@ -25,7 +25,8 @@ FoldManager::FoldManager()
 	aabbScale = Vector3(1, 1, 1);
 
 	costWeight = 0.05;
-	useNewCost = false;
+	useNewCost = true;
+	useUniformHeight = true;
 }
 
 FoldManager::~FoldManager()
@@ -382,6 +383,9 @@ void FoldManager::setParameters()
 
 			b->costWeight = costWeight;
 			b->useNewCost = useNewCost;
+
+			foreach (ChainGraph* c, b->chains)
+				c->useUniformHeight = useUniformHeight;
 		}
 
 		dc->connThrRatio = connThrRatio;

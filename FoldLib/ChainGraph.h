@@ -85,4 +85,7 @@ public:
 	int nbHinges;
 	double shrinkedArea;
 	double patchArea;
+
+	// uniform option
+	bool useUniformHeight;
 };

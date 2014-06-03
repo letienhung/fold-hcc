@@ -52,6 +52,9 @@ ChainGraph::ChainGraph( FdNode* slave, PatchNode* base, PatchNode* top)
 	// patch area
 	patchArea = origSlave->mPatch.area();
 
+	// uniform
+	useUniformHeight = false;
+
 	//// debug
 	//addDebugSegment(baseJoint);
 	//addDebugSegment(slaveSeg);
@@ -390,8 +393,10 @@ void ChainGraph::fold( double t )
 	baseMaster->addTag(FIXED_NODE_TAG);
 
 	// set up hinge angles and top position
-	//foldUniformHeight(t);
-	foldUniformAngle(t);
+	if (useUniformHeight)
+		foldUniformHeight(t);
+	else 
+		foldUniformAngle(t);
 
 	// restore configuration
 	restoreConfiguration();

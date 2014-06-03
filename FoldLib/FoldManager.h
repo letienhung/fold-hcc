@@ -33,6 +33,7 @@ public:
 	Vector3 aabbScale;
 	double costWeight;
 	bool useNewCost;
+	bool useUniformHeight;
 
 	// statistics
 	Structure::PropertyMap stat;

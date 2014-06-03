@@ -590,10 +590,12 @@ void BlockGraph::addNodesToCollisionGraph()
 	QVector<Geom::Rectangle> frs;
 	Geom::Rectangle base_rect = baseMaster->mPatch;
 
-	// hacking
-	//Geom::Rectangle2 fakeAFR = base_rect.get2DRectangle(base_rect);
-	//foreach (QString key, availFoldingRegion.keys())
-	//	availFoldingRegion[key] = fakeAFR;
+	if (isAlone) 
+	{
+		Geom::Rectangle2 fakeAFR = base_rect.get2DRectangle(base_rect);
+		foreach (QString key, availFoldingRegion.keys())
+			availFoldingRegion[key] = fakeAFR;
+	}
 
 	// total patch area
 	double totalA = 0;
@@ -619,8 +621,7 @@ void BlockGraph::addNodesToCollisionGraph()
 
 		// filter
 		std::cout << "#options = " << options.size();
-		//if (!isAlone) 
-			filterFoldOptions(options, cid);
+		filterFoldOptions(options, cid);
 		std::cout << " ==> " << options.size() << std::endl;
 		foreach (FoldOption* fn, options) frs << fn->region;
 
