@@ -588,9 +588,9 @@ void BlockGraph::addNodesToCollisionGraph()
 	Geom::Rectangle base_rect = baseMaster->mPatch;
 
 	// hacking
-	Geom::Rectangle2 fakeAFR = base_rect.get2DRectangle(base_rect);
-	foreach (QString key, availFoldingRegion.keys())
-		availFoldingRegion[key] = fakeAFR;
+	//Geom::Rectangle2 fakeAFR = base_rect.get2DRectangle(base_rect);
+	//foreach (QString key, availFoldingRegion.keys())
+	//	availFoldingRegion[key] = fakeAFR;
 	
 
 	for(int cid = 0; cid < chains.size(); cid++)
@@ -611,7 +611,8 @@ void BlockGraph::addNodesToCollisionGraph()
 
 		// filter
 		std::cout << "#options = " << options.size();
-		if (!isAlone) filterFoldOptions(options, cid);
+		//if (!isAlone) 
+			filterFoldOptions(options, cid);
 		std::cout << " ==> " << options.size() << std::endl;
 		foreach (FoldOption* fn, options) frs << fn->region;
 

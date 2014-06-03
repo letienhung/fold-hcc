@@ -2,72 +2,6 @@
 <document>
     <cN>21</cN>
     <node>
-        <type>1</type>
-        <ID>Box001</ID>
-        <box>
-            <c>0 0 0.5</c>
-            <x>1 0 0</x>
-            <y>0 1 0</y>
-            <z>0 0 1</z>
-            <e>30 5 0.5</e>
-        </box>
-    </node>
-    <node>
-        <type>1</type>
-        <ID>Box002</ID>
-        <box>
-            <c>-5 0 10.3822</c>
-            <x>1 0 0</x>
-            <y>0 1 0</y>
-            <z>0 0 1</z>
-            <e>30 5 0.5</e>
-        </box>
-    </node>
-    <node>
-        <type>1</type>
-        <ID>Box003</ID>
-        <box>
-            <c>-2.5 0 20.5</c>
-            <x>1 0 0</x>
-            <y>0 1 0</y>
-            <z>0 0 1</z>
-            <e>30 5 0.5</e>
-        </box>
-    </node>
-    <node>
-        <type>1</type>
-        <ID>Box004</ID>
-        <box>
-            <c>0 0 30.5</c>
-            <x>1 0 0</x>
-            <y>0 1 0</y>
-            <z>0 0 1</z>
-            <e>30 5 0.5</e>
-        </box>
-    </node>
-    <node>
-        <type>1</type>
-        <ID>Box005</ID>
-        <box>
-            <c>-2.5 0 40.5</c>
-            <x>1 0 0</x>
-            <y>0 1 0</y>
-            <z>0 0 1</z>
-            <e>30 5 0.5</e>
-        </box>
-    </node>
-    <node>
-        <type>1</type>
-        <ID>Box006</ID>
-        <box>
-            <c>0 0 50.5</c>
-            <x>1 0 0</x>
-            <y>0 1 0</y>
-            <z>0 0 1</z>
-            <e>30 3 0.5</e>
-        </box>
-    </node>
-    <node>
         <type>2</type>
         <ID>Box007</ID>
         <box>
@@ -230,6 +164,72 @@
             <y>-0.342019 -5.55112e-17 -0.939693</y>
             <z>-0.939693 -7.13779e-07 0.342019</z>
             <e>6 6.00005 0.250028</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>Box001</ID>
+        <box>
+            <c>0 0 0.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>30 5 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>Box002</ID>
+        <box>
+            <c>-5 0 10.3822</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>30 5 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>Box003</ID>
+        <box>
+            <c>-2.5 0 20.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>30 5 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>Box004</ID>
+        <box>
+            <c>0 0 30.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>30 5 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>Box005</ID>
+        <box>
+            <c>-2.5 0 40.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>30 5 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>Box006</ID>
+        <box>
+            <c>0 0 50.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>30 3 0.5</e>
         </box>
     </node>
     <cL>0</cL>
