@@ -1,0 +1,18 @@
+sqzDirection = 0, 1, 0
+nbSplits = 3
+nbChunks = 6
+
+nbMasters = 2
+nbSlaves = 4
+nbBlocks = 1
+
+fdTime = 17958
+spaceSaving = 0.996625
+
+nbHinges = 14
+shrinkedArea = 0.000110303
+
+constrainAabbScale = 1, 1, 1.15
+connThrRatio = 0.05
+
+costWeight = 0.05
