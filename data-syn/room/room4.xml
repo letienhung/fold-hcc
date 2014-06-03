@@ -1,6 +1,6 @@
 <!--?xml Version = "1.0"?-->
 <document>
-    <cN>42</cN>
+    <cN>41</cN>
     <node>
         <type>2</type>
         <ID>Box001</ID>
@@ -307,17 +307,6 @@
             <y>1 0 0</y>
             <z>0 0 1</z>
             <e>40.1891 35.1773 0.25</e>
-        </box>
-    </node>
-    <node>
-        <type>2</type>
-        <ID>Box016</ID>
-        <box>
-            <c>-31.6051 -41.2295 19.9669</c>
-            <x>0 0 1</x>
-            <y>0 -1 0</y>
-            <z>1 0 0</z>
-            <e>19.9669 1 0.15</e>
         </box>
     </node>
     <node>
