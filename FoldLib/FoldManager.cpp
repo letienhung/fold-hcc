@@ -211,6 +211,8 @@ int fdTime = timer.elapsed();
 	// forward message
 	selDc->generateKeyframes(nbKeyframes);
 
+	if(selDc->keyframes.isEmpty()) return;
+
 	// emit signals
 	updateKeyframeSlider();
 

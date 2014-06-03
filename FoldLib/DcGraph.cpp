@@ -8,7 +8,7 @@
 
 
 DcGraph::DcGraph(QString id, FdGraph* scaffold, Vector3 v)
-	: FdGraph(*scaffold) // clone the FdGraph
+	: FdGraph(*scaffold), baseMaster(NULL) // clone the FdGraph
 {
 	path = QFileInfo(path).absolutePath();
 	mID = id;
@@ -163,6 +163,8 @@ void DcGraph::computeMasterOrderConstraints()
 			minT = masterTimeStamps[m->mID];
 		}
 	}
+
+	if(!baseMaster) return;
 
 	// projected rect
 	QMap<QString, Geom::Rectangle2> proj_rects;
@@ -666,6 +668,8 @@ FdGraph* DcGraph::getSuperKeyframe( double t )
 		foreach (Structure::Node* n, fblock->nodes)
 			if (n->hasTag(FOLDED_TAG)) foldedParts << n->mID;
 	}
+
+	if(!baseMaster) return NULL;
 
 	// combine
 	FdGraph *keyframe = combineDecomposition(foldedBlocks, baseMaster->mID, masterBlockMap);

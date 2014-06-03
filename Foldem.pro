@@ -7,8 +7,10 @@ SUBDIRS += \
     UtilityLib \
     StructureLib \
     MeshUtilityLib \
-    CliquerLib
+    CliquerLib \
+    DemoApp
 
-FoldPlugin.depends = UtilityLib GeometryLib
+FoldPlugin.depends = UtilityLib GeometryLib FoldLib
+DemoApp.depends = UtilityLib GeometryLib FoldLib
 
 win32:QMAKE_CXXFLAGS += /wd4018
