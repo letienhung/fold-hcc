@@ -70,6 +70,7 @@ public slots:
 
 	// export
 	void exportCurrent();
+	void exportAllObj();
 	void exportSVG();
 	void exportPNG();
 

@@ -252,6 +252,23 @@ void FdPlugin::exportCurrent()
 	showMessage("Current mesh has been exported.");
 }
 
+void FdPlugin::exportAllObj()
+{
+	DcGraph* selDc = f_manager->getSelDcGraph();
+	if (!selDc) return;
+
+	QString filename = QFileDialog::getSaveFileName(0, tr("Save Current Keyframes"), NULL, tr("Mesh file (*.obj)"));
+	QString basefilename = filename;
+	basefilename.chop(4);
+
+	for (int i = 0; i < selDc->keyframes.size(); i++)
+	{	
+		filename = basefilename + QString("%1").arg(QString::number(i), 3, '0') + ".obj";
+		f_manager->selectKeyframe(i);
+		selDc->getSelKeyframe()->exportMesh(filename);
+	}
+}
+
 #include "ChainGraph.h"
 void FdPlugin::test1()
 {

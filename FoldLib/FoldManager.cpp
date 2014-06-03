@@ -25,8 +25,8 @@ FoldManager::FoldManager()
 	aabbScale = Vector3(1, 1, 1.15);
 
 	costWeight = 0.05;
-	useNewCost = true;
-	useUniformHeight = false;
+	useNewCost = false;
+	useUniformHeight = true;
 }
 
 FoldManager::~FoldManager()
