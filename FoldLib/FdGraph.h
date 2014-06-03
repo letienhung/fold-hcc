@@ -13,10 +13,10 @@ class FdGraph : public Structure::Graph
 {
 public:
 	FdGraph(QString id = "");
+	virtual ~FdGraph();
 	FdGraph(FdGraph& other);
 
 	virtual Graph* clone();
-	FdGraph * deepClone();
 	FdLink* addLink(FdNode* n1, FdNode* n2);
 
 public:

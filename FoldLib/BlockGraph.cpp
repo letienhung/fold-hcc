@@ -101,6 +101,10 @@ BlockGraph::~BlockGraph()
 {
 	foreach(ChainGraph* c, chains)
 		delete c;
+
+	if (collFog) delete collFog;
+
+	if (superBlock) delete superBlock;
 }
 
 FdGraph* BlockGraph::activeScaffold()
@@ -345,11 +349,6 @@ void BlockGraph::exportCollFOG()
 {
 	QString filename = path + "/" + mID;
 	collFog->saveAsImage(filename);
-
-	for(int i = 0; i < debugFogs.size(); i++)
-	{
-		debugFogs[i]->saveAsImage(filename + "_debug" + QString::number(i));
-	}
 }
 
 FdGraph* BlockGraph::getKeyframe( double t, bool useThk )

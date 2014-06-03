@@ -82,7 +82,6 @@ public:
 	int nbSplits;
 	int nbChunks;
 	FoldOptionGraph* collFog;
-	QVector<FoldOptionGraph*> debugFogs;
 
 	// fold solutions
 	int selSlnIdx;

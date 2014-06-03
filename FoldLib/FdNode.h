@@ -17,12 +17,12 @@ public:
 	FdNode(QString id = "");
     FdNode(QString id, Geom::Box &b, MeshPtr m);
 	FdNode(FdNode& other);
-	~FdNode();
+	virtual ~FdNode();
 
-	virtual Node* clone() = 0;
+	Node* clone() = 0;
 
 	// plain nodes
-	virtual QVector<FdNode*> getPlainNodes();
+	virtual QVector<FdNode*> getSubNodes();
 
 	// visualization
 	bool isHidden;

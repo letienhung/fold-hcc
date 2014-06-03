@@ -11,6 +11,7 @@ class Graph : public PropertyMap
 {
 public:
     Graph(QString id = "");
+	virtual ~Graph();
 	Graph(Graph& other);
 	virtual Graph* clone();
 

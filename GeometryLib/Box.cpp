@@ -402,10 +402,10 @@ int Geom::Box::getType( double threshold )
 	ext << Extent[0] << Extent[1] << Extent[2];
 	qSort(ext);
 
-	if (ext[2] / ext[1] > threshold)
-		return ROD;
-	else if (ext[1] / ext[0] > threshold)
+	if (ext[1] / ext[0] > threshold)
 		return PATCH;
+	else if (ext[2] / ext[1] > threshold)
+		return ROD;
 	else
 		return BRICK;
 }

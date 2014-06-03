@@ -8,6 +8,7 @@ class Node : public PropertyMap
 {
 public:
 	Node(QString nid); 
+	virtual ~Node();
 	Node(Node &other);
 	virtual Node* clone();
 

@@ -7,6 +7,7 @@ class ChainNode : public Structure::Node
 public:
 	ChainNode(int idx, QString id);
 	ChainNode(ChainNode &other);
+	~ChainNode();
 	Node* clone();
 
 	// chain index
@@ -19,6 +20,7 @@ public:
 	FoldOption(QString id);
 	FoldOption( QString id, bool right, double s, double p, int n, double area);
 	FoldOption(FoldOption &other);
+	~FoldOption();
 	Node* clone();
 
 public:

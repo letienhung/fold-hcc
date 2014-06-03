@@ -7,6 +7,11 @@ Structure::Node::Node( QString nid )
 	isSelected = false;
 }
 
+Structure::Node::~Node()
+{
+
+}
+
 Structure::Node::Node(Node &other)
 {
 	mID = other.mID;

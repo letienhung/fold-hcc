@@ -10,7 +10,7 @@ public:
 	BundleNode(BundleNode& other);
 	~BundleNode();
 
-	virtual Node* clone();
+	Node* clone();
 
 	//void draw();
 	void drawMesh();
@@ -22,7 +22,7 @@ public:
 
 	void exportMesh(QFile &file, int& v_offset);
 
-	QVector<FdNode*> getPlainNodes();
+	QVector<FdNode*> getSubNodes();
 
 	FdNode* cloneChopped(Geom::Plane& chopper);
 	FdNode* cloneChopped(Geom::Plane& chopper1, Geom::Plane& chopper2);

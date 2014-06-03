@@ -12,7 +12,7 @@
 class DcGraph : public FdGraph
 {
 public:
-    DcGraph(QString id, FdGraph* scaffold, Vector3 v);
+    DcGraph(QString id, FdGraph* scaffold, Vector3 v, double connThr);
 	~DcGraph();
 
 public:

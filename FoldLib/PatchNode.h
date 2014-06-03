@@ -10,7 +10,8 @@ public:
     PatchNode(QString id, Geom::Box &b, MeshPtr m, Vector3 v = Vector3(0, 0, 0));
 	PatchNode(RodNode* rodNode, Vector3 v);
 	PatchNode(PatchNode &other);
-	virtual Node* clone();
+	virtual ~PatchNode();
+	Node* clone();
 
 public:
 	// create patch

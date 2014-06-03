@@ -12,6 +12,7 @@ class PropertyMap
 {
 public:
     PropertyMap(){}
+	~PropertyMap(){}
 
 	// properties
 	void addTag(QString tag){

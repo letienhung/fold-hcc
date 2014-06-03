@@ -24,7 +24,7 @@ FdLink::FdLink( FdLink& other )
 
 FdLink::~FdLink()
 {
-	delete hinge;
+	if (hinge) delete hinge;
 }
 
 Structure::Link* FdLink::clone()

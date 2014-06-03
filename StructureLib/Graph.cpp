@@ -9,6 +9,14 @@ Structure::Graph::Graph(QString id)
 	this->mID = id;
 }
 
+
+Structure::Graph::~Graph()
+{
+	foreach (Link* l, links) delete l;
+	foreach (Node* n, nodes) delete n;
+}
+
+
 Structure::Graph::Graph(Graph& other)
 {
 	this->mID = other.mID;
@@ -312,8 +320,10 @@ QVector< QVector<Structure::Node*> > Structure::Graph::getComponents()
 QVector<Structure::Node*> Structure::Graph::getNodesWithTag( QString tag )
 {
 	QVector<Node*> ns;
-	foreach (Node* n, nodes)
-		if (n->hasTag(tag)) ns << n;
+	for (int i = 0; i < nodes.size(); i++)
+	{
+		if (nodes[i]->hasTag(tag)) ns << nodes[i];
+	}
 	return ns;
 }
 

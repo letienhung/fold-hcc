@@ -52,6 +52,13 @@ PatchNode::PatchNode(PatchNode& other)
 }
 
 
+PatchNode::~PatchNode()
+{
+
+}
+
+
+
 void PatchNode::createScaffold(bool useAid)
 {
 	// update axis index

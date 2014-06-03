@@ -64,7 +64,7 @@ ChainGraph::ChainGraph( FdNode* slave, PatchNode* base, PatchNode* top)
 
 ChainGraph::~ChainGraph()
 {
-
+	delete origSlave;
 }
 
 void ChainGraph::computeOrientations()

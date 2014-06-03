@@ -183,7 +183,7 @@ void FoldManager::decompose()
 {
 	selDcIdx = dcGraphs.size();
 	QString id = "Dc_" + QString::number(selDcIdx);
-	dcGraphs.push_back(new DcGraph(id, scaffold, sqzV));
+	dcGraphs.push_back(new DcGraph(id, scaffold, sqzV, connThrRatio));
 
 	updateDcList();
 }

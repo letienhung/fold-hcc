@@ -33,23 +33,15 @@ FdGraph::FdGraph( FdGraph& other )
 }
 
 
+FdGraph::~FdGraph()
+{
+
+}
+
 Structure::Graph* FdGraph::clone()
 {
 	return new FdGraph(*this);
 }
-
-FdGraph * FdGraph::deepClone()
-{
-	FdGraph *fdGraph = (FdGraph*)clone();
-
-	QVector<FdNode *> nodes = fdGraph->getFdNodes();
-	foreach(FdNode *n, nodes){
-		n->cloneMesh();
-	}
-
-	return fdGraph;
-}
-
 
 FdLink* FdGraph::addLink( FdNode* n1, FdNode* n2 )
 {
@@ -241,7 +233,7 @@ FdNode* FdGraph::wrapAsBundleNode( QVector<QString> nids, Vector3 v )
 
 	// merge into a bundle node
 	QVector<FdNode*> subNodes;
-	foreach (FdNode* n, ns)	subNodes += n->getPlainNodes();
+	foreach (FdNode* n, ns)	subNodes += n->getSubNodes();
 	QString bid = getBundleName(subNodes);
 	Geom::Box box = getBundleBox(subNodes);
 	BundleNode* bundleNode = new BundleNode(bid, box, subNodes, v); 

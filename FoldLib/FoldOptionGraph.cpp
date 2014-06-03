@@ -29,6 +29,11 @@ Structure::Node* ChainNode::clone()
 	return new ChainNode(*this);
 }
 
+ChainNode::~ChainNode()
+{
+
+}
+
 //////////////////////////////////////////////////////////////////////////
 
 FoldOption::FoldOption( QString id, bool right, double s, double p, int n, double area )
@@ -44,7 +49,6 @@ FoldOption::FoldOption( FoldOption &other )
 	position = other.position;
 	nSplits = other.nSplits;
 	patchArea = other.patchArea;
-	
 }
 
 FoldOption::FoldOption(QString id)
@@ -58,6 +62,11 @@ FoldOption::FoldOption(QString id)
 Structure::Node* FoldOption::clone()
 {
 	return new FoldOption(*this);
+}
+
+FoldOption::~FoldOption()
+{
+
 }
 
 

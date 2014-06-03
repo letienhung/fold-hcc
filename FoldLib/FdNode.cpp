@@ -225,7 +225,7 @@ QString FdNode::getMeshName()
 	else return mMesh->name;
 }
 
-QVector<FdNode*> FdNode::getPlainNodes()
+QVector<FdNode*> FdNode::getSubNodes()
 {
 	return QVector<FdNode*>() << this;
 }

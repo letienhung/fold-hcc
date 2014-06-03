@@ -8,6 +8,7 @@ class Link : public PropertyMap
 {
 public:
 	Link(Node* n1, Node* n2);
+	virtual ~Link();
 	Link(Link& other);
 	virtual Link* clone();
 

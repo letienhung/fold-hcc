@@ -67,11 +67,11 @@ QString BundleNode::getMeshName()
 	return name;
 }
 
-QVector<FdNode*> BundleNode::getPlainNodes()
+QVector<FdNode*> BundleNode::getSubNodes()
 {
 	QVector<FdNode*> pnodes;
 	foreach (FdNode* n, mNodes)
-		pnodes += n->getPlainNodes();
+		pnodes += n->getSubNodes();
 
 	return pnodes;
 }

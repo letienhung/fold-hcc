@@ -346,7 +346,7 @@ FdGraph* combineDecomposition( QVector<FdGraph*> decmps, QString baseMid,
 	FdGraph* combination = new FdGraph();
 	FdGraph* base_decmp = decmps[base_decmp_id];
 	PatchNode* baseMaster = (PatchNode*)base_decmp->getNode(baseMid);
-	combination->Structure::Graph::addNode(baseMaster);
+	combination->Structure::Graph::addNode(baseMaster->clone());
 	masterCombined[baseMid] = true;
 
 	// prorogation

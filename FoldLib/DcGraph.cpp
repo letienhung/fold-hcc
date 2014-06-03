@@ -7,14 +7,14 @@
 #include "IntrRect2Rect2.h"
 
 
-DcGraph::DcGraph(QString id, FdGraph* scaffold, Vector3 v)
+DcGraph::DcGraph(QString id, FdGraph* scaffold, Vector3 v, double connThr)
 	: FdGraph(*scaffold), baseMaster(NULL) // clone the FdGraph
 {
 	path = QFileInfo(path).absolutePath();
 	mID = id;
 	sqzV = v;
 	// threshold
-	connThrRatio = 0.1;
+	connThrRatio = connThr;
 
 	// decomposition
 	createMasters();
@@ -674,8 +674,11 @@ FdGraph* DcGraph::getSuperKeyframe( double t )
 	// combine
 	FdGraph *keyframe = combineDecomposition(foldedBlocks, baseMaster->mID, masterBlockMap);
 	if(!keyframe) return NULL;
-
-	foreach (FdGraph* b, foldedBlocks) delete b;
+	for (int i = 0; i < foldedBlocks.size(); i++)
+	{
+		FdGraph* b = foldedBlocks[i];
+		delete b;
+	}
 	foreach (QString fp, foldedParts)
 	{
 		FdNode * fnode = (FdNode*)keyframe->getNode(fp);

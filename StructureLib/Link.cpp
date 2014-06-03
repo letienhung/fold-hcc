@@ -11,6 +11,11 @@ Structure::Link::Link( Structure::Node* n1, Structure::Node* n2 )
 	id = node1->mID + ":" + node2->mID;
 }
 
+Structure::Link::~Link()
+{
+
+}
+
 Structure::Link::Link( Link& other )
 {
 	// note: pointers to nodes are not copied
