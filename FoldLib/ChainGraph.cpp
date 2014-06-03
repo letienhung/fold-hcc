@@ -53,7 +53,7 @@ ChainGraph::ChainGraph( FdNode* slave, PatchNode* base, PatchNode* top)
 	patchArea = origSlave->mPatch.area();
 
 	// uniform
-	useUniformHeight = false;
+	useUniformHeight = true;
 
 	//// debug
 	//addDebugSegment(baseJoint);
