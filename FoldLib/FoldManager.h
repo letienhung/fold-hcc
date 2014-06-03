@@ -32,6 +32,7 @@ public:
 	double connThrRatio;
 	Vector3 aabbScale;
 	double costWeight;
+	bool useNewCost;
 
 	// statistics
 	Structure::PropertyMap stat;

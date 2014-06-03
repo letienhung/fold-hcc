@@ -113,5 +113,8 @@ public:
 
 	// single block
 	bool isAlone;
+
+	// cost
+	bool useNewCost;
 }; 
 

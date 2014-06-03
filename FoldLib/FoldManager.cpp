@@ -25,6 +25,7 @@ FoldManager::FoldManager()
 	aabbScale = Vector3(1, 1, 1);
 
 	costWeight = 0.05;
+	useNewCost = false;
 }
 
 FoldManager::~FoldManager()
@@ -380,6 +381,7 @@ void FoldManager::setParameters()
 			b->shapeAABB = constrainAABB;
 
 			b->costWeight = costWeight;
+			b->useNewCost = useNewCost;
 		}
 
 		dc->connThrRatio = connThrRatio;

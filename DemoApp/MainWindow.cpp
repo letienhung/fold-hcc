@@ -39,7 +39,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
 	// Connect list with loading of shapes
 	this->connect( ui->shapesList, SIGNAL(currentIndexChanged(QString)), SLOT(loadShape(QString)) );
-	if(shapeParamters.size()) loadShape( shapeParamters.keys().front() );
+	if(shapeParamters.size()) loadShape( ui->shapesList->currentText() );
 
     // Connect foldablize button
     this->connect( ui->foldabilize, SIGNAL(clicked()), SLOT(foldabilize()));

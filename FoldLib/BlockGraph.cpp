@@ -92,6 +92,9 @@ BlockGraph::BlockGraph( QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& s
 
 	// single block
 	isAlone = false;
+
+	// cost
+	useNewCost = true;
 }
 
 BlockGraph::~BlockGraph()
@@ -591,8 +594,13 @@ void BlockGraph::addNodesToCollisionGraph()
 	//Geom::Rectangle2 fakeAFR = base_rect.get2DRectangle(base_rect);
 	//foreach (QString key, availFoldingRegion.keys())
 	//	availFoldingRegion[key] = fakeAFR;
-	
 
+	// total patch area
+	double totalA = 0;
+	foreach (ChainGraph* chain, chains)
+		totalA += chain->origSlave->mPatch.area();
+	
+	// fold options
 	for(int cid = 0; cid < chains.size(); cid++)
 	{
 		std::cout << "cid = " << cid << ": ";
@@ -616,16 +624,23 @@ void BlockGraph::addNodesToCollisionGraph()
 		std::cout << " ==> " << options.size() << std::endl;
 		foreach (FoldOption* fn, options) frs << fn->region;
 
-		// delete option
+		// "delete" option
 		FoldOption* delete_fn = new FoldOption(chain->mID + "_delete");
 		delete_fn->addTag(DELETE_FOLD_OPTION);
+		delete_fn->patchArea = chains[cid]->origSlave->mPatch.area();
+		delete_fn->nSplits = 0;
+		delete_fn->scale = 0;
 		options << delete_fn;
+
 
 		// links
 		foreach(FoldOption* fn, options)
 		{
 			collFog->addNode(fn);
 			collFog->addFoldLink(cn, fn);
+
+			// normalize area
+			fn->patchArea /= totalA;
 		}
 	}
 
@@ -925,15 +940,26 @@ void BlockGraph::computeMasterNbUnderLayers()
 double BlockGraph::computeCost( FoldOption* fn )
 {
 	double cost;
-	if (fn->hasTag(DELETE_FOLD_OPTION))
+
+	if (useNewCost)
 	{
-		cost = 10;
+		double cost1 = fn->nSplits;
+
+		double cost2 = (1 - fn->scale) * (1 - fn->scale);
+
+		cost = costWeight * cost1 + fn->patchArea * cost2;
+
+		cost *= 10; // for cliquer which convert double to integer
+
+		if (fn->hasTag(DELETE_FOLD_OPTION)) cost *= 10;
 	}
 	else
 	{
 		double cost1 = fn->nSplits;
 		double cost2 = 1 - fn->scale;
 		cost = costWeight * cost1 + cost2;
+
+		if (fn->hasTag(DELETE_FOLD_OPTION)) cost = 10;
 	}
 
 	return cost;
