@@ -30,6 +30,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 			shapeParamters[ shapeName ]["nChunks"] = shapeDetail[c++].toInt();
 			shapeParamters[ shapeName ]["costWeight"] = shapeDetail[c++].toDouble();
 			shapeParamters[ shapeName ]["threshold"] = shapeDetail[c++].toDouble();
+			shapeParamters[ shapeName ]["newCost"] = shapeDetail[c++].toInt();
+			shapeParamters[ shapeName ]["uniformHeight"] = shapeDetail[c++].toInt();
             shapeParamters[ shapeName ]["axis"] = shapeDetail[c++];
 
 			// Populate list
@@ -87,6 +89,10 @@ void MainWindow::loadShape( QString shapeName )
 			ui->connThrRation->setValue( shapeParamters[ shapeName ]["threshold"].toDouble() );
 		}
 
+		fmanager->nbSplits = shapeParamters[ shapeName ]["nSplits"].toInt();
+		fmanager->nbChunks = shapeParamters[ shapeName ]["nChunks"].toInt();
+		fmanager->useNewCost = shapeParamters[ shapeName ]["newCost"].toInt();
+		fmanager->useUniformHeight = shapeParamters[ shapeName ]["uniformHeight"].toInt();
 		fmanager->setThickness( 0.5 );
 		fmanager->setNbKeyframes( 100 );
 	}

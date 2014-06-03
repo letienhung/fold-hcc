@@ -22,11 +22,11 @@ FoldManager::FoldManager()
 	thickness = 0;
 
 	connThrRatio = 0.05;
-	aabbScale = Vector3(1, 1, 1);
+	aabbScale = Vector3(1, 1, 1.15);
 
 	costWeight = 0.05;
 	useNewCost = true;
-	useUniformHeight = true;
+	useUniformHeight = false;
 }
 
 FoldManager::~FoldManager()

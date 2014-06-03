@@ -102,6 +102,8 @@ void Viewer::draw()
 		{
 			glEnable(GL_LIGHTING);
 
+			this->aabb = fmanager->scaffold->computeAABB();
+
 			double scale = aabb.radius() * 0.25;
 			glPushMatrix();
 			glTranslated(-scale * 0.75, -scale * 0.75, 0);
@@ -114,7 +116,7 @@ void Viewer::draw()
 			glEnable( GL_MULTISAMPLE );
 			
 			glColor3d(0.8,0,0);
-			drawArrow(from + Vec( fmanager->sqzV.data() ) * (scale * 0.4), to, 0.5);
+			drawArrow(to, from + Vec( fmanager->sqzV.data() ) * (scale * 0.4), 0.5);
 
 			glPopMatrix();
 		}
@@ -131,8 +133,6 @@ void Viewer::setFoldManager(FoldManager * manager)
 	camera()->setUpVector(Vec(0,0,1));
 	camera()->setPosition(Vec(-meshSize * 2, -meshSize * 2, meshSize * 1.25));
 	camera()->lookAt(Vec());
-
-	this->aabb = manager->scaffold->computeAABB();
 
 	this->theta = 0.0;
 

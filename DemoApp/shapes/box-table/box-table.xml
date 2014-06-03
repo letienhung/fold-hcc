@@ -1,0 +1,93 @@
+<!--?xml Version = "1.0"?-->
+<document>
+    <cN>8</cN>
+    <node>
+        <type>2</type>
+        <ID>ground</ID>
+        <box>
+            <c>0 0 0.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>50 25 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>ceiling</ID>
+        <box>
+            <c>0 0 50.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>50 25 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>wallRight</ID>
+        <box>
+            <c>49.5 0 25</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 25 25</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>wallLeft</ID>
+        <box>
+            <c>-49.5 0 25</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 25 25</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>legLeft</ID>
+        <box>
+            <c>-15 0 10</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 15 10</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>legRight</ID>
+        <box>
+            <c>15 0 10</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>0.5 15 10</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>table</ID>
+        <box>
+            <c>0 0 20.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>22.5 15 0.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>Box001</ID>
+        <box>
+            <c>0 25 25.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>50 0.5 25.5</e>
+        </box>
+    </node>
+    <cL>0</cL>
+</document>

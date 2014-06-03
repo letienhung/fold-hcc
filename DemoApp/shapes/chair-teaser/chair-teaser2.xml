@@ -1,0 +1,137 @@
+<!--?xml Version = "1.0"?-->
+<document>
+    <cN>12</cN>
+    <node>
+        <type>2</type>
+        <ID>seat</ID>
+        <box>
+            <c>0 0.1 1</c>
+            <x>0 0 1</x>
+            <y>0 1 0</y>
+            <z>-1 0 0</z>
+            <e>1 25.05 25</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>back</ID>
+        <box>
+            <c>0 24 26.75</c>
+            <x>0 0 1</x>
+            <y>0 1 0</y>
+            <z>-1 0 0</z>
+            <e>24.75 1 25</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>backLeftLeg</ID>
+        <box>
+            <c>-24 24 -24</c>
+            <x>0 0 1</x>
+            <y>0 1 0</y>
+            <z>-1 0 0</z>
+            <e>25 1 1</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>backRightLeg</ID>
+        <box>
+            <c>24 24 -24</c>
+            <x>0 0 1</x>
+            <y>0 1 0</y>
+            <z>-1 0 0</z>
+            <e>25 1 1</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>frontLeftLeg</ID>
+        <box>
+            <c>-24 -24 -24</c>
+            <x>0 0 1</x>
+            <y>0 1 0</y>
+            <z>-1 0 0</z>
+            <e>25 1 1</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>frontRightLeg</ID>
+        <box>
+            <c>24 -24 -24</c>
+            <x>0 0 1</x>
+            <y>0 1 0</y>
+            <z>-1 0 0</z>
+            <e>25 1 1</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>backLeftLeg001</ID>
+        <box>
+            <c>-24 24 26.5</c>
+            <x>0 0 1</x>
+            <y>0 1 0</y>
+            <z>-1 0 0</z>
+            <e>25 1 1</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>backLeftLeg002</ID>
+        <box>
+            <c>24 24 26.5</c>
+            <x>0 0 1</x>
+            <y>0 1 0</y>
+            <z>-1 0 0</z>
+            <e>25 1 1</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>backBar</ID>
+        <box>
+            <c>0 24 -12.5</c>
+            <x>0 0 1</x>
+            <y>0 1 0</y>
+            <z>-1 0 0</z>
+            <e>2.5 1 24</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>frontBar</ID>
+        <box>
+            <c>0 -24 -12.5</c>
+            <x>0 0 1</x>
+            <y>0 1 0</y>
+            <z>-1 0 0</z>
+            <e>2.5 1 24</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>leftBar</ID>
+        <box>
+            <c>-24 0 -27.5</c>
+            <x>0 0 1</x>
+            <y>-1 0 0</y>
+            <z>0 -1 0</z>
+            <e>2.5 1 24</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>rightBar</ID>
+        <box>
+            <c>24 0 -27.5</c>
+            <x>0 0 1</x>
+            <y>-1 0 0</y>
+            <z>0 -1 0</z>
+            <e>2.5 1 24</e>
+        </box>
+    </node>
+    <cL>0</cL>
+</document>

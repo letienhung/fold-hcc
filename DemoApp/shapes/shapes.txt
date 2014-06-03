@@ -1,0 +1,12 @@
+shapes/chair-teaser/chair-teaser1.xml|1|2|0.05|0.01|1|0|X
+shapes/chair-teaser/chair-teaser2.xml|1|2|0.05|0.01|1|0|Y
+shapes/box-table/box-table.xml|3|5|0.05|0.01|0|0|Z
+shapes/bbq-table/bbq-table.xml|1|6|0.05|0.01|0|0|Z
+shapes/bed/bed.xml|1|1|0.05|0.01|1|0|Y
+shapes/bench/bench.xml|1|1|0.05|0.01|0|0|X
+shapes/desk/desk.xml|1|2|0.05|0.01|1|0|Z
+shapes/tower/tower.xml|1|2|0.05|0.01|1|0|Z
+shapes/two-towers/two-towers.xml|1|2|0.05|0.01|1|0|Z
+shapes/tv-stand/tv-stand.xml|1|1|0.05|0.01|1|1|Z
+shapes/complex-shelf1/complex-shelf1.xml|1|1|0.05|0.01|0|0|Z
+shapes/complex-shelf2/complex-shelf2.xml|1|3|0.05|0.01|0|1|Z

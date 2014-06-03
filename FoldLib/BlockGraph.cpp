@@ -305,7 +305,7 @@ void BlockGraph::computeAvailFoldingRegion( FdGraph* superKeyframe )
 		constraintParts << getInbetweenOutsideParts(superKeyframe, base_mid, top_mid);
 		constraintParts << getUnrelatedMasters(superKeyframe, base_mid, top_mid);
 		QVector<Vector3> samples;
-		int nbs = 10;
+		int nbs = 100;
 		foreach(QString nid, constraintParts)
 		{
 			FdNode* n = (FdNode*)superKeyframe->getNode(nid);
@@ -600,7 +600,10 @@ void BlockGraph::addNodesToCollisionGraph()
 	// total patch area
 	double totalA = 0;
 	foreach (ChainGraph* chain, chains)
+	{
+		if(!chain->origSlave) continue;
 		totalA += chain->origSlave->mPatch.area();
+	}
 	
 	// fold options
 	for(int cid = 0; cid < chains.size(); cid++)
@@ -628,6 +631,8 @@ void BlockGraph::addNodesToCollisionGraph()
 		// "delete" option
 		FoldOption* delete_fn = new FoldOption(chain->mID + "_delete");
 		delete_fn->addTag(DELETE_FOLD_OPTION);
+
+		if(!chains[cid]->origSlave) continue;
 		delete_fn->patchArea = chains[cid]->origSlave->mPatch.area();
 		delete_fn->nSplits = 0;
 		delete_fn->scale = 0;
