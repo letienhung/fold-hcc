@@ -108,12 +108,9 @@ public:
 	QMap<QString, int> masterNbUnderLayers;
 
 	// cost weight
-	double costWeight;
+	double w;
 
 	// single block
 	bool isAlone;
-
-	// cost
-	bool useNewCost;
 }; 
 

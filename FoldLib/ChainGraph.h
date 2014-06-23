@@ -16,6 +16,7 @@ public:
 
 	// fold options
 	QVector<FoldOption*> generateFoldOptions(int nSplits, int nUsedChunks, int nChunks);
+	FoldOption* generateDeleteFoldOption(int nSplits);
 	Geom::Rectangle getFoldRegion(FoldOption* fn);
 	Geom::Rectangle getMaxFoldRegion(bool right);
 

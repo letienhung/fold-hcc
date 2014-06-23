@@ -17,7 +17,6 @@ public:
 class FoldOption : public Structure::Node
 {
 public:
-	FoldOption(QString id);
 	FoldOption( QString id, bool right, double s, double p, int n, double area);
 	FoldOption(FoldOption &other);
 	~FoldOption();

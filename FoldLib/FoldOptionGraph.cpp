@@ -1,4 +1,3 @@
-
 #include "FoldOptionGraph.h"
 #include <QFile>
 #include <QStringList>
@@ -7,7 +6,7 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QFileDialog>
-#include "UtilityGlobal.h"
+#include "UtilityGlobal.h" 
 #include <QQueue>
 #include "Numeric.h"
 #include "FdUtility.h"
@@ -49,14 +48,6 @@ FoldOption::FoldOption( FoldOption &other )
 	position = other.position;
 	nSplits = other.nSplits;
 	patchArea = other.patchArea;
-}
-
-FoldOption::FoldOption(QString id)
-	:Node(id)
-{
-	// dumpy fold option for H-block
-	scale = 1;
-	nSplits = 0;
 }
 
 Structure::Node* FoldOption::clone()

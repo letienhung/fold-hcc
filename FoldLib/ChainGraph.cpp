@@ -449,6 +449,17 @@ QVector<FoldOption*> ChainGraph::generateFoldOptions( int nSplits, int nUsedChun
 	return options;
 }
 
+
+
+FoldOption* ChainGraph::generateDeleteFoldOption( int nSplits )
+{
+	QString fnid = mID + "_delete";
+	FoldOption* delete_fn = new FoldOption(fnid, true, 0, 0, nSplits, patchArea);
+	delete_fn->addTag(DELETE_FOLD_OPTION);
+	return delete_fn;
+}
+
+
 void ChainGraph::resetChainParts(FoldOption* fn)
 {
 	// clear
