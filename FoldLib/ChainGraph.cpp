@@ -383,8 +383,6 @@ void ChainGraph::addThickness(FdGraph* keyframe, double t)
 
 void ChainGraph::fold( double t )
 {
-	if(!baseMaster) return;
-
 	// free all nodes
 	foreach (Structure::Node* n, nodes)
 		n->removeTag(FIXED_NODE_TAG);
@@ -392,11 +390,18 @@ void ChainGraph::fold( double t )
 	// fix base
 	baseMaster->addTag(FIXED_NODE_TAG);
 
-	// set up hinge angles and top position
-	if (useUniformHeight)
-		foldUniformHeight(t);
-	else 
-		foldUniformAngle(t);
+	if (isTChain())
+	{
+		foldT(t);
+	}
+	else
+	{
+		// set up hinge angles and top position
+		if (useUniformHeight)
+			foldUniformHeight(t);
+		else 
+			foldUniformAngle(t);
+	}
 
 	// restore configuration
 	restoreConfiguration();
@@ -439,13 +444,6 @@ QVector<FoldOption*> ChainGraph::generateFoldOptions( int nSplits, int nUsedChun
 		options.push_back(fn2);
 	}
 
-	// fold area
-	foreach (FoldOption* fn, options)
-	{
-		fn->region = getFoldRegion(fn);
-		fn->duration = duration;
-	}
-
 	return options;
 }
 
@@ -456,6 +454,7 @@ FoldOption* ChainGraph::generateDeleteFoldOption( int nSplits )
 	QString fnid = mID + "_delete";
 	FoldOption* delete_fn = new FoldOption(fnid, true, 0, 0, nSplits, patchArea);
 	delete_fn->addTag(DELETE_FOLD_OPTION);
+	delete_fn->region = Geom::Rectangle();
 	return delete_fn;
 }
 
@@ -568,7 +567,7 @@ void ChainGraph::resetHingeLinks(FoldOption* fn)
 	}
 }
 
-void ChainGraph::setActiveLinks( FoldOption* fn )
+void ChainGraph::activateLinks( FoldOption* fn )
 {
 	// clear
 	activeLinks.clear();
@@ -606,10 +605,10 @@ void ChainGraph::applyFoldOption( FoldOption* fn)
 	// clear tag
 	removeTag(DELETED_TAG); 
 
+	// reset chains and hinges
 	resetChainParts(fn);
 	resetHingeLinks(fn);
-	setActiveLinks(fn);
-
+	activateLinks(fn);
 	computePhaseSeparator();
 
 	// statistics
@@ -692,17 +691,33 @@ QVector<Geom::Plane> ChainGraph::generateCutPlanes( FoldOption* fn )
 	double L = slaveSeg.length();
 	double d = rightSeg.length();
 	double h = topTraj.length();
-	double a = (L - d) / (fn->nSplits + 1);
-	double sin_alpha = h / L;
-	double step = a * sin_alpha;
 
-	// cut at lower end
-	Geom::Plane plane0 =  baseMaster->mPatch.getPlane();
-	Vector3 stepV = step * plane0.Normal;
-	// cut at higher end
-	if (!fn->rightSide) {
-		plane0.translate(topTraj.P1 - topTraj.P0);
-		stepV *= -1;
+	// start plane and step
+	Geom::Plane start_plane;
+	Vector3 stepV;
+	if (isTChain())
+	{
+		// T-chain
+		double step = h / (fn->nSplits + 1);
+		start_plane =  baseMaster->mPatch.getPlane();
+		stepV = step * start_plane.Normal;	
+	}
+	else
+	{
+		// H-chain
+		double a = (L - d) / (fn->nSplits + 1);
+		double sin_alpha = h / L;
+		double step = a * sin_alpha;
+
+		// cut at lower end
+		start_plane =  baseMaster->mPatch.getPlane();
+		stepV = step * start_plane.Normal;
+		// cut at higher end
+		if (!fn->rightSide) {
+			start_plane.translate(topTraj.P1 - topTraj.P0);
+			stepV *= -1;
+		}
+
 	}
 
 	// cut planes
@@ -710,8 +725,19 @@ QVector<Geom::Plane> ChainGraph::generateCutPlanes( FoldOption* fn )
 	for (int i = 1; i <= fn->nSplits; i++)
 	{
 		Vector3 deltaV = i * stepV;
-		cutPlanes << plane0.translated(deltaV);
+		cutPlanes << start_plane.translated(deltaV);
 	}
 
 	return cutPlanes;
+}
+
+bool ChainGraph::isTChain()
+{
+	return topMaster->hasTag(EDGE_ROD_TAG) || baseMaster->hasTag(EDGE_ROD_TAG);
+}
+
+void ChainGraph::foldT( double t )
+{
+	// to do
+	// get legacy code
 }

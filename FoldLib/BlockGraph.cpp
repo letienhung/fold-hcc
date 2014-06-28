@@ -494,6 +494,13 @@ void BlockGraph::foldabilize(FdGraph* superKeyframe)
 	computeAvailFoldingRegion(superKeyframe);
 	properties[AFS].setValue(getAFS());
 
+	// special case of T-block with single T-Chain
+	if (chains.size() == 1 &&  chains.front()->isTChain())
+	{
+		foldabilizeTBlock();
+		return;
+	}
+
 	// collision graph
 	std::cout << "\n==build collision graph==\n";
 	collFog->clear();
@@ -594,9 +601,8 @@ void BlockGraph::addNodesToCollisionGraph()
 	// fold options
 	for(int cid = 0; cid < chains.size(); cid++)
 	{
-		std::cout << "cid = " << cid << ": ";
-
 		// the chain
+		std::cout << "cid = " << cid << ": ";
 		ChainGraph* chain = (ChainGraph*)chains[cid];
 
 		// fold entity
@@ -607,13 +613,19 @@ void BlockGraph::addNodesToCollisionGraph()
 		QVector<FoldOption*> options;
 		for (int nS = 1; nS <= nbSplits; nS += 2)
 			for (int nUsedChunks = nbChunks; nUsedChunks >= 1; nUsedChunks-- )
-				options << chain->generateFoldOptions(nS, nUsedChunks, nbChunks);
+					options << chain->generateFoldOptions(nS, nUsedChunks, nbChunks);
 
-		// filter
+		// fold region and duration
+		foreach (FoldOption* fn, options) 
+		{
+			fn->region = chain->getFoldRegion(fn);
+			fn->duration = chain->duration;
+		}
+
+		// filter fold options using AFS
 		std::cout << "#options = " << options.size();
 		filterFoldOptions(options, cid);
 		std::cout << " ==> " << options.size() << std::endl;
-		foreach (FoldOption* fn, options) frs << fn->region;
 
 		// "delete" option
 		options << chain->generateDeleteFoldOption(nbSplits);
@@ -624,10 +636,14 @@ void BlockGraph::addNodesToCollisionGraph()
 			collFog->addNode(fn);
 			collFog->addFoldLink(cn, fn);
 		}
+
+		// debug
+		//foreach (FoldOption* fn, options) frs << fn->region;
+		//frs.remove(options.size()-1); // last one is delete option
 	}
 
 	// debug
-	properties[FOLD_REGIONS].setValue(frs);
+	//properties[FOLD_REGIONS].setValue(frs);
 }
 
 void BlockGraph::addEdgesToCollisionGraph()
@@ -659,22 +675,26 @@ void BlockGraph::addEdgesToCollisionGraph()
 
 void BlockGraph::findOptimalSolution()
 {
+	// clear
 	foldSolutions.clear();
-	QVector<FoldOption*> sln_dummy;
-	for (int i = 0; i < chains.size(); i++) sln_dummy << NULL;
+	QVector<FoldOption*> solution;
+	for (int i = 0; i < chains.size(); i++) solution << NULL;
 
+	// MIS on each component
 	QVector<QVector<Structure::Node*> > components = collFog->getComponents();
 	foreach (QVector<Structure::Node*> collComponent, components)
 	{
-		// get all folding nodes
+		// all folding nodes
 		QVector<FoldOption*> fns;
 		foreach(Structure::Node* n, collComponent)
 			if (n->properties["type"].toString() == "option")
 				fns << (FoldOption*)n;
+
+		// empty: impossible to happen
 		if (fns.isEmpty())
 		{
-			std::cout << mID.toStdString() << ": collision graph is empty.\n";
-			return;
+			std::cout << mID.toStdString() << ": collision graph has empty component.\n";
+			return; // halt if happens
 		}
 
 		// trivial case
@@ -682,7 +702,7 @@ void BlockGraph::findOptimalSolution()
 		{
 			FoldOption* fn = fns[0];
 			ChainNode* cn = collFog->getChainNode(fn->mID);
-			sln_dummy[cn->chainIdx] = fn;
+			solution[cn->chainIdx] = fn;
 			continue;
 		}
 
@@ -709,7 +729,7 @@ void BlockGraph::findOptimalSolution()
 			}
 		}
 
-		// find maximum weighted clique
+		// cost and weight for each fold option
 		double maxCost = 0;
 		QVector<double> costs;
 		foreach (FoldOption* fn, fns){
@@ -718,37 +738,24 @@ void BlockGraph::findOptimalSolution()
 			if (cost > maxCost) maxCost = cost;
 		}
 		maxCost += 1;
-
 		QVector<double> weights;
 		foreach(double cost, costs) weights.push_back(maxCost - cost);
+
+		// find maximum weighted clique
 		CliquerAdapter cliquer(conn, weights);
 		QVector<QVector<int> > qs = cliquer.getMaxWeightedCliques();
-
-
-		if (!qs.isEmpty())
-		{
-			//// count chain number
-			//int nbC = 0;
-			//foreach (Structure::Node* nn, collComponent)
-			//{
-			//	if (nn->properties["type"].toString() == "entity")
-			//		nbC++;
-			//}
-
-			//if (qs.front().size() != nbC)
-			//{
-			//	int a = 0;
-			//}
+		if (!qs.isEmpty()) {
 			foreach(int idx, qs.front())
 			{
 				FoldOption* fn = fns[idx];
 				ChainNode* cn = collFog->getChainNode(fn->mID);
-				sln_dummy[cn->chainIdx] = fn;
+				solution[cn->chainIdx] = fn;
 			}
 		}
 	}
 
-	foldSolutions << sln_dummy;
+	// save the single solution
+	foldSolutions << solution;
 }
 
 double BlockGraph::getTimeLength()
@@ -931,4 +938,46 @@ double BlockGraph::computeCost( FoldOption* fn )
 	// blended cost
 	double cost = w * cost1 + (1-w) * cost2;
 	return cost;
+}
+
+void BlockGraph::foldabilizeTBlock()
+{
+	// the chain
+	ChainGraph* chain = chains.front();
+
+	// generate T-options
+	QVector<FoldOption*> options;
+	for (int nS = 1; nS <= nbSplits; nS ++)
+		for (int nUsedChunks = nbChunks; nUsedChunks >= 1; nUsedChunks-- )
+			options << chain->generateFoldOptions(nS, nUsedChunks, nbChunks);
+
+	// filter by AFS
+	QVector<FoldOption*> valid_options;
+	QString top_mid_super = chainTopMasterMapSuper[0];
+	Geom::Rectangle2 AFR = availFoldingRegion[top_mid_super];
+	AFR.Extent *= 1.01; // ugly way to avoid numerical issue
+	Geom::Rectangle base_rect = baseMaster->mPatch;
+	foreach (FoldOption* fn, options)
+	{
+		Geom::Rectangle2 fRegion2 = base_rect.get2DRectangle(fn->region);
+		if (AFR.containsAll(fRegion2.getConners()))
+			valid_options << fn;
+	}
+
+	// choose the one with the lowest cost
+	FoldOption* best_fn;
+	double minCost = maxDouble();
+	foreach (FoldOption* fn, valid_options){
+		double cost = computeCost(fn);
+		if (cost < minCost) 
+		{
+			best_fn = fn;
+			minCost = cost;
+		}
+	}
+	best_fn->addTag(SELECTED_TAG);
+
+	// apply fold option
+	chain->applyFoldOption(best_fn);
+	addTag(READY_TO_FOLD_TAG);
 }

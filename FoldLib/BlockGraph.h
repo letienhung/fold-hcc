@@ -45,6 +45,7 @@ public:
 
 	// foldem
 	void foldabilize(FdGraph* superKeyframe);
+	void foldabilizeTBlock();
 	void findOptimalSolution();
 	bool fAreasIntersect(Geom::Rectangle& rect1, Geom::Rectangle& rect2);
 
@@ -67,7 +68,7 @@ public:
 	QMap<int, QString> chainBaseMasterMap;
 
 	// time stamps
-	double timeScale;
+	double timeScale; 
 	QMap<QString, double> masterTimeStamps;
 	QVector<QString> sortedMasters; // bottom-up
 

@@ -27,7 +27,7 @@ public:
 	void applyFoldOption(FoldOption* fn);
 	void resetChainParts(FoldOption* fn);
 	void resetHingeLinks(FoldOption* fn);
-	void setActiveLinks(FoldOption* fn);
+	void activateLinks(FoldOption* fn);
 	QVector<Geom::Plane> generateCutPlanes(FoldOption* fn);
 
 	// folding
@@ -38,6 +38,10 @@ public:
 
 	// key frame
 	FdGraph* getKeyframe(double t, bool useThk);
+
+	// T-chain
+	bool isTChain();
+	void foldT(double t);
 
 public:
 	PatchNode*			topMaster;	// top
