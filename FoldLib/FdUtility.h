@@ -68,7 +68,6 @@ Q_DECLARE_METATYPE(Geom::Rectangle)
 Q_DECLARE_METATYPE(QVector<Geom::Rectangle>)
 Q_DECLARE_METATYPE(QVector<Geom::Segment>)
 Q_DECLARE_METATYPE(QVector<Geom::Box>)
-Q_DECLARE_METATYPE(QVector<FdGraph*>)
 typedef QMap<QString, QString> StringStringMap;
 Q_DECLARE_METATYPE(StringStringMap)
 typedef QMap<QString, QSet<QString> > StringSetMap;

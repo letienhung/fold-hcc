@@ -583,7 +583,7 @@ void FdPlugin::exportSVG()
 
 	}
 
-	system( filename.toAscii() );
+    system( filename.toLatin1() );
 }
 
 bool FdPlugin::keyPressEvent(QKeyEvent* event)
@@ -637,5 +637,3 @@ bool FdPlugin::keyPressEvent(QKeyEvent* event)
 
 	return false;
 }
-
-Q_EXPORT_PLUGIN(FdPlugin)

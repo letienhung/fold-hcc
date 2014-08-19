@@ -72,3 +72,4 @@ public:
 };
 
 typedef QSharedPointer<FdGraph> FdGraphPtr;
+Q_DECLARE_METATYPE(QVector<FdGraph*>)

@@ -11,6 +11,7 @@ class FdWidget;
 class FdPlugin : public SurfaceMeshModePlugin
 {
 	Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QDesignerCustomWidgetInterface" /* FILE "qledindicator.json" */)
 	Q_INTERFACES(ModePlugin)
 
 	// Plug-in interfaces
