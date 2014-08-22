@@ -2,6 +2,7 @@
 
 #include "FdGraph.h"
 #include "FoldOptionGraph.h"
+#include "ShapeSuperKeyframe.h"
 
 class ChainGraph;
 
@@ -21,17 +22,17 @@ public:
 	// key frame
 	FdGraph* getKeyframe(double t, bool useThk);
 	FdGraph* getSuperKeyframe(double t);
-	void computeSuperBlock(FdGraph* superKeyframe);
+	void computeSuperBlock(ShapeSuperKeyframe* ssKeyframe);
 
 	// folding space
 	void computeMinFoldingRegion();
 	void computeMaxFoldingRegion();
-	void computeAvailFoldingRegion(FdGraph* scaffold);
+	void computeAvailFoldingRegion(ShapeSuperKeyframe* ssKeyframe);
 	double getAvailFoldingVolume();
 	Geom::Box getAvailFoldingSpace(QString mid);
 	QVector<Geom::Box> getAFS();
-	QVector<QString> getInbetweenOutsideParts(FdGraph* superKeyframe, QString mid1, QString mid2);
-	QVector<QString> getUnrelatedMasters(FdGraph* superKeyframe, QString mid1, QString mid2);
+	QVector<QString> getInbetweenExternalParts(ShapeSuperKeyframe* ssKeyframe, QString mid1, QString mid2);
+	QVector<QString> getUnrelatedMasters(ShapeSuperKeyframe* ssKeyframe, QString mid1, QString mid2);
 
 	// collision graph
 	void addNodesToCollisionGraph();
@@ -40,17 +41,20 @@ public:
 	void exportCollFOG();
 
 	// foldem
-	void foldabilize(FdGraph* superKeyframe);
-	void foldabilizeTBlock();
+	void foldabilize(ShapeSuperKeyframe* ssKeyframe);
 	void findOptimalSolution();
-	bool fAreasIntersect(Geom::Rectangle& rect1, Geom::Rectangle& rect2);
+
+	// T-block
+	bool isTBlock();
+	void foldabilizeTBlock();
 
 	// apply fold solution
 	void applySolution(int sid);
 
 	// helper
-	double getTimeLength();
-	double computeCost(FoldOption* fn);
+	double	getTimeLength();
+	double	computeCost(FoldOption* fn);
+	bool	fAreasIntersect(Geom::Rectangle& rect1, Geom::Rectangle& rect2);
 
 	// thickness
 	void setThickness(double thk);

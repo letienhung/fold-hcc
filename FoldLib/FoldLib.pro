@@ -50,7 +50,8 @@ HEADERS += \
     ChainGraph.h \
     Hinge.h \
     BundleNode.h \
-    FoldOptionGraph.h
+    FoldOptionGraph.h \
+    ShapeSuperKeyframe.h
 
 SOURCES += \
     PatchNode.cpp \
@@ -66,5 +67,6 @@ SOURCES += \
     ChainGraph.cpp \
     Hinge.cpp \
     BundleNode.cpp \
-    FoldOptionGraph.cpp
+    FoldOptionGraph.cpp \
+    ShapeSuperKeyframe.cpp
 

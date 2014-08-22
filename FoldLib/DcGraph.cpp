@@ -544,7 +544,7 @@ FdGraph* DcGraph::getKeyframe( double t )
 	return key_graph;
 }
 
-FdGraph* DcGraph::getSuperKeyframe( double t )
+ShapeSuperKeyframe* DcGraph::getSuperKeyframe( double t )
 {
 	// super key frame for each block
 	QVector<FdGraph*> foldedBlocks;
@@ -555,116 +555,21 @@ FdGraph* DcGraph::getSuperKeyframe( double t )
 		FdGraph* fblock = blocks[i]->getSuperKeyframe(lt);
 		foldedBlocks << fblock;
 
-		if(!fblock) return NULL;
-
-		// keep track of all folded parts
-		foreach (Structure::Node* n, fblock->nodes)
-			if (n->hasTag(FOLDED_TAG)) foldedParts << n->mID;
+		if (!fblock) return nullptr;
 	}
-
-	if(!baseMaster) return NULL;
 
 	// combine
 	FdGraph *keyframe = combineFdGraphs(foldedBlocks, baseMaster->mID, masterBlockMap);
-	if(!keyframe) return NULL;
-	for (int i = 0; i < foldedBlocks.size(); i++)
-	{
-		FdGraph* b = foldedBlocks[i];
-		delete b;
-	}
-	foreach (QString fp, foldedParts)
-	{
-		FdNode * fnode = (FdNode*)keyframe->getNode(fp);
-		if(!fnode) continue;
-		keyframe->addTag(FOLDED_TAG);
-	}
 
-	// super nodes and their children
-	QVector<PatchNode*> superPatches;
-	QVector<QSet<QString> > childMasters, childMasters_new;
-	foreach (PatchNode* m, getAllMasters(keyframe)){
-		if (m->hasTag(SUPER_PATCH_TAG)) {
-			superPatches << m;
-			childMasters << m->properties[MERGED_MASTERS].value<QSet<QString> >();
-		}
-	}
+	// create shape super key frame
+	ShapeSuperKeyframe* ssKeyframe = new ShapeSuperKeyframe(keyframe, masterOrderGreater);
 
-	// merge super nodes which share children
-	QVector<QSet<int> > superIdxClusters = mergeIsctSets(childMasters, childMasters_new);
+	// garbage collection
+	delete keyframe;
+	for (int i = 0; i < foldedBlocks.size(); i++) delete foldedBlocks[i];
 
-
-	// merge to create new super patches
-	QMap<QString, QString> masterSuperMap;
-	for (int i = 0; i < superIdxClusters.size(); i++)
-	{
-		// merged set indices
-		QList<int> superIndices = superIdxClusters[i].toList();
-
-		// pick up the first
-		PatchNode* superPatch_new = superPatches[superIndices[0]];
-		superPatch_new->mID = QString("MP_%1").arg(i);
-		Geom::Rectangle pred_rect_new = superPatch_new->mPatch;
-
-		// merge with others
-		QVector<Vector2> pnts2 = pred_rect_new.get2DConners();
-		for (int j = 1; j < superIndices.size(); j++)
-		{
-			int superIdx = superIndices[j];
-			Geom::Rectangle2 rect2 = pred_rect_new.get2DRectangle(superPatches[superIdx]->mPatch);
-			pnts2 << rect2.getConners();
-
-			// remove other
-			keyframe->removeNode(superPatches[superIdx]->mID);
-		}
-		Geom::Rectangle2 aabb2 = computeAABB2D(pnts2);
-		superPatch_new->resize(aabb2);
-
-		// store master_super_map
-		superPatch_new->properties[MERGED_MASTERS].setValue(childMasters_new[i]);
-		foreach (QString mid, childMasters_new[i])
-			masterSuperMap[mid] = superPatch_new->mID;
-	}
-
-	// store master-prediction-map as property
-	keyframe->properties[MASTER_SUPER_MAP].setValue(masterSuperMap);
-
-	// update moc_greater
-	StringSetMap mocGreater_new = masterOrderGreater;
-	// change name of keys
-	foreach (QSet<QString> child_mids, childMasters_new)
-	{
-		QString child = child_mids.toList().front();
-		QString key_new = masterSuperMap[child];
-		QSet<QString> values_union;
-		foreach (QString cmid, child_mids){
-			values_union += mocGreater_new[cmid];
-			mocGreater_new.remove(cmid);
-		}
-		mocGreater_new[key_new] = values_union;
-	}
-	// change name of values
-	foreach (QString key, mocGreater_new.keys())
-	{
-		QSet<QString> values_new;
-		foreach (QString v, mocGreater_new[key]){
-			if (masterSuperMap.contains(v)) 
-				v = masterSuperMap[v]; // change name
-			values_new << v;
-		}
-		mocGreater_new[key] = values_new;
-	}
-
-	// moc_less
-	StringSetMap mocLess_new;
-	foreach (QString key, mocGreater_new.keys())
-		foreach(QString value, mocGreater_new[key])
-			mocLess_new[value] << key;
-
-	// store as property
-	keyframe->properties[MOC_GREATER].setValue(mocGreater_new);
-	keyframe->properties[MOC_LESS].setValue(mocLess_new);
-
-	return keyframe;
+	// return
+	return ssKeyframe;
 }
 
 void DcGraph::foldabilize()
@@ -676,15 +581,12 @@ void DcGraph::foldabilize()
 	// initial time intervals
 	// greater than 1.0 means never be folded
 	foreach (BlockGraph* b, blocks)
-	{
 		b->mFoldDuration = INTERVAL(1.0, 2.0);
-		b->removeTag(FOLDED_TAG);
-	}
 
 	// choose best free block
 	std::cout << "\n\n============START============\n";
 	double currTime = 0.0;
-	FdGraph* currKeyframe = getSuperKeyframe(currTime);
+	ShapeSuperKeyframe* currKeyframe = getSuperKeyframe(currTime);
 	int next_bid = getBestNextBlockIndex(currTime, currKeyframe);  
 	
 	while (next_bid >= 0 && next_bid < blocks.size())
@@ -695,8 +597,7 @@ void DcGraph::foldabilize()
 		BlockGraph* next_block = blocks[next_bid];
 		next_block->foldabilize(currKeyframe);
 
-		// set up tag 
-		next_block->addTag(FOLDED_TAG);
+		// set up time interval 
 		double timeLength = next_block->getTimeLength() * timeScale;
 		double nextTime = currTime + timeLength;
 		next_block->mFoldDuration = INTERVAL(currTime, nextTime);
@@ -722,7 +623,7 @@ void DcGraph::foldabilize()
 	for (int bid = 0; bid < blocks_copy.size(); bid ++)
 	{
 		BlockGraph* b = blocks_copy[bid];
-		if (b->hasTag(FOLDED_TAG)) blocks << b;
+		if (b->foldabilized) blocks << b;
 		else intlkBlockIndices << bid;
 	}
 
@@ -748,7 +649,7 @@ void DcGraph::foldabilize()
    currKeyframe          nextKeyframe           next2Keyframe
 **/  
 // currKeyframe is a super keyframe providing context information
-int DcGraph::getBestNextBlockIndex(double currTime, FdGraph* currKeyframe)
+int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyframe)
 {
 	double best_score = -maxDouble();
 	int best_next_bid = -1;
@@ -765,12 +666,12 @@ int DcGraph::getBestNextBlockIndex(double currTime, FdGraph* currKeyframe)
 		double nextTime = currTime + timeLength;
 		nextBlock->mFoldDuration = INTERVAL(currTime, nextTime);
 		nextBlock->computeAvailFoldingRegion(currKeyframe);
-		FdGraph* nextKeyframe = getSuperKeyframe(nextTime);
+		ShapeSuperKeyframe* nextKeyframe = getSuperKeyframe(nextTime);
 
 		// evaluate next keyframe: valid if all master orders are remained
 		// if valid, calculate the total AFV of remaining blocks
 		double score = -1;
-		if (isValid(nextKeyframe))
+		if (nextKeyframe->isValid(sqzV))
 		{
 			// AFV of nextBlock
 			score = nextBlock->getAvailFoldingVolume();
@@ -788,10 +689,10 @@ int DcGraph::getBestNextBlockIndex(double currTime, FdGraph* currKeyframe)
 				double next2Time = nextTime + timeLength;
 				next2Block->mFoldDuration = INTERVAL(nextTime, next2Time);
 				next2Block->computeAvailFoldingRegion(nextKeyframe);
-				FdGraph* next2Keyframe = getSuperKeyframe(next2Time);
+				ShapeSuperKeyframe* next2Keyframe = getSuperKeyframe(next2Time);
 
 				// accumulate AFV if the folding is valid
-				if (isValid(next2Keyframe))
+				if (next2Keyframe->isValid(sqzV))
 				{
 					score += next2Block->getAvailFoldingVolume();
 				}
@@ -864,27 +765,7 @@ void DcGraph::exportCollFOG()
 	if (selBlock) selBlock->exportCollFOG();
 }
 
-// A FdGraph is valid only if all order constraints are met
-bool DcGraph::isValid( FdGraph* superKeyframe )
-{
-	// get all masters: unfolded and super
-	QVector<PatchNode*> ms;
-	foreach (PatchNode* m, getAllMasters(superKeyframe))
-		if (!m->hasTag(FOLDED_TAG))	ms << m;
 
-	// compute time stamps
-	double tScale;
-	QMap<QString, double> timeStamps = getTimeStampsNormalized(ms, sqzV, tScale);
-
-	// check validity
-	StringSetMap moc_greater = superKeyframe->properties[MOC_GREATER].value<StringSetMap>();
-	foreach (QString key, moc_greater.keys())
-		foreach (QString value, moc_greater[key])
-			if (timeStamps[key] < timeStamps[value])
-				return false;
-
-	return true;
-}
 
 void DcGraph::foldbzSelBlock()
 {

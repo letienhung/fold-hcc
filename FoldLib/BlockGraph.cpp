@@ -207,7 +207,7 @@ void BlockGraph::computeMaxFoldingRegion()
 	}
 }
 
-QVector<QString> BlockGraph::getInbetweenOutsideParts( FdGraph* superKeyframe, QString base_mid, QString top_mid )
+QVector<QString> BlockGraph::getInbetweenExternalParts(ShapeSuperKeyframe* ssKeyframe, QString base_mid, QString top_mid)
 {
 	// time line
 	Vector3 sqzV = baseMaster->mPatch.Normal;
@@ -223,10 +223,10 @@ QVector<QString> BlockGraph::getInbetweenOutsideParts( FdGraph* superKeyframe, Q
 
 	// find parts in between m1 and m2
 	QVector<QString> inbetweens;
-	foreach (FdNode* n, superKeyframe->getFdNodes())
+	foreach (FdNode* n, ssKeyframe->getFdNodes())
 	{
 		// skip parts that has been folded
-		if (n->hasTag(FOLDED_TAG)) continue;
+		if (n->hasTag(MERGED_PART_TAG)) continue;
 
 		// skip parts in this block
 		if (superBlock->containsNode(n->mID)) continue;
@@ -254,48 +254,44 @@ QVector<QString> BlockGraph::getInbetweenOutsideParts( FdGraph* superKeyframe, Q
 	return inbetweens;
 }
 
-QVector<QString> BlockGraph::getUnrelatedMasters( FdGraph* superKeyframe, QString base_mid, QString top_mid)
+QVector<QString> BlockGraph::getUnrelatedMasters(ShapeSuperKeyframe* ssKeyframe, QString base_mid, QString top_mid)
 {
 	QVector<QString> urMasters;
 
 	// retrieve master order constraints
-	StringSetMap moc_greater = superKeyframe->properties[MOC_GREATER].value<StringSetMap>();
-	StringSetMap moc_less = superKeyframe->properties[MOC_LESS].value<StringSetMap>();
+	StringSetMap moc_greater = ssKeyframe->mocGreater;
+	StringSetMap moc_less = ssKeyframe->mocLess;
 
 	// related parts with mid1 and mid2
 	QSet<QString> base_moc = moc_greater[base_mid] + moc_less[base_mid];
 	QSet<QString> top_moc = moc_greater[top_mid] + moc_less[top_mid];	
 
 	// masters unrelated with both
-	foreach (Structure::Node* n, superKeyframe->nodes)
+	foreach (PatchNode* m, getAllMasters(ssKeyframe))
 	{
-		// skip slaves
-		if (!n->hasTag(MASTER_TAG)) continue;
-
 		// skip folded masters
-		if (n->hasTag(FOLDED_TAG)) continue;
+		if (m->hasTag(MERGED_PART_TAG)) continue;
 
 		// accept if not related to any
-		if (!base_moc.contains(n->mID) && !top_moc.contains(n->mID))
-			urMasters << n->mID;
+		if (!base_moc.contains(m->mID) && !top_moc.contains(m->mID))
+			urMasters << m->mID;
 	}
 
 	return urMasters;
 }
 
-void BlockGraph::computeAvailFoldingRegion( FdGraph* superKeyframe )
+void BlockGraph::computeAvailFoldingRegion( ShapeSuperKeyframe* ssKeyframe )
 {
 	// align scaffold with this block
 	Vector3 pos_block = baseMaster->center();
-	FdNode* fnode = (FdNode*)superKeyframe->getNode(baseMaster->mID);
+	FdNode* fnode = (FdNode*)ssKeyframe->getNode(baseMaster->mID);
 	if(!fnode) return;
-
 	Vector3 pos_keyframe = fnode->center();
 	Vector3 offset = pos_block - pos_keyframe;
-	superKeyframe->translate(offset, false);
+	ssKeyframe->translate(offset, false);
 
 	// super block and min/max folding regions
-	computeSuperBlock(superKeyframe);
+	computeSuperBlock(ssKeyframe);
 	computeMinFoldingRegion();
 	computeMaxFoldingRegion();
 
@@ -311,13 +307,13 @@ void BlockGraph::computeAvailFoldingRegion( FdGraph* superKeyframe )
 
 		// samples from constraint parts: in-between and unordered
 		QVector<QString> constraintParts;
-		constraintParts << getInbetweenOutsideParts(superKeyframe, base_mid, top_mid);
-		constraintParts << getUnrelatedMasters(superKeyframe, base_mid, top_mid);
+		constraintParts << getInbetweenExternalParts(ssKeyframe, base_mid, top_mid);
+		constraintParts << getUnrelatedMasters(ssKeyframe, base_mid, top_mid);
 		QVector<Vector3> samples;
 		int nbs = 100;
 		foreach(QString nid, constraintParts)
 		{
-			FdNode* n = (FdNode*)superKeyframe->getNode(nid);
+			FdNode* n = (FdNode*)ssKeyframe->getNode(nid);
 			if (n->mType == FdNode::PATCH)
 				samples << ((PatchNode*)n)->mPatch.getEdgeSamples(nbs);
 			else
@@ -347,7 +343,7 @@ void BlockGraph::computeAvailFoldingRegion( FdGraph* superKeyframe )
 	}
 
 	// restore the position of scaffold
-	superKeyframe->translate(-offset, false);
+	ssKeyframe->translate(-offset, false);
 }
 
 void BlockGraph::exportCollFOG()
@@ -433,10 +429,10 @@ FdGraph* BlockGraph::getKeyframe( double t, bool useThk )
 FdGraph* BlockGraph::getSuperKeyframe( double t )
 {
 	// regular key frame w\o thickness
-	FdGraph* superKeyframe = getKeyframe(t, false);
+	FdGraph* keyframe = getKeyframe(t, false);
 
 	// do nothing if the block is NOT fully folded
-	if (1 - t > ZERO_TOLERANCE_LOW) return superKeyframe;
+	if (1 - t > ZERO_TOLERANCE_LOW) return keyframe;
 
 	// create super patch
 	PatchNode* superPatch = (PatchNode*)baseMaster->clone();
@@ -449,7 +445,7 @@ FdGraph* BlockGraph::getSuperKeyframe( double t )
 	if (foldabilized)
 	{
 		// all nodes since they are folded flatly already
-		foreach (FdNode* n, superKeyframe->getFdNodes())
+		foreach (FdNode* n, keyframe->getFdNodes())
 		{
 			if (n->mType == FdNode::PATCH)
 			{
@@ -474,17 +470,18 @@ FdGraph* BlockGraph::getSuperKeyframe( double t )
 	Geom::Rectangle2 aabb2 = computeAABB2D(projPnts2);
 	superPatch->resize(aabb2);
 
-	// merged masters
-	foreach (Structure::Node* n, superKeyframe->nodes)
+	// merged parts
+	foreach (FdNode* n, keyframe->getFdNodes())
 	{
-		n->addTag(FOLDED_TAG); 
-		superPatch->appendToSetProperty<QString>(MERGED_MASTERS, n->mID);
+		n->addTag(MERGED_PART_TAG); 
+		if (n->mType == FdNode::PATCH)
+			superPatch->appendToSetProperty<QString>(MERGED_MASTERS, n->mID);
 	}
 
-	// add to key frame
-	superKeyframe->Structure::Graph::addNode(superPatch);
+	// add super patch to keyframe
+	keyframe->Structure::Graph::addNode(superPatch);
 
-	return superKeyframe;
+	return keyframe;
 }
 
 bool BlockGraph::fAreasIntersect( Geom::Rectangle& rect1, Geom::Rectangle& rect2 )
@@ -497,14 +494,14 @@ bool BlockGraph::fAreasIntersect( Geom::Rectangle& rect1, Geom::Rectangle& rect2
 	return Geom::IntrRect2Rect2::test(r1, r2);
 }
 
-void BlockGraph::foldabilize(FdGraph* superKeyframe)
+void BlockGraph::foldabilize(ShapeSuperKeyframe* ssKeyframe)
 {
 	// available folding region
-	computeAvailFoldingRegion(superKeyframe);
+	computeAvailFoldingRegion(ssKeyframe);
 	properties[AFS].setValue(getAFS());
 
 	// special case of T-block with single T-Chain
-	if (chains.size() == 1 &&  chains.front()->isTChain())
+	if (isTBlock())
 	{
 		foldabilizeTBlock();
 		return;
@@ -828,19 +825,15 @@ Geom::Box BlockGraph::getAvailFoldingSpace( QString mid_super )
 	return afs;
 }
 
-void BlockGraph::computeSuperBlock( FdGraph* superKeyframe )
+// superBlock is 
+void BlockGraph::computeSuperBlock(ShapeSuperKeyframe* ssKeyframe)
 {
 	// clone current block
 	if (superBlock) delete superBlock;
 	superBlock = (FdGraph*)this->clone();
 
-	// offset from keyframe to block
-	Vector3 block_pos = baseMaster->center();
-	Vector3 keyframe_pos = ((PatchNode*)superKeyframe->getNode(baseMaster->mID))->center();
-	Vector3 keyframe2block = block_pos - keyframe_pos;
-
 	// replace parts
-	QMap<QString, QString> masterSuperMap = superKeyframe->properties[MASTER_SUPER_MAP].value<QMap<QString, QString> >();
+	QMap<QString, QString> masterSuperMap = ssKeyframe->master2SuperMap;
 	master2Super.clear(); // master-super map in this block
 	foreach (PatchNode* m, masters)
 	{
@@ -850,8 +843,7 @@ void BlockGraph::computeSuperBlock( FdGraph* superKeyframe )
 			superBlock->removeNode(m->mID);
 
 			// clone super patch
-			PatchNode* super = (PatchNode*)superKeyframe->getNode(masterSuperMap[m->mID])->clone();
-			super->translate(keyframe2block);
+			PatchNode* super = (PatchNode*)ssKeyframe->getNode(masterSuperMap[m->mID])->clone();
 			superBlock->Structure::Graph::addNode(super);
 
 			master2Super[m->mID] = masterSuperMap[m->mID];
@@ -990,4 +982,9 @@ void BlockGraph::foldabilizeTBlock()
 	// apply fold option
 	chain->applyFoldOption(best_fn);
 	foldabilized = true;
+}
+
+bool BlockGraph::isTBlock()
+{
+	return (chains.size() == 1 && chains.front()->isTChain());
 }

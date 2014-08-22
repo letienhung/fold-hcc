@@ -5,6 +5,7 @@
 #include "Numeric.h"
 #include "BlockGraph.h"
 #include "FoldOptionGraph.h"
+#include "ShapeSuperKeyframe.h"
 
 // DcGraph encodes the decomposition of scaffold
 // including base patches and layers
@@ -70,8 +71,7 @@ public:
 	// foldem
 	void foldabilize();
 	void foldbzSelBlock();
-	int getBestNextBlockIndex(double currT, FdGraph* currKeyframe);
-	bool isValid(FdGraph* superKeyframe);
+	int getBestNextBlockIndex(double currT, ShapeSuperKeyframe* currKeyframe);
 
 	// export
 	void exportCollFOG();
@@ -79,7 +79,7 @@ public:
 	// key frame
 	void generateKeyframes(int N);
 	FdGraph* getKeyframe(double t);
-	FdGraph* getSuperKeyframe(double t);
+	ShapeSuperKeyframe* getSuperKeyframe(double t);
 
 public:
 	FdGraph* activeScaffold();
