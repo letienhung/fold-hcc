@@ -39,10 +39,6 @@ public:
 	void addEdgesToCollisionGraph();
 	void exportCollFOG();
 
-	// thickness
-	void setThickness(double thk);
-	void computeMasterNbUnderLayers();
-
 	// foldem
 	void foldabilize(FdGraph* superKeyframe);
 	void foldabilizeTBlock();
@@ -55,9 +51,18 @@ public:
 	// helper
 	double getTimeLength();
 	double computeCost(FoldOption* fn);
+
+	// thickness
+	void setThickness(double thk);
+	void computeMasterNbUnderLayers();
+
 public:
-	// time interval
-	Interval mFoldDuration;
+	// AABB of entire shape
+	Geom::Box shapeAABB;
+
+	// chains
+	int selChainIdx;
+	QVector<ChainGraph*> chains;
 
 	// master related
 	PatchNode* baseMaster;
@@ -67,17 +72,11 @@ public:
 	QMap<QString, QSet<int> > masterUnderChainsMap; // master : chains under master
 	QMap<int, QString> chainBaseMasterMap;
 
-	// time stamps
+	// time
 	double timeScale; 
-	QMap<QString, double> masterTimeStamps;
+	Interval mFoldDuration;
 	QVector<QString> sortedMasters; // bottom-up
-
-	// chains
-	int selChainIdx;
-	QVector<ChainGraph*> chains;
-
-	// AABB of entire shape
-	Geom::Box shapeAABB;
+	QMap<QString, double> masterTimeStamps;
 
 	// collision graph
 	int nbSplits;
@@ -86,6 +85,7 @@ public:
 
 	// fold solutions
 	int selSlnIdx;
+	bool foldabilized;			// the block has been foldabilized and ready to fold
 	QVector<QVector<FoldOption*> > foldSolutions;
 
 	// super block

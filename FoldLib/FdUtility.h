@@ -20,7 +20,6 @@ typedef QPair<double, double> Interval;
 #define EDGE_ROD_TAG "isEdgeRodNode"
 #define DELETED_TAG "hasDeleted"
 #define FOLDED_TAG "hasFolded"
-#define READY_TO_FOLD_TAG "isReadyToFold"
 #define SELECTED_TAG "isSelected"
 #define SUPER_PATCH_TAG "isMerged"
 #define MERGED_MASTERS "mergedMastersSet"
@@ -29,6 +28,7 @@ typedef QPair<double, double> Interval;
 #define MOC_LESS "moc_less"
 #define DELETE_FOLD_OPTION	"deleteFoldOption"
 #define ACTIVE_TAG "isActive"
+#define EDGE_ROD_HOST "edgeRodHost"
 
 // propagation
 #define FIXED_NODE_TAG "hasFixed"
@@ -116,7 +116,7 @@ QMap<QString, double> getTimeStampsNormalized(QVector<FdNode*> nodes, Vector3 v,
 QMap<QString, double> getTimeStampsNormalized(QVector<PatchNode*> pnodes, Vector3 v, double &tScale);
 
 // combination
-FdGraph* combineDecomposition(QVector<FdGraph*> decmps, QString baseMid, 
+FdGraph* combineFdGraphs(QVector<FdGraph*> decmps, QString baseMid, 
 	QMap<QString, QSet<int> >& masterDecmpMap);
 
 // 2D geometry

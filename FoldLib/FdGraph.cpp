@@ -85,7 +85,7 @@ void FdGraph::saveToFile(QString fname)
 	// scaffold
 	XmlWriter xw(&file);
 	xw.setAutoNewLine(true);	
-	xw.writeRaw("\<!--?xml Version = \"1.0\"?--\>\n");
+	xw.writeRaw("\\<!--?xml Version = \\\"1.0\\\"?--\\>\n");
 	xw.writeOpenTag("document");
 	{
 		// nodes

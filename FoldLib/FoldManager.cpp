@@ -21,7 +21,7 @@ FoldManager::FoldManager()
 	nbChunks = 2;
 	thickness = 0;
 
-	connThrRatio = 0.05;
+	connThrRatio = 0.1;
 	aabbScale = Vector3(1, 1, 1.15);
 
 	costWeight = 0.05;
@@ -52,7 +52,6 @@ void FoldManager::setScaffold( FdGraph* fdg )
 	clearDcGraphs();
 	updateDcList();
 }
-
 
 void FoldManager::setSqzV( QString sqzV_str )
 {
@@ -228,9 +227,9 @@ int fdTime = timer.elapsed();
 		stat.properties[NB_SLAVE] = selDc->slaves.size();
 		stat.properties[NB_BLOCK] = selDc->blocks.size();
 
-		FdGraph* lasterKeyframe = selDc->keyframes.last();
+		FdGraph* lastKeyframe = selDc->keyframes.last();
 		double origVol = scaffold->computeAABB().box().volume();
-		double fdVol = lasterKeyframe->computeAABB().box().volume();
+		double fdVol = lastKeyframe->computeAABB().box().volume();
 		stat.properties[SPACE_SAVING] = 1 - fdVol / origVol;
 
 		stat.properties[FD_TIME] = fdTime;
@@ -257,7 +256,6 @@ int fdTime = timer.elapsed();
 
 		stat.properties[COST_WEIGHT] = costWeight;
 	}
-
 }
 
 void FoldManager::updateDcList()

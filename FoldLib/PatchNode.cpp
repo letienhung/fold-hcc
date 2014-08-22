@@ -42,6 +42,9 @@ PatchNode::PatchNode(RodNode* rodNode, Vector3 v)
 	// scaffold
 	mAid= mBox.getAxisId(v);
 	createScaffold(true);
+
+	// properties
+	properties = rodNode->properties;
 }
 
 
@@ -126,6 +129,10 @@ QVector<RodNode*> PatchNode::getEdgeRodNodes()
 		mBox = mBox_copy;
 		deformMesh();
 	}
+
+	// save the host id
+	foreach(RodNode* er, edgeRods)
+		er->properties[EDGE_ROD_HOST] = mID;
 
 	return edgeRods;
 }

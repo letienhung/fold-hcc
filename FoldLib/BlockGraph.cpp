@@ -97,6 +97,9 @@ BlockGraph::BlockGraph( QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& s
 
 	// single block
 	isAlone = false;
+
+	// foldabilized tag
+	foldabilized = false;
 }
 
 BlockGraph::~BlockGraph()
@@ -353,32 +356,32 @@ void BlockGraph::exportCollFOG()
 	collFog->saveAsImage(filename);
 }
 
+// The keyframe is the configuration of the block at given time \p t
+// This is also called regular keyframe to distinguish from super keyframe
 FdGraph* BlockGraph::getKeyframe( double t, bool useThk )
 {
 	FdGraph* keyframe = NULL;
 
 	// chains have been created and ready to fold
-	if (hasTag(READY_TO_FOLD_TAG))
+	// IOW, the block has been foldabilized
+	if (foldabilized)
 	{
-		// folded chains
-		QVector<FdGraph*> foldedChains;
+		// keyframe of each chain
+		QVector<FdGraph*> chainKeyframes;
 		for (int i = 0; i < chains.size(); i++)
 		{
 			// skip deleted chain
 			if (chains[i]->hasTag(DELETED_TAG))
-				foldedChains << NULL;
-			else
-			{
+				chainKeyframes << NULL;
+			else{
 				ChainGraph* cgraph = chains[i];
 				double localT = getLocalTime(t, cgraph->duration);
-				foldedChains << chains[i]->getKeyframe(localT, useThk);
+				chainKeyframes << chains[i]->getKeyframe(localT, useThk);
 			}
 		}
 
 		// combine 
-		keyframe = combineDecomposition(foldedChains, baseMaster->mID, masterChainsMap);
-
-		if(!keyframe) return NULL;
+		keyframe = combineFdGraphs(chainKeyframes, baseMaster->mID, masterChainsMap);
 
 		// thickness of masters
 		if (useThk){
@@ -386,8 +389,9 @@ FdGraph* BlockGraph::getKeyframe( double t, bool useThk )
 				m->setThickness(thickness);
 		}
 
-		// delete folded chains
-		foreach (FdGraph* c, foldedChains) delete c;
+		// local garbage collection
+		foreach (FdGraph* c, chainKeyframes) 
+			if(c) delete c;
 	}else
 	// the block is not ready
 	// can only answer request on t = 0 and t = 1
@@ -395,87 +399,92 @@ FdGraph* BlockGraph::getKeyframe( double t, bool useThk )
 		// clone
 		keyframe = (FdGraph*)this->clone();
 
-		// collapse to base
-		Geom::Rectangle base_rect = baseMaster->mPatch;
+		// collapse all masters to base
 		if (t > 0.5)
 		{
+			Geom::Rectangle base_rect = baseMaster->mPatch;
 			foreach (FdNode* n, keyframe->getFdNodes())
 			{
+				// skip base master
+				if (n->mID == baseMaster->mID)	continue;
+
+				// translate all other masters onto the base master
 				if (n->hasTag(MASTER_TAG)) 
 				{
-					// skip base master
-					if (n->mID == baseMaster->mID)	continue;
-
-					// move other masters onto base master
 					Vector3 c2c = baseMaster->center() - n->center();
 					Vector3 up = base_rect.Normal;
 					Vector3 offset = dot(c2c, up) * up;
 					n->translate(offset);
 				}else
+				// remove slave nodes
 				{
-					// remove slave nodes
 					keyframe->removeNode(n->mID);
 				}
 			}
 		}
 	}
 
+	// the key frame
 	return keyframe;
 }
 
+// The super keyframe is the keyframe + superPatch
+// which is an additional patch representing the folded block
 FdGraph* BlockGraph::getSuperKeyframe( double t )
 {
 	// regular key frame w\o thickness
-	FdGraph* keyframe = getKeyframe(t, false);
-	if(!keyframe) return NULL;
+	FdGraph* superKeyframe = getKeyframe(t, false);
 
 	// do nothing if the block is NOT fully folded
-	if (1 - t > ZERO_TOLERANCE_LOW) return keyframe;
+	if (1 - t > ZERO_TOLERANCE_LOW) return superKeyframe;
 
 	// create super patch
 	PatchNode* superPatch = (PatchNode*)baseMaster->clone();
 	superPatch->mID = mID + "_super";
 	superPatch->addTag(SUPER_PATCH_TAG); 
 
-	// resize super patch
+	// collect projections of all nodes on baseMaster
 	Geom::Rectangle base_rect = superPatch->mPatch;
-	QVector<Vector2> pnts2 = base_rect.get2DConners();
-	if (hasTag(READY_TO_FOLD_TAG))
-	{// use folded parts
-		foreach (FdNode* n, keyframe->getFdNodes())
+	QVector<Vector2> projPnts2 = base_rect.get2DConners();
+	if (foldabilized)
+	{
+		// all nodes since they are folded flatly already
+		foreach (FdNode* n, superKeyframe->getFdNodes())
 		{
 			if (n->mType == FdNode::PATCH)
 			{
 				Geom::Rectangle part_rect = ((PatchNode*)n)->mPatch;
-				pnts2 << base_rect.get2DRectangle(part_rect).getConners();
+				projPnts2 << base_rect.get2DRectangle(part_rect).getConners();
 			}
 			else
 			{
 				Geom::Segment part_rod = ((RodNode*)n)->mRod;
-				pnts2 << base_rect.getProjCoordinates(part_rod.P0);
-				pnts2 << base_rect.getProjCoordinates(part_rod.P1);
+				projPnts2 << base_rect.getProjCoordinates(part_rod.P0);
+				projPnts2 << base_rect.getProjCoordinates(part_rod.P1);
 			}
 		}
-	}
-	else
-	{// predict using available folding regions
+	}else
+	{
+		// guess the folded state using available folding regions
 		foreach (QString mid, availFoldingRegion.keys())
-			pnts2 << availFoldingRegion[mid].getConners();
+			projPnts2 << availFoldingRegion[mid].getConners();
 	}
-	Geom::Rectangle2 aabb2 = computeAABB2D(pnts2);
+
+	// resize super patch
+	Geom::Rectangle2 aabb2 = computeAABB2D(projPnts2);
 	superPatch->resize(aabb2);
 
 	// merged masters
-	foreach (Structure::Node* n, keyframe->nodes)
+	foreach (Structure::Node* n, superKeyframe->nodes)
 	{
 		n->addTag(FOLDED_TAG); 
 		superPatch->appendToSetProperty<QString>(MERGED_MASTERS, n->mID);
 	}
 
 	// add to key frame
-	keyframe->Structure::Graph::addNode(superPatch);
+	superKeyframe->Structure::Graph::addNode(superPatch);
 
-	return keyframe;
+	return superKeyframe;
 }
 
 bool BlockGraph::fAreasIntersect( Geom::Rectangle& rect1, Geom::Rectangle& rect2 )
@@ -543,7 +552,8 @@ void BlockGraph::applySolution( int sid )
 		}
 	}
 
-	addTag(READY_TO_FOLD_TAG);
+	// has been foldabilized
+	foldabilized = true;
 }
 
 void BlockGraph::filterFoldOptions( QVector<FoldOption*>& options, int cid )
@@ -979,5 +989,5 @@ void BlockGraph::foldabilizeTBlock()
 
 	// apply fold option
 	chain->applyFoldOption(best_fn);
-	addTag(READY_TO_FOLD_TAG);
+	foldabilized = true;
 }

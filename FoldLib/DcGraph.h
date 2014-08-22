@@ -58,9 +58,8 @@ public:
 	void computeMasterOrderConstraints();
 
 	void createSlaves(); 
-	void updateSlaves(); // collect current slaves and store into \p slaves
+	void updateSlaves();
 	void updateSlaveMasterRelation();
-	QVector<FdNode*> mergeConnectedCoplanarParts(QVector<FdNode*> ns);
 
 	void createBlocks();
 	void clusterSlaves();

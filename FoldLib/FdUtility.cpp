@@ -309,7 +309,7 @@ QVector<PatchNode*> getAllMasters( FdGraph* scaffold )
 	return masters;
 }
 
-FdGraph* combineDecomposition( QVector<FdGraph*> decmps, QString baseMid, 
+FdGraph* combineFdGraphs( QVector<FdGraph*> decmps, QString baseMid, 
 								QMap<QString, QSet<int> >& masterDecmpMap )
 {
 	// trivial combination

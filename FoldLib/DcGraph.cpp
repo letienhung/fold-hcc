@@ -16,7 +16,7 @@ DcGraph::DcGraph(QString id, FdGraph* scaffold, Vector3 v, double connThr)
 	// threshold
 	connThrRatio = connThr;
 
-	// decomposition
+	// decompose
 	createMasters();
 	createSlaves();
 	clusterSlaves();
@@ -34,7 +34,6 @@ DcGraph::DcGraph(QString id, FdGraph* scaffold, Vector3 v, double connThr)
 	// selection
 	selBlockIdx = -1;
 	keyframeIdx = -1;
-
 
 	//////////////////////////////////////////////////////////////////////////
 	//QVector<Geom::Segment> normals;
@@ -64,7 +63,10 @@ FdNodeArray2D DcGraph::getPerpConnGroups()
 	foreach (FdNode* n, getFdNodes())
 	{
 		// perp node
-		if (n->isPerpTo(sqzV, perpThr))	perpNodes << n;
+		if (n->isPerpTo(sqzV, perpThr))
+		{
+			perpNodes << n;
+		}
 		// virtual rod nodes from patch edges
 		else if (n->mType == FdNode::PATCH)
 		{
@@ -72,13 +74,17 @@ FdNodeArray2D DcGraph::getPerpConnGroups()
 			foreach(RodNode* rn, pn->getEdgeRodNodes())
 			{
 				// add virtual rod nodes 
-				if (rn->isPerpTo(sqzV, perpThr)) {
+				if (rn->isPerpTo(sqzV, perpThr)) 
+				{
 					Structure::Graph::addNode(rn);
 					perpNodes << rn;
 					rn->addTag(EDGE_ROD_TAG);
 				}
 				// delete if not need
-				else delete rn;
+				else
+				{
+					delete rn;
+				}
 			}
 		}
 	}
@@ -119,33 +125,47 @@ void DcGraph::createMasters()
 {
 	FdNodeArray2D perpConnGroups = getPerpConnGroups();
 
-	// merge master groups into patches
+	// merge connected groups into patches
 	foreach( QVector<FdNode*> pcGroup,  perpConnGroups)
 	{
-		PatchNode* master;
-
 		// single node
 		if (pcGroup.size() == 1)
 		{
 			FdNode* n = pcGroup.front();
-			if (n->mType == FdNode::PATCH)
-				master = (PatchNode*)n;
-			else
-				master = changeRodToPatch((RodNode*)n, sqzV);
+			if (n->mType == FdNode::PATCH)	masters << (PatchNode*)n;
+			else masters << changeRodToPatch((RodNode*)n, sqzV);
 		}
-		// group nodes
+		// multiple nodes
 		else
-			master = (PatchNode*)wrapAsBundleNode(getIds(pcGroup), sqzV);
+		{
+			// check if all nodes in the pcGroup is virtual
+			bool allVirtual = true;
+			foreach(FdNode* pcNode, pcGroup){
+				if (!pcNode->hasTag(EDGE_ROD_TAG))
+				{
+					allVirtual = false;
+					break;
+				}
+			}
 
+			// create bundle master
+			if (!allVirtual)
+				masters << (PatchNode*)wrapAsBundleNode(getIds(pcGroup), sqzV);
+			// each edge rod is converted to a patch master
+			else foreach(FdNode* pcNode, pcGroup) 
+				masters << changeRodToPatch((RodNode*)pcNode, sqzV);
+		}
+	}
+
+	// normal and tag
+	foreach(PatchNode* m, masters)
+	{
 		// consistent normal with sqzV
-		if (dot(master->mPatch.Normal, sqzV) < 0)
-			master->mPatch.flipNormal();
+		if (dot(m->mPatch.Normal, sqzV) < 0)
+			m->mPatch.flipNormal();
 
 		// tag
-		master->addTag(MASTER_TAG);
-
-		// save
-		masters << master;
+		m->addTag(MASTER_TAG);
 	}
 }
 
@@ -164,9 +184,7 @@ void DcGraph::computeMasterOrderConstraints()
 		}
 	}
 
-	if(!baseMaster) return;
-
-	// projected rect
+	// projected masters on the base master
 	QMap<QString, Geom::Rectangle2> proj_rects;
 	Geom::Rectangle base_rect = baseMaster->mPatch;
 	foreach (PatchNode* m, masters)
@@ -179,7 +197,7 @@ void DcGraph::computeMasterOrderConstraints()
 			QString mi = masters[i]->mID;
 			QString mj = masters[j]->mID;
 
-			// intersect
+			// test intersection between projections
 			if (Geom::IntrRect2Rect2::test(proj_rects[mi], proj_rects[mj]))
 			{
 				double ti = masterTimeStamps[mi];
@@ -195,8 +213,7 @@ void DcGraph::computeMasterOrderConstraints()
 				{
 					masterOrderGreater[mj] << mi;
 					masterOrderLess[mi] << mj;
-				}
-					
+				}	
 			}
 		}
 	}
@@ -204,15 +221,10 @@ void DcGraph::computeMasterOrderConstraints()
 
 void DcGraph::updateSlaves()
 {
-	// slave parts
+	// collect non-master parts as slaves
 	slaves.clear();
 	foreach (FdNode* n, getFdNodes())
 		if (!n->hasTag(MASTER_TAG))	slaves << n;
-
-	// debug
-	//std::cout << "Slaves:\n";
-	//foreach (FdNode* s, slaves) 
-	//	std::cout << s->mID.toStdString() << "  ";
 }
 
 void DcGraph::updateSlaveMasterRelation()
@@ -229,114 +241,24 @@ void DcGraph::updateSlaveMasterRelation()
 		FdNode* slave = slaves[i];
 		for (int j = 0; j < masters.size(); j++)
 		{
-			// distance to master
 			PatchNode* master = masters[j];
-			if (getDistance(slave, master) < adjacentThr)
+
+			// virtual edge rod master
+			if (master->hasTag(EDGE_ROD_TAG))
 			{
-				// master id
-				slave2master[i] << j;
+				// can only attach to its host slave
+				if (master->properties[EDGE_ROD_HOST].value<QString>() == slave->mID)
+					slave2master[i] << j;
+			}
+			// real master
+			else
+			{
+				// attach by distance
+				if (getDistance(slave, master) < adjacentThr)
+					slave2master[i] << j;
 			}
 		}
 	}
-}
-
-QVector<FdNode*> DcGraph::mergeConnectedCoplanarParts( QVector<FdNode*> ns )
-{
-	// classify rods and patches
-	QVector<RodNode*>	rootRod;
-	QVector<PatchNode*> rootPatch;
-	foreach (FdNode* n, ns)
-	{
-		if (n->mType == FdNode::PATCH) 
-			rootPatch << (PatchNode*)n;
-		else rootRod << (RodNode*)n;
-	}
-
-	// RANSAC-like strategy: use a few samples to produce fitting model, which is a plane
-	// a plane is fitted by either one root patch or two coplanar root rods
-	QVector<Geom::Plane> fitPlanes;
-	foreach(PatchNode* pn, rootPatch) fitPlanes << pn->mPatch.getPlane();
-	for (int i = 0; i < rootRod.size(); i++){
-		for (int j = i+1; j< rootRod.size(); j++)
-		{
-			Vector3 v1 = rootRod[i]->mRod.Direction;
-			Vector3 v2 = rootRod[j]->mRod.Direction;
-			double dotProd = dot(v1, v2);
-			if (fabs(dotProd) > 0.9)
-			{
-				Vector3 v = v1 + v2; 
-				if (dotProd < 0) v = v1 - v2;
-				Vector3 u = rootRod[i]->mRod.Center - rootRod[j]->mRod.Center;
-				v.normalize(); u.normalize();
-				Vector3 normal = cross(u, v).normalized();
-				fitPlanes << Geom::Plane(rootRod[i]->mRod.Center, normal);
-			}
-		}
-	}
-
-	// search for coplanar parts for each fit plane
-	// add group them into connected components
-	QVector< QSet<QString> > copConnGroups;
-	double distThr = getConnectivityThr();
-	foreach(Geom::Plane plane, fitPlanes)
-	{
-		QVector<FdNode*> copNodes;
-		foreach(FdNode* n, ns)
-			if (onPlane(n, plane)) copNodes << n;
-
-		foreach(QVector<FdNode*> group, getConnectedGroups(copNodes, distThr))
-		{
-			QSet<QString> groupIds;
-			foreach(FdNode* n, group) groupIds << n->mID;
-			copConnGroups << groupIds;
-		}
-	}
-
-	// set cover: prefer large subsets
-	QVector<bool> deleted(copConnGroups.size(), false);
-	int count = copConnGroups.size(); 
-	QVector<int> subsetIndices;
-	while(count > 0)
-	{
-		// search for the largest group
-		int maxSize = -1;
-		int maxIdx = -1;
-		for (int i = 0; i < copConnGroups.size(); i++)
-		{
-			if (deleted[i]) continue;
-			if (copConnGroups[i].size() > maxSize)
-			{
-				maxSize = copConnGroups[i].size();
-				maxIdx = i;
-			}
-		}
-
-		// save selected subset
-		subsetIndices << maxIdx;
-		deleted[maxIdx] = true;
-		count--;
-
-		// delete overlapping subsets
-		for (int i = 0; i < copConnGroups.size(); i++)
-		{
-			if (deleted[i]) continue;
-
-			QSet<QString> maxGroup = copConnGroups[maxIdx];
-			maxGroup.intersect(copConnGroups[i]);
-			if (!maxGroup.isEmpty())
-			{
-				deleted[i] = true;
-				count--;
-			}
-		}
-	}
-
-	// merge each selected group
-	QVector<FdNode*> mnodes;
-	foreach(int i, subsetIndices)
-		mnodes << wrapAsBundleNode(copConnGroups[i].toList().toVector());
-
-	return mnodes;
 }
 
 void DcGraph::createSlaves()
@@ -356,41 +278,11 @@ void DcGraph::createSlaves()
 	updateSlaves();
 	updateSlaveMasterRelation();
 
-	//// connectivity among slave parts
-	//for (int i = 0; i < slaves.size(); i++)	{
-	//	for (int j = i+1; j < slaves.size(); j++)
-	//	{
-	//		// no connection among siblings (attach to same master)
-	//		if (!(slave2master[i] & slave2master[j]).isEmpty()) 
-	//			continue;
-
-	//		// add connectivity
-	//		if (getDistance(slaves[i], slaves[j]) < connThr)
-	//			FdGraph::addLink(slaves[i], slaves[j]);
-	//	}
-	//}
-
-	//// merge connected & coplanar slave parts
-	//foreach (QVector<Structure::Node*> component, getComponents())
-	//{
-	//	// skip single node, either master or slave
-	//	if (component.size() == 1) continue;
-
-	//	// fit patches
-	//	QVector<FdNode*> componentFd;
-	//	foreach(Structure::Node* n, component) componentFd << (FdNode*)n;
-	//	mergeConnectedCoplanarParts(componentFd);
-	//}
-	// 
-	//// slave-master relation after merging
-	//updateSlaves();
-	//updateSlaveMasterRelation();
-
 	// remove unbounded slaves: unlikely to happen
 	int nDeleted = 0;
 	for (int i = 0; i < slaves.size();i++)
 	{
-		if (slave2master[i].size() != 2)
+		if (slave2master[i].isEmpty())
 		{
 			slaves.remove(i-nDeleted);
 			nDeleted++;
@@ -419,9 +311,10 @@ void DcGraph::clusterSlaves()
 	for (int i = 0; i < slaves.size(); i++)
 	{
 		// H-slave are links
-		QList<int> mids = slave2master[i].toList();
-		QString nj = QString::number(mids.front());
-		QString nk = QString::number(mids.last());
+		QList<int> midPair = slave2master[i].toList();
+		if (midPair.size() != 2) continue; // T-slave
+		QString nj = QString::number(midPair.front());
+		QString nk = QString::number(midPair.last());
 		if (ms_graph->getLink(nj, nk) == NULL)
 			ms_graph->addLink(nj, nk);
 	}
@@ -437,13 +330,13 @@ void DcGraph::clusterSlaves()
 		QSet<int> cs;
 		for (int i = 0; i < cycle.size(); i++)
 		{
-			// master string ids
-			QSet<int> mids;
-			mids << cycle[i].toInt() << cycle[(i+1)%cycle.size()].toInt();
+			// two master ids
+			QSet<int> midPair;
+			midPair << cycle[i].toInt() << cycle[(i+1)%cycle.size()].toInt();
 
-			// find all siblings
+			// find all siblings: slaves sharing the same pair of masters
 			for (int sid = 0; sid < slaves.size(); sid++){
-				if (mids == slave2master[sid])
+				if (midPair == slave2master[sid])
 					cs << sid;
 			}
 		}
@@ -621,7 +514,7 @@ FdGraph* DcGraph::getKeyframe( double t )
 	}
 
 	// shift layers and add nodes into scaffold
-	FdGraph *key_graph = combineDecomposition(foldedBlocks, baseMaster->mID, masterBlockMap);
+	FdGraph *key_graph = combineFdGraphs(foldedBlocks, baseMaster->mID, masterBlockMap);
 	if(!key_graph) return NULL;
 
 	// debug
@@ -672,7 +565,7 @@ FdGraph* DcGraph::getSuperKeyframe( double t )
 	if(!baseMaster) return NULL;
 
 	// combine
-	FdGraph *keyframe = combineDecomposition(foldedBlocks, baseMaster->mID, masterBlockMap);
+	FdGraph *keyframe = combineFdGraphs(foldedBlocks, baseMaster->mID, masterBlockMap);
 	if(!keyframe) return NULL;
 	for (int i = 0; i < foldedBlocks.size(); i++)
 	{
@@ -778,7 +671,7 @@ void DcGraph::foldabilize()
 {
 	// clear tags
 	foreach (BlockGraph* b, blocks)
-		b->removeTag(READY_TO_FOLD_TAG);
+		b->foldabilized = false;
 
 	// initial time intervals
 	// greater than 1.0 means never be folded
@@ -798,12 +691,11 @@ void DcGraph::foldabilize()
 	{
 		std::cout << "Best next = " << blocks[next_bid]->mID.toStdString() << "\n";
 
-		// foldabilize next block
+		// foldabilize the selected next block
 		BlockGraph* next_block = blocks[next_bid];
 		next_block->foldabilize(currKeyframe);
 
-
-
+		// set up tag 
 		next_block->addTag(FOLDED_TAG);
 		double timeLength = next_block->getTimeLength() * timeScale;
 		double nextTime = currTime + timeLength;
@@ -855,43 +747,42 @@ void DcGraph::foldabilize()
 	    |------nextBlock------|------next2Block------|
    currKeyframe          nextKeyframe           next2Keyframe
 **/  
+// currKeyframe is a super keyframe providing context information
 int DcGraph::getBestNextBlockIndex(double currTime, FdGraph* currKeyframe)
 {
 	double best_score = -maxDouble();
 	int best_next_bid = -1;
 	for (int next_bid = 0; next_bid < blocks.size(); next_bid++)
 	{
-		// skip folded blocks
+		// skip foldabilized blocks
 		BlockGraph* nextBlock = blocks[next_bid];
 		if (passed(currTime, nextBlock->mFoldDuration)) continue;
 
-		// predict the folding currBlock
+		// guess the folding of nextBlock without real foldabilization
+		// the super keyframe is estimated by AFR
 		Interval next_ti = nextBlock->mFoldDuration;
 		double timeLength = nextBlock->getTimeLength() * timeScale;
 		double nextTime = currTime + timeLength;
 		nextBlock->mFoldDuration = INTERVAL(currTime, nextTime);
 		nextBlock->computeAvailFoldingRegion(currKeyframe);
 		FdGraph* nextKeyframe = getSuperKeyframe(nextTime);
-		// debug
-		//keyframes << nextKeyframe;
-		//addDebugBoxes(nextBlock->getAFS());
-		//addDebugPoints(nextBlock->chains.front()->getTopMaster()->mPatch.getConners());
 
-		// evaluate
+		// evaluate next keyframe: valid if all master orders are remained
+		// if valid, calculate the total AFV of remaining blocks
 		double score = -1;
 		if (isValid(nextKeyframe))
 		{
 			// AFV of nextBlock
 			score = nextBlock->getAvailFoldingVolume();
 
-			// AFV of unfolded blocks after nextBlock is folded
+			// AFV of remaining un-foldabilized blocks
 			for (int next2_bid = 0; next2_bid < blocks.size(); next2_bid++)
 			{
-				// skip folded blocks
+				// skip foldabilized block
 				BlockGraph* next2Block = blocks[next2_bid];
 				if (passed(nextTime, next2Block->mFoldDuration)) continue;
 
-				// predict the folding of next2Block
+				// guess the folding of next2Block without real foldabilization
 				Interval next2_ti = next2Block->mFoldDuration;
 				double timeLength = next2Block->getTimeLength() * timeScale;
 				double next2Time = nextTime + timeLength;
@@ -899,47 +790,37 @@ int DcGraph::getBestNextBlockIndex(double currTime, FdGraph* currKeyframe)
 				next2Block->computeAvailFoldingRegion(nextKeyframe);
 				FdGraph* next2Keyframe = getSuperKeyframe(next2Time);
 
-				// accumulate score if the folding is valid
+				// accumulate AFV if the folding is valid
 				if (isValid(next2Keyframe))
 				{
 					score += next2Block->getAvailFoldingVolume();
-					// debug
-					//keyframes << next2Keyframe;
-					//addDebugBoxes(next2Block->getAFS());
-					if (next2_bid == 1)
-					{
-						properties[AFR_CP].setValue(next2Block->properties[AFR_CP].value<QVector<Vector3> >());
-						properties[MAXFR].setValue(next2Block->properties[MAXFR].value<QVector<Vector3> >());
-					}
-
 				}
 
-				// clean up
+				// garbage collection
 				delete next2Keyframe;
+
+				// restore time interval in order to test another block
 				next2Block->mFoldDuration = next2_ti;
 			}
 		}
 
-		
-
-		//return 0;
-
-
-
-
-		// update the best
+		// nextBlock that introduce the most AFV wins
 		if (score > 0 && score > best_score){
 			best_score = score;
 			best_next_bid = next_bid;
 		}
 
-		// very important: restore time interval
+		// garbage collection
 		delete nextKeyframe;
+
+		// very important: restore time interval in order to test another block
 		nextBlock->mFoldDuration = next_ti;
 
-		// debug
+		// debug info
 		std::cout << blocks[next_bid]->mID.toStdString() << " : " << best_score << std::endl;
 	}
+
+	// found the best next block in terms of introducing most free space for others
 	return best_next_bid;
 }
 
@@ -983,6 +864,7 @@ void DcGraph::exportCollFOG()
 	if (selBlock) selBlock->exportCollFOG();
 }
 
+// A FdGraph is valid only if all order constraints are met
 bool DcGraph::isValid( FdGraph* superKeyframe )
 {
 	// get all masters: unfolded and super
