@@ -79,7 +79,7 @@ public:
 	// key frame
 	void generateKeyframes(int N);
 	FdGraph* getKeyframe(double t);
-	ShapeSuperKeyframe* getSuperKeyframe(double t);
+	ShapeSuperKeyframe* getShapeSuperKeyframe(double t);
 
 public:
 	FdGraph* activeScaffold();

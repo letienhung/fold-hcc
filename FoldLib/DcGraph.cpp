@@ -413,7 +413,6 @@ BlockGraph* DcGraph::createBlock( QSet<int> sCluster )
 	return b;
 }
 
-
 void DcGraph::createBlocks()
 {
 	// clear blocks
@@ -544,7 +543,7 @@ FdGraph* DcGraph::getKeyframe( double t )
 	return key_graph;
 }
 
-ShapeSuperKeyframe* DcGraph::getSuperKeyframe( double t )
+ShapeSuperKeyframe* DcGraph::getShapeSuperKeyframe( double t )
 {
 	// super key frame for each block
 	QVector<FdGraph*> foldedBlocks;
@@ -586,7 +585,7 @@ void DcGraph::foldabilize()
 	// choose best free block
 	std::cout << "\n\n============START============\n";
 	double currTime = 0.0;
-	ShapeSuperKeyframe* currKeyframe = getSuperKeyframe(currTime);
+	ShapeSuperKeyframe* currKeyframe = getShapeSuperKeyframe(currTime);
 	int next_bid = getBestNextBlockIndex(currTime, currKeyframe);  
 	
 	while (next_bid >= 0 && next_bid < blocks.size())
@@ -606,7 +605,7 @@ void DcGraph::foldabilize()
 		std::cout << "\n============NEXT============\n";
 		currTime = nextTime;
 		delete currKeyframe;
-		currKeyframe = getSuperKeyframe(currTime);
+		currKeyframe = getShapeSuperKeyframe(currTime);
 
 		if(!currKeyframe){
 			std::cout << "Warning: cannot fold on this direction.\n";
@@ -666,7 +665,7 @@ int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyf
 		double nextTime = currTime + timeLength;
 		nextBlock->mFoldDuration = INTERVAL(currTime, nextTime);
 		nextBlock->computeAvailFoldingRegion(currKeyframe);
-		ShapeSuperKeyframe* nextKeyframe = getSuperKeyframe(nextTime);
+		ShapeSuperKeyframe* nextKeyframe = getShapeSuperKeyframe(nextTime);
 
 		// evaluate next keyframe: valid if all master orders are remained
 		// if valid, calculate the total AFV of remaining blocks
@@ -689,7 +688,7 @@ int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyf
 				double next2Time = nextTime + timeLength;
 				next2Block->mFoldDuration = INTERVAL(nextTime, next2Time);
 				next2Block->computeAvailFoldingRegion(nextKeyframe);
-				ShapeSuperKeyframe* next2Keyframe = getSuperKeyframe(next2Time);
+				ShapeSuperKeyframe* next2Keyframe = getShapeSuperKeyframe(next2Time);
 
 				// accumulate AFV if the folding is valid
 				if (next2Keyframe->isValid(sqzV))
@@ -764,8 +763,6 @@ void DcGraph::exportCollFOG()
 	BlockGraph* selBlock = getSelBlock();
 	if (selBlock) selBlock->exportCollFOG();
 }
-
-
 
 void DcGraph::foldbzSelBlock()
 {

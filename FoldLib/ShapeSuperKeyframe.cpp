@@ -4,7 +4,7 @@ ShapeSuperKeyframe::ShapeSuperKeyframe(FdGraph* superKeyframe, StringSetMap moc_
 {
 	// clone all nodes
 	foreach(Structure::Node* n, superKeyframe->nodes)
-		Structure::Graph::addNode(n);
+		Structure::Graph::addNode(n->clone());
 
 	// super master and their corresponding masters
 	QVector<PatchNode*> superMasters;
