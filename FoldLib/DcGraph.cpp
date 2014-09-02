@@ -664,7 +664,7 @@ int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyf
 		double timeLength = nextBlock->getTimeLength() * timeScale;
 		double nextTime = currTime + timeLength;
 		nextBlock->mFoldDuration = INTERVAL(currTime, nextTime);
-		nextBlock->computeAvailFoldingRegion(currKeyframe);
+		nextBlock->computeAvailFoldingRegion(currKeyframe); //***necessary for computing ssKeyframe
 		ShapeSuperKeyframe* nextKeyframe = getShapeSuperKeyframe(nextTime);
 
 		// evaluate next keyframe: valid if all master orders are remained
@@ -687,7 +687,7 @@ int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyf
 				double timeLength = next2Block->getTimeLength() * timeScale;
 				double next2Time = nextTime + timeLength;
 				next2Block->mFoldDuration = INTERVAL(nextTime, next2Time);
-				next2Block->computeAvailFoldingRegion(nextKeyframe);
+				next2Block->computeAvailFoldingRegion(nextKeyframe);//***necessary for computing ssKeyframe
 				ShapeSuperKeyframe* next2Keyframe = getShapeSuperKeyframe(next2Time);
 
 				// accumulate AFV if the folding is valid

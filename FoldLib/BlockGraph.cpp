@@ -79,7 +79,7 @@ BlockGraph::BlockGraph( QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& s
 	shapeAABB.Extent[2] *= 2;;
 
 	// super block
-	superBlock = NULL;
+	superBlock = nullptr;
 
 	// parameters for deformation
 	nbSplits = 1;
@@ -150,200 +150,6 @@ QStringList BlockGraph::getChainLabels()
 	labels << "--none--";
 
 	return labels;
-}
-
-void BlockGraph::computeMinFoldingRegion()
-{
-	minFoldingRegion.clear();
-	Geom::Rectangle base_rect = baseMaster->mPatch; // ***use original base rect
-	foreach (PatchNode* top_master, mastersSuper)
-	{
-		// skip base master
-		if (top_master == baseMasterSuper) continue;
-
-		// min folding region
-		Geom::Rectangle2 min_region = base_rect.get2DRectangle(top_master->mPatch);
-		minFoldingRegion[top_master->mID] = min_region;
-
-		// debug
-		//Geom::Rectangle min_region3 = base_rect.get3DRectangle(min_region);
-		//appendToVectorProperty<Geom::Segment>(MINFR, min_region3.getEdgeSegments());
-	}
-}
-
-void BlockGraph::computeMaxFoldingRegion()
-{
-	maxFoldingRegion.clear();
-	Geom::Rectangle base_rect = baseMaster->mPatch;// ***use original base rect
-	int aid = shapeAABB.getAxisId(base_rect.Normal);
-	Geom::Rectangle cropper3 = shapeAABB.getPatch(aid, 0);
-	Geom::Rectangle2 cropper2 = base_rect.get2DRectangle(cropper3);
-	foreach (PatchNode* top_master, mastersSuper)
-	{
-		// skip base master
-		if (top_master == baseMasterSuper) continue;
-
-		// 2D points from fold region of slaves and top master
-		QVector<Vector2> pnts_proj;
-		QVector<Vector3> pnts;
-		foreach (int cid, masterUnderChainsMapSuper[top_master->mID]) {
-			pnts << chains[cid]->getMaxFoldRegion(true).getConners();
-			pnts << chains[cid]->getMaxFoldRegion(false).getConners();
-		}
-		foreach(Vector3 p, pnts) pnts_proj << base_rect.getProjCoordinates(p);
-		pnts_proj << minFoldingRegion[top_master->mID].getConners();
-
-		// max region
-		Geom::Rectangle2 max_region = computeAABB2D(pnts_proj);
-		max_region.cropByAxisAlignedRectangle(cropper2);
-		maxFoldingRegion[top_master->mID] = max_region;
-
-		// debug
-		//QVector<Vector3> pnts_proj3;
-		//foreach (Vector2 p2, pnts_proj) 
-		//	pnts_proj3 << base_rect.getPosition(p2);
-		//properties[MAXFR].setValue(pnts_proj3);
-		properties[MAXFR].setValue(base_rect.get3DRectangle(max_region).getEdgeSamples(100));
-	}
-}
-
-QVector<QString> BlockGraph::getInbetweenExternalParts(ShapeSuperKeyframe* ssKeyframe, QString base_mid, QString top_mid)
-{
-	// time line
-	Vector3 sqzV = baseMaster->mPatch.Normal;
-	Geom::Line timeLine(Vector3(0, 0, 0), sqzV);
-
-	// position on time line
-	FdNode* base_master = (FdNode*)superBlock->getNode(base_mid);
-	FdNode* top_master = (FdNode*)superBlock->getNode(top_mid);
-	double t0 = timeLine.getProjTime(base_master->center());
-	double t1 = timeLine.getProjTime(top_master->center());
-	double epsilon = 0.05 * (t1 - t0);
-	Interval m1m2 = INTERVAL(t0 + epsilon, t1 - epsilon);
-
-	// find parts in between m1 and m2
-	QVector<QString> inbetweens;
-	foreach (FdNode* n, ssKeyframe->getFdNodes())
-	{
-		// skip parts that has been folded
-		if (n->hasTag(MERGED_PART_TAG)) continue;
-
-		// skip parts in this block
-		if (superBlock->containsNode(n->mID)) continue;
-
-		// master
-		if (n->hasTag(MASTER_TAG))
-		{
-			double t = timeLine.getProjTime(n->center());
-
-			if (within(t, m1m2)) 	inbetweens << n->mID;
-		}else
-		// slave		
-		{
-			int aid = n->mBox.getAxisId(sqzV);
-			Geom::Segment sklt = n->mBox.getSkeleton(aid);
-			double t0 = timeLine.getProjTime(sklt.P0);
-			double t1 = timeLine.getProjTime(sklt.P1);
-			if (t0 > t1) std::swap(t0, t1);
-			Interval ti = INTERVAL(t0, t1);
-
-			if (overlap(ti, m1m2))	inbetweens << n->mID;
-		}
-	}
-
-	return inbetweens;
-}
-
-QVector<QString> BlockGraph::getUnrelatedMasters(ShapeSuperKeyframe* ssKeyframe, QString base_mid, QString top_mid)
-{
-	QVector<QString> urMasters;
-
-	// retrieve master order constraints
-	StringSetMap moc_greater = ssKeyframe->mocGreater;
-	StringSetMap moc_less = ssKeyframe->mocLess;
-
-	// related parts with mid1 and mid2
-	QSet<QString> base_moc = moc_greater[base_mid] + moc_less[base_mid];
-	QSet<QString> top_moc = moc_greater[top_mid] + moc_less[top_mid];	
-
-	// masters unrelated with both
-	foreach (PatchNode* m, getAllMasters(ssKeyframe))
-	{
-		// skip folded masters
-		if (m->hasTag(MERGED_PART_TAG)) continue;
-
-		// accept if not related to any
-		if (!base_moc.contains(m->mID) && !top_moc.contains(m->mID))
-			urMasters << m->mID;
-	}
-
-	return urMasters;
-}
-
-void BlockGraph::computeAvailFoldingRegion( ShapeSuperKeyframe* ssKeyframe )
-{
-	// align scaffold with this block
-	Vector3 pos_block = baseMaster->center();
-	FdNode* fnode = (FdNode*)ssKeyframe->getNode(baseMaster->mID);
-	if(!fnode) return;
-	Vector3 pos_keyframe = fnode->center();
-	Vector3 offset = pos_block - pos_keyframe;
-	ssKeyframe->translate(offset, false);
-
-	// super block and min/max folding regions
-	computeSuperBlock(ssKeyframe);
-	computeMinFoldingRegion();
-	computeMaxFoldingRegion();
-
-	// extent 
-	availFoldingRegion.clear();
-	QString base_mid = baseMasterSuper->mID;
-	Geom::Rectangle base_rect = baseMaster->mPatch;// ***use original base rect
-	foreach (PatchNode* top_master, mastersSuper)
-	{
-		// skip base master
-		QString top_mid = top_master->mID;
-		if (top_mid == base_mid) continue;
-
-		// samples from constraint parts: in-between and unordered
-		QVector<QString> constraintParts;
-		constraintParts << getInbetweenExternalParts(ssKeyframe, base_mid, top_mid);
-		constraintParts << getUnrelatedMasters(ssKeyframe, base_mid, top_mid);
-		QVector<Vector3> samples;
-		int nbs = 100;
-		foreach(QString nid, constraintParts)
-		{
-			FdNode* n = (FdNode*)ssKeyframe->getNode(nid);
-			if (n->mType == FdNode::PATCH)
-				samples << ((PatchNode*)n)->mPatch.getEdgeSamples(nbs);
-			else
-				samples << ((RodNode*)n)->mRod.getUniformSamples(nbs);
-		}
-
-		// projection on base_rect
-		QVector<Vector2> samples_proj;
-		foreach (Vector3 s, samples)
-			samples_proj << base_rect.getProjCoordinates(s);
-
-		// max folding region
-		samples_proj << maxFoldingRegion[top_mid].getEdgeSamples(nbs);
-
-		// avail folding region
-		// includes minFR but excludes all constraint points
-		Geom::Rectangle2 avail_region = minFoldingRegion[top_mid];
-		extendRectangle2D(avail_region, samples_proj);
-		availFoldingRegion[top_mid] = avail_region;
-
-		// debug
-		QVector<Vector3> samples_proj3;
-		foreach (Vector2 p2, samples_proj) 
-			samples_proj3 << base_rect.getPosition(p2);
-		properties[AFR_CP].setValue(samples_proj3);
-		//properties[AFR_CP].setValue(samples);
-	}
-
-	// restore the position of scaffold
-	ssKeyframe->translate(-offset, false);
 }
 
 void BlockGraph::exportCollFOG()
@@ -459,11 +265,14 @@ FdGraph* BlockGraph::getSuperKeyframe( double t )
 				projPnts2 << base_rect.getProjCoordinates(part_rod.P1);
 			}
 		}
-	}else
+	}
+	else if (superBlock != nullptr)
 	{
 		// guess the folded state using available folding regions
-		foreach (QString mid, availFoldingRegion.keys())
-			projPnts2 << availFoldingRegion[mid].getConners();
+		// this is the special case for predicting folding 
+		// ***superBlock must be ready at this point
+		foreach (QString mid, superBlock->availFoldingRegion.keys())
+			projPnts2 << superBlock->availFoldingRegion[mid].getConners();
 	}
 
 	// resize super patch
@@ -494,11 +303,23 @@ bool BlockGraph::fAreasIntersect( Geom::Rectangle& rect1, Geom::Rectangle& rect2
 	return Geom::IntrRect2Rect2::test(r1, r2);
 }
 
+void BlockGraph::computeAvailFoldingRegion(ShapeSuperKeyframe* ssKeyframe)
+{
+	// update super block
+	if (superBlock != nullptr) delete superBlock;
+	superBlock = new SuperBlockGraph(this, ssKeyframe);
+
+	// compute AFR
+	superBlock->computeAvailFoldingRegion();
+
+	// debug AFS
+	properties[AFS].setValue(superBlock->getAllAFS());
+}
+
 void BlockGraph::foldabilize(ShapeSuperKeyframe* ssKeyframe)
 {
 	// available folding region
 	computeAvailFoldingRegion(ssKeyframe);
-	properties[AFS].setValue(getAFS());
 
 	// special case of T-block with single T-Chain
 	if (isTBlock())
@@ -555,13 +376,17 @@ void BlockGraph::applySolution( int sid )
 
 void BlockGraph::filterFoldOptions( QVector<FoldOption*>& options, int cid )
 {
+	// superBlock must be ready
+	if (superBlock == nullptr) return;
+
+	// AFR
 	ChainGraph* chain = chains[cid];
-	QString top_mid_super = chainTopMasterMapSuper[cid];
-	Geom::Rectangle2 AFR = availFoldingRegion[top_mid_super];
+	QString top_mid_super = superBlock->chainTopMasterMap[cid];
+	Geom::Rectangle2 AFR = superBlock->availFoldingRegion[top_mid_super];
 	AFR.Extent *= 1.01; // ugly way to avoid numerical issue
-	Geom::Rectangle base_rect = baseMaster->mPatch;
 
 	// filter
+	Geom::Rectangle base_rect = baseMaster->mPatch;
 	QVector<FoldOption*> options_filtered;
 	foreach (FoldOption* fn, options)
 	{
@@ -772,114 +597,7 @@ double BlockGraph::getTimeLength()
 
 double BlockGraph::getAvailFoldingVolume()
 {
-	Geom::Rectangle base_rect = baseMaster->mPatch;
-	QList<QString> super_mids = availFoldingRegion.keys();
-
-	// trivial case
-	if (availFoldingRegion.size() == 1)
-	{
-		QString smid = super_mids.front();
-		Geom::Rectangle afr3 = base_rect.get3DRectangle(availFoldingRegion[smid]);
-		return afr3.area() * masterHeightSuper[smid];
-	}
-
-	// AABB of avail folding regions
-	QVector<Vector2> conners;
-	foreach (QString key, availFoldingRegion.keys())
-		conners << availFoldingRegion[key].getConners();
-	Geom::Rectangle2 aabb2 = computeAABB2D(conners);
-
-	if( !_finite(aabb2.Extent.x()) ) 
-		return 0;
-
-	// pixelize folding region
-	Geom::Rectangle aabb3 = base_rect.get3DRectangle(aabb2);
-	double pixel_size = aabb3.Extent[0] / 100;
-	double pixel_area = pixel_size * pixel_size;
-	double AFV = 0;
-	foreach (Vector3 gp3, aabb3.getGridSamples(pixel_size))
-	{
-		Vector2 gp2 = base_rect.getProjCoordinates(gp3);
-
-		double best_height = 0;
-		foreach (QString smid, super_mids)
-			if (availFoldingRegion[smid].contains(gp2) && masterHeightSuper[smid] > best_height)
-				best_height = masterHeightSuper[smid];
-
-		AFV += best_height;
-	}
-	AFV *= pixel_area;
-
-	return AFV;
-}
-
-Geom::Box BlockGraph::getAvailFoldingSpace( QString mid_super )
-{
-	Geom::Rectangle base_rect = baseMaster->mPatch;
-	Geom::Rectangle afr3 = base_rect.get3DRectangle(availFoldingRegion[mid_super]);
-	Geom::Box afs(afr3, base_rect.Normal, masterHeightSuper[mid_super]);
-
-	double epsilon = 2 * ZERO_TOLERANCE_LOW;
-	afs.Extent += Vector3(epsilon, epsilon, epsilon);
-
-	return afs;
-}
-
-// superBlock is 
-void BlockGraph::computeSuperBlock(ShapeSuperKeyframe* ssKeyframe)
-{
-	// clone current block
-	if (superBlock) delete superBlock;
-	superBlock = (FdGraph*)this->clone();
-
-	// replace parts
-	QMap<QString, QString> masterSuperMap = ssKeyframe->master2SuperMap;
-	master2Super.clear(); // master-super map in this block
-	foreach (PatchNode* m, masters)
-	{
-		if (masterSuperMap.contains(m->mID))
-		{
-			// remove master
-			superBlock->removeNode(m->mID);
-
-			// clone super patch
-			PatchNode* super = (PatchNode*)ssKeyframe->getNode(masterSuperMap[m->mID])->clone();
-			superBlock->Structure::Graph::addNode(super);
-
-			master2Super[m->mID] = masterSuperMap[m->mID];
-		}
-		else
-			master2Super[m->mID] = m->mID;
-	}
-
-	// other stuff
-	mastersSuper.clear();
-	masterHeightSuper.clear();
-	masterUnderChainsMapSuper.clear();
-	chainTopMasterMapSuper.clear();
-
-	QString base_mid_super = master2Super[baseMaster->mID];
-	baseMasterSuper = (PatchNode*)superBlock->getNode(base_mid_super);
-	foreach (PatchNode* m, masters)
-	{
-		QString mid = m->mID;
-		QString mid_super = master2Super[mid];
-		mastersSuper << (PatchNode*)superBlock->getNode(mid_super);
-		masterHeightSuper[mid_super] = masterHeight[mid];
-
-		QSet<int> underChainIndices = masterUnderChainsMap[mid];
-		masterUnderChainsMapSuper[mid_super] = underChainIndices;
-		foreach (int ucid, underChainIndices)
-			chainTopMasterMapSuper[ucid] = mid_super;
-	}
-}
-
-QVector<Geom::Box> BlockGraph::getAFS()
-{
-	QVector<Geom::Box> afs;
-	foreach (QString top_mid_super, availFoldingRegion.keys())
-		afs << getAvailFoldingSpace(top_mid_super);
-	return afs;
+	return superBlock->getAvailFoldingVolume();
 }
 
 void BlockGraph::setThickness( double thk )
@@ -889,42 +607,6 @@ void BlockGraph::setThickness( double thk )
 	{
 		chain->halfThk = thickness / 2;
 		chain->baseOffset = thickness / 2;
-	}
-}
-
-void BlockGraph::computeMasterNbUnderLayers()
-{
-	// base rect
-	Geom::Rectangle base_rect = baseMaster->mPatch;
-
-	// bottom up
-	QMap<QString, QSet<QString> > masterTopSuperSiblings;
-	for (int i = 0; i < sortedMasters.size(); i++)
-	{
-		QString mid = sortedMasters[i];
-		int nbLayers = 0;
-
-		// top_super_siblings of mid
-		QString mid_super = master2Super[mid];
-		PatchNode* master_super = (PatchNode*)superBlock->getNode(mid_super);
-		if (master_super->hasTag(SUPER_PATCH_TAG))
-		{
-			QSet<QString> superSiblings = master_super->properties[MERGED_MASTERS].value<QSet<QString> >();
-			
-			// to-do: find top siblings
-		}
-
-		// under masters
-		for (int j = 0; j < i; j++)
-		{
-			QString under_mid = sortedMasters[j];
-			// to-do: find offset 
-			int offset = masterNbUnderLayers[under_mid] + 3;
-			if (offset > nbLayers) nbLayers = offset;
-		}
-
-		// store
-		masterNbUnderLayers[mid] = nbLayers;
 	}
 }
 
@@ -942,6 +624,11 @@ double BlockGraph::computeCost( FoldOption* fn )
 	return cost;
 }
 
+bool BlockGraph::isTBlock()
+{
+	return (chains.size() == 1 && chains.front()->isTChain());
+}
+
 void BlockGraph::foldabilizeTBlock()
 {
 	// the chain
@@ -955,8 +642,8 @@ void BlockGraph::foldabilizeTBlock()
 
 	// filter by AFS
 	QVector<FoldOption*> valid_options;
-	QString top_mid_super = chainTopMasterMapSuper[0];
-	Geom::Rectangle2 AFR = availFoldingRegion[top_mid_super];
+	QString top_mid_super = superBlock->chainTopMasterMap[0];
+	Geom::Rectangle2 AFR = superBlock->availFoldingRegion[top_mid_super];
 	AFR.Extent *= 1.01; // ugly way to avoid numerical issue
 	Geom::Rectangle base_rect = baseMaster->mPatch;
 	foreach (FoldOption* fn, options)
@@ -982,9 +669,4 @@ void BlockGraph::foldabilizeTBlock()
 	// apply fold option
 	chain->applyFoldOption(best_fn);
 	foldabilized = true;
-}
-
-bool BlockGraph::isTBlock()
-{
-	return (chains.size() == 1 && chains.front()->isTChain());
 }

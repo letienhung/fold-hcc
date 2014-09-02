@@ -3,6 +3,7 @@
 #include "FdGraph.h"
 #include "FoldOptionGraph.h"
 #include "ShapeSuperKeyframe.h"
+#include "SuperBlockGraph.h"
 
 class ChainGraph;
 
@@ -22,17 +23,10 @@ public:
 	// key frame
 	FdGraph* getKeyframe(double t, bool useThk);
 	FdGraph* getSuperKeyframe(double t);
-	void computeSuperBlock(ShapeSuperKeyframe* ssKeyframe);
 
-	// folding space
-	void computeMinFoldingRegion();
-	void computeMaxFoldingRegion();
+	// Folding regions and volumes
 	void computeAvailFoldingRegion(ShapeSuperKeyframe* ssKeyframe);
 	double getAvailFoldingVolume();
-	Geom::Box getAvailFoldingSpace(QString mid);
-	QVector<Geom::Box> getAFS();
-	QVector<QString> getInbetweenExternalParts(ShapeSuperKeyframe* ssKeyframe, QString mid1, QString mid2);
-	QVector<QString> getUnrelatedMasters(ShapeSuperKeyframe* ssKeyframe, QString mid1, QString mid2);
 
 	// collision graph
 	void addNodesToCollisionGraph();
@@ -58,7 +52,6 @@ public:
 
 	// thickness
 	void setThickness(double thk);
-	void computeMasterNbUnderLayers();
 
 public:
 	// AABB of entire shape
@@ -93,19 +86,7 @@ public:
 	QVector<QVector<FoldOption*> > foldSolutions;
 
 	// super block
-	QMap<QString, QString> master2Super;
-	FdGraph* superBlock;
-	PatchNode* baseMasterSuper;
-	QVector<PatchNode*> mastersSuper;
-	QMap<QString, double> masterHeightSuper;    
-	QMap<QString, QSet<int> > masterUnderChainsMapSuper;
-	QMap<int, QString> chainTopMasterMapSuper;
-
-	// folding regions
-	// ***2D rectangles encoded in original base patch
-	QMap<QString, Geom::Rectangle2> minFoldingRegion;
-	QMap<QString, Geom::Rectangle2> maxFoldingRegion;
-	QMap<QString, Geom::Rectangle2> availFoldingRegion;
+	SuperBlockGraph* superBlock;
 
 	// thickness
 	bool useThickness;
