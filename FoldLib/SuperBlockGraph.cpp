@@ -72,13 +72,15 @@ void SuperBlockGraph::computeMinFoldingRegion()
 		// skip base master
 		if (top_master == baseMaster) continue;
 
-		// min folding region
+		// min folding region is the projection of top master
 		Geom::Rectangle2 min_region = base_rect.get2DRectangle(top_master->mPatch);
+
+		// store
 		minFoldingRegion[top_master->mID] = min_region;
 
 		// debug
-		//Geom::Rectangle min_region3 = base_rect.get3DRectangle(min_region);
-		//appendToVectorProperty<Geom::Segment>(MINFR, min_region3.getEdgeSegments());
+		Geom::Rectangle min_region3 = base_rect.get3DRectangle(min_region);
+		//origBlock->properties[MINFR].setValue(min_region3.getEdgeSamples(20));
 	}
 }
 
@@ -94,7 +96,7 @@ void SuperBlockGraph::computeMaxFoldingRegion()
 		// skip base master
 		if (top_master == baseMaster) continue;
 
-		// 2D points from fold region of slaves and top master
+		// projection of folded slaves with minimum splits
 		QVector<Vector2> pnts_proj;
 		QVector<Vector3> pnts;
 		foreach(int cid, masterUnderChainsMap[top_master->mID]) {
@@ -102,19 +104,29 @@ void SuperBlockGraph::computeMaxFoldingRegion()
 			pnts << origBlock->chains[cid]->getMaxFoldRegion(false).getConners();
 		}
 		foreach(Vector3 p, pnts) pnts_proj << base_rect.getProjCoordinates(p);
+
+		// projection of top master
 		pnts_proj << minFoldingRegion[top_master->mID].getConners();
 
-		// max region
+		// max region is the AABB of projections of both folded slave and top master
 		Geom::Rectangle2 max_region = computeAABB2D(pnts_proj);
+
+		// max region is confined by the bounding box
 		max_region.cropByAxisAlignedRectangle(cropper2);
+
+		// store
 		maxFoldingRegion[top_master->mID] = max_region;
 
 		// debug
-		//QVector<Vector3> pnts_proj3;
-		//foreach (Vector2 p2, pnts_proj) 
-		//	pnts_proj3 << base_rect.getPosition(p2);
-		//properties[MAXFR].setValue(pnts_proj3);
-		//properties[MAXFR].setValue(base_rect.get3DRectangle(max_region).getEdgeSamples(100));
+		QVector<Vector3> pnts_proj3;
+		foreach (Vector2 p2, pnts_proj) 
+			pnts_proj3 << base_rect.getPosition(p2);
+		//origBlock->properties[MAXFR].setValue(pnts_proj3);
+
+		//origBlock->properties[MAXFR].setValue(cropper3.getEdgeSamples(70));
+
+		Geom::Rectangle max_region3 = base_rect.get3DRectangle(max_region);
+		origBlock->properties[MAXFR].setValue(max_region3.getEdgeSamples(100));
 	}
 }
 
@@ -177,11 +189,13 @@ void SuperBlockGraph::computeAvailFoldingRegion()
 		QVector<Vector3> samples_proj3;
 		foreach(Vector2 p2, samples_proj)
 			samples_proj3 << base_rect.getPosition(p2);
-		properties[AFR_CP].setValue(samples_proj3);
-		//properties[AFR_CP].setValue(samples);
+		//origBlock->properties[AFR_CP].setValue(samples_proj3);
+
+		Geom::Rectangle avail_region3 = base_rect.get3DRectangle(avail_region);
+		origBlock->properties[AFR_CP].setValue(avail_region3.getEdgeSamples(70));
 	}
 
-	// restore the position of scaffold
+	// restore the position of shape super key frame
 	ssKeyframe->translate(-offset, false);
 }
 

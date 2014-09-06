@@ -26,6 +26,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->connect(ui->showCuboid, SIGNAL(stateChanged(int)), SLOT(setShowCuboid(int)));
 	plugin->connect(ui->showScaffold, SIGNAL(stateChanged(int)), SLOT(setShowScaffold(int)));
 	plugin->connect(ui->showMesh, SIGNAL(stateChanged(int)), SLOT(setShowMesh(int)));
+	plugin->connect(ui->showAABB, SIGNAL(stateChanged(int)), SLOT(setShowAABB(int)));
 	plugin->connect(ui->showAFS, SIGNAL(stateChanged(int)), SLOT(setShowAFS(int)));
 
 	// foldabilize

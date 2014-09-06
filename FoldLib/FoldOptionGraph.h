@@ -26,11 +26,11 @@ public:
 	// to which side to fold
 	bool rightSide;
 
-	// deformation
+	// shrinking
 	double scale;
 	double position;
 
-	// #splits
+	// #splits: produce nSplits+1 parts in a chain
 	int nSplits;
 
 	// duration

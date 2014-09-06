@@ -15,10 +15,11 @@ public:
 	void computePhaseSeparator();
 
 	// fold options
-	QVector<FoldOption*> generateFoldOptions(int nSplits, int nUsedChunks, int nChunks);
+	QVector<FoldOption*> genFoldOptions(int nSplits, int nUsedChunks, int nChunks);
 	FoldOption* generateDeleteFoldOption(int nSplits);
-	Geom::Rectangle getFoldRegion(FoldOption* fn);
-	Geom::Rectangle getMaxFoldRegion(bool right);
+	virtual Geom::Rectangle getFoldRegion(FoldOption* fn);
+	virtual Geom::Rectangle getMinFoldRegion(bool isRight);
+	virtual Geom::Rectangle getMaxFoldRegion(bool isRight);
 
 	// time interval
 	void setFoldDuration(double t0, double t1);
@@ -41,8 +42,6 @@ public:
 
 	// T-chain
 	bool isTChain();
-	void foldT(double t);
-
 public:
 	PatchNode*			topMaster;	// top
 	PatchNode*			baseMaster;	// base							

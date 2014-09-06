@@ -30,7 +30,7 @@ public:
 
 	// collision graph
 	void addNodesToCollisionGraph();
-	void filterFoldOptions(QVector<FoldOption*>& options, int cid);
+	void pruneFoldOptions(QVector<FoldOption*>& options, int cid);
 	void addEdgesToCollisionGraph();
 	void exportCollFOG();
 

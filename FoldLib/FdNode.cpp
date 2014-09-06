@@ -13,9 +13,8 @@
 FdNode::FdNode(QString id)
 	: Node(id)
 {
-	mColor = qRandomColor3(0,0.5,0.7); 
-	mColor.setAlphaF(0.78);
 	mType = NONE;
+	setRandomColor();
 
 	showCuboid = true;
 	showScaffold = true;
@@ -35,9 +34,8 @@ FdNode::FdNode(QString id, Geom::Box &b, MeshPtr m )
 	mBox = b;
 	encodeMesh();
 
-	mColor = qRandomColor3(0,0.5,0.7);
-	mColor.setAlphaF(0.78);
 	mType = NONE;
+	setRandomColor();
 
 	showCuboid = true;
 	showScaffold = true;
@@ -72,6 +70,14 @@ FdNode::~FdNode()
 {
 
 }
+
+
+void FdNode::setRandomColor()
+{
+	mColor = qRandomColor3(0, 0.5, 0.7);
+	mColor.setAlphaF(0.78);
+}
+
 
 void FdNode::draw()
 {

@@ -52,7 +52,9 @@ HEADERS += \
     BundleNode.h \
     FoldOptionGraph.h \
     ShapeSuperKeyframe.h \
-    SuperBlockGraph.h
+    SuperBlockGraph.h \
+    TChainGraph.h \
+    TBlockGraph.h
 
 SOURCES += \
     PatchNode.cpp \
@@ -70,5 +72,7 @@ SOURCES += \
     BundleNode.cpp \
     FoldOptionGraph.cpp \
     ShapeSuperKeyframe.cpp \
-    SuperBlockGraph.cpp
+    SuperBlockGraph.cpp \
+    TChainGraph.cpp \
+    TBlockGraph.cpp
 

@@ -390,19 +390,12 @@ void ChainGraph::fold( double t )
 	// fix base
 	baseMaster->addTag(FIXED_NODE_TAG);
 
-	if (isTChain())
-	{
-		foldT(t);
-	}
-	else
-	{
-		// set up hinge angles and top position
-		if (useUniformHeight)
-			foldUniformHeight(t);
-		else 
-			foldUniformAngle(t);
-	}
-
+	// set up hinge angles and top position
+	if (useUniformHeight)
+		foldUniformHeight(t);
+	else 
+		foldUniformAngle(t);
+	
 	// restore configuration
 	restoreConfiguration();
 }
@@ -421,33 +414,31 @@ FdGraph* ChainGraph::getKeyframe( double t, bool useThk )
 	return keyframe;
 }
 
-QVector<FoldOption*> ChainGraph::generateFoldOptions( int nSplits, int nUsedChunks, int nChunks )
+QVector<FoldOption*> ChainGraph::genFoldOptions( int nSplits, int nUsedChunks, int nChunks )
 {
 	QVector<FoldOption*> options;
 
-	double chunkSize = 1.0/double(nChunks);
-	double usedSize = chunkSize * nUsedChunks;
+	double chunkWidth = 1.0/double(nChunks);
+	double usedWidth = chunkWidth * nUsedChunks;
 
-	// position
+	// start position
 	for (int i = 0; i <= nChunks - nUsedChunks; i++)
 	{
-		double position = chunkSize * i;
+		double startPos = chunkWidth * i;
 
 		// left
-		QString fnid1 = QString("%1:%2_%3_L_%4").arg(mID).arg(nSplits).arg(nUsedChunks).arg(position);
-		FoldOption* fn1 = new FoldOption(fnid1, false, usedSize, position, nSplits, patchArea);
+		QString fnid1 = QString("%1:%2_%3_L_%4").arg(mID).arg(nSplits).arg(nUsedChunks).arg(startPos);
+		FoldOption* fn1 = new FoldOption(fnid1, false, usedWidth, startPos, nSplits, patchArea);
 		options.push_back(fn1);
 
 		// right
-		QString fnid2 = QString("%1:%2_%3_R_%4").arg(mID).arg(nSplits).arg(nUsedChunks).arg(position);
-		FoldOption* fn2 = new FoldOption(fnid2, true, usedSize, position, nSplits, patchArea);
+		QString fnid2 = QString("%1:%2_%3_R_%4").arg(mID).arg(nSplits).arg(nUsedChunks).arg(startPos);
+		FoldOption* fn2 = new FoldOption(fnid2, true, usedWidth, startPos, nSplits, patchArea);
 		options.push_back(fn2);
 	}
 
 	return options;
 }
-
-
 
 FoldOption* ChainGraph::generateDeleteFoldOption( int nSplits )
 {
@@ -457,7 +448,6 @@ FoldOption* ChainGraph::generateDeleteFoldOption( int nSplits )
 	delete_fn->region = Geom::Rectangle();
 	return delete_fn;
 }
-
 
 void ChainGraph::resetChainParts(FoldOption* fn)
 {
@@ -665,9 +655,17 @@ Geom::Rectangle ChainGraph::getFoldRegion( FoldOption* fn )
 	return region;
 }
 
-Geom::Rectangle ChainGraph::getMaxFoldRegion( bool right )
+Geom::Rectangle ChainGraph::getMinFoldRegion(bool isRight)
 {
-	FoldOption fn("", right, 1.0, 0.0, 1, patchArea);
+	// min fold region is produced by maximum number of splits
+	FoldOption fn("", isRight, 1.0, 0.0, 999, patchArea);
+	return getFoldRegion(&fn);
+}
+
+Geom::Rectangle ChainGraph::getMaxFoldRegion( bool isRight )
+{
+	// max fold region is produced by minimum number of splits
+	FoldOption fn("", isRight, 1.0, 0.0, 1, patchArea);
 	return getFoldRegion(&fn);
 }
 
@@ -734,10 +732,4 @@ QVector<Geom::Plane> ChainGraph::generateCutPlanes( FoldOption* fn )
 bool ChainGraph::isTChain()
 {
 	return topMaster->hasTag(EDGE_ROD_TAG) || baseMaster->hasTag(EDGE_ROD_TAG);
-}
-
-void ChainGraph::foldT( double t )
-{
-	// to do
-	// get legacy code
 }

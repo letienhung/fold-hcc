@@ -4,6 +4,7 @@
 #include "IntrRect2Rect2.h"
 #include "Numeric.h"
 #include "ChainGraph.h"
+#include "TChainGraph.h"
 #include "CliquerAdapter.h"
 
 BlockGraph::BlockGraph( QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& ss, 
@@ -49,7 +50,13 @@ BlockGraph::BlockGraph( QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& s
 		}
 
 		// create chain
-		ChainGraph* hc = new ChainGraph(ss[i], (PatchNode*)getNode(mid_low), (PatchNode*)getNode(mid_high));
+		// T-chain is created if one master is virtual
+		ChainGraph* hc;
+		PatchNode* master_low = (PatchNode*)getNode(mid_low);
+		PatchNode* master_high = (PatchNode*)getNode(mid_high);
+		bool isT = master_low->hasTag(EDGE_ROD_TAG) || master_high->hasTag(EDGE_ROD_TAG);
+		if (isT) hc = new TChainGraph(ss[i], master_low, master_high);
+		else	 hc = new ChainGraph(ss[i], master_low, master_high);
 		double t0 = 1.0 - masterTimeStamps[mid_high];
 		double t1 = 1.0 - masterTimeStamps[mid_low];
 		hc->setFoldDuration(t0, t1);
@@ -76,7 +83,6 @@ BlockGraph::BlockGraph( QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& s
 
 	// shape AABB
 	shapeAABB = shape_aabb;
-	shapeAABB.Extent[2] *= 2;;
 
 	// super block
 	superBlock = nullptr;
@@ -313,7 +319,7 @@ void BlockGraph::computeAvailFoldingRegion(ShapeSuperKeyframe* ssKeyframe)
 	superBlock->computeAvailFoldingRegion();
 
 	// debug AFS
-	properties[AFS].setValue(superBlock->getAllAFS());
+	//properties[AFS].setValue(superBlock->getAllAFS());
 }
 
 void BlockGraph::foldabilize(ShapeSuperKeyframe* ssKeyframe)
@@ -331,8 +337,10 @@ void BlockGraph::foldabilize(ShapeSuperKeyframe* ssKeyframe)
 	// collision graph
 	std::cout << "\n==build collision graph==\n";
 	collFog->clear();
+
 	std::cout << "===add nodes===\n";
 	addNodesToCollisionGraph();
+
 	std::cout << "===add edges===\n";
 	addEdgesToCollisionGraph();
 
@@ -374,7 +382,7 @@ void BlockGraph::applySolution( int sid )
 	foldabilized = true;
 }
 
-void BlockGraph::filterFoldOptions( QVector<FoldOption*>& options, int cid )
+void BlockGraph::pruneFoldOptions( QVector<FoldOption*>& options, int cid )
 {
 	// superBlock must be ready
 	if (superBlock == nullptr) return;
@@ -387,7 +395,7 @@ void BlockGraph::filterFoldOptions( QVector<FoldOption*>& options, int cid )
 
 	// filter
 	Geom::Rectangle base_rect = baseMaster->mPatch;
-	QVector<FoldOption*> options_filtered;
+	QVector<FoldOption*> options_pruned;
 	foreach (FoldOption* fn, options)
 	{
 		bool reject = false;
@@ -417,11 +425,11 @@ void BlockGraph::filterFoldOptions( QVector<FoldOption*>& options, int cid )
 
 		// reject or accept
 		if (reject)	delete fn;
-		else options_filtered << fn;
+		else options_pruned << fn;
 	}
 
 	// store
-	options = options_filtered;
+	options = options_pruned;
 }
 
 void BlockGraph::addNodesToCollisionGraph()
@@ -442,10 +450,13 @@ void BlockGraph::addNodesToCollisionGraph()
 		collFog->addNode(cn);
 
 		// fold options
+		// nS: # splits; nC: # used chunks; nbChunks: total # of chunks
+		// enumerate all start positions and left/right side
+		// H-chain has min nS = 1 and are odd numbers, min nC = 1
 		QVector<FoldOption*> options;
 		for (int nS = 1; nS <= nbSplits; nS += 2)
-			for (int nUsedChunks = nbChunks; nUsedChunks >= 1; nUsedChunks-- )
-					options << chain->generateFoldOptions(nS, nUsedChunks, nbChunks);
+			for (int nC = 1; nC <= nbChunks; nC++ )
+					options << chain->genFoldOptions(nS, nC, nbChunks);
 
 		// fold region and duration
 		foreach (FoldOption* fn, options) 
@@ -454,9 +465,9 @@ void BlockGraph::addNodesToCollisionGraph()
 			fn->duration = chain->duration;
 		}
 
-		// filter fold options using AFS
+		// prune fold options using AFS
 		std::cout << "#options = " << options.size();
-		filterFoldOptions(options, cid);
+		pruneFoldOptions(options, cid);
 		std::cout << " ==> " << options.size() << std::endl;
 
 		// "delete" option
@@ -638,14 +649,14 @@ void BlockGraph::foldabilizeTBlock()
 	QVector<FoldOption*> options;
 	for (int nS = 1; nS <= nbSplits; nS ++)
 		for (int nUsedChunks = nbChunks; nUsedChunks >= 1; nUsedChunks-- )
-			options << chain->generateFoldOptions(nS, nUsedChunks, nbChunks);
+			options << chain->genFoldOptions(nS, nUsedChunks, nbChunks);
 
-	// filter by AFS
-	QVector<FoldOption*> valid_options;
+	// prune by AFS
+	Geom::Rectangle base_rect = baseMaster->mPatch;
 	QString top_mid_super = superBlock->chainTopMasterMap[0];
 	Geom::Rectangle2 AFR = superBlock->availFoldingRegion[top_mid_super];
 	AFR.Extent *= 1.01; // ugly way to avoid numerical issue
-	Geom::Rectangle base_rect = baseMaster->mPatch;
+	QVector<FoldOption*> valid_options;
 	foreach (FoldOption* fn, options)
 	{
 		Geom::Rectangle2 fRegion2 = base_rect.get2DRectangle(fn->region);

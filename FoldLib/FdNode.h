@@ -21,7 +21,7 @@ public:
 
 	Node* clone() = 0;
 
-	// plain nodes
+	// bundle node return all children, otherwise nothing
 	virtual QVector<FdNode*> getSubNodes();
 
 	// visualization
@@ -33,6 +33,7 @@ public:
 	virtual void drawMesh();
 	virtual void drawScaffold() = 0;
 	void drawWithName(int name);
+	void setRandomColor();
 
 	// mesh
 	void encodeMesh();

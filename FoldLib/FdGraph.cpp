@@ -167,7 +167,6 @@ void FdGraph::loadFromFile(QString fname)
 }
 
 
-
 Geom::AABB FdGraph::computeAABB()
 {
 	Geom::AABB aabb;
@@ -428,6 +427,14 @@ void FdGraph::drawSpecial()
 		QVector<Vector3> pnts = properties[AFR_CP].value<QVector<Vector3> >();
 		PointSoup ps;
 		foreach (Vector3 p, pnts) ps.addPoint(p, Qt::cyan);
+		ps.draw();
+	}
+
+	if (properties.contains(MINFR))
+	{
+		QVector<Vector3> pnts = properties[MINFR].value<QVector<Vector3> >();
+		PointSoup ps;
+		foreach(Vector3 p, pnts) ps.addPoint(p, Qt::red);
 		ps.draw();
 	}
 

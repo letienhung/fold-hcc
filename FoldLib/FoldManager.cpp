@@ -22,7 +22,7 @@ FoldManager::FoldManager()
 	thickness = 0;
 
 	connThrRatio = 0.1;
-	aabbScale = Vector3(1, 1, 1.15);
+	aabbScale = Vector3(1, 1, 1);
 
 	costWeight = 0.05;
 	useNewCost = false;

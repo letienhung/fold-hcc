@@ -635,5 +635,19 @@ bool FdPlugin::keyPressEvent(QKeyEvent* event)
 		return true;
 	}
 
+	// Change node color randomly
+	if (event->modifiers().testFlag(Qt::ControlModifier) &&
+		event->key() == Qt::Key_C)
+	{
+		for each (auto n in scaffold->getFdNodes())
+		{
+			n->setRandomColor();
+		}
+
+		updateScene();
+
+		return true;
+	}
+
 	return false;
 }
