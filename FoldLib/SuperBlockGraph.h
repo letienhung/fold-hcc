@@ -3,7 +3,7 @@
 #include "FdGraph.h"
 #include "PatchNode.h"
 
-class BlockGraph;
+class HBlockGraph;
 class ShapeSuperKeyframe;
 
 // superBlock is a regular block with masters replaced by their corresponding super masters
@@ -12,9 +12,9 @@ class ShapeSuperKeyframe;
 class SuperBlockGraph : public FdGraph
 {
 public:
-	SuperBlockGraph(BlockGraph* block, ShapeSuperKeyframe* ssKeyframe);
+	SuperBlockGraph(HBlockGraph* block, ShapeSuperKeyframe* ssKeyframe);
 
-	// folding space
+	// folding regions
 	void computeMinFoldingRegion();
 	void computeMaxFoldingRegion();
 	void computeAvailFoldingRegion();
@@ -30,9 +30,12 @@ public:
 	Geom::Box getAFS(QString mid);
 	QVector<Geom::Box> getAllAFS();
 
+	// region
+	QVector<Geom::Rectangle2> getAvailFoldingRegion();
+
 public:
 	// the original block
-	BlockGraph* origBlock;
+	HBlockGraph* origBlock;
 
 	// the super shape key frame
 	ShapeSuperKeyframe* ssKeyframe;

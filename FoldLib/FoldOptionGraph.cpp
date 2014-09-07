@@ -60,6 +60,20 @@ FoldOption::~FoldOption()
 
 }
 
+double FoldOption::getCost(double w)
+{
+	// cost of splitting
+	double cost1 = nSplits;
+
+	// cost of shrinking
+	double s = 1 - scale;
+	double cost2 = patchArea * s * s;
+
+	// blended cost
+	double cost = w * cost1 + (1 - w) * cost2;
+	return cost;
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 

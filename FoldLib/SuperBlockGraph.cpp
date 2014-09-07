@@ -1,10 +1,10 @@
 #include "SuperBlockGraph.h"
-#include "BlockGraph.h"
+#include "HBlockGraph.h"
 #include "ShapeSuperKeyframe.h"
 #include "ChainGraph.h"
 #include "Numeric.h"
 
-SuperBlockGraph::SuperBlockGraph(BlockGraph* block, ShapeSuperKeyframe* sskf)
+SuperBlockGraph::SuperBlockGraph(HBlockGraph* block, ShapeSuperKeyframe* sskf)
 : origBlock(block), ssKeyframe(sskf)
 {
 	// map from master to super master within this block
@@ -335,4 +335,9 @@ QVector<Geom::Box> SuperBlockGraph::getAllAFS()
 	foreach(QString top_mid, availFoldingRegion.keys())
 		afs << getAFS(top_mid);
 	return afs;
+}
+
+QVector<Geom::Rectangle2> SuperBlockGraph::getAvailFoldingRegion()
+{
+	return availFoldingRegion.values().toVector();
 }

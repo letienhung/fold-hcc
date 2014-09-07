@@ -5,6 +5,8 @@
 #include "SectorCylinder.h"
 #include "ChainGraph.h"
 #include "IntrRect2Rect2.h"
+#include "TBlockGraph.h"
+#include "HBlockGraph.h"
 
 
 DcGraph::DcGraph(QString id, FdGraph* scaffold, Vector3 v, double connThr)
@@ -28,7 +30,7 @@ DcGraph::DcGraph(QString id, FdGraph* scaffold, Vector3 v, double connThr)
 
 	// time scale
 	double totalDuration = 0;
-	foreach (BlockGraph* b, blocks) totalDuration += b->getTimeLength();
+	foreach (BlockGraph* b, blocks) totalDuration += b->getNbTopMasters();
 	timeScale = 1.0 / totalDuration;
 
 	// selection
@@ -397,10 +399,14 @@ BlockGraph* DcGraph::createBlock( QSet<int> sCluster )
 	foreach (int mid, mids)	ms << masters[mid];
 
 	// create
+	BlockGraph* b;
 	int bidx = blocks.size();
 	QString id = "HB_" + QString::number(bidx);
 	Geom::Box aabb = computeAABB().box();
-	BlockGraph* b =  new BlockGraph(id, ms, ss, mPairs, aabb);
+	if (ms.size() == 2 && ss.size() == 1 &&
+		(ms[0]->hasTag(EDGE_ROD_TAG) || ms[1]->hasTag(EDGE_ROD_TAG)))
+		b = new TBlockGraph(id, ms, ss, mPairs, aabb);
+	else b =  new HBlockGraph(id, ms, ss, mPairs, aabb);
 	blocks << b;
 
 	// master block map
@@ -424,11 +430,6 @@ void DcGraph::createBlocks()
 	for (int i = 0; i < slaveClusters.size(); i++)
 	{
 		createBlock(slaveClusters[i]);
-	}
-
-	if (blocks.size() == 1)
-	{
-		blocks.front()->isAlone = true;
 	}
 }
 
@@ -587,12 +588,6 @@ void DcGraph::foldabilize()
 	double currTime = 0.0;
 	ShapeSuperKeyframe* currKeyframe = getShapeSuperKeyframe(currTime);
 	int next_bid = getBestNextBlockIndex(currTime, currKeyframe);  
-
-
-	return;
-
-
-	
 	while (next_bid >= 0 && next_bid < blocks.size())
 	{
 		std::cout << "Best next = " << blocks[next_bid]->mID.toStdString() << "\n";
@@ -602,7 +597,7 @@ void DcGraph::foldabilize()
 		next_block->foldabilize(currKeyframe);
 
 		// set up time interval 
-		double timeLength = next_block->getTimeLength() * timeScale;
+		double timeLength = next_block->getNbTopMasters() * timeScale;
 		double nextTime = currTime + timeLength;
 		next_block->mFoldDuration = INTERVAL(currTime, nextTime);
 
@@ -619,6 +614,15 @@ void DcGraph::foldabilize()
 
 		next_bid = getBestNextBlockIndex(currTime, currKeyframe);
 	}
+
+
+
+
+
+
+
+
+	return;
 
 	// remaining blocks (if any) are interlocking
 	QVector<BlockGraph*> blocks_copy = blocks;
@@ -666,7 +670,7 @@ int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyf
 		// guess the folding of nextBlock without real foldabilization
 		// the super keyframe is estimated by AFR
 		Interval next_ti = nextBlock->mFoldDuration;
-		double timeLength = nextBlock->getTimeLength() * timeScale;
+		double timeLength = nextBlock->getNbTopMasters() * timeScale;
 		double nextTime = currTime + timeLength;
 		nextBlock->mFoldDuration = INTERVAL(currTime, nextTime);
 		nextBlock->computeAvailFoldingRegion(currKeyframe); //***necessary for computing ssKeyframe
@@ -689,7 +693,7 @@ int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyf
 
 				// guess the folding of next2Block without real foldabilization
 				Interval next2_ti = next2Block->mFoldDuration;
-				double timeLength = next2Block->getTimeLength() * timeScale;
+				double timeLength = next2Block->getNbTopMasters() * timeScale;
 				double next2Time = nextTime + timeLength;
 				next2Block->mFoldDuration = INTERVAL(nextTime, next2Time);
 				next2Block->computeAvailFoldingRegion(nextKeyframe);//***necessary for computing ssKeyframe

@@ -379,7 +379,7 @@ void FoldManager::setParameters()
 
 			b->shapeAABB = constrainAABB;
 
-			b->w = costWeight;
+			b->weight = costWeight;
 
 			foreach (ChainGraph* c, b->chains)
 				c->useUniformHeight = useUniformHeight;
