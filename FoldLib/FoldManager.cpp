@@ -26,7 +26,6 @@ FoldManager::FoldManager()
 
 	costWeight = 0.05;
 	useNewCost = false;
-	useUniformHeight = true;
 }
 
 FoldManager::~FoldManager()
@@ -380,9 +379,6 @@ void FoldManager::setParameters()
 			b->shapeAABB = constrainAABB;
 
 			b->weight = costWeight;
-
-			foreach (ChainGraph* c, b->chains)
-				c->useUniformHeight = useUniformHeight;
 		}
 
 		dc->connThrRatio = connThrRatio;

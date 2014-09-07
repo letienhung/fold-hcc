@@ -1,6 +1,6 @@
 #include "HBlockGraph.h"
 #include "Numeric.h"
-#include "ChainGraph.h"
+#include "HChainGraph.h"
 #include "CliquerAdapter.h"
 #include "IntrRect2Rect2.h"
 
@@ -58,7 +58,7 @@ void HBlockGraph::createChains(QVector<FdNode*>& ss, QVector< QVector<QString> >
 		// create chain
 		PatchNode* master_low = (PatchNode*)getNode(mid_low);
 		PatchNode* master_high = (PatchNode*)getNode(mid_high);
-		ChainGraph* hc = new ChainGraph(ss[i], master_low, master_high);
+		ChainGraph* hc = new HChainGraph(ss[i], master_low, master_high);
 		double t0 = 1.0 - masterTimeStamps[mid_high];
 		double t1 = 1.0 - masterTimeStamps[mid_low];
 		hc->setFoldDuration(t0, t1);
@@ -248,6 +248,7 @@ void HBlockGraph::foldabilize(ShapeSuperKeyframe* ssKeyframe)
 	findOptimalSolution();
 
 	// apply fold options
+	// to-do: show all solutions via navigation
 	std::cout << "\n==apply solution==\n";
 	applySolution(0);
 }

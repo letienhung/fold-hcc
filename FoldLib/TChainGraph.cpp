@@ -43,8 +43,45 @@ Geom::Rectangle TChainGraph::getFoldRegion(FoldOption* fn)
 	return region;
 }
 
-Geom::Rectangle TChainGraph::getMaxFoldRegion(bool isRight)
+//     left					right
+//	   ---						|
+//		|step					|
+//	   ---						|
+//		|step					|d
+//	  -----	plane0				|
+//		|						|
+//		|					  -----
+//		|						|step
+//		|d					   ---
+//		|						|step
+//		|					   --- plane0
+QVector<Geom::Plane> TChainGraph::generateCutPlanes(FoldOption* fn)
 {
-	FoldOption fn("", isRight, 1.0, 0.0, 0, patchArea);
-	return getFoldRegion(&fn);
+	// constants
+	double L = slaveSeg.length();
+	double d = rightSeg.length();
+	double h = topTraj.length();
+
+	// start plane and step
+	double step = h / (fn->nSplits + 1);
+	Geom::Plane start_plane = baseMaster->mPatch.getPlane();
+
+	// ?? the normal along the chain
+	Vector3 stepV = step * start_plane.Normal;
+
+	// cut planes
+	QVector<Geom::Plane> cutPlanes;
+	for (int i = 1; i <= fn->nSplits; i++)
+	{
+		Vector3 deltaV = i * stepV;
+		cutPlanes << start_plane.translated(deltaV);
+	}
+
+	return cutPlanes;
 }
+
+void TChainGraph::fold(double t)
+{
+
+}
+

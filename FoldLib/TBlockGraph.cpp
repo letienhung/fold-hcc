@@ -1,10 +1,27 @@
 #include "TBlockGraph.h"
+#include "TChainGraph.h"
 
 TBlockGraph::TBlockGraph(QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& ss,
 	QVector< QVector<QString> >& mPairs, Geom::Box shape_aabb)
 	:BlockGraph(id, shape_aabb)
 {
+	// clone nodes
+	foreach(PatchNode* m, ms)	{
+		masters << (PatchNode*)m->clone();
+		Structure::Graph::addNode(masters.last());
+	}
+	foreach(FdNode* s, ss)
+		Structure::Graph::addNode(s->clone());
 
+	// the base and virtual top masters
+	bool isVirtualFirst = masters.front()->hasTag(EDGE_ROD_TAG);
+	topMaster = isVirtualFirst? masters.front() : masters.last();
+	baseMaster = isVirtualFirst ? masters.last() : masters.front();
+
+	// the chain
+	TChainGraph* tc = new TChainGraph(ss.front(), baseMaster, topMaster);
+	tc->setFoldDuration(0, 1);
+	chains << tc;
 }
 
 void TBlockGraph::foldabilize(ShapeSuperKeyframe* ssKeyframe)
@@ -51,7 +68,7 @@ void TBlockGraph::foldabilize(ShapeSuperKeyframe* ssKeyframe)
 
 FdGraph* TBlockGraph::getKeyframe(double t, bool useThk)
 {
-	return nullptr;
+	return chains.front()->getKeyframe(t, useThk);
 }
 
 void TBlockGraph::computeAvailFoldingRegion(ShapeSuperKeyframe* ssKeyframe)

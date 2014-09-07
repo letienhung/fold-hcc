@@ -113,7 +113,7 @@ FdGraph* BlockGraph::getSuperKeyframe( double t )
 		}
 	}else
 	{// guess the folded state using available folding regions
-		for(auto afr : availFoldingRegion)
+		for (auto afr : availFoldingRegion)
 			projPnts2 << afr.getConners();
 	}
 

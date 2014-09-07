@@ -12,36 +12,33 @@ public:
 
 	// set up
 	void computeOrientations();
-	void computePhaseSeparator();
-
-	// fold options
-	QVector<FoldOption*> genFoldOptions(int nSplits, int nUsedChunks, int nChunks);
-	FoldOption* generateDeleteFoldOption(int nSplits);
-	virtual Geom::Rectangle getFoldRegion(FoldOption* fn);
-	virtual Geom::Rectangle getMinFoldRegion(bool isRight);
-	virtual Geom::Rectangle getMaxFoldRegion(bool isRight);
 
 	// time interval
 	void setFoldDuration(double t0, double t1);
 
-	// modify chain
+	// fold options
+	QVector<FoldOption*> genFoldOptions(int nSplits, int nUsedChunks, int nChunks);
+	FoldOption* generateDeleteFoldOption(int nSplits);
+	Geom::Rectangle getFoldRegion(bool isRight, int nSplits);
+	virtual Geom::Rectangle getFoldRegion(FoldOption* fn) = 0;
+
+	// apply fold option: modify the chain
 	void applyFoldOption(FoldOption* fn);
 	void resetChainParts(FoldOption* fn);
 	void resetHingeLinks(FoldOption* fn);
 	void activateLinks(FoldOption* fn);
-	QVector<Geom::Plane> generateCutPlanes(FoldOption* fn);
+	virtual QVector<Geom::Plane> generateCutPlanes(FoldOption* fn) = 0;
 
 	// folding
-	void fold(double t);
-	void foldUniformHeight(double t);
-	void foldUniformAngle(double t);
+	virtual void fold(double t) = 0;
+
+	// thickness
 	void addThickness(FdGraph* keyframe, double t);
 
 	// key frame
 	FdGraph* getKeyframe(double t, bool useThk);
 
-	// T-chain
-	bool isTChain();
+
 public:
 	PatchNode*			topMaster;	// top
 	PatchNode*			baseMaster;	// base							
@@ -66,10 +63,10 @@ public:
 	QVector<FdLink*>	rightLinks;	// right hinges 
 	QVector<FdLink*>	leftLinks;	// left hinges
 	QVector<FdLink*>	activeLinks;// active hinges
+
 	Interval			duration;	// time interval
 	bool				foldToRight;// folding side
-	double				heightSep;	// the height separates phase I and II
-	double				angleSep;	// angle between b and base
+
 
 	//			topJoint				
 	//	half_thk  __|\___________			
@@ -86,10 +83,8 @@ public:
 	double halfThk;		// thickness of slave and top master
 	double baseOffset;	// offset caused by thickness of base master and its super siblings
 
+	// statics
 	int nbHinges;
 	double shrinkedArea;
 	double patchArea;
-
-	// uniform option
-	bool useUniformHeight;
 };

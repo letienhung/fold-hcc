@@ -20,6 +20,10 @@ public:
 
 	// solution
 	virtual void applySolution(int idx) override;
+
+public:
+	// the virtual top master
+	PatchNode* topMaster;
 };
 
 

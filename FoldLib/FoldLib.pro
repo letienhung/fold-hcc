@@ -55,7 +55,8 @@ HEADERS += \
     SuperBlockGraph.h \
     TChainGraph.h \
     TBlockGraph.h \
-    HBlockGraph.h
+    HBlockGraph.h \
+    HChainGraph.h
 
 SOURCES += \
     PatchNode.cpp \
@@ -76,5 +77,6 @@ SOURCES += \
     SuperBlockGraph.cpp \
     TChainGraph.cpp \
     TBlockGraph.cpp \
-    HBlockGraph.cpp
+    HBlockGraph.cpp \
+    HChainGraph.cpp
 

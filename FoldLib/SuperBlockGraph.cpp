@@ -100,8 +100,8 @@ void SuperBlockGraph::computeMaxFoldingRegion()
 		QVector<Vector2> pnts_proj;
 		QVector<Vector3> pnts;
 		foreach(int cid, masterUnderChainsMap[top_master->mID]) {
-			pnts << origBlock->chains[cid]->getMaxFoldRegion(true).getConners();
-			pnts << origBlock->chains[cid]->getMaxFoldRegion(false).getConners();
+			pnts << origBlock->chains[cid]->getFoldRegion(true, 0).getConners();
+			pnts << origBlock->chains[cid]->getFoldRegion(false, 0).getConners();
 		}
 		foreach(Vector3 p, pnts) pnts_proj << base_rect.getProjCoordinates(p);
 

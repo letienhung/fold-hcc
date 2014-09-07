@@ -4,7 +4,7 @@
 #include "Numeric.h"
 
 ChainGraph::ChainGraph( FdNode* slave, PatchNode* base, PatchNode* top)
-	: FdGraph(slave->mID), baseMaster(NULL), origSlave(NULL), topMaster(NULL)
+	: FdGraph(slave->mID)
 {
 	// slave
 	if (slave->mType == FdNode::ROD)
@@ -17,16 +17,16 @@ ChainGraph::ChainGraph( FdNode* slave, PatchNode* base, PatchNode* top)
 		Vector3 baseV = base->mPatch.Normal;
 		Vector3 crossRodVBaseV = cross(rodV, baseV);
 		Vector3 slavePatchNorm;
-		if (crossRodVBaseV.norm() < 0.1)
+		if (crossRodVBaseV.norm() < 0.1)	
 			slavePatchNorm = baseMaster->mPatch.Axis[0];
-		else
-			slavePatchNorm = cross(crossRodVBaseV, rodV);
+		else slavePatchNorm = cross(crossRodVBaseV, rodV);
 		slavePatchNorm.normalize();
 		
 		origSlave = new PatchNode(slaveRod, slavePatchNorm);
-	}
-	else
+	}else
+	{
 		origSlave = (PatchNode*)slave->clone();
+	}
 	chainParts << (PatchNode*)origSlave->clone();
 	Structure::Graph::addNode(chainParts[0]);
 
@@ -51,9 +51,6 @@ ChainGraph::ChainGraph( FdNode* slave, PatchNode* base, PatchNode* top)
 
 	// patch area
 	patchArea = origSlave->mPatch.area();
-
-	// uniform
-	useUniformHeight = true;
 
 	//// debug
 	//addDebugSegment(baseJoint);
@@ -107,299 +104,6 @@ void ChainGraph::computeOrientations()
 	topTraj = Geom::Segment(topCenterProj, topMaster->center());
 }
 
-void ChainGraph::computePhaseSeparator()
-{
-	// constant
-	int n = chainParts.size();
-	double L = slaveSeg.length();
-	double d = rightSeg.length();
-	double a = (L - d) / n;
-	double b = d + a;
-	double A = (n - 1) * a;
-
-	// height
-	heightSep = A + sqrt(b * b - d * d);
-
-	// angle
-	double sin_angle = heightSep - A;
-	angleSep = asin(RANGED(0, sin_angle, 1));
-}
-
-void ChainGraph::foldUniformAngle( double t )
-{
-	// hinge angles
-	double d = rightSeg.length();
-	double sl = slaveSeg.length();
-	int n = chainParts.size();
-	double alpha = acos(d / sl) * (1 - t);
-
-	double a = (sl - d) / n;
-	double b = d + a;
-	double bProj = b * cos(alpha);
-	double beta;
-	// no return
-	if (bProj <= d)
-	{
-		double cos_beta = (d - bProj)/((n - 1) * a);
-		beta = acos(cos_beta);
-
-		if (foldToRight)
-		{
-			activeLinks[0]->hinge->angle = M_PI - beta;
-			for (int i = 1; i < activeLinks.size()-1; i++)
-				activeLinks[i]->hinge->angle = M_PI;
-			activeLinks.last()->hinge->angle = alpha + M_PI - beta;
-		}
-		else
-		{
-			activeLinks[0]->hinge->angle = alpha;
-			activeLinks[1]->hinge->angle = alpha + M_PI - beta;
-			for (int i = 2; i < activeLinks.size(); i++)
-				activeLinks[i]->hinge->angle = M_PI;
-		}
-	}
-	// return
-	else
-	{
-		double cos_beta = (b * cos(alpha) - d) / a;
-		beta = acos(RANGED(0, cos_beta, 1));
-
-		if(!activeLinks.size()) return;
-
-		if (foldToRight)
-		{
-			activeLinks[0]->hinge->angle = beta;
-			for (int i = 1; i < activeLinks.size()-1; i++)
-				activeLinks[i]->hinge->angle = 2 * beta;
-			activeLinks.last()->hinge->angle = alpha + beta;
-		}
-		else
-		{
-			activeLinks[0]->hinge->angle = alpha;
-			activeLinks[1]->hinge->angle = alpha + beta;
-			for (int i = 2; i < activeLinks.size(); i++)
-				activeLinks[i]->hinge->angle = 2 * beta;
-		}
-	}
-
-	// adjust the position of top master
-	double ha = a * sin(beta);
-	double hb = b * sin(alpha);
-	double topH = (n - 1) * ha + hb;
-	Vector3 topPos = topTraj.P0 + topH * topTraj.Direction;
-	topMaster->translate(topPos - topMaster->center());
-}
-
-void ChainGraph::foldUniformHeight( double t )
-{
-	// constant
-	int n = chainParts.size();
-	double L = slaveSeg.length();
-	double d = rightSeg.length();
-	double a = (L - d) / n;
-	double b = d + a;
-	double A = (n - 1) * a;
-	double H = topTraj.length();
-	double h = (1 - t) * H;
-	// phase-I: no return
-	if (h >= heightSep)
-	{
-		double alpha_orig = acos(RANGED(0, d/L ,1));
-		Interval alpha_it = INTERVAL(angleSep, alpha_orig);
-		double x = 2 * b * h;
-		double y = 2 * b * d;
-		double z = d * d + h * h + b * b - A * A;
-		double aa = x * x + y * y;
-		double bb = -2 * y * z;
-		double cc = z * z - x * x;
-
-		double alpha = 0;
-		QVector<double> roots = findRoots(aa, bb, cc);
-		foreach (double r, roots){
-			alpha = acos(RANGED(0, r, 1));
-			if (within(alpha, alpha_it)) break;
-		}
-		if (alpha == 0) alpha = alpha_orig; //set original angle if no roots found
-
-		double cos_beta = (d - b * cos(alpha)) / A;
-		double beta = acos(RANGED(0, cos_beta, 1));
-
-		// set angles
-		if (foldToRight)
-		{
-			activeLinks[0]->hinge->angle = M_PI - beta;
-			for (int i = 1; i < activeLinks.size()-1; i++)
-				activeLinks[i]->hinge->angle = M_PI;
-			activeLinks.last()->hinge->angle = alpha + M_PI - beta;
-		}
-		else
-		{
-			activeLinks[0]->hinge->angle = alpha;
-			activeLinks[1]->hinge->angle = alpha + M_PI - beta;
-			for (int i = 2; i < activeLinks.size(); i++)
-				activeLinks[i]->hinge->angle = M_PI;
-		}
-	}
-	// phase-II: return
-	else
-	{
-		Interval alpha_it = INTERVAL(0, angleSep);
-		double B =  b * b * n * (n-2);
-		double C = -2 * b * d * (n-1) * (n-1);
-		double D = A * A - h * h - b * b - (n-1) * (n-1) * d * d;
-		double E = 4 * b * b * h * h - 2 * B * D + C * C;
-		double F = -2 * C * D;
-		double G = D * D - 4 * b * b * h * h;
-		double K = 2 * B * C;
-
-		double alpha = 0, beta = 0;
-		QVector<double> roots = findRoots(B * B, K, E, F, G);
-		foreach (double r, roots)
-		{
-			if (r < 0) continue;
-	
-			alpha = acos(RANGED(0, r, 1));
-			if (within(alpha, alpha_it))
-			{
-				double cos_beta = (b * r - d) / a;
-				beta = acos(RANGED(0, cos_beta, 1));
-
-				double hh = A * sin(beta) + b * sin(alpha);
-				if (fabs(h - hh) < ZERO_TOLERANCE_LOW)
-					break;
-			}
-		}
-		// angles are sensitive to noise at very beginning or end
-		if (t < 0.01)
-		{	
-			alpha = angleSep; 
-			double cos_beta = (b * cos(alpha) - d) / a;
-			beta = acos(RANGED(0, cos_beta, 1));
-		}
-		if (1 - t < 0.01)
-		{
-			alpha = 0;
-			double cos_beta = (b * cos(alpha) - d) / a;
-			beta = acos(RANGED(0, cos_beta, 1));
-		}
-
-		// set angles
-		if (foldToRight)
-		{
-			activeLinks[0]->hinge->angle = beta;
-			for (int i = 1; i < activeLinks.size()-1; i++)
-				activeLinks[i]->hinge->angle = 2 * beta;
-			activeLinks.last()->hinge->angle = alpha + beta;
-		}
-		else
-		{
-			activeLinks[0]->hinge->angle = alpha;
-			activeLinks[1]->hinge->angle = alpha + beta;
-			for (int i = 2; i < activeLinks.size(); i++)
-				activeLinks[i]->hinge->angle = 2 * beta;
-		}
-	}
-
-	// adjust the position of top master
-	Vector3 topPos = topTraj.P0 + h * topTraj.Direction;
-	topMaster->translate(topPos - topMaster->center());
-}
-
-void ChainGraph::addThickness(FdGraph* keyframe, double t)
-{
-	if(!baseMaster) return;
-
-	// get parts in key frame
-	QVector<PatchNode*> keyParts;
-	keyParts << (PatchNode*)keyframe->getNode(baseMaster->mID);
-	foreach (PatchNode* cpart, chainParts) keyParts << (PatchNode*)keyframe->getNode(cpart->mID);
-	keyParts << (PatchNode*)keyframe->getNode(topMaster->mID);
-
-	// move parts up for thickness
-	for (int i = 1; i < keyParts.size(); i++)
-	{
-		// compute offset caused by thickness between part_i and part_i_1
-		Vector3 offset(0, 0, 0);
-		Vector3 v1(0, 0, 0), v2(0, 0, 0);
-		if (i == 1)
-		{
-			// base
-			Geom::Rectangle rect1 = keyParts[i]->mPatch;
-			v2 = keyParts[0]->mPatch.Normal; //up
-
-			double dotNN = dot(rect1.Normal, v2);
-			if ( dotNN > ZERO_TOLERANCE_LOW) v1 = rect1.Normal;
-			else if (dotNN < -ZERO_TOLERANCE_LOW) v1 = -rect1.Normal;
-
-			offset = halfThk * v1 + baseOffset * v2;
-		}
-		else if (i == keyParts.size() - 1)
-		{
-			// top
-			v1 = keyParts[0]->mPatch.Normal; //up
-			Geom::Rectangle rect2 = keyParts[i-1]->mPatch;
-			
-			double dotNN = dot(v1, rect2.Normal);
-			if (dotNN > ZERO_TOLERANCE_LOW) v2 = -rect2.Normal;
-			else if (dotNN < -ZERO_TOLERANCE_LOW) v2 = rect2.Normal;
-
-			offset = halfThk * (v1 - v2);
-		}
-		else
-		{
-			// chain parts
-			Geom::Rectangle rect1 = keyParts[i]->mPatch;
-			Geom::Rectangle rect2 = keyParts[i-1]->mPatch;
-
-			// flattened
-			if (1 - t < ZERO_TOLERANCE_LOW)
-			{
-				v1 = baseMaster->mPatch.Normal;
-				v2 = -v1;
-			}
-			else
-			{
-				int side2to1 = rect1.whichSide(rect2.Center);
-				if (side2to1 == 1) v1 = -rect1.Normal;
-				else if (side2to1 == -1) v1 = rect1.Normal;
-
-				int side1to2 = rect2.whichSide(rect1.Center);
-				if (side1to2 == 1) v2 = -rect2.Normal;
-				else if (side1to2 == -1) v2 = rect2.Normal;
-			}
-
-			offset = halfThk * (v1 - v2);
-		}
-
-		// translate parts above
-		for (int j = i; j < keyParts.size(); j++)
-			keyParts[j]->translate(offset);
-	}
-
-	// set thickness to chain parts
-	for (int i = 1; i < keyParts.size()-1; i++)
-		keyParts[i]->setThickness(2 * halfThk);
-}
-
-void ChainGraph::fold( double t )
-{
-	// free all nodes
-	foreach (Structure::Node* n, nodes)
-		n->removeTag(FIXED_NODE_TAG);
-
-	// fix base
-	baseMaster->addTag(FIXED_NODE_TAG);
-
-	// set up hinge angles and top position
-	if (useUniformHeight)
-		foldUniformHeight(t);
-	else 
-		foldUniformAngle(t);
-	
-	// restore configuration
-	restoreConfiguration();
-}
-
 FdGraph* ChainGraph::getKeyframe( double t, bool useThk )
 {
 	// fold w\o thickness
@@ -413,6 +117,16 @@ FdGraph* ChainGraph::getKeyframe( double t, bool useThk )
 
 	return keyframe;
 }
+
+void ChainGraph::setFoldDuration( double t0, double t1 )
+{
+	if (t0 > t1) std::swap(t0, t1);
+	t0 += ZERO_TOLERANCE_LOW;
+	t1 -= ZERO_TOLERANCE_LOW; 
+
+	duration = INTERVAL(t0, t1);
+}
+
 
 QVector<FoldOption*> ChainGraph::genFoldOptions( int nSplits, int nUsedChunks, int nChunks )
 {
@@ -442,12 +156,21 @@ QVector<FoldOption*> ChainGraph::genFoldOptions( int nSplits, int nUsedChunks, i
 
 FoldOption* ChainGraph::generateDeleteFoldOption( int nSplits )
 {
+	// keep the number of slipts for computing the cost
 	QString fnid = mID + "_delete";
 	FoldOption* delete_fn = new FoldOption(fnid, true, 0, 0, nSplits, patchArea);
 	delete_fn->addTag(DELETE_FOLD_OPTION);
 	delete_fn->region = Geom::Rectangle();
 	return delete_fn;
 }
+
+Geom::Rectangle ChainGraph::getFoldRegion(bool isRight, int nSplits)
+{
+	// min fold region is produced by maximum number of splits
+	FoldOption fn("", isRight, 1.0, 0.0, nSplits, patchArea);
+	return getFoldRegion(&fn);
+}
+
 
 void ChainGraph::resetChainParts(FoldOption* fn)
 {
@@ -580,6 +303,7 @@ void ChainGraph::activateLinks( FoldOption* fn )
 		activeLinks << activeLink;
 	}
 
+	// which side
 	foldToRight = fn->rightSide;
 }
 
@@ -599,137 +323,85 @@ void ChainGraph::applyFoldOption( FoldOption* fn)
 	resetChainParts(fn);
 	resetHingeLinks(fn);
 	activateLinks(fn);
-	computePhaseSeparator();
 
 	// statistics
 	nbHinges = fn->nSplits + 2;
 	shrinkedArea = fn->patchArea * (1 - fn->scale);
 }
 
-void ChainGraph::setFoldDuration( double t0, double t1 )
+
+void ChainGraph::addThickness(FdGraph* keyframe, double t)
 {
-	if (t0 > t1) std::swap(t0, t1);
-	t0 += ZERO_TOLERANCE_LOW;
-	t1 -= ZERO_TOLERANCE_LOW; 
+	if (!baseMaster) return;
 
-	duration = INTERVAL(t0, t1);
-}
+	// get parts in key frame
+	QVector<PatchNode*> keyParts;
+	keyParts << (PatchNode*)keyframe->getNode(baseMaster->mID);
+	foreach(PatchNode* cpart, chainParts) keyParts << (PatchNode*)keyframe->getNode(cpart->mID);
+	keyParts << (PatchNode*)keyframe->getNode(topMaster->mID);
 
-Geom::Rectangle ChainGraph::getFoldRegion( FoldOption* fn )
-{
-	if(!baseMaster) return Geom::Rectangle();
-
-	Geom::Rectangle base_rect = baseMaster->mPatch;
-	Geom::Segment topJointProj = base_rect.getProjection(topJoint);
-
-	double d = rightSeg.length();
-	double l = slaveSeg.length();
-	double offset = (l - d) / (fn->nSplits + 1);
-
-	Geom::Segment rightSeg, leftSeg;
-	if (fn->rightSide)
+	// move parts up for thickness
+	for (int i = 1; i < keyParts.size(); i++)
 	{
-		leftSeg = topJointProj;
-		rightSeg = baseJoint.translated(offset * rightSegV);
-	}
-	else
-	{
-		leftSeg = topJointProj.translated(-offset * rightSegV);
-		rightSeg = baseJoint;
-	}
+		// compute offset caused by thickness between part_i and part_i_1
+		Vector3 offset(0, 0, 0);
+		Vector3 v1(0, 0, 0), v2(0, 0, 0);
+		if (i == 1)
+		{
+			// base
+			Geom::Rectangle rect1 = keyParts[i]->mPatch;
+			v2 = keyParts[0]->mPatch.Normal; //up
 
-	// shrink along jointV
-	double t0 = fn->position;
-	double t1 = t0 + fn->scale;
-	leftSeg.cropRange01(t0, t1);
-	rightSeg.cropRange01(t0, t1);
+			double dotNN = dot(rect1.Normal, v2);
+			if (dotNN > ZERO_TOLERANCE_LOW) v1 = rect1.Normal;
+			else if (dotNN < -ZERO_TOLERANCE_LOW) v1 = -rect1.Normal;
 
-	// fold region
-	Geom::Rectangle region(QVector<Vector3>() 
-		<< leftSeg.P0	<< leftSeg.P1
-		<< rightSeg.P1  << rightSeg.P0 );
+			offset = halfThk * v1 + baseOffset * v2;
+		}
+		else if (i == keyParts.size() - 1)
+		{
+			// top
+			v1 = keyParts[0]->mPatch.Normal; //up
+			Geom::Rectangle rect2 = keyParts[i - 1]->mPatch;
 
-	// debug
-	addDebugSegments(region.getEdgeSegments());
+			double dotNN = dot(v1, rect2.Normal);
+			if (dotNN > ZERO_TOLERANCE_LOW) v2 = -rect2.Normal;
+			else if (dotNN < -ZERO_TOLERANCE_LOW) v2 = rect2.Normal;
 
-	return region;
-}
+			offset = halfThk * (v1 - v2);
+		}
+		else
+		{
+			// chain parts
+			Geom::Rectangle rect1 = keyParts[i]->mPatch;
+			Geom::Rectangle rect2 = keyParts[i - 1]->mPatch;
 
-Geom::Rectangle ChainGraph::getMinFoldRegion(bool isRight)
-{
-	// min fold region is produced by maximum number of splits
-	FoldOption fn("", isRight, 1.0, 0.0, 999, patchArea);
-	return getFoldRegion(&fn);
-}
+			// flattened
+			if (1 - t < ZERO_TOLERANCE_LOW)
+			{
+				v1 = baseMaster->mPatch.Normal;
+				v2 = -v1;
+			}
+			else
+			{
+				int side2to1 = rect1.whichSide(rect2.Center);
+				if (side2to1 == 1) v1 = -rect1.Normal;
+				else if (side2to1 == -1) v1 = rect1.Normal;
 
-Geom::Rectangle ChainGraph::getMaxFoldRegion( bool isRight )
-{
-	// max fold region is produced by minimum number of splits
-	FoldOption fn("", isRight, 1.0, 0.0, 1, patchArea);
-	return getFoldRegion(&fn);
-}
+				int side1to2 = rect2.whichSide(rect1.Center);
+				if (side1to2 == 1) v2 = -rect2.Normal;
+				else if (side1to2 == -1) v2 = rect2.Normal;
+			}
 
-
-//     left					right
-//	   ---						|
-//		|step					|
-//	   ---						|
-//		|step					|d
-//	  -----	plane0				|
-//		|						|
-//		|					  -----
-//		|						|step
-//		|d					   ---
-//		|						|step
-//		|					   --- plane0
-
-QVector<Geom::Plane> ChainGraph::generateCutPlanes( FoldOption* fn )
-{
-	// constants
-	double L = slaveSeg.length();
-	double d = rightSeg.length();
-	double h = topTraj.length();
-
-	// start plane and step
-	Geom::Plane start_plane;
-	Vector3 stepV;
-	if (isTChain())
-	{
-		// T-chain
-		double step = h / (fn->nSplits + 1);
-		start_plane =  baseMaster->mPatch.getPlane();
-		stepV = step * start_plane.Normal;	
-	}
-	else
-	{
-		// H-chain
-		double a = (L - d) / (fn->nSplits + 1);
-		double sin_alpha = h / L;
-		double step = a * sin_alpha;
-
-		// cut at lower end
-		start_plane =  baseMaster->mPatch.getPlane();
-		stepV = step * start_plane.Normal;
-		// cut at higher end
-		if (!fn->rightSide) {
-			start_plane.translate(topTraj.P1 - topTraj.P0);
-			stepV *= -1;
+			offset = halfThk * (v1 - v2);
 		}
 
+		// translate parts above
+		for (int j = i; j < keyParts.size(); j++)
+			keyParts[j]->translate(offset);
 	}
 
-	// cut planes
-	QVector<Geom::Plane> cutPlanes;
-	for (int i = 1; i <= fn->nSplits; i++)
-	{
-		Vector3 deltaV = i * stepV;
-		cutPlanes << start_plane.translated(deltaV);
-	}
-
-	return cutPlanes;
-}
-
-bool ChainGraph::isTChain()
-{
-	return topMaster->hasTag(EDGE_ROD_TAG) || baseMaster->hasTag(EDGE_ROD_TAG);
+	// set thickness to chain parts
+	for (int i = 1; i < keyParts.size() - 1; i++)
+		keyParts[i]->setThickness(2 * halfThk);
 }
