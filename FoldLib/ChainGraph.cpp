@@ -127,8 +127,7 @@ void ChainGraph::setFoldDuration( double t0, double t1 )
 	duration = INTERVAL(t0, t1);
 }
 
-
-QVector<FoldOption*> ChainGraph::genFoldOptions( int nSplits, int nUsedChunks, int nChunks )
+QVector<FoldOption*> ChainGraph::genFoldOptionWithDiffPositions( int nSplits, int nUsedChunks, int nChunks )
 {
 	QVector<FoldOption*> options;
 
@@ -149,6 +148,13 @@ QVector<FoldOption*> ChainGraph::genFoldOptions( int nSplits, int nUsedChunks, i
 		QString fnid2 = QString("%1:%2_%3_R_%4").arg(mID).arg(nSplits).arg(nUsedChunks).arg(startPos);
 		FoldOption* fn2 = new FoldOption(fnid2, true, usedWidth, startPos, nSplits, patchArea);
 		options.push_back(fn2);
+	}
+
+	// fold region and duration
+	foreach(FoldOption* fn, options)
+	{
+		fn->region = getFoldRegion(fn);
+		fn->duration = duration;
 	}
 
 	return options;

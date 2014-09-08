@@ -503,7 +503,7 @@ FdGraph* DcGraph::getKeyframe( double t )
 			aOrigPos = blocks[i]->baseMaster->center();
 			aBaseMID = blocks[i]->baseMaster->mID;
 			aAFS = blocks[i]->properties[AFS].value<QVector<Geom::Box> >();
-			aAFR_CP = blocks[i]->properties[AFR_CP].value<QVector<Vector3> >();
+			//aAFR_CP = blocks[i]->properties[AFR_CP].value<QVector<Vector3> >();
 			//aMaxFR = blocks[i]->properties[MAXFR].value<QVector<Vector3> >();
 			aFR = blocks[i]->properties[FOLD_REGIONS].value<QVector<Geom::Rectangle>>();
 			
@@ -590,12 +590,6 @@ void DcGraph::foldabilize()
 	double currTime = 0.0;
 	ShapeSuperKeyframe* currKeyframe = getShapeSuperKeyframe(currTime);
 	int next_bid = getBestNextBlockIndex(currTime, currKeyframe);  
-
-
-
-	//return;
-
-
 	while (next_bid >= 0 && next_bid < blocks.size())
 	{
 		std::cout << "Best next = " << blocks[next_bid]->mID.toStdString() << "\n";

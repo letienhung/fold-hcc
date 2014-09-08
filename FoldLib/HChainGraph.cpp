@@ -119,7 +119,7 @@ void HChainGraph::foldUniformAngle(double t)
 	double d = rightSeg.length();
 	double sl = slaveSeg.length();
 	int n = chainParts.size();
-	double alpha = acos(d / sl) * (1 - t);
+	double alpha = acos(RANGED(0, d / sl, 1)) * (1 - t);
 
 	double a = (sl - d) / n;
 	double b = d + a;
@@ -133,7 +133,7 @@ void HChainGraph::foldUniformAngle(double t)
 	if (bProj <= d)
 	{
 		double cos_beta = (d - bProj) / ((n - 1) * a);
-		beta = acos(cos_beta);
+		beta = acos(RANGED(0, cos_beta, 1));
 
 		if (foldToRight)
 		{
@@ -317,5 +317,18 @@ void HChainGraph::computePhaseSeparator()
 	// angle
 	double sin_angle = heightSep - A;
 	angleSep = asin(RANGED(0, sin_angle, 1));
+}
+
+QVector<FoldOption*> HChainGraph::genFoldOptions(int nSplits, int nChunks)
+{
+	// nS: # splits; nC: # used chunks; nbChunks: total # of chunks
+	// enumerate all start positions and left/right side
+	// H-chain has min nS = 1 and are odd numbers, min nC = 1
+	QVector<FoldOption*> options;
+	for (int nS = 1; nS <= nSplits; nS += 2)
+	for (int nC = 1; nC <= nChunks; nC++)
+		options << genFoldOptionWithDiffPositions(nS, nC, nChunks);
+
+	return options;
 }
 

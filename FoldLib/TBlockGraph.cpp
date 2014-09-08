@@ -1,5 +1,6 @@
 #include "TBlockGraph.h"
 #include "TChainGraph.h"
+#include "Numeric.h"
 
 TBlockGraph::TBlockGraph(QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& ss,
 	QVector< QVector<QString> >& mPairs, Geom::Box shape_aabb)
@@ -30,49 +31,69 @@ TBlockGraph::TBlockGraph(QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& 
 
 void TBlockGraph::foldabilize(ShapeSuperKeyframe* ssKeyframe)
 {
-	//// the chain
-	//ChainGraph* chain = chains.front();
+	// generate fold options
+	QVector<FoldOption*> options = tChain->genFoldOptions(nbSplits, nbChunks);
 
-	//// generate T-options
-	//QVector<FoldOption*> options;
-	//for (int nS = 1; nS <= nbSplits; nS++)
-	//for (int nUsedChunks = nbChunks; nUsedChunks >= 1; nUsedChunks--)
-	//	options << chain->genFoldOptions(nS, nUsedChunks, nbChunks);
+	// prune by AFS
+	Geom::Rectangle base_rect = baseMaster->mPatch;
+	Geom::Rectangle2 AFR = getAvailFR(ableToFoldRight);
+	AFR.Extent *= 1.05; // to avoid numerical issue
+	QVector<FoldOption*> valid_options;
+	foreach(FoldOption* fn, options)
+	{
+		Geom::Rectangle2 fRegion2 = base_rect.get2DRectangle(fn->region);
+		if (AFR.containsAll(fRegion2.getConners()))
+			valid_options << fn;
+	}
 
-	//// prune by AFS
-	//Geom::Rectangle base_rect = baseMaster->mPatch;
-	//QString top_mid_super = superBlock->chainTopMasterMap[0];
-	//Geom::Rectangle2 AFR = superBlock->availFoldingRegion[top_mid_super];
-	//AFR.Extent *= 1.01; // ugly way to avoid numerical issue
-	//QVector<FoldOption*> valid_options;
-	//foreach(FoldOption* fn, options)
-	//{
-	//	Geom::Rectangle2 fRegion2 = base_rect.get2DRectangle(fn->region);
-	//	if (AFR.containsAll(fRegion2.getConners()))
-	//		valid_options << fn;
-	//}
+	// choose the one with the lowest cost
+	FoldOption* best_fn;
+	double minCost = maxDouble();
+	foreach(FoldOption* fn, valid_options){
+		double cost = fn->getCost(weight);
+		if (cost < minCost)
+		{
+			best_fn = fn;
+			minCost = cost;
+		}
+	}
 
-	//// choose the one with the lowest cost
-	//FoldOption* best_fn;
-	//double minCost = maxDouble();
-	//foreach(FoldOption* fn, valid_options){
-	//	double cost = computeCost(fn);
-	//	if (cost < minCost)
-	//	{
-	//		best_fn = fn;
-	//		minCost = cost;
-	//	}
-	//}
-	//best_fn->addTag(SELECTED_TAG);
+	// apply fold option
+	tChain->applyFoldOption(best_fn);
 
-	//// apply fold option
-	//chain->applyFoldOption(best_fn);
-	//foldabilized = true;
+	// tag
+	foldabilized = true;
+
+	// debug
+	properties[FOLD_REGIONS].setValue(QVector<Geom::Rectangle>() << best_fn->region);
 }
 
 FdGraph* TBlockGraph::getKeyframe(double t, bool useThk)
 {
-	return chains.front()->getKeyframe(t, useThk);
+	FdGraph* keyframe = nullptr;
+
+	// chains have been created and ready to fold
+	// IOW, the block has been foldabilized
+	if (foldabilized)
+	{
+		keyframe = tChain->getKeyframe(t, useThk);
+	}
+	// the block is not ready
+	// can only answer request on t = 0 and t = 1
+	else
+	{
+		// t = 0 : the entire block
+		if (t < 0.5)
+			keyframe = (FdGraph*)tChain->clone();
+		else
+		// t = 1 : just the base master
+		{
+			keyframe = new FdGraph();
+			keyframe->Structure::Graph::addNode(baseMaster->clone());
+		}
+	}
+
+	return keyframe;
 }
 
 

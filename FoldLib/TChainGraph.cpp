@@ -1,4 +1,5 @@
 #include "TChainGraph.h"
+#include "Numeric.h"
 
 TChainGraph::TChainGraph(FdNode* slave, PatchNode* base, PatchNode* top)
 :ChainGraph(slave, base, top)
@@ -82,6 +83,38 @@ QVector<Geom::Plane> TChainGraph::generateCutPlanes(FoldOption* fn)
 
 void TChainGraph::fold(double t)
 {
+	// free all nodes
+	foreach(Structure::Node* n, nodes)
+		n->removeTag(FIXED_NODE_TAG);
 
+	// fix base
+	baseMaster->addTag(FIXED_NODE_TAG);
+
+	// root hinge angle
+	double dotP = dot(slaveSeg.Direction, rightSegV);
+	double root_angle = acos(RANGED(0, dotP, 1));
+	double alpha = root_angle * (1 - t);
+	double beta = M_PI * (1 - t);
+
+	// set angle for active link
+	activeLinks[0]->hinge->angle = alpha;
+	for (int i = 1; i < activeLinks.size(); i++)
+		activeLinks[i]->hinge->angle = beta;
+
+	// restore configuration
+	restoreConfiguration();
+}
+
+QVector<FoldOption*> TChainGraph::genFoldOptions(int nSplits, int nChunks)
+{
+	// nS: # splits; nC: # used chunks; nbChunks: total # of chunks
+	// enumerate all start positions and left/right side
+	// T-chain has min nS = 0, min nC = 1
+	QVector<FoldOption*> options;
+	for (int nS = 0; nS <= nSplits; nS ++)
+	for (int nC = 1; nC <= nChunks; nC++)
+		options << genFoldOptionWithDiffPositions(nS, nC, nChunks);
+
+	return options;
 }
 

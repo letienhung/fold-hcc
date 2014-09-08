@@ -156,20 +156,7 @@ void HBlockGraph::addNodesToCollisionGraph()
 		collFog->addNode(cn);
 
 		// fold options
-		// nS: # splits; nC: # used chunks; nbChunks: total # of chunks
-		// enumerate all start positions and left/right side
-		// H-chain has min nS = 1 and are odd numbers, min nC = 1
-		QVector<FoldOption*> options;
-		for (int nS = 1; nS <= nbSplits; nS += 2)
-		for (int nC = 1; nC <= nbChunks; nC++)
-			options << chain->genFoldOptions(nS, nC, nbChunks);
-
-		// fold region and duration
-		foreach(FoldOption* fn, options)
-		{
-			fn->region = chain->getFoldRegion(fn);
-			fn->duration = chain->duration;
-		}
+		QVector<FoldOption*> options = chain->genFoldOptions(nbSplits, nbChunks);
 
 		// prune fold options using AFS
 		std::cout << "#options = " << options.size();
@@ -397,7 +384,7 @@ void HBlockGraph::computeAvailFoldingRegion(ShapeSuperKeyframe* ssKeyframe)
 // This is also called regular keyframe to distinguish from super keyframe
 FdGraph* HBlockGraph::getKeyframe(double t, bool useThk)
 {
-	FdGraph* keyframe = NULL;
+	FdGraph* keyframe = nullptr;
 
 	// chains have been created and ready to fold
 	// IOW, the block has been foldabilized
@@ -430,14 +417,15 @@ FdGraph* HBlockGraph::getKeyframe(double t, bool useThk)
 		foreach(FdGraph* c, chainKeyframes)
 		if (c) delete c;
 	}
+	// the block is not ready
+	// can only answer request on t = 0 and t = 1
 	else
-		// the block is not ready
-		// can only answer request on t = 0 and t = 1
 	{
-		// clone
+		// clone : t = 0
 		keyframe = (FdGraph*)this->clone();
 
-		// collapse all masters to base
+		// collapse all masters to base: t = 1
+		// ***used for super key frame
 		if (t > 0.5)
 		{
 			Geom::Rectangle base_rect = baseMaster->mPatch;
@@ -454,8 +442,8 @@ FdGraph* HBlockGraph::getKeyframe(double t, bool useThk)
 					Vector3 offset = dot(c2c, up) * up;
 					n->translate(offset);
 				}
+				// remove slave nodes
 				else
-					// remove slave nodes
 				{
 					keyframe->removeNode(n->mID);
 				}
