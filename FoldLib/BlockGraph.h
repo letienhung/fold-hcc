@@ -29,6 +29,7 @@ public:
 	// Folding regions and volumes
 	virtual void computeAvailFoldingRegion(ShapeSuperKeyframe* ssKeyframe) = 0;
 	virtual double getAvailFoldingVolume() = 0;
+	QVector<QString> getInbetweenExternalParts(Vector3 base_center, Vector3 top_center, ShapeSuperKeyframe* ssKeyframe);
 
 	// foldem
 	virtual void foldabilize(ShapeSuperKeyframe* ssKeyframe) = 0;
@@ -39,7 +40,6 @@ public:
 
 	// thickness
 	void setThickness(double thk);
-
 public:
 	// chains
 	int selChainIdx;
@@ -64,6 +64,7 @@ public:
 	double weight;
 
 	// available folding region
+	bool ableToFold; // availFR >= minFR
 	QVector<Geom::Rectangle2> availFoldingRegion;
 
 	// fold solutions

@@ -61,6 +61,16 @@ QVector<FdNode*> FdGraph::getFdNodes()
 	return fdns;
 }
 
+FdNode* FdGraph::getFdNode(QString id)
+{
+	Structure::Node* n = getNode(id);
+	if (n != nullptr) 
+		return (FdNode*)n;
+	else 
+		return nullptr;
+}
+
+
 void FdGraph::exportMesh(QString fname)
 {
 	QFile file(fname);

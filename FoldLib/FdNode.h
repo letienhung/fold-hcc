@@ -64,10 +64,13 @@ public:
 	// relation with direction
 	virtual bool isPerpTo(Vector3 v, double dotThreshold);
 
-	// visual
+	// visualization
 	virtual void setShowCuboid(bool show);
 	virtual void setShowScaffold(bool show);
 	virtual void setShowMesh(bool show);
+
+	// samples
+	virtual QVector<Vector3> sampleBoundabyOfScaffold(int n) = 0;
 
 public:
 	Geom::Box origBox, mBox;

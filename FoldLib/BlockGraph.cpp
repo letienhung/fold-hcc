@@ -29,6 +29,9 @@ BlockGraph::BlockGraph(QString id, Geom::Box shape_aabb)
 
 	// foldabilized tag
 	foldabilized = false;
+
+	// able to fold
+	ableToFold = false;
 }
 
 BlockGraph::~BlockGraph()
@@ -113,6 +116,9 @@ FdGraph* BlockGraph::getSuperKeyframe( double t )
 		}
 	}else
 	{// guess the folded state using available folding regions
+		// availFR < minFR
+		if (!ableToFold) return nullptr;
+		// otherwise
 		for (auto afr : availFoldingRegion)
 			projPnts2 << afr.getConners();
 	}
@@ -153,4 +159,50 @@ void BlockGraph::setThickness( double thk )
 void BlockGraph::exportCollFOG()
 {
 	// do nothing
+}
+
+QVector<QString> BlockGraph::getInbetweenExternalParts(Vector3 base_center, Vector3 top_center, ShapeSuperKeyframe* ssKeyframe)
+{
+	// time line
+	Vector3 sqzV = baseMaster->mPatch.Normal;
+	Geom::Line timeLine(Vector3(0, 0, 0), sqzV);
+
+	// position on time line
+	double t0 = timeLine.getProjTime(base_center);
+	double t1 = timeLine.getProjTime(top_center);
+	double epsilon = 0.05 * (t1 - t0);
+	Interval m1m2 = INTERVAL(t0 + epsilon, t1 - epsilon);
+
+	// find parts in between m1 and m2
+	QVector<QString> inbetweens;
+	foreach(FdNode* n, ssKeyframe->getFdNodes())
+	{
+		// skip parts that has been folded
+		if (n->hasTag(MERGED_PART_TAG)) continue;
+
+		// skip parts in this block
+		if (containsNode(n->mID)) continue;
+
+		// master
+		if (n->hasTag(MASTER_TAG))
+		{
+			double t = timeLine.getProjTime(n->center());
+
+			if (within(t, m1m2)) 	inbetweens << n->mID;
+		}
+		else
+			// slave		
+		{
+			int aid = n->mBox.getAxisId(sqzV);
+			Geom::Segment sklt = n->mBox.getSkeleton(aid);
+			double t0 = timeLine.getProjTime(sklt.P0);
+			double t1 = timeLine.getProjTime(sklt.P1);
+			if (t0 > t1) std::swap(t0, t1);
+			Interval ti = INTERVAL(t0, t1);
+
+			if (overlap(ti, m1m2))	inbetweens << n->mID;
+		}
+	}
+
+	return inbetweens;
 }

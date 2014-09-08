@@ -30,6 +30,9 @@ public:
 	// edges
 	QVector<RodNode*> getEdgeRodNodes();
 
+	// samples
+	virtual QVector<Vector3> sampleBoundabyOfScaffold(int n) override;
+
 public:
 	Geom::Rectangle mPatch;
 

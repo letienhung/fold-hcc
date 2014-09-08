@@ -17,10 +17,9 @@ public:
 	// folding regions
 	void computeMinFoldingRegion();
 	void computeMaxFoldingRegion();
-	void computeAvailFoldingRegion();
+	bool computeAvailFoldingRegion();
 
 	// helpers
-	QVector<QString> getInbetweenExternalParts(QString base_mid, QString top_mid);
 	QVector<QString> getUnrelatedMasters(QString base_mid, QString top_mid);
 
 	// volume

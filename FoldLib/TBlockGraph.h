@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BlockGraph.h"
+class TChainGraph;
 
 class TBlockGraph : public BlockGraph
 {
@@ -21,9 +22,36 @@ public:
 	// solution
 	virtual void applySolution(int idx) override;
 
+private:
+	// folding regions
+	void computeMinFoldingRegion(bool isRight);
+	void computeMaxFoldingRegion(bool isRight);
+	void computeAvailFoldingRegion(bool isRight, ShapeSuperKeyframe* ssKeyframe);
+
+	// choose side
+	Geom::Rectangle2& getMinFR(bool isRight);
+	Geom::Rectangle2& getMaxFR(bool isRight);
+	Geom::Rectangle2& getAvailFR(bool isRight);
+	bool& getAbleToFoldTag(bool isRight);
+
+	// height of the block
+	double getHeight();
+
 public:
-	// the virtual top master
+	// pointer
+	TChainGraph* tChain;
 	PatchNode* topMaster;
+
+	// folding regions
+	Geom::Rectangle2 minFoldingRegionLeft, minFoldingRegionRight;
+	Geom::Rectangle2 maxFoldingRegionLeft, maxFoldingRegionRight;
+	Geom::Rectangle2 availFoldingRegionLeft, availFoldingRegionRight;
+
+	// able to fold tag
+	bool ableToFoldRight, ableToFoldLeft;
+
+public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 

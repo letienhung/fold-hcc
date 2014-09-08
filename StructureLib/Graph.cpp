@@ -162,7 +162,7 @@ Structure::Node* Structure::Graph::getNode(QString nid)
 	foreach(Node* n, nodes)
 		if(n->hasId(nid)) return n;
 
-	return NULL;
+	return nullptr;
 }
 
 Structure::Node* Structure::Graph::getNode( int idx )
@@ -170,7 +170,7 @@ Structure::Node* Structure::Graph::getNode( int idx )
 	if (idx >= 0 && idx < nbNodes())
 		return this->nodes[idx];
 	else
-		return NULL;
+		return nullptr;
 }
 
 Structure::Link* Structure::Graph::getLink( QString nid1, QString nid2 )
@@ -180,7 +180,7 @@ Structure::Link* Structure::Graph::getLink( QString nid1, QString nid2 )
 			return l;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 QVector<Structure::Link*> Structure::Graph::getLinks( QString nid )

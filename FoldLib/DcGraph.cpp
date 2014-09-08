@@ -555,7 +555,9 @@ ShapeSuperKeyframe* DcGraph::getShapeSuperKeyframe( double t )
 		FdGraph* fblock = blocks[i]->getSuperKeyframe(lt);
 		foldedBlocks << fblock;
 
-		if (!fblock) return nullptr;
+		// nullptr means fblock is unable to fold at time t
+		// more specifically, availFR < minFR
+		if (fblock == nullptr) return nullptr;
 	}
 
 	// combine
@@ -588,6 +590,12 @@ void DcGraph::foldabilize()
 	double currTime = 0.0;
 	ShapeSuperKeyframe* currKeyframe = getShapeSuperKeyframe(currTime);
 	int next_bid = getBestNextBlockIndex(currTime, currKeyframe);  
+
+
+
+	//return;
+
+
 	while (next_bid >= 0 && next_bid < blocks.size())
 	{
 		std::cout << "Best next = " << blocks[next_bid]->mID.toStdString() << "\n";
@@ -618,11 +626,11 @@ void DcGraph::foldabilize()
 
 
 
-
-
-
-
 	return;
+
+
+
+
 
 	// remaining blocks (if any) are interlocking
 	QVector<BlockGraph*> blocks_copy = blocks;
@@ -676,10 +684,17 @@ int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyf
 		nextBlock->computeAvailFoldingRegion(currKeyframe); //***necessary for computing ssKeyframe
 		ShapeSuperKeyframe* nextKeyframe = getShapeSuperKeyframe(nextTime);
 
-		// evaluate next keyframe: valid if all master orders are remained
-		// if valid, calculate the total AFV of remaining blocks
+
+
+		//return 0;
+
+
+
+
+		// nextBlock must be able to fold at this time and valid
+		// calculate the total AFV of remaining blocks
 		double score = -1;
-		if (nextKeyframe->isValid(sqzV))
+		if (nextKeyframe != nullptr && nextKeyframe->isValid(sqzV))
 		{
 			// AFV of nextBlock
 			score = nextBlock->getAvailFoldingVolume();
@@ -699,8 +714,16 @@ int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyf
 				next2Block->computeAvailFoldingRegion(nextKeyframe);//***necessary for computing ssKeyframe
 				ShapeSuperKeyframe* next2Keyframe = getShapeSuperKeyframe(next2Time);
 
-				// accumulate AFV if the folding is valid
-				if (next2Keyframe->isValid(sqzV))
+				
+				//std::cout << std::endl << "AFV = " << next2Block->getAvailFoldingVolume();
+				
+				//return 0;
+
+
+
+
+				// accumulate AFV if next2Block is able to fold and the folding is valid
+				if (next2Keyframe != nullptr && next2Keyframe->isValid(sqzV))
 				{
 					score += next2Block->getAvailFoldingVolume();
 				}
@@ -726,7 +749,7 @@ int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyf
 		nextBlock->mFoldDuration = next_ti;
 
 		// debug info
-		std::cout << blocks[next_bid]->mID.toStdString() << " : " << best_score << std::endl;
+		std::cout << blocks[next_bid]->mID.toStdString() << " : " << score << std::endl;
 	}
 
 	// found the best next block in terms of introducing most free space for others

@@ -494,7 +494,7 @@ QMap<QString, double> getTimeStampsNormalized( QVector<PatchNode*> pnodes, Vecto
 bool extendRectangle2D( Geom::Rectangle2& rect, QVector<Vector2> &pnts )
 {
 	// shrink seed rect to avoid pnts on edges
-	rect.Extent *= 0.5;
+	rect.Extent *= 0.95;
 
 	// do nothing if seed rect contains any pnts
 	foreach (Vector2 p, pnts) 

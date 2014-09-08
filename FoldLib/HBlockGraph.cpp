@@ -383,10 +383,11 @@ void HBlockGraph::computeAvailFoldingRegion(ShapeSuperKeyframe* ssKeyframe)
 	superBlock = new SuperBlockGraph(this, ssKeyframe);
 
 	// compute AFR
-	superBlock->computeAvailFoldingRegion();
+	ableToFold = superBlock->computeAvailFoldingRegion();
 
 	// store the region
-	availFoldingRegion = superBlock->getAvailFoldingRegion();
+	if (ableToFold)
+		availFoldingRegion = superBlock->getAvailFoldingRegion();
 
 	// debug AFS
 	//properties[AFS].setValue(superBlock->getAllAFS());

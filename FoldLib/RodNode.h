@@ -19,6 +19,9 @@ public:
 
 	void setThickness(double thk);
 
+	// samples
+	virtual QVector<Vector3> sampleBoundabyOfScaffold(int n) override;
+
 public:
 	Geom::Segment mRod;
 	QColor mRodColor;

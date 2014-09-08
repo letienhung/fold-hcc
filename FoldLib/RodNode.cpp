@@ -56,3 +56,8 @@ void RodNode::setThickness( double thk )
 	mBox.Extent[(aid+1)%3] = thk / 2;
 	mBox.Extent[(aid+2)%3] = thk / 2;
 }
+
+QVector<Vector3> RodNode::sampleBoundabyOfScaffold(int n)
+{
+	return mRod.getUniformSamples(n);
+}

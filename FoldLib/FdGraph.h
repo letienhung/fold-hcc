@@ -22,6 +22,7 @@ public:
 public:
 	// accessors
 	QVector<FdNode*> getFdNodes();
+	FdNode* getFdNode(QString id);
 	FdNode* addNode(MeshPtr mesh, BOX_FIT_METHOD method = FIT_PCA);
 	FdNode* addNode(MeshPtr mesh, Geom::Box& box);
 

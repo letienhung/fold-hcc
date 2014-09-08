@@ -130,7 +130,7 @@ void SuperBlockGraph::computeMaxFoldingRegion()
 	}
 }
 
-void SuperBlockGraph::computeAvailFoldingRegion()
+bool SuperBlockGraph::computeAvailFoldingRegion()
 {
 	// clear
 	availFoldingRegion.clear();
@@ -138,7 +138,7 @@ void SuperBlockGraph::computeAvailFoldingRegion()
 	// align super shape key frame with this super block
 	Vector3 pos_block = baseMaster->center();
 	FdNode* fnode = (FdNode*)ssKeyframe->getNode(baseMaster->mID);
-	if (!fnode) return;
+	if (!fnode) return false;
 	Vector3 pos_keyframe = fnode->center();
 	Vector3 offset = pos_block - pos_keyframe;
 	ssKeyframe->translate(offset, false);
@@ -158,31 +158,22 @@ void SuperBlockGraph::computeAvailFoldingRegion()
 
 		// samples from constraint parts: in-between and unordered
 		QVector<QString> constraintParts;
-		constraintParts << getInbetweenExternalParts(base_mid, top_mid);
+		constraintParts << origBlock->getInbetweenExternalParts(baseMaster->center(), top_master->center(), ssKeyframe);
 		constraintParts << getUnrelatedMasters(base_mid, top_mid);
 		QVector<Vector3> samples;
-		int nbs = 100;
-		foreach(QString nid, constraintParts)
-		{
-			FdNode* n = (FdNode*)ssKeyframe->getNode(nid);
-			if (n->mType == FdNode::PATCH)
-				samples << ((PatchNode*)n)->mPatch.getEdgeSamples(nbs);
-			else
-				samples << ((RodNode*)n)->mRod.getUniformSamples(nbs);
-		}
-
-		// projection on base_rect
 		QVector<Vector2> samples_proj;
-		foreach(Vector3 s, samples)
-			samples_proj << base_rect.getProjCoordinates(s);
+		for (auto nid : constraintParts)
+			samples << ssKeyframe->getFdNode(nid)->sampleBoundabyOfScaffold(100);
+		for (auto s : samples) samples_proj << base_rect.getProjCoordinates(s);
 
-		// max folding region
-		samples_proj << maxFoldingRegion[top_mid].getEdgeSamples(nbs);
+		// sample boundary of max region
+		samples_proj << maxFoldingRegion[top_mid].getEdgeSamples(100);
 
 		// avail folding region
 		// includes minFR but excludes all constraint points
 		Geom::Rectangle2 avail_region = minFoldingRegion[top_mid];
-		extendRectangle2D(avail_region, samples_proj);
+		bool okay = extendRectangle2D(avail_region, samples_proj);
+		if (!okay) return false; // availFR < minFR
 		availFoldingRegion[top_mid] = avail_region;
 
 		// debug
@@ -197,55 +188,7 @@ void SuperBlockGraph::computeAvailFoldingRegion()
 
 	// restore the position of shape super key frame
 	ssKeyframe->translate(-offset, false);
-}
-
-QVector<QString> SuperBlockGraph::getInbetweenExternalParts(QString base_mid, QString top_mid)
-{
-	// time line
-	Vector3 sqzV = baseMaster->mPatch.Normal;
-	Geom::Line timeLine(Vector3(0, 0, 0), sqzV);
-
-	// position on time line
-	FdNode* base_master = (FdNode*)getNode(base_mid);
-	FdNode* top_master = (FdNode*)getNode(top_mid);
-	double t0 = timeLine.getProjTime(base_master->center());
-	double t1 = timeLine.getProjTime(top_master->center());
-	double epsilon = 0.05 * (t1 - t0);
-	Interval m1m2 = INTERVAL(t0 + epsilon, t1 - epsilon);
-
-	// find parts in between m1 and m2
-	QVector<QString> inbetweens;
-	foreach(FdNode* n, ssKeyframe->getFdNodes())
-	{
-		// skip parts that has been folded
-		if (n->hasTag(MERGED_PART_TAG)) continue;
-
-		// skip parts in this block
-		if (containsNode(n->mID)) continue;
-
-		// master
-		if (n->hasTag(MASTER_TAG))
-		{
-			double t = timeLine.getProjTime(n->center());
-
-			if (within(t, m1m2)) 	inbetweens << n->mID;
-		}
-		else
-			// slave		
-		{
-			int aid = n->mBox.getAxisId(sqzV);
-			Geom::Segment sklt = n->mBox.getSkeleton(aid);
-			double t0 = timeLine.getProjTime(sklt.P0);
-			double t1 = timeLine.getProjTime(sklt.P1);
-			if (t0 > t1) std::swap(t0, t1);
-			Interval ti = INTERVAL(t0, t1);
-
-			if (overlap(ti, m1m2))	inbetweens << n->mID;
-		}
-	}
-
-	return inbetweens;
-
+	return true;
 }
 
 QVector<QString> SuperBlockGraph::getUnrelatedMasters(QString base_mid, QString top_mid)
