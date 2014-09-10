@@ -418,28 +418,6 @@ QVector<QString> getAllMasterIds( FdGraph* scaffold )
 	return mids;
 }
 
-Geom::Rectangle2 computeAABB2D( QVector<Vector2> &pnts )
-{
-	// compute extent along x and y
-	double minX = maxDouble();
-	double maxX = -maxDouble();
-	double minY = maxDouble();
-	double maxY = -maxDouble();
-	foreach (Vector2 p, pnts)
-	{
-		if (p.x() < minX) minX = p.x();
-		if (p.x() > maxX) maxX = p.x();
-
-		if (p.y() < minY) minY = p.y();
-		if (p.y() > maxY) maxY = p.y();
-	}
-
-	// create rect
-	QVector<Vector2> conners;
-	conners << Vector2(minX, minY) << Vector2(maxX, minY) << Vector2(maxX, maxY) << Vector2(minX, maxY);
-	return Geom::Rectangle2(conners);
-}
-
 bool passed( double t, Interval itv )
 {
 	return t >= itv.second;
@@ -489,65 +467,6 @@ QMap<QString, double> getTimeStampsNormalized( QVector<PatchNode*> pnodes, Vecto
 	QVector<FdNode*> nodes;
 	foreach (PatchNode* pn, pnodes) nodes << pn;
 	return getTimeStampsNormalized(nodes, v, tScale);
-}
-
-bool extendRectangle2D( Geom::Rectangle2& rect, QVector<Vector2> &pnts )
-{
-	// shrink seed rect to avoid pnts on edges
-	rect.Extent *= 0.95;
-
-	// do nothing if seed rect contains any pnts
-	foreach (Vector2 p, pnts) 
-		if (rect.contains(p)) 
-			return false;
-
-	// coordinates in the frame of seed rect
-	QVector<Vector2> pnts_coord;
-	foreach (Vector2 p, pnts) pnts_coord << rect.getCoordinates(p);
-
-	// extend along x
-	double left = -maxDouble();
-	double right = maxDouble();
-	foreach (Vector2 pc, pnts_coord)
-	{
-		// keep the extent along y
-		if (inRange(pc.y(), -1, 1))
-		{
-			double x = pc.x();
-			// tightest bound on left
-			if (x < 0 && x > left) left = x;
-			// tightest bound on right
-			if (x > 0 && x < right) right = x;
-		}
-	}
-
-	// extend along y
-	//double epsilon = 2 * ZERO_TOLERANCE_LOW;
-	//double epsilon = 0.01 * (right - left);
-	double bottom = -maxDouble();
-	double top = maxDouble();
-	foreach (Vector2 pc, pnts_coord)
-	{
-		// keep the extent along x
-		//if (inRange(pc.x(), left + epsilon, right - epsilon))
-		if (inRange(pc.x(), -1, 1))
-		{
-			double y = pc.y();
-			// tightest bound on left
-			if (y < 0 && y > bottom) bottom = y;
-			// tightest bound on right
-			if (y > 0 && y < top) top = y;
-		}
-	}
-
-	// set up box
-	QVector<Vector2> new_conners;
-	new_conners << rect.getPosition(Vector2(left, bottom))
-				<< rect.getPosition(Vector2(right, bottom))
-				<< rect.getPosition(Vector2(right, top))
-				<< rect.getPosition(Vector2(left, top));
-	rect =  Geom::Rectangle2(new_conners);
-	return true;
 }
 
 void print( Vector3 v )

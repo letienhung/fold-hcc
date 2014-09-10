@@ -157,14 +157,15 @@ void TBlockGraph::computeAvailFoldingRegion(bool isRight, ShapeSuperKeyframe* ss
 	// sample boundary of max region
 	sample_proj << getMaxFR(isRight).getEdgeSamples(100);
 
-	// extend min to max
-	Geom::Rectangle2 minFR = getMinFR(isRight);
-	bool okay = extendRectangle2D(minFR, sample_proj);
+	// check if minFR is available
+	Geom::Rectangle2 avail_region = getMinFR(isRight);
+	bool okay = !avail_region.containsAny(sample_proj, -0.1);
 	getAbleToFoldTag(isRight) = okay;
 	if (!okay) return;
 
-	// store avail FR
-	getAvailFR(isRight) = minFR;
+	// expand
+	avail_region.expandToTouch(sample_proj, -0.1);
+	getAvailFR(isRight) = avail_region;
 
 	// debug 
 	appendToVectorProperty( AFR_CP, base_rect.get3DRectangle(getAvailFR(isRight)).getEdgeSamples(100) );

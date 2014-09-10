@@ -590,6 +590,11 @@ void DcGraph::foldabilize()
 	double currTime = 0.0;
 	ShapeSuperKeyframe* currKeyframe = getShapeSuperKeyframe(currTime);
 	int next_bid = getBestNextBlockIndex(currTime, currKeyframe);  
+
+
+	//return;
+	
+
 	while (next_bid >= 0 && next_bid < blocks.size())
 	{
 		std::cout << "Best next = " << blocks[next_bid]->mID.toStdString() << "\n";

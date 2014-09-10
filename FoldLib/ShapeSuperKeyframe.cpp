@@ -41,7 +41,7 @@ ShapeSuperKeyframe::ShapeSuperKeyframe(FdGraph* superKeyframe, StringSetMap moc_
 			// remove other
 			this->removeNode(superMasters[superIdx]->mID);
 		}
-		Geom::Rectangle2 aabb2 = computeAABB2D(pnts2);
+		Geom::Rectangle2 aabb2 = Geom::Rectangle2::computeAABB(pnts2);
 		superPatch_new->resize(aabb2);
 
 		// store master_super_map

@@ -1,5 +1,5 @@
 #include "Rectangle2.h"
-#include "Numeric.h"
+
 
 //   1	 _______e2______  0
 //		|				|
@@ -53,6 +53,7 @@ Geom::Rectangle2::Rectangle2(QVector<Vector2> &conners)
 	Extent = Vector2(e0.norm(), e1.norm()) / 2;
 }
 
+
 QVector<Vector2> Geom::Rectangle2::getConners()
 {
 	Vector2 extAxis0 = Axis[0] * Extent[0];
@@ -65,12 +66,6 @@ QVector<Vector2> Geom::Rectangle2::getConners()
 		<< Center + extAxis0 - extAxis1;
 }
 
-void Geom::Rectangle2::copyFrom( Rectangle2& other )
-{
-	Center = other.Center;
-	Axis = other.Axis;
-	Extent = other.Extent;
-}
 
 QStringList Geom::Rectangle2::toStrList()
 {
@@ -99,6 +94,24 @@ Vector2 Geom::Rectangle2::getPosition( Vector2& coord )
 	return pos;
 }
 
+SurfaceMesh::Vector2 Geom::Rectangle2::getEdgeCenter(int aid, bool positive)
+{
+	Vector2 ec = Center;
+	Vector2 v = Extent[aid] * Axis[aid];
+	if (positive) ec += v;
+	else ec -= v;
+
+	return ec;
+}
+
+Geom::Segment2 Geom::Rectangle2::getSkeleton(int aid)
+{
+	Vector2 p0 = getEdgeCenter(aid, true);
+	Vector2 p1 = getEdgeCenter(aid, false);
+	return Segment2(p0, p1);
+}
+
+
 QVector<Geom::Segment2> Geom::Rectangle2::getEdgeSegments()
 {
 	QVector<Segment2> edges;
@@ -110,23 +123,35 @@ QVector<Geom::Segment2> Geom::Rectangle2::getEdgeSegments()
 	return edges;
 }
 
-QVector<Vector2> Geom::Rectangle2::getEdgeSamples( int N )
-{
-	QVector<Vector2> samples;
-	foreach (Segment2 edge, getEdgeSegments())
-		samples += edge.getUniformSamples(N);
 
-	return samples;
-}
-
-bool Geom::Rectangle2::contains( Vector2& p )
+bool Geom::Rectangle2::contains( Vector2& p, double thr /*= ZERO_TOLERANCE_LOW*/ )
 {
 	Vector2 coord = getCoordinates(p);
-	double threshold = 1 + ZERO_TOLERANCE_LOW;
+	double threshold = 1 + thr;
 
 	return (fabs(coord[0]) < threshold) 
 		&& (fabs(coord[1]) < threshold);
 }
+
+bool Geom::Rectangle2::containsAll(QVector<Vector2>& pnts, double thr /*= ZERO_TOLERANCE_LOW*/ )
+{
+	bool ctn_all = true;
+	foreach(Vector2 p, pnts){
+		if (!contains(p, thr)){	ctn_all = false; break;}
+	}
+	return ctn_all;
+}
+
+
+bool Geom::Rectangle2::containsAny(QVector<Vector2>& pnts, double thr /*= ZERO_TOLERANCE_LOW*/)
+{
+	bool ctn_any = false;
+	for(auto p : pnts){
+		if (contains(p, thr)) {ctn_any = true; break;}
+	}
+	return ctn_any;
+}
+
 
 
 int Geom::Rectangle2::getAxisId( Vector2& v )
@@ -159,35 +184,34 @@ double Geom::Rectangle2::area()
 }
 
 
-//    ______________
-//	||				|  
-//	||		Y		|
-//	||		|		|
-//	||		|___ X	| 
-//	||				|
-//	||				|
-//	||______________|
-void Geom::Rectangle2::shrinkToAvoidPoints( QVector<Vector2>& pnts, Segment2& base )
+// base       this rect
+//		 ______________
+//	|	|				|  
+//	|	|		Y		|
+//	|	|		|		|
+//	|	|		|___ X	| 
+//	|	|				|
+//	|	|				|
+//	|	|______________ |
+void Geom::Rectangle2::shrinkToExclude( QVector<Vector2>& pnts, Segment2& base )
 {
-	QVector<Rectangle2> rects;
-	rects << shrinkFront(pnts, base) << shrinkLeftRight(pnts, base) << shrinkFrontLeftRight(pnts, base);
+	// try different methods
+	QVector<Rectangle2> rects(3, *this);
+	rects[0].shrinkFront(pnts, base); 
+	rects[1].shrinkLeftRight(pnts, base); 
+	rects[2].shrinkFrontLeftRight(pnts, base);
 
+	// choose the one with max area
 	double maxArea = minDouble();
 	int maxId = 0;
-	for (int i = 0; i < 3; i++)
-	{
+	for (int i = 0; i < rects.size(); i++){
 		double a = rects[i].area();
-		if (a > maxArea)
-		{
-			maxArea = a;
-			maxId = i;
-		}
+		if (a > maxArea){ maxArea = a; maxId = i; }
 	}
-
-	copyFrom(rects[maxId]);
+	*this = rects[maxId];
 }
 
-Geom::Rectangle2 Geom::Rectangle2::shrinkFront( QVector<Vector2>& pnts, Segment2& base )
+void Geom::Rectangle2::shrinkFront( QVector<Vector2>& pnts, Segment2& base )
 {
 	int yId = getAxisId(base.Direction);
 	int xId = (yId + 1) % 2;
@@ -209,14 +233,11 @@ Geom::Rectangle2 Geom::Rectangle2::shrinkFront( QVector<Vector2>& pnts, Segment2
 	center_coord[xId] = (xlow + xhigh) / 2; 
 	if (xflip) center_coord[xId] *= -1;
 
-	Rectangle2 shrunk_rect = *this;
-	shrunk_rect.Center = getPosition(center_coord);
-	shrunk_rect.Extent[xId] *= (xhigh - xlow) / 2;
-
-	return shrunk_rect;
+	Center = getPosition(center_coord);
+	Extent[xId] *= (xhigh - xlow) / 2;
 }
 
-Geom::Rectangle2 Geom::Rectangle2::shrinkLeftRight( QVector<Vector2>& pnts, Segment2& base )
+void Geom::Rectangle2::shrinkLeftRight( QVector<Vector2>& pnts, Segment2& base )
 {
 	int yId = getAxisId(base.Direction);
 
@@ -238,14 +259,11 @@ Geom::Rectangle2 Geom::Rectangle2::shrinkLeftRight( QVector<Vector2>& pnts, Segm
 	Vector2 center_coord(0, 0);
 	center_coord[yId] = (ylow + yhigh) / 2;
 
-	Rectangle2 shrunk_rect = *this;
-	shrunk_rect.Center = getPosition(center_coord);
-	shrunk_rect.Extent[yId] *= (yhigh - ylow) / 2;
-
-	return shrunk_rect;
+	Center = getPosition(center_coord);
+	Extent[yId] *= (yhigh - ylow) / 2;
 }
 
-Geom::Rectangle2 Geom::Rectangle2::shrinkFrontLeftRight( QVector<Vector2>& pnts, Segment2& base )
+void Geom::Rectangle2::shrinkFrontLeftRight( QVector<Vector2>& pnts, Segment2& base )
 {
 	int yId = getAxisId(base.Direction);
 	int xId = (yId + 1) % 2;
@@ -297,30 +315,11 @@ Geom::Rectangle2 Geom::Rectangle2::shrinkFrontLeftRight( QVector<Vector2>& pnts,
 	center_coord[xId] = (xlow + xhigh) / 2; if (xflip) center_coord[xId] *= -1;
 	center_coord[yId] = (ylow + yhigh) / 2;
 
-	Rectangle2 shrunk_rect = *this;
-	shrunk_rect.Center = getPosition(center_coord);
-	shrunk_rect.Extent[xId] *= (xhigh - xlow) / 2;
-	shrunk_rect.Extent[yId] *= (yhigh - ylow) / 2;
-
-	return shrunk_rect;
+	Center = getPosition(center_coord);
+	Extent[xId] *= (xhigh - xlow) / 2;
+	Extent[yId] *= (yhigh - ylow) / 2;
 }
 
-SurfaceMesh::Vector2 Geom::Rectangle2::getEdgeCenter( int aid, bool positive )
-{
-	Vector2 ec = Center;
-	Vector2 v = Extent[aid] * Axis[aid];
-	if (positive) ec += v;
-	else ec -= v;
-
-	return ec;
-}
-
-Geom::Segment2 Geom::Rectangle2::getSkeleton( int aid )
-{
-	Vector2 p0 = getEdgeCenter(aid, true);
-	Vector2 p1 = getEdgeCenter(aid, false);
-	return Segment2(p0, p1);
-}
 
 void Geom::Rectangle2::cropByAxisAlignedRectangle( Rectangle2& cropper )
 {
@@ -363,6 +362,16 @@ void Geom::Rectangle2::cropByAxisAlignedRectangle( Rectangle2& cropper )
 	}
 }
 
+
+QVector<Vector2> Geom::Rectangle2::getEdgeSamples(int N)
+{
+	QVector<Vector2> samples;
+	foreach(Segment2 edge, getEdgeSegments())
+		samples += edge.getUniformSamples(N);
+
+	return samples;
+}
+
 QVector<Vector2> Geom::Rectangle2::getGridSamples( double w)
 {
 	QVector<Vector2> samples;
@@ -382,17 +391,90 @@ QVector<Vector2> Geom::Rectangle2::getGridSamples( double w)
 	return samples;
 }
 
-bool Geom::Rectangle2::containsAll( QVector<Vector2>& pnts )
+
+void Geom::Rectangle2::expandToTouch(QVector<Vector2>& pnts, double thr)
 {
-	bool ctn_all = true;
-	foreach (Vector2 p, pnts)
+	// results from various methods
+	QVector<Rectangle2> rects;
+
+	// method-1: x, y
+	Rectangle2 rect_xy = *this;
+	rect_xy.expandAlongSingleAxisToTouch(pnts, 0, thr);
+	rect_xy.expandAlongSingleAxisToTouch(pnts, 1, thr);
+	rects << rect_xy;
+
+	// method-2: y, x
+	Rectangle2 rect_yx = *this;
+	rect_yx.expandAlongSingleAxisToTouch(pnts, 1, thr);
+	rect_yx.expandAlongSingleAxisToTouch(pnts, 0, thr);
+	rects << rect_yx;
+
+	// choose the one with max area
+	double maxArea = minDouble();
+	int maxId = 0;
+	for (int i = 0; i < rects.size(); i++){
+		double a = rects[i].area();
+		if (a > maxArea){maxArea = a; maxId = i;}
+	}
+	*this = rects[maxId];
+}
+
+void Geom::Rectangle2::expandAlongSingleAxisToTouch(QVector<Vector2>& pnts, int aid, double thr /*= ZERO_TOLERANCE_LOW*/)
+{
+	// axes
+	int aid_free = aid;
+	int aid_fixed = 1 - aid;
+
+	// bounds on two sides
+	double left = -maxDouble();
+	double right = maxDouble();
+
+	// threshold along fixed axis
+	double threshold = 1 + thr;
+
+	// update bounds by each point
+	for (auto p : pnts)
 	{
-		if (!contains(p))
+		Vector2 pc = getCoordinates(p);
+		double u = pc[aid_free];
+		double v = pc[aid_fixed];
+
+		// check the extent along the fixed axis
+		if (fabs(v) < threshold)
 		{
-			ctn_all = false;
-			break;
+			// tightest bound on left
+			if (u < 0 && u > left) left = u;
+			// tightest bound on right
+			if (u > 0 && u < right) right = u;
 		}
 	}
 
-	return ctn_all;
+	// update this rec
+	Vector2 center_coord(0, 0);
+	center_coord[aid_free] = (left + right) / 2;
+	Center = getPosition(center_coord);
+
+	double width = right - left;
+	Extent[aid_free] *= width / 2;}
+
+Geom::Rectangle2 Geom::Rectangle2::computeAABB(QVector<Vector2> &pnts)
+{
+	// compute extent along x and y
+	double minX = maxDouble();
+	double maxX = -maxDouble();
+	double minY = maxDouble();
+	double maxY = -maxDouble();
+	for (auto p : pnts)
+	{
+		if (p.x() < minX) minX = p.x();
+		if (p.x() > maxX) maxX = p.x();
+
+		if (p.y() < minY) minY = p.y();
+		if (p.y() > maxY) maxY = p.y();
+	}
+
+	// create rect
+	QVector<Vector2> conners;
+	conners << Vector2(minX, minY) << Vector2(maxX, minY) << Vector2(maxX, maxY) << Vector2(minX, maxY);
+	return Rectangle2(conners);
 }

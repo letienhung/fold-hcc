@@ -124,7 +124,7 @@ FdGraph* BlockGraph::getSuperKeyframe( double t )
 	}
 
 	// resize super patch
-	Geom::Rectangle2 aabb2 = computeAABB2D(projPnts2);
+	Geom::Rectangle2 aabb2 = Geom::Rectangle2::computeAABB(projPnts2);
 	superPatch->resize(aabb2);
 
 	// merged parts

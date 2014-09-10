@@ -117,10 +117,6 @@ QMap<QString, double> getTimeStampsNormalized(QVector<PatchNode*> pnodes, Vector
 FdGraph* combineFdGraphs(QVector<FdGraph*> decmps, QString baseMid, 
 	QMap<QString, QSet<int> >& masterDecmpMap);
 
-// 2D geometry
-Geom::Rectangle2 computeAABB2D(QVector<Vector2> &pnts);
-bool extendRectangle2D(Geom::Rectangle2& rect, QVector<Vector2> &pnts);
-
 // volume
 double volume(QList<Geom::Box> boxes);
 

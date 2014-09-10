@@ -109,7 +109,7 @@ void SuperBlockGraph::computeMaxFoldingRegion()
 		pnts_proj << minFoldingRegion[top_master->mID].getConners();
 
 		// max region is the AABB of projections of both folded slave and top master
-		Geom::Rectangle2 max_region = computeAABB2D(pnts_proj);
+		Geom::Rectangle2 max_region = Geom::Rectangle2::computeAABB(pnts_proj);
 
 		// max region is confined by the bounding box
 		max_region.cropByAxisAlignedRectangle(cropper2);
@@ -170,13 +170,15 @@ bool SuperBlockGraph::computeAvailFoldingRegion()
 		samples_proj << maxFoldingRegion[top_mid].getEdgeSamples(100);
 
 		// avail folding region
-		// includes minFR but excludes all constraint points
 		Geom::Rectangle2 avail_region = minFoldingRegion[top_mid];
-		bool okay = extendRectangle2D(avail_region, samples_proj);
+		bool okay = !avail_region.containsAny(samples_proj, -0.1);
 		if (!okay) return false; // availFR < minFR
+
+		// expand
+		avail_region.expandToTouch(samples_proj, -0.1);
 		availFoldingRegion[top_mid] = avail_region;
 
-		// debug
+		// debug 
 		QVector<Vector3> samples_proj3;
 		foreach(Vector2 p2, samples_proj)
 			samples_proj3 << base_rect.getPosition(p2);
@@ -234,7 +236,7 @@ double SuperBlockGraph::getAvailFoldingVolume()
 	QVector<Vector2> conners;
 	foreach(QString key, availFoldingRegion.keys())
 		conners << availFoldingRegion[key].getConners();
-	Geom::Rectangle2 aabb2 = computeAABB2D(conners);
+	Geom::Rectangle2 aabb2 = Geom::Rectangle2::computeAABB(conners);
 
 	if (!_finite(aabb2.Extent.x()))
 		return 0;

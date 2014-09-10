@@ -2,6 +2,7 @@
 #include "UtilityGlobal.h"
 #include <QStringList>
 #include "Segment2.h"
+#include "Numeric.h"
 
 namespace Geom{
 
@@ -11,8 +12,6 @@ namespace Geom{
 		Rectangle2();
 		Rectangle2(Vector2 &center, QVector<Vector2> &axis, Vector2 &extent);
 		Rectangle2(QVector<Vector2> &conners);
-		
-		void copyFrom( Rectangle2& other );
 
 		// geometry
 		static int EDGE[4][2];
@@ -31,18 +30,25 @@ namespace Geom{
 		Vector2 getPosition(Vector2& coord);
 
 		// relation with others
-		bool contains(Vector2& p);
-		bool containsAll(QVector<Vector2>& pnts);
+		bool contains(Vector2& p, double thr = ZERO_TOLERANCE_LOW);
+		bool containsAll(QVector<Vector2>& pnts, double thr = ZERO_TOLERANCE_LOW);
+		bool containsAny(QVector<Vector2>& pnts, double thr = ZERO_TOLERANCE_LOW);
 
 		// samples
 		QVector<Vector2> getEdgeSamples(int N);
 		QVector<Vector2> getGridSamples(double w);
 
 		// shrink
-		void		shrinkToAvoidPoints(QVector<Vector2>& pnts, Segment2& base);
-		Rectangle2	shrinkFront(QVector<Vector2>& pnts, Segment2& base);
-		Rectangle2	shrinkLeftRight(QVector<Vector2>& pnts, Segment2& base);
-		Rectangle2	shrinkFrontLeftRight(QVector<Vector2>& pnts, Segment2& base);
+		void shrinkToExclude(QVector<Vector2>& pnts, Segment2& base);
+		void shrinkFront(QVector<Vector2>& pnts, Segment2& base);
+		void shrinkLeftRight(QVector<Vector2>& pnts, Segment2& base);
+		void shrinkFrontLeftRight(QVector<Vector2>& pnts, Segment2& base);
+
+		// expand
+		void expandToTouch(QVector<Vector2>& pnts, double thr = ZERO_TOLERANCE_LOW);
+		void expandAlongSingleAxisToTouch(QVector<Vector2>& pnts, int aid, double thr = ZERO_TOLERANCE_LOW);
+
+		// crop
 		void		cropByAxisAlignedRectangle(Rectangle2& cropper);
 
 		// to string
@@ -52,6 +58,9 @@ namespace Geom{
 		Vector2 Center;
 		QVector<Vector2> Axis;
 		Vector2 Extent;
+
+	public:
+		static Rectangle2 computeAABB(QVector<Vector2> &pnts);
 
 	public:
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
