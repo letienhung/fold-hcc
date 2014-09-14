@@ -25,6 +25,7 @@ class FdPlugin : public SurfaceMeshModePlugin
 
 	// Keyboard / mouse
 	bool keyPressEvent(QKeyEvent* event);
+	bool mousePressEvent(QMouseEvent* event);
 
 public:
 	FdWidget* widget;

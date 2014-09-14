@@ -586,6 +586,17 @@ void FdPlugin::exportSVG()
     system( filename.toLatin1() );
 }
 
+bool FdPlugin::mousePressEvent(QMouseEvent* event)
+{
+	if (event->modifiers() & Qt::SHIFT)
+	{
+		drawArea()->select(event->pos());
+		return true;
+	}
+
+	return false;
+}
+
 bool FdPlugin::keyPressEvent(QKeyEvent* event)
 {
 	// View save / restore

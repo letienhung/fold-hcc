@@ -67,7 +67,7 @@ QVector<Geom::Plane> TChainGraph::generateCutPlanes(FoldOption* fn)
 	double step = h / (fn->nSplits + 1);
 	Geom::Plane start_plane = baseMaster->mPatch.getPlane();
 
-	// ?? the normal along the chain
+	// the normal of base master points to the same side as the chain (see TBlockGraph)
 	Vector3 stepV = step * start_plane.Normal;
 
 	// cut planes

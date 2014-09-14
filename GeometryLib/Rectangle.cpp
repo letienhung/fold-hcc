@@ -262,8 +262,12 @@ QVector<Vector3> Geom::Rectangle::getConnersReverse()
 void Geom::Rectangle::drawFace( QColor color /*= Qt::red*/ )
 {
 	PolygonSoup ps;
+	QVector<Vector3> conners = getConners();
 	ps.addPoly(getConners(), color);
 	ps.drawQuads();
+	//ps.addPoly(QVector<Vector3>() << conners[0] << conners[1] << conners[2], color);
+	//ps.addPoly(QVector<Vector3>() << conners[0] << conners[2] << conners[3], color);
+	//ps.drawTris();
 }
 
 void Geom::Rectangle::drawEdges( double width /*= 2.0*/, QColor color /*= Qt::red*/ )

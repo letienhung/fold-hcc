@@ -132,7 +132,7 @@ QVector<RodNode*> PatchNode::getEdgeRodNodes()
 
 	// save the host id
 	foreach(RodNode* er, edgeRods)
-		er->properties[EDGE_ROD_HOST] = mID;
+		er->properties[EDGE_ROD_ORIG] = mID;
 
 	return edgeRods;
 }

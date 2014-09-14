@@ -315,33 +315,28 @@ FdGraph* combineFdGraphs( QVector<FdGraph*> decmps, QString baseMid,
 	// trivial combination
 	if (decmps.size() == 1)
 	{
-		FdGraph * f = decmps.front();
-		if(!f) return NULL;
-
-		FdGraph * fdg = (FdGraph*)f->clone();
-		return fdg;
+		if (decmps[0] == nullptr) return nullptr;
+		else return (FdGraph*)decmps.front()->clone();
 	}
 
 	// combined tags
+	QVector<bool> decmpCombined(decmps.size(), false);
+	for (int i = 0; i < decmps.size(); i++)
+		if (decmps[i] == nullptr) decmpCombined[i] = true;
+	 
 	QMap<QString, bool> masterCombined;
 	foreach (QString mid, masterDecmpMap.keys()) 
 		masterCombined[mid] = false;
-	QVector<bool> decmpCombined(decmps.size(), false);
-	for (int i = 0; i < decmps.size(); i++)
-		if (decmps[i] == NULL) decmpCombined[i] = true;
 
 	// start from base master
 	int base_decmp_id = -1;
-	foreach (int bdid, masterDecmpMap[baseMid])
-	{
-		if (decmps[bdid] != NULL)
-		{
-			base_decmp_id = bdid;
-			break;
+	for (auto bd_id : masterDecmpMap[baseMid]){
+		if (decmps[bd_id] != nullptr){
+			base_decmp_id = bd_id; break;
 		}
 	}
-	if (base_decmp_id < 0) return NULL;
-	
+	if (base_decmp_id == -1) return nullptr;
+
 	// create scaffold for combination
 	FdGraph* combination = new FdGraph();
 	FdGraph* base_decmp = decmps[base_decmp_id];

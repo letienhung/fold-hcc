@@ -21,7 +21,7 @@ public:
 	Vector3 sqzV;
 
 	// masters
-	PatchNode* baseMaster;
+	PatchNode* baseMaster; // non-virtual master
 	QVector<PatchNode*> masters;
 	QMap<QString, QSet<QString> > masterOrderGreater;
 	QMap<QString, QSet<QString> > masterOrderLess;

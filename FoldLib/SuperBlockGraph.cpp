@@ -80,7 +80,7 @@ void SuperBlockGraph::computeMinFoldingRegion()
 
 		// debug
 		Geom::Rectangle min_region3 = base_rect.get3DRectangle(min_region);
-		//origBlock->properties[MINFR].setValue(min_region3.getEdgeSamples(20));
+		origBlock->appendToVectorProperty(MINFR, min_region3.getEdgeSamples(20));
 	}
 }
 
@@ -126,7 +126,7 @@ void SuperBlockGraph::computeMaxFoldingRegion()
 		//origBlock->properties[MAXFR].setValue(cropper3.getEdgeSamples(70));
 
 		Geom::Rectangle max_region3 = base_rect.get3DRectangle(max_region);
-		origBlock->properties[MAXFR].setValue(max_region3.getEdgeSamples(100));
+		origBlock->appendToVectorProperty(MAXFR, max_region3.getEdgeSamples(100));
 	}
 }
 
@@ -134,6 +134,12 @@ bool SuperBlockGraph::computeAvailFoldingRegion()
 {
 	// clear
 	availFoldingRegion.clear();
+
+	// clear debug info
+	properties[MINFR].setValue(QVector<Vector3>());
+	properties[MAXFR].setValue(QVector<Vector3>());
+	properties[AFR].setValue(QVector<Vector3>());
+	properties[AFR_CP].setValue(QVector<Vector3>());
 
 	// align super shape key frame with this super block
 	Vector3 pos_block = baseMaster->center();
@@ -158,7 +164,9 @@ bool SuperBlockGraph::computeAvailFoldingRegion()
 
 		// samples from constraint parts: in-between and unordered
 		QVector<QString> constraintParts;
+		// ***no external parts stick into the afv
 		constraintParts << origBlock->getInbetweenExternalParts(baseMaster->center(), top_master->center(), ssKeyframe);
+		// ***the afv should not stick into other blocks: introducing new order constraints
 		constraintParts << getUnrelatedMasters(base_mid, top_mid);
 		QVector<Vector3> samples;
 		QVector<Vector2> samples_proj;
@@ -182,10 +190,10 @@ bool SuperBlockGraph::computeAvailFoldingRegion()
 		QVector<Vector3> samples_proj3;
 		foreach(Vector2 p2, samples_proj)
 			samples_proj3 << base_rect.getPosition(p2);
-		//origBlock->properties[AFR_CP].setValue(samples_proj3);
+		origBlock->appendToVectorProperty(AFR_CP, samples_proj3);
 
 		Geom::Rectangle avail_region3 = base_rect.get3DRectangle(avail_region);
-		origBlock->properties[AFR_CP].setValue(avail_region3.getEdgeSamples(70));
+		origBlock->appendToVectorProperty(AFR, avail_region3.getEdgeSamples(70));
 	}
 
 	// restore the position of shape super key frame
@@ -208,8 +216,8 @@ QVector<QString> SuperBlockGraph::getUnrelatedMasters(QString base_mid, QString 
 	// masters unrelated with both
 	foreach(PatchNode* m, getAllMasters(ssKeyframe))
 	{
-		// skip folded masters
-		if (m->hasTag(MERGED_PART_TAG)) continue;
+		// skip folded or virtual masters
+		if (m->hasTag(MERGED_PART_TAG) || m->hasTag(EDGE_ROD_TAG)) continue;
 
 		// accept if not related to any
 		if (!base_moc.contains(m->mID) && !top_moc.contains(m->mID))

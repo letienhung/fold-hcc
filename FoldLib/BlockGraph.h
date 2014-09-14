@@ -48,7 +48,7 @@ public:
 	// AABB of entire shape
 	Geom::Box shapeAABB;
 
-	// the base master
+	// masters
 	PatchNode* baseMaster;
 	QVector<PatchNode*> masters;
 

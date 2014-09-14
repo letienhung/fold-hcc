@@ -10,7 +10,7 @@
 
 
 DcGraph::DcGraph(QString id, FdGraph* scaffold, Vector3 v, double connThr)
-	: FdGraph(*scaffold), baseMaster(NULL) // clone the FdGraph
+	: FdGraph(*scaffold), baseMaster(nullptr) // clone the FdGraph
 {
 	path = QFileInfo(path).absolutePath();
 	mID = id;
@@ -142,7 +142,7 @@ void DcGraph::createMasters()
 		{
 			// check if all nodes in the pcGroup is virtual
 			bool allVirtual = true;
-			foreach(FdNode* pcNode, pcGroup){
+			for(FdNode* pcNode : pcGroup){
 				if (!pcNode->hasTag(EDGE_ROD_TAG))
 				{
 					allVirtual = false;
@@ -154,7 +154,7 @@ void DcGraph::createMasters()
 			if (!allVirtual)
 				masters << (PatchNode*)wrapAsBundleNode(getIds(pcGroup), sqzV);
 			// each edge rod is converted to a patch master
-			else foreach(FdNode* pcNode, pcGroup) 
+			else for(FdNode* pcNode : pcGroup) 
 				masters << changeRodToPatch((RodNode*)pcNode, sqzV);
 		}
 	}
@@ -177,10 +177,10 @@ void DcGraph::computeMasterOrderConstraints()
 	double tScale;
 	QMap<QString, double> masterTimeStamps = getTimeStampsNormalized(masters, sqzV, tScale);
 
-	// base master is the bottom one
+	// the base master is the bottom one that is not virtual
 	double minT = maxDouble();
 	foreach(PatchNode* m, masters){
-		if (masterTimeStamps[m->mID] < minT){
+		if (!m->hasTag(EDGE_ROD_TAG) && masterTimeStamps[m->mID] < minT){
 			baseMaster = m;
 			minT = masterTimeStamps[m->mID];
 		}
@@ -245,19 +245,24 @@ void DcGraph::updateSlaveMasterRelation()
 		{
 			PatchNode* master = masters[j];
 
+			// skip if not attached
+			if (getDistance(slave, master) > adjacentThr) continue;
+
+
 			// virtual edge rod master
 			if (master->hasTag(EDGE_ROD_TAG))
 			{
 				// can only attach to its host slave
-				if (master->properties[EDGE_ROD_HOST].value<QString>() == slave->mID)
-					slave2master[i] << j;
+				QString masterOrig = master->properties[EDGE_ROD_ORIG].value<QString>();
+				QString slaveOrig = slave->mID;
+				if (slave->properties.contains(SPLIT_ORIG))
+					slaveOrig = slave->properties[SPLIT_ORIG].value<QString>();
+				if (masterOrig == slaveOrig) slave2master[i] << j;
 			}
 			// real master
 			else
 			{
-				// attach by distance
-				if (getDistance(slave, master) < adjacentThr)
-					slave2master[i] << j;
+				slave2master[i] << j;
 			}
 		}
 	}
@@ -267,8 +272,8 @@ void DcGraph::createSlaves()
 {
 	// split slave parts by master patches
 	double connThr = getConnectivityThr();
-	foreach (PatchNode* master, masters) {
-		foreach(FdNode* n, getFdNodes())
+	for (PatchNode* master : masters) {
+		for(FdNode* n : getFdNodes())
 		{
 			if (n->hasTag(MASTER_TAG)) continue;
 			if(hasIntersection(n, master, connThr))
@@ -399,19 +404,18 @@ BlockGraph* DcGraph::createBlock( QSet<int> sCluster )
 	foreach (int mid, mids)	ms << masters[mid];
 
 	// create
-	BlockGraph* b;
 	int bidx = blocks.size();
-	QString id = "HB_" + QString::number(bidx);
+	QString id = QString::number(bidx);
 	Geom::Box aabb = computeAABB().box();
+	BlockGraph* b;
 	if (ms.size() == 2 && ss.size() == 1 &&
 		(ms[0]->hasTag(EDGE_ROD_TAG) || ms[1]->hasTag(EDGE_ROD_TAG)))
-		b = new TBlockGraph(id, ms, ss, mPairs, aabb);
-	else b =  new HBlockGraph(id, ms, ss, mPairs, aabb);
+		b = new TBlockGraph("TB_" + id, ms, ss, mPairs, aabb);
+	else b = new HBlockGraph("HB_" + id, ms, ss, mPairs, aabb);
 	blocks << b;
 
 	// master block map
-	foreach (PatchNode* m, ms) 
-		masterBlockMap[m->mID] << bidx;
+	for (auto m : ms) masterBlockMap[m->mID] << bidx;
 
 	// set up path
 	b->path = path;
@@ -426,10 +430,10 @@ void DcGraph::createBlocks()
 	blocks.clear();
 	masterBlockMap.clear();
 
-	// each H-slave cluster forms a block
-	for (int i = 0; i < slaveClusters.size(); i++)
+	// each slave cluster forms a block
+	for (auto ss : slaveClusters)
 	{
-		createBlock(slaveClusters[i]);
+		createBlock(ss);
 	}
 }
 
@@ -492,8 +496,6 @@ FdGraph* DcGraph::getKeyframe( double t )
 	{
 		double lt = getLocalTime(t, blocks[i]->mFoldDuration);
 		FdGraph* fblock = blocks[i]->getKeyframe(lt, true);
-		if(!fblock) return NULL;
-
 		foldedBlocks << fblock;
 
 		// debug: active block
@@ -515,7 +517,12 @@ FdGraph* DcGraph::getKeyframe( double t )
 
 	// shift layers and add nodes into scaffold
 	FdGraph *key_graph = combineFdGraphs(foldedBlocks, baseMaster->mID, masterBlockMap);
-	if(!key_graph) return NULL;
+
+	// delete folded blocks
+	foreach (FdGraph* b, foldedBlocks) delete b;
+
+	// in case the combination fails
+	if (key_graph == nullptr) return nullptr;
 
 	// debug
 	if (showActive)
@@ -535,8 +542,6 @@ FdGraph* DcGraph::getKeyframe( double t )
 	// debug
 	//addDebugScaffold(key_graph);
 
-	// delete folded blocks
-	foreach (FdGraph* b, foldedBlocks) delete b;
 
 	// path
 	key_graph->path = path;
@@ -602,6 +607,9 @@ void DcGraph::foldabilize()
 		// foldabilize the selected next block
 		BlockGraph* next_block = blocks[next_bid];
 		next_block->foldabilize(currKeyframe);
+
+
+		//return;
 
 		// set up time interval 
 		double timeLength = next_block->getNbTopMasters() * timeScale;
@@ -684,7 +692,7 @@ int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyf
 		ShapeSuperKeyframe* nextKeyframe = getShapeSuperKeyframe(nextTime);
 
 
-
+		//continue;
 		//return 0;
 
 

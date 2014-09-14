@@ -212,7 +212,7 @@ void Structure::Graph::draw()
 {
 	foreach(Link *l, links) 
 		l->draw();
-	foreach(Node *n, nodes) 
+	foreach(Node *n, nodes)
 		n->draw();
 }
 

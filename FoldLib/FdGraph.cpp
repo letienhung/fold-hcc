@@ -294,9 +294,10 @@ QVector<FdNode*> FdGraph::split( QString nid, Geom::Plane& plane)
 QVector<FdNode*> FdGraph::split( QString nid, QVector<Geom::Plane>& planes )
 {
 	FdNode* fn = (FdNode*) getNode(nid);
+
+	// in case
 	QVector<FdNode*> chopped;
 	chopped << fn;
-
 	if (planes.isEmpty()) return chopped;
 	if (!fn) return chopped;
 
@@ -336,9 +337,13 @@ QVector<FdNode*> FdGraph::split( QString nid, QVector<Geom::Plane>& planes )
 	chopped << fn->cloneChopped(backPlane);
 
 	// change node id and add to graph
+	QString origMId = nid;
+	if (fn->properties.contains(SPLIT_ORIG))
+		origMId = fn->properties[SPLIT_ORIG].value<QString>();
 	for (int i = 0; i < chopped.size(); i++)
 	{
 		chopped[i]->mID = nid + "sp" + QString::number(i);
+		chopped[i]->properties[SPLIT_ORIG] = origMId;
 		Structure::Graph::addNode(chopped[i]);
 	}
 
@@ -436,7 +441,15 @@ void FdGraph::drawSpecial()
 	{
 		QVector<Vector3> pnts = properties[AFR_CP].value<QVector<Vector3> >();
 		PointSoup ps;
-		foreach (Vector3 p, pnts) ps.addPoint(p, Qt::cyan);
+		foreach (Vector3 p, pnts) ps.addPoint(p, Qt::blue);
+		ps.draw();
+	}
+
+	if (properties.contains(AFR))
+	{
+		QVector<Vector3> pnts = properties[AFR].value<QVector<Vector3> >();
+		PointSoup ps;
+		foreach(Vector3 p, pnts) ps.addPoint(p, Qt::cyan);
 		ps.draw();
 	}
 
@@ -488,7 +501,7 @@ void FdGraph::drawSpecial()
 
 void FdGraph::drawDebug()
 {
-	// debug segments
+	// debug points
 	if (properties.contains("debugPoints"))
 	{
 		QVector<Vector3> debugPoints = properties["debugPoints"].value<QVector<Vector3> >();

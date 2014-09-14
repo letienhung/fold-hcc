@@ -19,6 +19,11 @@ TBlockGraph::TBlockGraph(QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& 
 	topMaster = isVirtualFirst? masters.front() : masters.last();
 	baseMaster = isVirtualFirst ? masters.last() : masters.front();
 
+	// make sure the normal of base master pointing to the same side as the chain part
+	Vector3 chain2base = (ss.front()->center() - baseMaster->center()).normalized();
+	if (dot(baseMaster->mPatch.Normal, chain2base) < 0)
+		baseMaster->mPatch.flipNormal();
+
 	// the chain
 	tChain = new TChainGraph(ss.front(), baseMaster, topMaster);
 	tChain->setFoldDuration(0, 1);
@@ -36,13 +41,11 @@ void TBlockGraph::foldabilize(ShapeSuperKeyframe* ssKeyframe)
 
 	// prune by AFS
 	Geom::Rectangle base_rect = baseMaster->mPatch;
-	Geom::Rectangle2 AFR = getAvailFR(ableToFoldRight);
-	AFR.Extent *= 1.05; // to avoid numerical issue
+	Geom::Rectangle2 afr = getAvailFR(ableToFoldRight);
 	QVector<FoldOption*> valid_options;
-	foreach(FoldOption* fn, options)
-	{
+	for(auto fn : options){
 		Geom::Rectangle2 fRegion2 = base_rect.get2DRectangle(fn->region);
-		if (AFR.containsAll(fRegion2.getConners()))
+		if (afr.containsAll(fRegion2.getConners(), 0.05))
 			valid_options << fn;
 	}
 
@@ -132,43 +135,50 @@ void TBlockGraph::computeAvailFoldingRegion(ShapeSuperKeyframe* ssKeyframe)
 	properties[MAXFR].setValue(QVector<Vector3>());
 	properties[AFR_CP].setValue(QVector<Vector3>());
 
+	// constraints from in-between external parts
+	Geom::Rectangle base_rect = baseMaster->mPatch;
+	QVector<QString> cnstParts = getInbetweenExternalParts(baseMaster->center(), topMaster->center(), ssKeyframe);
+	QVector<Vector3> cnstPoints;
+	for (auto nid : cnstParts)
+		cnstPoints << ssKeyframe->getFdNode(nid)->sampleBoundabyOfScaffold(100);
+	QVector<Vector2> cnstPoints2D;
+	for (auto s : cnstPoints)
+		cnstPoints2D << base_rect.getProjCoordinates(s);
+
+	// debug
+	appendToVectorProperty(AFR_CP, cnstPoints);
+
+
 	// compute
-	computeAvailFoldingRegion(true, ssKeyframe);
-	computeAvailFoldingRegion(false, ssKeyframe);
+	computeAvailFoldingRegion(true, cnstPoints2D);
+	computeAvailFoldingRegion(false, cnstPoints2D);
 
 	// tag
 	ableToFold = ableToFoldRight || ableToFoldLeft;
 }
 
-void TBlockGraph::computeAvailFoldingRegion(bool isRight, ShapeSuperKeyframe* ssKeyframe)
+void TBlockGraph::computeAvailFoldingRegion(bool isRight, QVector<Vector2> cnstPoints2D)
 {
 	// min and max FR
 	computeMinFoldingRegion(isRight);
 	computeMaxFoldingRegion(isRight);
 
-	// constraints from in-between external parts
-	QVector<Vector3> samples;
-	QVector<Vector2> sample_proj;
-	for (auto nid : getInbetweenExternalParts(baseMaster->center(), topMaster->center(), ssKeyframe))
-		samples << ssKeyframe->getFdNode(nid)->sampleBoundabyOfScaffold(100);
-	Geom::Rectangle base_rect = baseMaster->mPatch;
-	for (auto s : samples) sample_proj << base_rect.getProjCoordinates(s);
-
 	// sample boundary of max region
-	sample_proj << getMaxFR(isRight).getEdgeSamples(100);
+	cnstPoints2D << getMaxFR(isRight).getEdgeSamples(100);
 
 	// check if minFR is available
 	Geom::Rectangle2 avail_region = getMinFR(isRight);
-	bool okay = !avail_region.containsAny(sample_proj, -0.1);
+	bool okay = !avail_region.containsAny(cnstPoints2D, -0.05);
 	getAbleToFoldTag(isRight) = okay;
 	if (!okay) return;
 
 	// expand
-	avail_region.expandToTouch(sample_proj, -0.1);
+	avail_region.expandToTouch(cnstPoints2D, -0.05);
 	getAvailFR(isRight) = avail_region;
 
 	// debug 
-	appendToVectorProperty( AFR_CP, base_rect.get3DRectangle(getAvailFR(isRight)).getEdgeSamples(100) );
+	Geom::Rectangle base_rect = baseMaster->mPatch;
+	appendToVectorProperty( AFR, base_rect.get3DRectangle(getAvailFR(isRight)).getEdgeSamples(100) );
 }
 
 void TBlockGraph::computeMinFoldingRegion(bool isRight)

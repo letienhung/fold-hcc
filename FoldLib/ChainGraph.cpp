@@ -221,6 +221,7 @@ void ChainGraph::resetChainParts(FoldOption* fn)
 	// debug
 	//addDebugSegment(getShrunkTopTraj());
 	//addDebugSegment(getShrunkSlaveSeg());
+	properties[DEBUG_PLANES].setValue(cutPlanes);
 }
 
 void ChainGraph::resetHingeLinks(FoldOption* fn)

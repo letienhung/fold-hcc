@@ -96,10 +96,9 @@ void HBlockGraph::pruneFoldOptions(QVector<FoldOption*>& options, int cid)
 	// AFR
 	ChainGraph* chain = chains[cid];
 	QString top_mid_super = superBlock->chainTopMasterMap[cid];
-	Geom::Rectangle2 AFR = superBlock->availFoldingRegion[top_mid_super];
-	AFR.Extent *= 1.01; // ugly way to avoid numerical issue
+	Geom::Rectangle2 afr = superBlock->availFoldingRegion[top_mid_super];
 
-	// filter
+	// prune
 	Geom::Rectangle base_rect = baseMaster->mPatch;
 	QVector<FoldOption*> options_pruned;
 	foreach(FoldOption* fn, options)
@@ -108,7 +107,7 @@ void HBlockGraph::pruneFoldOptions(QVector<FoldOption*>& options, int cid)
 
 		// reject if exceeds AFR
 		Geom::Rectangle2 fRegion2 = base_rect.get2DRectangle(fn->region);
-		if (!AFR.containsAll(fRegion2.getConners()))
+		if (!afr.containsAll(fRegion2.getConners(), 0.1))
 			reject = true;
 
 		// reject if collide with other masters
@@ -396,7 +395,7 @@ FdGraph* HBlockGraph::getKeyframe(double t, bool useThk)
 		{
 			// skip deleted chain
 			if (chains[i]->hasTag(DELETED_TAG))
-				chainKeyframes << NULL;
+				chainKeyframes << nullptr;
 			else{
 				ChainGraph* cgraph = chains[i];
 				double localT = getLocalTime(t, cgraph->duration);

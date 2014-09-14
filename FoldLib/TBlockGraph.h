@@ -26,7 +26,7 @@ private:
 	// folding regions
 	void computeMinFoldingRegion(bool isRight);
 	void computeMaxFoldingRegion(bool isRight);
-	void computeAvailFoldingRegion(bool isRight, ShapeSuperKeyframe* ssKeyframe);
+	void computeAvailFoldingRegion(bool isRight, QVector<Vector2> cnstPoints2D);
 
 	// choose side
 	Geom::Rectangle2& getMinFR(bool isRight);

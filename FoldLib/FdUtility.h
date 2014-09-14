@@ -26,7 +26,8 @@ typedef QPair<double, double> Interval;
 #define	MASTER_SUPER_MAP "master_prediction_map"
 #define DELETE_FOLD_OPTION	"deleteFoldOption"
 #define ACTIVE_TAG "isActive"
-#define EDGE_ROD_HOST "edgeRodHost"
+#define EDGE_ROD_ORIG "edgeRodOrigin"
+#define SPLIT_ORIG "splitOrigin"
 
 // propagation
 #define FIXED_NODE_TAG "hasFixed"
@@ -34,11 +35,14 @@ typedef QPair<double, double> Interval;
 
 // debug visual
 #define AFS "availFoldingSpace"
-#define AFR_CP "AFR_constraint_points"
-#define FOLD_REGIONS "filtered_fold_regions"
+#define SHOW_AFS "showAFS"
+
 #define MAXFR "MaxFondingRegion"
 #define MINFR "MinFoldingRegion"
-#define SHOW_AFS "showAFS"
+#define AFR_CP "AFR_constraint_points"
+#define AFR "AvailFoldingRegion"
+
+#define FOLD_REGIONS "filtered_fold_regions"
 #define DEBUG_PLANES "debugPlanes"
 
 // statistics
