@@ -12,20 +12,26 @@ public:
 		QVector< QVector<QString> >& mPairs, Geom::Box shape_aabb);
 	~HBlockGraph();
 
+private:
 	// H chains
 	void createChains(QVector<FdNode*>& ss, QVector< QVector<QString> >& mPairs);
-
-	// key frame
-	virtual FdGraph* getKeyframe(double t, bool useThk) override;
-
-	// foldem
-	virtual void foldabilize(ShapeSuperKeyframe* ssKeyframe) override;
-	void findOptimalSolution();
 
 	// collision graph
 	void addNodesToCollisionGraph();
 	void pruneFoldOptions(QVector<FoldOption*>& options, int cid);
 	void addEdgesToCollisionGraph();
+
+	// helper
+	bool fAreasIntersect(Geom::Rectangle& rect1, Geom::Rectangle& rect2);
+
+public:
+	// key frame
+	virtual FdGraph* getKeyframe(double t, bool useThk) override;
+
+	// foldem
+	virtual double foldabilize(ShapeSuperKeyframe* ssKeyframe) override;
+	void findOptimalSolution();
+
 	virtual void exportCollFOG() override;
 
 	// apply solution
@@ -33,10 +39,6 @@ public:
 
 	// available folding region
 	virtual void computeAvailFoldingRegion(ShapeSuperKeyframe* ssKeyframe) override;
-	virtual double getAvailFoldingVolume() override;
-
-	// helper
-	bool fAreasIntersect(Geom::Rectangle& rect1, Geom::Rectangle& rect2);
 
 public:
 	// master related

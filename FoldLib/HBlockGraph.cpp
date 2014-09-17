@@ -163,7 +163,7 @@ void HBlockGraph::addNodesToCollisionGraph()
 		std::cout << " ==> " << options.size() << std::endl;
 
 		// "delete" option
-		options << chain->generateDeleteFoldOption(nbSplits);
+		options << chain->genDeleteFoldOption(nbSplits);
 
 		// add to collision graph and link to chain node
 		foreach(FoldOption* fn, options)

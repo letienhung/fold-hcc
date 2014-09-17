@@ -8,7 +8,7 @@ public:
 	TChainGraph(FdNode* slave, PatchNode* base, PatchNode* top);
 
 	// override functions
-	virtual Geom::Rectangle getFoldRegion(FoldOption* fn) override;
+	virtual Geom::Rectangle2 getFoldRegion(FoldOption* fn) override;
 
 	// fold options
 	virtual QVector<FoldOption*> genFoldOptions(int nSplits, int nChunks) override;

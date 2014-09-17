@@ -38,8 +38,8 @@ public:
 	// duration
 	Interval duration;
 
-	// fold region
-	Geom::Rectangle region;
+	// fold region projected on the base master
+	Geom::Rectangle2 region;
 
 	// patch area
 	double patchArea;
@@ -70,7 +70,7 @@ public:
 	bool areSiblings(QString nid1, QString nid2);
 	bool hasFreeFoldOptions(QString cnid);
 
-	// getters
+	// getter
 	ChainNode*		getChainNode(QString fnid);		// chain node of a folding node
 	QVector<ChainNode*>	getAllChainNodes();		
 	QVector<FoldOption*>	getAllFoldOptions();	

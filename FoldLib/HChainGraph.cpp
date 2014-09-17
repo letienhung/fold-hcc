@@ -8,10 +8,8 @@ HChainGraph::HChainGraph(FdNode* slave, PatchNode* base, PatchNode* top)
 	useUniformHeight = true;
 }
 
-Geom::Rectangle HChainGraph::getFoldRegion(FoldOption* fn)
+Geom::Rectangle2 HChainGraph::getFoldRegion(FoldOption* fn)
 {
-	if (!baseMaster) return Geom::Rectangle();
-
 	Geom::Rectangle base_rect = baseMaster->mPatch;
 	Geom::Segment topJointProj = base_rect.getProjection(topJoint);
 
@@ -37,15 +35,13 @@ Geom::Rectangle HChainGraph::getFoldRegion(FoldOption* fn)
 	leftSeg.cropRange01(t0, t1);
 	rightSeg.cropRange01(t0, t1);
 
-	// fold region
-	Geom::Rectangle region(QVector<Vector3>()
+	// fold region in 3D
+	Geom::Rectangle region3(QVector<Vector3>()
 		<< leftSeg.P0 << leftSeg.P1
 		<< rightSeg.P1 << rightSeg.P0);
 
-	// debug
-	//addDebugSegments(region.getEdgeSegments());
-
-	return region;
+	// projection
+	return base_rect.get2DRectangle(region3);
 }
 
 //     left					right

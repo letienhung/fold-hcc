@@ -160,7 +160,7 @@ QVector<FoldOption*> ChainGraph::genFoldOptionWithDiffPositions( int nSplits, in
 	return options;
 }
 
-FoldOption* ChainGraph::generateDeleteFoldOption( int nSplits )
+FoldOption* ChainGraph::genDeleteFoldOption( int nSplits )
 {
 	// keep the number of slipts for computing the cost
 	QString fnid = mID + "_delete";
@@ -168,13 +168,6 @@ FoldOption* ChainGraph::generateDeleteFoldOption( int nSplits )
 	delete_fn->addTag(DELETE_FOLD_OPTION);
 	delete_fn->region = Geom::Rectangle();
 	return delete_fn;
-}
-
-Geom::Rectangle ChainGraph::getFoldRegion(bool isRight, int nSplits)
-{
-	// min fold region is produced by maximum number of splits
-	FoldOption fn("", isRight, 1.0, 0.0, nSplits, patchArea);
-	return getFoldRegion(&fn);
 }
 
 

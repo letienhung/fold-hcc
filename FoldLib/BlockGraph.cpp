@@ -206,3 +206,50 @@ QVector<QString> BlockGraph::getInbetweenExternalParts(Vector3 base_center, Vect
 
 	return inbetweens;
 }
+
+void BlockGraph::genAllFoldOptions()
+{
+	// clear
+	allFoldOptions.clear();
+
+	// collect all
+	for (auto chain : chains)
+		allFoldOptions << chain->genFoldOptions(nbSplits, nbChunks);
+}
+
+QVector<int> BlockGraph::getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe)
+{
+	QVector<int> afo;
+
+	// discard fold options colliding with obstacles
+	QVector<Vector2> obstacles = getObstaclePoints(ssKeyframe);
+	for (int i = 0; i < allFoldOptions.size(); i++)
+	{
+		if (allFoldOptions[i]->region.containsAny(obstacles, -0.01)) break;
+		else afo << i;
+	}
+}
+
+int BlockGraph::searchForExistedSolution(const QVector<int>& afo)
+{
+	for (int i = 0; i < testedAvailFoldOptions.size(); i++)
+		if (testedAvailFoldOptions[i] == afo) return i;
+
+		return -1;
+}
+
+double BlockGraph::foldabilizeWrt(ShapeSuperKeyframe* ssKeyframe)
+{
+	QVector<int> afo = getAvailFoldOptions(ssKeyframe);
+	
+	// search for existed solutions
+	int eid = searchForExistedSolution(afo);
+	if (eid >= 0 && eid < testedAvailFoldOptions.size())
+		return foldCost[eid];
+
+	// find the optimal solution
+	double cost = findOptimalSolution(afo);
+
+	// return the cost
+	return cost;
+}

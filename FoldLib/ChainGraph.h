@@ -17,11 +17,12 @@ public:
 	void setFoldDuration(double t0, double t1);
 
 	// fold options
-	virtual QVector<FoldOption*> genFoldOptions(int nSplits, int nChunks) = 0;
+	FoldOption* genDeleteFoldOption(int nSplits);
 	QVector<FoldOption*> genFoldOptionWithDiffPositions(int nSplits, int nUsedChunks, int nChunks);
-	FoldOption* generateDeleteFoldOption(int nSplits);
-	Geom::Rectangle getFoldRegion(bool isRight, int nSplits);
-	virtual Geom::Rectangle getFoldRegion(FoldOption* fn) = 0;
+	virtual QVector<FoldOption*> genFoldOptions(int nSplits, int nChunks) = 0;
+
+	// fold region
+	virtual Geom::Rectangle2 getFoldRegion(FoldOption* fn) = 0;
 
 	// apply fold option: modify the chain
 	void applyFoldOption(FoldOption* fn);
