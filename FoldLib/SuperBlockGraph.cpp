@@ -42,166 +42,12 @@ SuperBlockGraph::SuperBlockGraph(HBlockGraph* block, ShapeSuperKeyframe* sskf)
 	QString base_mid = master2Super[origBlock->baseMaster->mID];
 	baseMaster = (PatchNode*)getNode(base_mid);
 
-	// other master related stuff
+	// other masters
 	foreach(PatchNode* m, origBlock->masters)
-	{
-		QString mid = m->mID;
-		QString mid_super = master2Super[mid];
-
-		// super masters
-		masters << (PatchNode*)getNode(mid_super);
-
-		// master height
-		masterHeight[mid_super] = origBlock->masterHeight[mid];
-
-		// maps between chain and top masters
-		QSet<int> underChainIndices = origBlock->masterUnderChainsMap[mid];
-		masterUnderChainsMap[mid_super] = underChainIndices;
-		foreach(int ucid, underChainIndices)
-			chainTopMasterMap[ucid] = mid_super;
-	}
-
+		masters << (PatchNode*)getNode(master2Super[m->mID]);
 }
 
-void SuperBlockGraph::computeMinFoldingRegion()
-{
-	minFoldingRegion.clear();
-	Geom::Rectangle base_rect = origBlock->baseMaster->mPatch; // ***use original base rect
-	foreach(PatchNode* top_master, masters)
-	{
-		// skip base master
-		if (top_master == baseMaster) continue;
-
-		// min folding region is the projection of top master
-		Geom::Rectangle2 min_region = base_rect.get2DRectangle(top_master->mPatch);
-
-		// store
-		minFoldingRegion[top_master->mID] = min_region;
-
-		// debug
-		Geom::Rectangle min_region3 = base_rect.get3DRectangle(min_region);
-		origBlock->appendToVectorProperty(MINFR, min_region3.getEdgeSamples(20));
-	}
-}
-
-void SuperBlockGraph::computeMaxFoldingRegion()
-{
-	maxFoldingRegion.clear();
-	Geom::Rectangle base_rect = origBlock->baseMaster->mPatch;// ***use original base rect
-	int aid = origBlock->shapeAABB.getAxisId(base_rect.Normal);
-	Geom::Rectangle cropper3 = origBlock->shapeAABB.getPatch(aid, 0);
-	Geom::Rectangle2 cropper2 = base_rect.get2DRectangle(cropper3);
-	foreach(PatchNode* top_master, masters)
-	{
-		// skip base master
-		if (top_master == baseMaster) continue;
-
-		// projection of folded slaves with minimum splits
-		QVector<Vector2> pnts_proj;
-		QVector<Vector3> pnts;
-		foreach(int cid, masterUnderChainsMap[top_master->mID]) {
-			pnts << origBlock->chains[cid]->getFoldRegion(true, 0).getConners();
-			pnts << origBlock->chains[cid]->getFoldRegion(false, 0).getConners();
-		}
-		foreach(Vector3 p, pnts) pnts_proj << base_rect.getProjCoordinates(p);
-
-		// projection of top master
-		pnts_proj << minFoldingRegion[top_master->mID].getConners();
-
-		// max region is the AABB of projections of both folded slave and top master
-		Geom::Rectangle2 max_region = Geom::Rectangle2::computeAABB(pnts_proj);
-
-		// max region is confined by the bounding box
-		max_region.cropByAxisAlignedRectangle(cropper2);
-
-		// store
-		maxFoldingRegion[top_master->mID] = max_region;
-
-		// debug
-		QVector<Vector3> pnts_proj3;
-		foreach (Vector2 p2, pnts_proj) 
-			pnts_proj3 << base_rect.getPosition(p2);
-		//origBlock->properties[MAXFR].setValue(pnts_proj3);
-
-		//origBlock->properties[MAXFR].setValue(cropper3.getEdgeSamples(70));
-
-		Geom::Rectangle max_region3 = base_rect.get3DRectangle(max_region);
-		origBlock->appendToVectorProperty(MAXFR, max_region3.getEdgeSamples(100));
-	}
-}
-
-bool SuperBlockGraph::computeAvailFoldingRegion()
-{
-	// clear
-	availFoldingRegion.clear();
-
-	// clear debug info
-	properties[MINFR].setValue(QVector<Vector3>());
-	properties[MAXFR].setValue(QVector<Vector3>());
-	properties[AFR].setValue(QVector<Vector3>());
-	properties[AFR_CP].setValue(QVector<Vector3>());
-
-	// align super shape key frame with this super block
-	Vector3 pos_block = baseMaster->center();
-	FdNode* fnode = (FdNode*)ssKeyframe->getNode(baseMaster->mID);
-	if (!fnode) return false;
-	Vector3 pos_keyframe = fnode->center();
-	Vector3 offset = pos_block - pos_keyframe;
-	ssKeyframe->translate(offset, false);
-
-	// min/max folding regions
-	computeMinFoldingRegion();
-	computeMaxFoldingRegion();
-
-	// extend min until max
-	QString base_mid = baseMaster->mID;
-	Geom::Rectangle base_rect = origBlock->baseMaster->mPatch;// ***use original base rect
-	foreach(PatchNode* top_master, masters)
-	{
-		// skip base master
-		QString top_mid = top_master->mID;
-		if (top_mid == base_mid) continue;
-
-		// samples from constraint parts: in-between and unordered
-		QVector<QString> constraintParts;
-		// ***no external parts stick into the afv
-		constraintParts << origBlock->getInbetweenExternalParts(baseMaster->center(), top_master->center(), ssKeyframe);
-		// ***the afv should not stick into other blocks: introducing new order constraints
-		constraintParts << getUnrelatedMasters(base_mid, top_mid);
-		QVector<Vector3> samples;
-		QVector<Vector2> samples_proj;
-		for (auto nid : constraintParts)
-			samples << ssKeyframe->getFdNode(nid)->sampleBoundabyOfScaffold(100);
-		for (auto s : samples) samples_proj << base_rect.getProjCoordinates(s);
-
-		// sample boundary of max region
-		samples_proj << maxFoldingRegion[top_mid].getEdgeSamples(100);
-
-		// avail folding region
-		Geom::Rectangle2 avail_region = minFoldingRegion[top_mid];
-		bool okay = !avail_region.containsAny(samples_proj, -0.1);
-		if (!okay) return false; // availFR < minFR
-
-		// expand
-		avail_region.expandToTouch(samples_proj, -0.1);
-		availFoldingRegion[top_mid] = avail_region;
-
-		// debug 
-		QVector<Vector3> samples_proj3;
-		foreach(Vector2 p2, samples_proj)
-			samples_proj3 << base_rect.getPosition(p2);
-		origBlock->appendToVectorProperty(AFR_CP, samples_proj3);
-
-		Geom::Rectangle avail_region3 = base_rect.get3DRectangle(avail_region);
-		origBlock->appendToVectorProperty(AFR, avail_region3.getEdgeSamples(70));
-	}
-
-	// restore the position of shape super key frame
-	ssKeyframe->translate(-offset, false);
-	return true;
-}
-
-QVector<QString> SuperBlockGraph::getUnrelatedMasters(QString base_mid, QString top_mid)
+QVector<QString> SuperBlockGraph::getUnrelatedExternalMasters(QString base_mid, QString top_mid)
 {
 	QVector<QString> urMasters;
 
@@ -227,70 +73,50 @@ QVector<QString> SuperBlockGraph::getUnrelatedMasters(QString base_mid, QString 
 	return urMasters;
 }
 
-double SuperBlockGraph::getAvailFoldingVolume()
+QMap< QString, QVector<Vector2> > SuperBlockGraph::computeObstacles()
 {
-	Geom::Rectangle base_rect = origBlock->baseMaster->mPatch;
-	QList<QString> super_mids = availFoldingRegion.keys();
+	QMap< QString, QVector<Vector2> > obstacles;
 
-	// trivial case with single box
-	if (availFoldingRegion.size() == 1)
+	// align super shape key frame with this super block
+	Vector3 pos_block = baseMaster->center();
+	FdNode* fnode = (FdNode*)ssKeyframe->getNode(baseMaster->mID);
+	if (!fnode) return obstacles;
+	Vector3 pos_keyframe = fnode->center();
+	Vector3 offset = pos_block - pos_keyframe;
+	ssKeyframe->translate(offset, false);
+
+	// obstacles for each top master
+	QString base_mid = baseMaster->mID;
+	Geom::Rectangle base_rect = origBlock->baseMaster->mPatch;// ***use original base rect
+	foreach(PatchNode* top_master, masters)
 	{
-		QString smid = super_mids.front();
-		Geom::Rectangle afr3 = base_rect.get3DRectangle(availFoldingRegion[smid]);
-		return afr3.area() * masterHeight[smid];
+		// skip base master
+		QString top_mid = top_master->mID;
+		if (top_mid == base_mid) continue;
+
+		// obstacle parts: in-between and unordered
+		QVector<QString> obstacleParts;
+		// ***no external parts stick in between
+		// internal master is allowed to stay in between, because they will be collapsed in order
+		obstacleParts << origBlock->getInbetweenExternalParts(baseMaster->center(), top_master->center(), ssKeyframe);
+		// ***chains under the top master should not stick into other blocks: introducing new order constraints
+		// unrelated masters must be external because all masters have relation with the base master
+		obstacleParts << getUnrelatedExternalMasters(base_mid, top_mid);
+
+		// sample obstacle parts
+		QVector<Vector3> samples;
+		for (auto nid : obstacleParts)
+			samples << ssKeyframe->getFdNode(nid)->sampleBoundabyOfScaffold(100);
+
+		// project to the base rect to get obstacles
+		QVector<Vector2> obs;
+		for (auto s : samples) obs << base_rect.getProjCoordinates(s);
+		obstacles[top_mid] = obs;
 	}
 
-	// AABB of avail folding regions
-	QVector<Vector2> conners;
-	foreach(QString key, availFoldingRegion.keys())
-		conners << availFoldingRegion[key].getConners();
-	Geom::Rectangle2 aabb2 = Geom::Rectangle2::computeAABB(conners);
+	// restore the position of super shape key frame since it is shared
+	ssKeyframe->translate(-offset, false);
 
-	if (!_finite(aabb2.Extent.x()))
-		return 0;
-
-	// pixelize folding region
-	Geom::Rectangle aabb3 = base_rect.get3DRectangle(aabb2);
-	double pixel_size = aabb3.Extent[0] / 100;
-	double pixel_area = pixel_size * pixel_size;
-	double AFV = 0;
-	foreach(Vector3 gp3, aabb3.getGridSamples(pixel_size))
-	{
-		Vector2 gp2 = base_rect.getProjCoordinates(gp3);
-
-		double best_height = 0;
-		foreach(QString smid, super_mids)
-		if (availFoldingRegion[smid].contains(gp2) && masterHeight[smid] > best_height)
-			best_height = masterHeight[smid];
-
-		AFV += best_height;
-	}
-	AFV *= pixel_area;
-
-	return AFV;
-}
-
-Geom::Box SuperBlockGraph::getAFS(QString mid)
-{
-	Geom::Rectangle base_rect = baseMaster->mPatch;
-	Geom::Rectangle afr3 = base_rect.get3DRectangle(availFoldingRegion[mid]);
-	Geom::Box afs(afr3, base_rect.Normal, masterHeight[mid]);
-
-	double epsilon = 2 * ZERO_TOLERANCE_LOW;
-	afs.Extent += Vector3(epsilon, epsilon, epsilon);
-
-	return afs;
-}
-
-QVector<Geom::Box> SuperBlockGraph::getAllAFS()
-{
-	QVector<Geom::Box> afs;
-	foreach(QString top_mid, availFoldingRegion.keys())
-		afs << getAFS(top_mid);
-	return afs;
-}
-
-QVector<Geom::Rectangle2> SuperBlockGraph::getAvailFoldingRegion()
-{
-	return availFoldingRegion.values().toVector();
+	// obstacles
+	return obstacles;
 }

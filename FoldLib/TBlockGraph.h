@@ -17,7 +17,7 @@ public:
 	virtual double getAvailFoldingVolume() override;
 
 	// foldabilize
-	virtual void foldabilize(ShapeSuperKeyframe* ssKeyframe) override;
+	virtual void foldabilizeWrt(ShapeSuperKeyframe* ssKeyframe) override;
 
 	// solution
 	virtual void applySolution(int idx) override;

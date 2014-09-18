@@ -35,11 +35,15 @@ public:
 	// #splits: produce nSplits+1 parts in a chain
 	int nSplits;
 
+	// chain Idx
+	int chainIdx;
+
 	// duration
 	Interval duration;
 
-	// fold region projected on the base master
-	Geom::Rectangle2 region;
+	// fold region and its projection on the base of block
+	Geom::Rectangle region;
+	Geom::Rectangle2 regionProj;
 
 	// patch area
 	double patchArea;

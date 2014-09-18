@@ -21,17 +21,11 @@ BlockGraph::BlockGraph(QString id, Geom::Box shape_aabb)
 	thickness = 2;
 	useThickness = false;
 
-	// selected solution
-	selSlnIdx = -1;
-
 	// cost weight
 	weight = 0.05;
-
-	// foldabilized tag
+	
+	// tag
 	foldabilized = false;
-
-	// able to fold
-	ableToFold = false;
 }
 
 BlockGraph::~BlockGraph()
@@ -158,7 +152,10 @@ void BlockGraph::setThickness( double thk )
 
 void BlockGraph::exportCollFOG()
 {
-	// do nothing
+	if (collFog == nullptr) return;
+
+	QString filename = path + "/" + mID;
+	collFog->saveAsImage(filename);
 }
 
 QVector<QString> BlockGraph::getInbetweenExternalParts(Vector3 base_center, Vector3 top_center, ShapeSuperKeyframe* ssKeyframe)
@@ -213,20 +210,19 @@ void BlockGraph::genAllFoldOptions()
 	allFoldOptions.clear();
 
 	// collect all
-	for (auto chain : chains)
-		allFoldOptions << chain->genFoldOptions(nbSplits, nbChunks);
-}
+	Geom::Rectangle base_rect = baseMaster->mPatch;
+	for (int i = 0; i < chains.size(); i++){
+		for (auto fo : chains[i]->genFoldOptions(nbSplits, nbChunks))
+		{
+			// chain index
+			fo->chainIdx = i;
 
-QVector<int> BlockGraph::getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe)
-{
-	QVector<int> afo;
+			// region projection
+			fo->regionProj = base_rect.get2DRectangle(fo->region);
 
-	// discard fold options colliding with obstacles
-	QVector<Vector2> obstacles = getObstaclePoints(ssKeyframe);
-	for (int i = 0; i < allFoldOptions.size(); i++)
-	{
-		if (allFoldOptions[i]->region.containsAny(obstacles, -0.01)) break;
-		else afo << i;
+			// store
+			allFoldOptions << fo;
+		}
 	}
 }
 
@@ -252,4 +248,32 @@ double BlockGraph::foldabilizeWrt(ShapeSuperKeyframe* ssKeyframe)
 
 	// return the cost
 	return cost;
+}
+
+void BlockGraph::applySolution(int idx)
+{
+	// assert idx
+	if (idx < 0 || idx >= foldSolutions.size()) return;
+
+	// clear selection in collision graph
+	foreach(Structure::Node* n, collFog->nodes)
+		n->removeTag(SELECTED_TAG);
+
+	// update selection index
+	selSlnIdx = idx;
+
+	// apply fold option to each chain
+	for (int i = 0; i < chains.size(); i++)
+	{
+		FoldOption* fn = foldSolutions[selSlnIdx][i];
+
+		if (fn)
+		{
+			chains[i]->applyFoldOption(fn);
+			fn->addTag(SELECTED_TAG);
+		}
+	}
+
+	// has been foldabilized
+	foldabilized = true;
 }

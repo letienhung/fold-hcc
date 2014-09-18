@@ -14,41 +14,21 @@ class SuperBlockGraph : public FdGraph
 public:
 	SuperBlockGraph(HBlockGraph* block, ShapeSuperKeyframe* ssKeyframe);
 
-	// folding regions
-	void computeMinFoldingRegion();
-	void computeMaxFoldingRegion();
-	bool computeAvailFoldingRegion();
+	// obstacles for each top master
+	QMap< QString, QVector<Vector2> > computeObstacles();
 
-	// helpers
-	QVector<QString> getUnrelatedMasters(QString base_mid, QString top_mid);
+private:
+	// unrelated masters
+	QVector<QString> getUnrelatedExternalMasters(QString base_mid, QString top_mid);
 
-	// volume
-	double getAvailFoldingVolume();
-
-	// space
-	Geom::Box getAFS(QString mid);
-	QVector<Geom::Box> getAllAFS();
-
-	// region
-	QVector<Geom::Rectangle2> getAvailFoldingRegion();
-
-public:
+private:
 	// the original block
 	HBlockGraph* origBlock;
 
 	// the super shape key frame
 	ShapeSuperKeyframe* ssKeyframe;
 
-	// super 
+	// super masters
 	PatchNode* baseMaster;
 	QVector<PatchNode*> masters;
-	QMap<QString, double> masterHeight;
-	QMap<QString, QSet<int> > masterUnderChainsMap;
-	QMap<int, QString> chainTopMasterMap;
-
-	// folding regions
-	// ***2D rectangles encoded in original base patch
-	QMap<QString, Geom::Rectangle2> minFoldingRegion;
-	QMap<QString, Geom::Rectangle2> maxFoldingRegion;
-	QMap<QString, Geom::Rectangle2> availFoldingRegion;
 };

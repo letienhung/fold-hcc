@@ -22,7 +22,7 @@ public:
 	virtual QVector<FoldOption*> genFoldOptions(int nSplits, int nChunks) = 0;
 
 	// fold region
-	virtual Geom::Rectangle2 getFoldRegion(FoldOption* fn) = 0;
+	virtual Geom::Rectangle getFoldRegion(FoldOption* fn) = 0;
 
 	// apply fold option: modify the chain
 	void applyFoldOption(FoldOption* fn);

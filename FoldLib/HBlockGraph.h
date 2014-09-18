@@ -2,9 +2,6 @@
 
 #include "BlockGraph.h"
 
-#include "FoldOptionGraph.h"
-#include "SuperBlockGraph.h"
-
 class HBlockGraph : public BlockGraph
 {
 public:
@@ -18,43 +15,29 @@ private:
 
 	// collision graph
 	void addNodesToCollisionGraph();
-	void pruneFoldOptions(QVector<FoldOption*>& options, int cid);
 	void addEdgesToCollisionGraph();
 
-	// helper
-	bool fAreasIntersect(Geom::Rectangle& rect1, Geom::Rectangle& rect2);
+	// obstacles
+	void computeObstacles(ShapeSuperKeyframe* ssKeyframe);
 
 public:
 	// key frame
 	virtual FdGraph* getKeyframe(double t, bool useThk) override;
 
-	// foldem
-	virtual double foldabilize(ShapeSuperKeyframe* ssKeyframe) override;
-	void findOptimalSolution();
-
-	virtual void exportCollFOG() override;
-
-	// apply solution
-	virtual void applySolution(int idx) override;
-
-	// available folding region
-	virtual void computeAvailFoldingRegion(ShapeSuperKeyframe* ssKeyframe) override;
+	// foldabilization
+	virtual QVector<int> getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe) override;
+	virtual double findOptimalSolution(const QVector<int>& afo) override;
 
 public:
-	// master related
-	QMap<QString, double> masterHeight;
+	// master-chain relation
 	QMap<QString, QSet<int> > masterChainsMap;
-	QMap<QString, QSet<int> > masterUnderChainsMap; // master : chains under master
-	QMap<int, QString> chainBaseMasterMap;
+	QMap<int, QString> chainTopMasterMap;
 
 	// timing 
 	QVector<QString> sortedMasters; // bottom-up
 	QMap<QString, double> masterTimeStamps;
 
-	// collision graph
-	FoldOptionGraph* collFog;
-
-	// super block
-	SuperBlockGraph* superBlock;
+	// obstacles
+	QMap< QString, QVector<Vector2> > obstacles;
 };
 

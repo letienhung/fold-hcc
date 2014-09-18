@@ -7,7 +7,7 @@ TChainGraph::TChainGraph(FdNode* slave, PatchNode* base, PatchNode* top)
 	// do nothing
 }
 
-Geom::Rectangle2 TChainGraph::getFoldRegion(FoldOption* fn)
+Geom::Rectangle TChainGraph::getFoldRegion(FoldOption* fn)
 {
 	Geom::Rectangle base_rect = baseMaster->mPatch;
 	Geom::Segment topJointProj = base_rect.getProjection(topJoint);
@@ -34,12 +34,11 @@ Geom::Rectangle2 TChainGraph::getFoldRegion(FoldOption* fn)
 	rightSeg.cropRange01(t0, t1);
 
 	// fold region in 3D
-	Geom::Rectangle region3(QVector<Vector3>()
+	Geom::Rectangle region(QVector<Vector3>()
 		<< leftSeg.P0 << leftSeg.P1
 		<< rightSeg.P1 << rightSeg.P0);
 
-	// projection
-	return base_rect.get2DRectangle(region3);
+	return region;
 }
 
 //     left					right

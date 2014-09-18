@@ -3,6 +3,7 @@
 #include "HChainGraph.h"
 #include "CliquerAdapter.h"
 #include "IntrRect2Rect2.h"
+#include "SuperBlockGraph.h"
 
 HBlockGraph::HBlockGraph(QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& ss,
 	QVector< QVector<QString> >& mPairs, Geom::Box shape_aabb)
@@ -25,9 +26,6 @@ HBlockGraph::HBlockGraph(QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& 
 		if (masterTimeStamps[m->mID] < ZERO_TOLERANCE_LOW)
 			baseMaster = m;
 
-		// height
-		masterHeight[m->mID] = masterTimeStamps[m->mID] * timeScale;
-
 		// time to master
 		timeMasterMap.insert(masterTimeStamps[m->mID], m->mID);
 	}
@@ -36,11 +34,11 @@ HBlockGraph::HBlockGraph(QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& 
 	// create chains
 	createChains(ss, mPairs);
 
+	// generate all fold options
+	genAllFoldOptions();
+
 	// initial collision graph
 	collFog = new FoldOptionGraph();
-
-	// super block
-	superBlock = nullptr;
 }
 
 void HBlockGraph::createChains(QVector<FdNode*>& ss, QVector< QVector<QString> >& mPairs)
@@ -68,9 +66,8 @@ void HBlockGraph::createChains(QVector<FdNode*>& ss, QVector< QVector<QString> >
 		masterChainsMap[mid_low] << i;
 		masterChainsMap[mid_high] << i;
 
-		// map from master id to under chain ids set
-		masterUnderChainsMap[mid_high] << i;
-		chainBaseMasterMap[i] = mid_low;
+		// map from chain index to top master
+		chainTopMasterMap[i] = mid_high;
 	}
 
 	// normalize patch area
@@ -88,53 +85,116 @@ HBlockGraph::~HBlockGraph()
 	if (superBlock) delete superBlock;
 }
 
-void HBlockGraph::pruneFoldOptions(QVector<FoldOption*>& options, int cid)
+// The keyframe is the configuration of the block at given time \p t
+// This is also called regular keyframe to distinguish from super keyframe
+FdGraph* HBlockGraph::getKeyframe(double t, bool useThk)
 {
-	// superBlock must be ready
-	if (superBlock == nullptr) return;
+	FdGraph* keyframe = nullptr;
 
-	// AFR
-	ChainGraph* chain = chains[cid];
-	QString top_mid_super = superBlock->chainTopMasterMap[cid];
-	Geom::Rectangle2 afr = superBlock->availFoldingRegion[top_mid_super];
-
-	// prune
-	Geom::Rectangle base_rect = baseMaster->mPatch;
-	QVector<FoldOption*> options_pruned;
-	foreach(FoldOption* fn, options)
+	// chains have been created and ready to fold
+	// IOW, the block has been foldabilized
+	if (foldabilized)
 	{
-		bool reject = false;
-
-		// reject if exceeds AFR
-		Geom::Rectangle2 fRegion2 = base_rect.get2DRectangle(fn->region);
-		if (!afr.containsAll(fRegion2.getConners(), 0.1))
-			reject = true;
-
-		// reject if collide with other masters
-		// whose time stamp is within the time interval of fn
-		if (!reject)
+		// keyframe of each chain
+		QVector<FdGraph*> chainKeyframes;
+		for (int i = 0; i < chains.size(); i++)
 		{
-			foreach(QString mid, masterTimeStamps.keys())
-			{
-				double mstamp = masterTimeStamps[mid];
-				if (!within(1 - mstamp, chain->duration)) continue;
-
-				Geom::Rectangle m_rect = ((PatchNode*)getNode(mid))->mPatch;
-				if (fAreasIntersect(fn->region, m_rect))
-				{
-					reject = true;
-					break;
-				}
+			// skip deleted chain
+			if (chains[i]->hasTag(DELETED_TAG))
+				chainKeyframes << nullptr;
+			else{
+				ChainGraph* cgraph = chains[i];
+				double localT = getLocalTime(t, cgraph->duration);
+				chainKeyframes << chains[i]->getKeyframe(localT, useThk);
 			}
 		}
 
-		// reject or accept
-		if (reject)	delete fn;
-		else options_pruned << fn;
+		// combine 
+		keyframe = combineFdGraphs(chainKeyframes, baseMaster->mID, masterChainsMap);
+
+		// thickness of masters
+		if (useThk){
+			foreach(PatchNode* m, getAllMasters(keyframe))
+				m->setThickness(thickness);
+		}
+
+		// local garbage collection
+		foreach(FdGraph* c, chainKeyframes)
+		if (c) delete c;
+	}
+	// the block is not ready
+	// can only answer request on t = 0 and t = 1
+	else
+	{
+		// clone : t = 0
+		keyframe = (FdGraph*)this->clone();
+
+		// collapse all masters to base: t = 1
+		// ***used for super key frame
+		if (t > 0.5)
+		{
+			Geom::Rectangle base_rect = baseMaster->mPatch;
+			foreach(FdNode* n, keyframe->getFdNodes())
+			{
+				// skip base master
+				if (n->mID == baseMaster->mID)	continue;
+
+				// translate all other masters onto the base master
+				if (n->hasTag(MASTER_TAG))
+				{
+					Vector3 c2c = baseMaster->center() - n->center();
+					Vector3 up = base_rect.Normal;
+					Vector3 offset = dot(c2c, up) * up;
+					n->translate(offset);
+				}
+				// remove slave nodes
+				else
+				{
+					keyframe->removeNode(n->mID);
+				}
+			}
+		}
 	}
 
-	// store
-	options = options_pruned;
+	// the key frame
+	return keyframe;
+}
+
+void HBlockGraph::computeObstacles(ShapeSuperKeyframe* ssKeyframe)
+{
+	// create super block
+	SuperBlockGraph *superBlock = new SuperBlockGraph(this, ssKeyframe);
+
+	// request from super block
+	obstacles = superBlock->computeObstacles();
+
+	// garbage collection
+	delete superBlock;
+}
+
+QVector<int> HBlockGraph::getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe)
+{
+	// update obstacles
+	computeObstacles(ssKeyframe);
+
+	// prune fold options
+	QVector<int> afo;
+	for (int i = 0; i < allFoldOptions.size(); i++)
+	{
+		// the fold option
+		FoldOption* fo = allFoldOptions[i];
+
+		// the obstacles
+		QString top_mid = chainTopMasterMap[fo->chainIdx];
+		QVector<Vector2> &obs = obstacles[top_mid];
+
+		// prune
+		if (!fo->regionProj.containsAny(obs, -0.01))
+			afo << i;
+	}
+
+	// result
+	return afo;
 }
 
 void HBlockGraph::addNodesToCollisionGraph()
@@ -156,11 +216,6 @@ void HBlockGraph::addNodesToCollisionGraph()
 
 		// fold options
 		QVector<FoldOption*> options = chain->genFoldOptions(nbSplits, nbChunks);
-
-		// prune fold options using AFS
-		std::cout << "#options = " << options.size();
-		pruneFoldOptions(options, cid);
-		std::cout << " ==> " << options.size() << std::endl;
 
 		// "delete" option
 		options << chain->genDeleteFoldOption(nbSplits);
@@ -208,17 +263,8 @@ void HBlockGraph::addEdgesToCollisionGraph()
 	}
 }
 
-void HBlockGraph::exportCollFOG()
+double HBlockGraph::findOptimalSolution(const QVector<int>& afo)
 {
-	QString filename = path + "/" + mID;
-	collFog->saveAsImage(filename);
-}
-
-void HBlockGraph::foldabilize(ShapeSuperKeyframe* ssKeyframe)
-{
-	// available folding region
-	computeAvailFoldingRegion(ssKeyframe);
-
 	// collision graph
 	std::cout << "\n==build collision graph==\n";
 	collFog->clear();
@@ -229,18 +275,6 @@ void HBlockGraph::foldabilize(ShapeSuperKeyframe* ssKeyframe)
 	std::cout << "===add edges===\n";
 	addEdgesToCollisionGraph();
 
-	// find optimal solution
-	std::cout << "\n==maximum idependent set==\n";
-	findOptimalSolution();
-
-	// apply fold options
-	// to-do: show all solutions via navigation
-	std::cout << "\n==apply solution==\n";
-	applySolution(0);
-}
-
-void HBlockGraph::findOptimalSolution()
-{
 	// clear
 	foldSolutions.clear();
 	QVector<FoldOption*> solution;
@@ -324,137 +358,4 @@ void HBlockGraph::findOptimalSolution()
 	foldSolutions << solution;
 }
 
-void HBlockGraph::applySolution(int idx)
-{
-	// assert idx
-	if (idx < 0 || idx >= foldSolutions.size()) return;
 
-	// clear selection in collision graph
-	foreach(Structure::Node* n, collFog->nodes)
-		n->removeTag(SELECTED_TAG);
-
-	// update selection index
-	selSlnIdx = idx;
-
-	// apply fold option to each chain
-	for (int i = 0; i < chains.size(); i++)
-	{
-		FoldOption* fn = foldSolutions[selSlnIdx][i];
-
-		if (fn)
-		{
-			chains[i]->applyFoldOption(fn);
-			fn->addTag(SELECTED_TAG);
-		}
-	}
-
-	// has been foldabilized
-	foldabilized = true;
-}
-
-bool HBlockGraph::fAreasIntersect(Geom::Rectangle& rect1, Geom::Rectangle& rect2)
-{
-	Geom::Rectangle base_rect = baseMaster->mPatch;
-
-	Geom::Rectangle2 r1 = base_rect.get2DRectangle(rect1);
-	Geom::Rectangle2 r2 = base_rect.get2DRectangle(rect2);
-
-	return Geom::IntrRect2Rect2::test(r1, r2);
-}
-
-void HBlockGraph::computeAvailFoldingRegion(ShapeSuperKeyframe* ssKeyframe)
-{
-	// update super block
-	if (superBlock != nullptr) delete superBlock;
-	superBlock = new SuperBlockGraph(this, ssKeyframe);
-
-	// compute AFR
-	ableToFold = superBlock->computeAvailFoldingRegion();
-
-	// store the region
-	if (ableToFold)
-		availFoldingRegion = superBlock->getAvailFoldingRegion();
-
-	// debug AFS
-	//properties[AFS].setValue(superBlock->getAllAFS());
-}
-
-// The keyframe is the configuration of the block at given time \p t
-// This is also called regular keyframe to distinguish from super keyframe
-FdGraph* HBlockGraph::getKeyframe(double t, bool useThk)
-{
-	FdGraph* keyframe = nullptr;
-
-	// chains have been created and ready to fold
-	// IOW, the block has been foldabilized
-	if (foldabilized)
-	{
-		// keyframe of each chain
-		QVector<FdGraph*> chainKeyframes;
-		for (int i = 0; i < chains.size(); i++)
-		{
-			// skip deleted chain
-			if (chains[i]->hasTag(DELETED_TAG))
-				chainKeyframes << nullptr;
-			else{
-				ChainGraph* cgraph = chains[i];
-				double localT = getLocalTime(t, cgraph->duration);
-				chainKeyframes << chains[i]->getKeyframe(localT, useThk);
-			}
-		}
-
-		// combine 
-		keyframe = combineFdGraphs(chainKeyframes, baseMaster->mID, masterChainsMap);
-
-		// thickness of masters
-		if (useThk){
-			foreach(PatchNode* m, getAllMasters(keyframe))
-				m->setThickness(thickness);
-		}
-
-		// local garbage collection
-		foreach(FdGraph* c, chainKeyframes)
-		if (c) delete c;
-	}
-	// the block is not ready
-	// can only answer request on t = 0 and t = 1
-	else
-	{
-		// clone : t = 0
-		keyframe = (FdGraph*)this->clone();
-
-		// collapse all masters to base: t = 1
-		// ***used for super key frame
-		if (t > 0.5)
-		{
-			Geom::Rectangle base_rect = baseMaster->mPatch;
-			foreach(FdNode* n, keyframe->getFdNodes())
-			{
-				// skip base master
-				if (n->mID == baseMaster->mID)	continue;
-
-				// translate all other masters onto the base master
-				if (n->hasTag(MASTER_TAG))
-				{
-					Vector3 c2c = baseMaster->center() - n->center();
-					Vector3 up = base_rect.Normal;
-					Vector3 offset = dot(c2c, up) * up;
-					n->translate(offset);
-				}
-				// remove slave nodes
-				else
-				{
-					keyframe->removeNode(n->mID);
-				}
-			}
-		}
-	}
-
-	// the key frame
-	return keyframe;
-}
-
-double HBlockGraph::getAvailFoldingVolume()
-{
-	return superBlock->getAvailFoldingVolume();
-}

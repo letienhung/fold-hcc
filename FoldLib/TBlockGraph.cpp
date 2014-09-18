@@ -34,7 +34,7 @@ TBlockGraph::TBlockGraph(QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& 
 	ableToFoldRight = false;
 }
 
-void TBlockGraph::foldabilize(ShapeSuperKeyframe* ssKeyframe)
+void TBlockGraph::foldabilizeWrt(ShapeSuperKeyframe* ssKeyframe)
 {
 	// generate fold options
 	QVector<FoldOption*> options = tChain->genFoldOptions(nbSplits, nbChunks);
