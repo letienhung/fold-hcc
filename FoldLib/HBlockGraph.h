@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BlockGraph.h"
+#include "FoldOptionGraph.h"
 
 class HBlockGraph : public BlockGraph
 {
@@ -13,12 +14,11 @@ private:
 	// H chains
 	void createChains(QVector<FdNode*>& ss, QVector< QVector<QString> >& mPairs);
 
-	// collision graph
-	void addNodesToCollisionGraph();
-	void addEdgesToCollisionGraph();
-
 	// obstacles
 	void computeObstacles(ShapeSuperKeyframe* ssKeyframe);
+
+	// collision graph
+	FoldOptionGraph* createCollisionGraph(const QVector<int>& afo);
 
 public:
 	// key frame

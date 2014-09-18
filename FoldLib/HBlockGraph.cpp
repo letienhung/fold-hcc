@@ -4,6 +4,7 @@
 #include "CliquerAdapter.h"
 #include "IntrRect2Rect2.h"
 #include "SuperBlockGraph.h"
+#include "FoldOptionGraph.h"
 
 HBlockGraph::HBlockGraph(QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& ss,
 	QVector< QVector<QString> >& mPairs, Geom::Box shape_aabb)
@@ -36,9 +37,6 @@ HBlockGraph::HBlockGraph(QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& 
 
 	// generate all fold options
 	genAllFoldOptions();
-
-	// initial collision graph
-	collFog = new FoldOptionGraph();
 }
 
 void HBlockGraph::createChains(QVector<FdNode*>& ss, QVector< QVector<QString> >& mPairs)
@@ -80,9 +78,6 @@ void HBlockGraph::createChains(QVector<FdNode*>& ss, QVector< QVector<QString> >
 
 HBlockGraph::~HBlockGraph()
 {
-	if (collFog) delete collFog;
-
-	if (superBlock) delete superBlock;
 }
 
 // The keyframe is the configuration of the block at given time \p t
@@ -197,86 +192,65 @@ QVector<int> HBlockGraph::getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe)
 	return afo;
 }
 
-void HBlockGraph::addNodesToCollisionGraph()
+FoldOptionGraph* HBlockGraph::createCollisionGraph(const QVector<int>& afo)
 {
-	// fold entities and options
-	QVector<Geom::Rectangle> frs;
-	Geom::Rectangle base_rect = baseMaster->mPatch;
+	FoldOptionGraph* collFog = new FoldOptionGraph();
 
-	// fold options
-	for (int cid = 0; cid < chains.size(); cid++)
+	// chain nodes
+	QVector<ChainNode*> chainNodes;
+	for (int ci = 0; ci < chains.size(); ci++)
 	{
-		// the chain
-		std::cout << "cid = " << cid << ": ";
-		ChainGraph* chain = (ChainGraph*)chains[cid];
-
-		// fold entity
-		ChainNode* cn = new ChainNode(cid, chain->mID);
+		ChainNode* cn = new ChainNode(ci, chains[ci]->mID);
 		collFog->addNode(cn);
-
-		// fold options
-		QVector<FoldOption*> options = chain->genFoldOptions(nbSplits, nbChunks);
-
-		// "delete" option
-		options << chain->genDeleteFoldOption(nbSplits);
-
-		// add to collision graph and link to chain node
-		foreach(FoldOption* fn, options)
-		{
-			collFog->addNode(fn);
-			collFog->addFoldLink(cn, fn);
-		}
-
-		// debug
-		//foreach (FoldOption* fn, options) frs << fn->region;
-		//frs.remove(options.size()-1); // last one is delete option
+		chainNodes << cn;
 	}
 
-	// debug
-	//properties[FOLD_REGIONS].setValue(frs);
-}
+	// fold option nodes and fold edges
+	for (auto fi: afo)
+	{
+		FoldOption* fo = allFoldOptions[fi];
+		ChainNode* cn = chainNodes[fo->chainIdx];
 
-void HBlockGraph::addEdgesToCollisionGraph()
-{
-	QVector<FoldOption*> fns = collFog->getAllFoldOptions();
-	for (int i = 0; i < fns.size(); i++)
+		collFog->addNode(fo);
+		collFog->addFoldLink(cn, fo);
+	}
+	
+	// collision edges
+	for (int i = 0; i < afo.size(); i++)
 	{
 		// skip delete fold option
-		if (fns[i]->hasTag(DELETE_FOLD_OPTION)) continue;
+		FoldOption* foi = allFoldOptions[i];
+		if (foi->hasTag(DELETE_FOLD_OPTION)) continue;
 
 		// collision with others
-		for (int j = i + 1; j < fns.size(); j++)
+		for (int j = i + 1; j < afo.size(); j++)
 		{
 			// skip delete fold option
-			if (fns[j]->hasTag(DELETE_FOLD_OPTION)) continue;
+			FoldOption* foj = allFoldOptions[j];
+			if (foj->hasTag(DELETE_FOLD_OPTION)) continue;
 
 			// skip siblings
-			if (collFog->areSiblings(fns[i]->mID, fns[j]->mID)) continue;
+			if (foi->chainIdx == foj->chainIdx) continue;
 
 			// skip if time interval don't overlap
-			if (!overlap(fns[i]->duration, fns[j]->duration)) continue;
+			if (!overlap(foi->duration, foj->duration)) continue;
 
 			// collision test using fold region
-			if (fAreasIntersect(fns[i]->region, fns[j]->region))
-				collFog->addCollisionLink(fns[i], fns[j]);
+			if (Geom::IntrRect2Rect2::test(foi->regionProj, foj->regionProj))
+				collFog->addCollisionLink(foi, foj);
 		}
 	}
+
+	return collFog;
 }
 
 double HBlockGraph::findOptimalSolution(const QVector<int>& afo)
 {
 	// collision graph
 	std::cout << "\n==build collision graph==\n";
-	collFog->clear();
+	FoldOptionGraph* collFog = createCollisionGraph(afo);
 
-	std::cout << "===add nodes===\n";
-	addNodesToCollisionGraph();
-
-	std::cout << "===add edges===\n";
-	addEdgesToCollisionGraph();
-
-	// clear
-	foldSolutions.clear();
+	// solution
 	QVector<FoldOption*> solution;
 	for (int i = 0; i < chains.size(); i++) solution << NULL;
 
@@ -354,8 +328,8 @@ double HBlockGraph::findOptimalSolution(const QVector<int>& afo)
 		}
 	}
 
-	// save the single solution
-	foldSolutions << solution;
+	// garbage collection
+	delete collFog;
 }
 
 

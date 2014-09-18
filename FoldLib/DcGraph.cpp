@@ -744,7 +744,7 @@ int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyf
 		}
 
 		// nextBlock that introduce the most AFV wins
-		if (score > 0 && score > best_score){
+		if (score > 0 && score > best_score + ZERO_TOLERANCE_LOW){
 			best_score = score;
 			best_next_bid = next_bid;
 		}

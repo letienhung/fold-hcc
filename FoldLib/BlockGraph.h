@@ -2,8 +2,6 @@
 
 #include "FdGraph.h"
 #include "ShapeSuperKeyframe.h"
-#include "FoldOptionGraph.h"
-
 
 class ChainGraph;
 
@@ -30,9 +28,6 @@ public:
 
 	// helper
 	QVector<QString> getInbetweenExternalParts(Vector3 base_center, Vector3 top_center, ShapeSuperKeyframe* ssKeyframe);
-
-	// debug
-	void exportCollFOG();
 
 public:
 	//*** CORE
@@ -78,9 +73,6 @@ public:
 	// thickness
 	bool useThickness;
 	double thickness;
-
-	// collision graph
-	FoldOptionGraph* collFog;
 
 public:
 	//*** SOLUTIONS
