@@ -19,6 +19,9 @@ private:
 
 	// collision graph
 	FoldOptionGraph* createCollisionGraph(const QVector<int>& afo);
+	QVector<FoldOption*> findOptimalSolution(const QVector<Structure::Node*>& component);
+	QVector< QVector<bool> > genDualAdjMatrix(FoldOptionGraph* collFog, const QVector<FoldOption*>& fns);
+	QVector<double> genReverseWeights(const QVector<FoldOption*>& fns);
 
 public:
 	// key frame

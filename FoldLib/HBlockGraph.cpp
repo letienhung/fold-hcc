@@ -246,90 +246,127 @@ FoldOptionGraph* HBlockGraph::createCollisionGraph(const QVector<int>& afo)
 
 double HBlockGraph::findOptimalSolution(const QVector<int>& afo)
 {
-	// collision graph
-	std::cout << "\n==build collision graph==\n";
-	FoldOptionGraph* collFog = createCollisionGraph(afo);
+	// total cost
+	double totalCost = -1;
 
 	// solution
 	QVector<FoldOption*> solution;
-	for (int i = 0; i < chains.size(); i++) solution << NULL;
+	for (int i = 0; i < chains.size(); i++) solution << nullptr;
 
-	// MIS on each component
-	QVector<QVector<Structure::Node*> > components = collFog->getComponents();
-	foreach(QVector<Structure::Node*> collComponent, components)
+	// optimal solution on each component
+	FoldOptionGraph* collFog = createCollisionGraph(afo);
+	for (auto component : collFog->getComponents()) {
+		for (auto fo: findOptimalSolution(collFog, component))
+		{
+			solution[fo->chainIdx] = fo;
+			totalCost += fo->getCost(weight);
+		}
+	}
+
+	// store the solution
+	testedAvailFoldOptions << afo;
+	foldSolutions << solution;
+
+	// garbage collection
+	delete collFog;
+
+	// returns the cost
+	return totalCost;
+}
+
+QVector<FoldOption*> HBlockGraph::findOptimalSolution(FoldOptionGraph* collFog, const QVector<Structure::Node*>& component)
+{
+	QVector<FoldOption*> partialSln;
+
+	// all fold options in the component
+	QVector<FoldOption*> fns;
+	int nbCn = 0;
+	for (auto n : component) 
 	{
-		// all folding nodes
-		QVector<FoldOption*> fns;
-		foreach(Structure::Node* n, collComponent)
 		if (n->properties["type"].toString() == "option")
 			fns << (FoldOption*)n;
+		else nbCn++;
+	}
 
-		// empty: impossible to happen
-		if (fns.isEmpty())
-		{
-			std::cout << mID.toStdString() << ": collision graph has empty component.\n";
-			return; // halt if happens
-		}
-
-		// trivial case
-		if (fns.size() == 1)
-		{
-			FoldOption* fn = fns[0];
-			ChainNode* cn = collFog->getChainNode(fn->mID);
-			solution[cn->chainIdx] = fn;
-			continue;
-		}
-
-		// the dual adjacent matrix
-		QVector<bool> dumpy(fns.size(), true);
-		QVector< QVector<bool> > conn(fns.size(), dumpy);
-		for (int i = 0; i < fns.size(); i++){
-			// the i-th node
-			FoldOption* fn = fns[i];
-
-			// diagonal entry
-			conn[i][i] = false;
-
-			// other fold options
-			for (int j = i + 1; j < fns.size(); j++){
-				// the j-th node
-				FoldOption* other_fn = fns[j];
-
-				// connect siblings and colliding folding options
-				if (collFog->areSiblings(fn->mID, other_fn->mID) ||
-					collFog->verifyLinkType(fn->mID, other_fn->mID, "collision")){
-					conn[i][j] = false;	conn[j][i] = false;
-				}
+	// ***single chain: choose the one with lowest cost
+	if (nbCn == 1)
+	{
+		FoldOption* best_fo = nullptr;
+		double minCost = maxDouble();
+		for (auto fo : fns)	{
+			double cost = fo->getCost(weight);
+			if (cost < minCost){
+				minCost = cost;	best_fo = fo;
 			}
 		}
-
-		// cost and weight for each fold option
-		double maxCost = 0;
-		QVector<double> costs;
-		foreach(FoldOption* fn, fns){
-			double cost = fn->getCost(weight);
-			costs << cost;
-			if (cost > maxCost) maxCost = cost;
-		}
-		maxCost += 1;
-		QVector<double> weights;
-		foreach(double cost, costs) weights.push_back(maxCost - cost);
+		partialSln << best_fo;
+	}else
+	// ***multiple chains: MIS
+	{
+		// the dual adjacent matrix and weights for each fold option
+		QVector< QVector<bool> > conn = genDualAdjMatrix(collFog, fns);
+		QVector<double> weights = genReverseWeights(fns);
 
 		// find maximum weighted clique
 		CliquerAdapter cliquer(conn, weights);
 		QVector<QVector<int> > qs = cliquer.getMaxWeightedCliques();
-		if (!qs.isEmpty()) {
-			foreach(int idx, qs.front())
-			{
-				FoldOption* fn = fns[idx];
-				ChainNode* cn = collFog->getChainNode(fn->mID);
-				solution[cn->chainIdx] = fn;
+
+		// there might be multiple solution, we simply use the first one
+		foreach(int idx, qs.front())
+			partialSln << fns[idx];
+	}
+
+	return partialSln;
+}
+
+QVector< QVector<bool> > HBlockGraph::genDualAdjMatrix(FoldOptionGraph* collFog, const QVector<FoldOption*>& fns)
+{
+	QVector<bool> dumpy(fns.size(), true);
+	QVector< QVector<bool> > conn(fns.size(), dumpy);
+	for (int i = 0; i < fns.size(); i++)
+	{
+		// the i-th node
+		FoldOption* fn = fns[i];
+
+		// diagonal entry
+		conn[i][i] = false;
+
+		// other fold options
+		for (int j = i + 1; j < fns.size(); j++)
+		{
+			// the j-th node
+			FoldOption* other_fn = fns[j];
+
+			// connect siblings and colliding folding options
+			if ((fn->chainIdx == other_fn->chainIdx) ||
+				collFog->verifyLinkType(fn->mID, other_fn->mID, "collision")){
+				conn[i][j] = false;	conn[j][i] = false;
 			}
 		}
 	}
 
-	// garbage collection
-	delete collFog;
+	return conn;
+}
+
+// max weights means lowest cost: weights = maxCost - cost
+QVector<double> HBlockGraph::genReverseWeights(const QVector<FoldOption*>& fns)
+{
+	QVector<double> weights;
+
+	double maxCost = 0;
+	QVector<double> costs;
+	foreach(FoldOption* fn, fns)
+	{
+		double cost = fn->getCost(weight);
+		costs << cost;
+		if (cost > maxCost) maxCost = cost;
+	}
+	maxCost += 1;
+
+	foreach(double cost, costs) 
+		weights.push_back(maxCost - cost);
+
+	return weights;
 }
 
 

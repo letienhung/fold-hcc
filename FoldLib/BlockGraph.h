@@ -84,7 +84,7 @@ public:
 
 	// sets of fold options that have been foldabilized
 	QVector< QVector<int> > testedAvailFoldOptions;
-	QVector< QVector<int> > foldSolutions;
+	QVector< QVector<FoldOption*> > foldSolutions;
 	QVector< double > foldCost;
 
 	// tag
