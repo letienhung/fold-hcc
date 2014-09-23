@@ -26,6 +26,9 @@ BlockGraph::BlockGraph(QString id, Geom::Box shape_aabb)
 	
 	// tag
 	foldabilized = false;
+
+	// current fold solution
+	currSlnIdx = -1;
 }
 
 BlockGraph::~BlockGraph()
@@ -82,50 +85,40 @@ FdGraph* BlockGraph::getSuperKeyframe( double t )
 	FdGraph* keyframe = getKeyframe(t, false);
 
 	// do nothing if the block is NOT fully folded
-	if (1 - t > ZERO_TOLERANCE_LOW) return keyframe;
+	if (t < 1) return keyframe;
 
 	// create super patch
 	PatchNode* superPatch = (PatchNode*)baseMaster->clone();
 	superPatch->mID = mID + "_super";
 	superPatch->addTag(SUPER_PATCH_TAG); 
 
-	// collect projections of all nodes on baseMaster
+	// collect projections of all nodes (including baseMaster) on baseMaster
 	Geom::Rectangle base_rect = superPatch->mPatch;
 	QVector<Vector2> projPnts2 = base_rect.get2DConners();
-	if (foldabilized)
-	{// all nodes since they are folded flatly already
-		foreach (FdNode* n, keyframe->getFdNodes())
+	foreach(FdNode* n, keyframe->getFdNodes())
+	{
+		if (n->mType == FdNode::PATCH)
 		{
-			if (n->mType == FdNode::PATCH)
-			{
-				Geom::Rectangle part_rect = ((PatchNode*)n)->mPatch;
-				projPnts2 << base_rect.get2DRectangle(part_rect).getConners();
-			}
-			else
-			{
-				Geom::Segment part_rod = ((RodNode*)n)->mRod;
-				projPnts2 << base_rect.getProjCoordinates(part_rod.P0);
-				projPnts2 << base_rect.getProjCoordinates(part_rod.P1);
-			}
+			Geom::Rectangle part_rect = ((PatchNode*)n)->mPatch;
+			projPnts2 << base_rect.get2DRectangle(part_rect).getConners();
 		}
-	}else
-	{// guess the folded state using available folding regions
-		// availFR < minFR
-		if (!ableToFold) return nullptr;
-		// otherwise
-		for (auto afr : availFoldingRegion)
-			projPnts2 << afr.getConners();
+		else
+		{
+			Geom::Segment part_rod = ((RodNode*)n)->mRod;
+			projPnts2 << base_rect.getProjCoordinates(part_rod.P0);
+			projPnts2 << base_rect.getProjCoordinates(part_rod.P1);
+		}
 	}
 
 	// resize super patch
 	Geom::Rectangle2 aabb2 = Geom::Rectangle2::computeAABB(projPnts2);
 	superPatch->resize(aabb2);
 
-	// merged parts
+	// merged parts and masters
 	foreach (FdNode* n, keyframe->getFdNodes())
 	{
 		n->addTag(MERGED_PART_TAG); 
-		if (n->mType == FdNode::PATCH)
+		if (n->hasTag(MASTER_TAG))
 			superPatch->appendToSetProperty<QString>(MERGED_MASTERS, n->mID);
 	}
 
@@ -148,14 +141,6 @@ void BlockGraph::setThickness( double thk )
 		chain->halfThk = thickness / 2;
 		chain->baseOffset = thickness / 2;
 	}
-}
-
-void BlockGraph::exportCollFOG()
-{
-	if (collFog == nullptr) return;
-
-	QString filename = path + "/" + mID;
-	collFog->saveAsImage(filename);
 }
 
 QVector<QString> BlockGraph::getInbetweenExternalParts(Vector3 base_center, Vector3 top_center, ShapeSuperKeyframe* ssKeyframe)
@@ -231,7 +216,7 @@ int BlockGraph::searchForExistedSolution(const QVector<int>& afo)
 	for (int i = 0; i < testedAvailFoldOptions.size(); i++)
 		if (testedAvailFoldOptions[i] == afo) return i;
 
-		return -1;
+	return -1;
 }
 
 double BlockGraph::foldabilizeWrt(ShapeSuperKeyframe* ssKeyframe)
@@ -239,9 +224,9 @@ double BlockGraph::foldabilizeWrt(ShapeSuperKeyframe* ssKeyframe)
 	QVector<int> afo = getAvailFoldOptions(ssKeyframe);
 	
 	// search for existed solutions
-	int eid = searchForExistedSolution(afo);
-	if (eid >= 0 && eid < testedAvailFoldOptions.size())
-		return foldCost[eid];
+	currSlnIdx = searchForExistedSolution(afo);
+	if (currSlnIdx >= 0 && currSlnIdx < testedAvailFoldOptions.size())
+		return foldCost[currSlnIdx];
 
 	// find the optimal solution
 	double cost = findOptimalSolution(afo);
@@ -250,28 +235,20 @@ double BlockGraph::foldabilizeWrt(ShapeSuperKeyframe* ssKeyframe)
 	return cost;
 }
 
-void BlockGraph::applySolution(int idx)
+void BlockGraph::applySolution()
 {
 	// assert idx
-	if (idx < 0 || idx >= foldSolutions.size()) return;
+	if (currSlnIdx < 0 || currSlnIdx >= foldSolutions.size())
+	{
+		foldabilized = false;
+		return;
+	}
 
-	// clear selection in collision graph
-	foreach(Structure::Node* n, collFog->nodes)
-		n->removeTag(SELECTED_TAG);
-
-	// update selection index
-	selSlnIdx = idx;
-
-	// apply fold option to each chain
+	// apply selected fold option to each chain
 	for (int i = 0; i < chains.size(); i++)
 	{
-		FoldOption* fn = foldSolutions[selSlnIdx][i];
-
-		if (fn)
-		{
-			chains[i]->applyFoldOption(fn);
-			fn->addTag(SELECTED_TAG);
-		}
+		FoldOption* fn = foldSolutions[currSlnIdx][i];
+		chains[i]->applyFoldOption(fn);
 	}
 
 	// has been foldabilized

@@ -86,9 +86,14 @@ FdGraph* HBlockGraph::getKeyframe(double t, bool useThk)
 {
 	FdGraph* keyframe = nullptr;
 
+	// the block is not ready to fold
+	if (t <= 0)
+	{
+		keyframe = (FdGraph*)this->clone();
+	}
 	// chains have been created and ready to fold
 	// IOW, the block has been foldabilized
-	if (foldabilized)
+	else if (foldabilized)
 	{
 		// keyframe of each chain
 		QVector<FdGraph*> chainKeyframes;
@@ -117,39 +122,9 @@ FdGraph* HBlockGraph::getKeyframe(double t, bool useThk)
 		foreach(FdGraph* c, chainKeyframes)
 		if (c) delete c;
 	}
-	// the block is not ready
-	// can only answer request on t = 0 and t = 1
-	else
-	{
-		// clone : t = 0
-		keyframe = (FdGraph*)this->clone();
 
-		// collapse all masters to base: t = 1
-		// ***used for super key frame
-		if (t > 0.5)
-		{
-			Geom::Rectangle base_rect = baseMaster->mPatch;
-			foreach(FdNode* n, keyframe->getFdNodes())
-			{
-				// skip base master
-				if (n->mID == baseMaster->mID)	continue;
-
-				// translate all other masters onto the base master
-				if (n->hasTag(MASTER_TAG))
-				{
-					Vector3 c2c = baseMaster->center() - n->center();
-					Vector3 up = base_rect.Normal;
-					Vector3 offset = dot(c2c, up) * up;
-					n->translate(offset);
-				}
-				// remove slave nodes
-				else
-				{
-					keyframe->removeNode(n->mID);
-				}
-			}
-		}
-	}
+	// keyframe == nullptr only if this block has not been foldabilized but t > 0
+	// should never happen
 
 	// the key frame
 	return keyframe;
@@ -267,6 +242,9 @@ double HBlockGraph::findOptimalSolution(const QVector<int>& afo)
 	testedAvailFoldOptions << afo;
 	foldSolutions << solution;
 
+	// update the current solution
+	currSlnIdx = foldSolutions.size();
+
 	// garbage collection
 	delete collFog;
 
@@ -305,7 +283,7 @@ QVector<FoldOption*> HBlockGraph::findOptimalSolution(FoldOptionGraph* collFog, 
 	{
 		// the dual adjacent matrix and weights for each fold option
 		QVector< QVector<bool> > conn = genDualAdjMatrix(collFog, fns);
-		QVector<double> weights = genReverseWeights(fns);
+		QVector<double> weights = genReversedWeights(fns);
 
 		// find maximum weighted clique
 		CliquerAdapter cliquer(conn, weights);
@@ -349,7 +327,7 @@ QVector< QVector<bool> > HBlockGraph::genDualAdjMatrix(FoldOptionGraph* collFog,
 }
 
 // max weights means lowest cost: weights = maxCost - cost
-QVector<double> HBlockGraph::genReverseWeights(const QVector<FoldOption*>& fns)
+QVector<double> HBlockGraph::genReversedWeights(const QVector<FoldOption*>& fns)
 {
 	QVector<double> weights;
 
@@ -368,5 +346,3 @@ QVector<double> HBlockGraph::genReverseWeights(const QVector<FoldOption*>& fns)
 
 	return weights;
 }
-
-

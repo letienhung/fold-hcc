@@ -561,7 +561,6 @@ ShapeSuperKeyframe* DcGraph::getShapeSuperKeyframe( double t )
 		foldedBlocks << fblock;
 
 		// nullptr means fblock is unable to fold at time t
-		// more specifically, availFR < minFR
 		if (fblock == nullptr) return nullptr;
 	}
 
@@ -674,78 +673,65 @@ void DcGraph::foldabilize()
 // currKeyframe is a super keyframe providing context information
 int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyframe)
 {
-	double best_score = -maxDouble();
+	// the best next block produces the minimum folding cost
+	double min_cost = maxDouble();
 	int best_next_bid = -1;
+
+	// for each block
 	for (int next_bid = 0; next_bid < blocks.size(); next_bid++)
 	{
 		// skip foldabilized blocks
 		BlockGraph* nextBlock = blocks[next_bid];
 		if (passed(currTime, nextBlock->mFoldDuration)) continue;
 
-		// guess the folding of nextBlock without real foldabilization
-		// the super keyframe is estimated by AFR
+		// foldabilize nextBlock wrt the current super key frame
+		double nextCost = nextBlock->foldabilizeWrt(currKeyframe);
+		nextBlock->applySolution();
+
+		// get the next super key frame 
 		Interval next_ti = nextBlock->mFoldDuration;
 		double timeLength = nextBlock->getNbTopMasters() * timeScale;
 		double nextTime = currTime + timeLength;
 		nextBlock->mFoldDuration = INTERVAL(currTime, nextTime);
-		nextBlock->computeAvailFoldingRegion(currKeyframe); //***necessary for computing ssKeyframe
 		ShapeSuperKeyframe* nextKeyframe = getShapeSuperKeyframe(nextTime);
+		if (!nextKeyframe->isValid(sqzV)) 
+			continue; // ***the folding of nextBlock must be valid, otherwise stop forward evaluation
 
-
-		//continue;
-		//return 0;
-
-
-
-
-		// nextBlock must be able to fold at this time and valid
-		// calculate the total AFV of remaining blocks
-		double score = -1;
-		if (nextKeyframe != nullptr && nextKeyframe->isValid(sqzV))
+		// cost of folding remaining open blocks
+		for (int next2_bid = 0; next2_bid < blocks.size(); next2_bid++)
 		{
-			// AFV of nextBlock
-			score = nextBlock->getAvailFoldingVolume();
+			// skip foldabilized block
+			BlockGraph* next2Block = blocks[next2_bid];
+			if (passed(nextTime, next2Block->mFoldDuration)) continue;
 
-			// AFV of remaining un-foldabilized blocks
-			for (int next2_bid = 0; next2_bid < blocks.size(); next2_bid++)
-			{
-				// skip foldabilized block
-				BlockGraph* next2Block = blocks[next2_bid];
-				if (passed(nextTime, next2Block->mFoldDuration)) continue;
+			// foldabilize next2Block
+			double next2Cost = next2Block->foldabilizeWrt(nextKeyframe);
+			next2Block->applySolution();
 
-				// guess the folding of next2Block without real foldabilization
-				Interval next2_ti = next2Block->mFoldDuration;
-				double timeLength = next2Block->getNbTopMasters() * timeScale;
-				double next2Time = nextTime + timeLength;
-				next2Block->mFoldDuration = INTERVAL(nextTime, next2Time);
-				next2Block->computeAvailFoldingRegion(nextKeyframe);//***necessary for computing ssKeyframe
-				ShapeSuperKeyframe* next2Keyframe = getShapeSuperKeyframe(next2Time);
+			// the resulted super shape key frame must be valid
+			Interval next2_ti = next2Block->mFoldDuration;
+			double timeLength = next2Block->getNbTopMasters() * timeScale;
+			double next2Time = nextTime + timeLength;
+			next2Block->mFoldDuration = INTERVAL(nextTime, next2Time);
+			ShapeSuperKeyframe* next2Keyframe = getShapeSuperKeyframe(next2Time);
 
-				
-				//std::cout << std::endl << "AFV = " << next2Block->getAvailFoldingVolume();
-				
-				//return 0;
+			// invalid block folding generates large cost as being deleted
+			if (!next2Keyframe->isValid(sqzV))
+				next2Cost = next2Block->getDeletionCost();
 
+			// update cost
+			nextCost += next2Cost;
 
+			// garbage collection
+			delete next2Keyframe;
 
-
-				// accumulate AFV if next2Block is able to fold and the folding is valid
-				if (next2Keyframe != nullptr && next2Keyframe->isValid(sqzV))
-				{
-					score += next2Block->getAvailFoldingVolume();
-				}
-
-				// garbage collection
-				delete next2Keyframe;
-
-				// restore time interval in order to test another block
-				next2Block->mFoldDuration = next2_ti;
-			}
+			// restore time interval in order to test another block
+			next2Block->mFoldDuration = next2_ti;
 		}
 
-		// nextBlock that introduce the most AFV wins
-		if (score > 0 && score > best_score + ZERO_TOLERANCE_LOW){
-			best_score = score;
+		// nextBlock with lowest cost wins
+		if (nextCost < min_cost - ZERO_TOLERANCE_LOW){
+			min_cost = nextCost;
 			best_next_bid = next_bid;
 		}
 
@@ -756,7 +742,7 @@ int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyf
 		nextBlock->mFoldDuration = next_ti;
 
 		// debug info
-		std::cout << blocks[next_bid]->mID.toStdString() << " : " << score << std::endl;
+		std::cout << blocks[next_bid]->mID.toStdString() << " : " << nextCost << std::endl;
 	}
 
 	// found the best next block in terms of introducing most free space for others
