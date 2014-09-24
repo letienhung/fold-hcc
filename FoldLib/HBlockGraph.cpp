@@ -35,6 +35,9 @@ HBlockGraph::HBlockGraph(QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& 
 	// create chains
 	createChains(ss, mPairs);
 
+	// compute chain weights
+	computeChainWeights();
+
 	// generate all fold options
 	genAllFoldOptions();
 }
@@ -67,14 +70,23 @@ void HBlockGraph::createChains(QVector<FdNode*>& ss, QVector< QVector<QString> >
 		// map from chain index to top master
 		chainTopMasterMap[i] = mid_high;
 	}
-
-	// normalize patch area
-	double totalA = 0;
-	foreach(ChainGraph* chain, chains)
-		totalA += chain->origSlave->mPatch.area();
-	foreach(ChainGraph* chain, chains)
-		chain->patchArea /= totalA;
 }
+
+void HBlockGraph::computeChainWeights()
+{
+	chainWeights.clear();
+
+	double totalA = 0;
+	for(auto c : chains)
+	{
+		double area = c->getArea();
+		chainWeights << area;
+		totalA += area;
+	}
+
+	for (auto& cw : chainWeights) cw /= totalA;
+}
+
 
 HBlockGraph::~HBlockGraph()
 {
@@ -181,27 +193,29 @@ FoldOptionGraph* HBlockGraph::createCollisionGraph(const QVector<int>& afo)
 	}
 
 	// fold option nodes and fold edges
+	QVector<FoldOption*> fos;
 	for (auto fi: afo)
 	{
-		FoldOption* fo = allFoldOptions[fi];
-		ChainNode* cn = chainNodes[fo->chainIdx];
-
+		FoldOption* fo = (FoldOption*)allFoldOptions[fi]->clone();
+		fos << fo;
 		collFog->addNode(fo);
+
+		ChainNode* cn = chainNodes[fo->chainIdx];
 		collFog->addFoldLink(cn, fo);
 	}
 	
 	// collision edges
-	for (int i = 0; i < afo.size(); i++)
+	for (int i = 0; i < fos.size(); i++)
 	{
 		// skip delete fold option
-		FoldOption* foi = allFoldOptions[i];
+		FoldOption* foi = fos[i];
 		if (foi->hasTag(DELETE_FOLD_OPTION)) continue;
 
 		// collision with others
 		for (int j = i + 1; j < afo.size(); j++)
 		{
 			// skip delete fold option
-			FoldOption* foj = allFoldOptions[j];
+			FoldOption* foj = fos[j];
 			if (foj->hasTag(DELETE_FOLD_OPTION)) continue;
 
 			// skip siblings
@@ -222,7 +236,7 @@ FoldOptionGraph* HBlockGraph::createCollisionGraph(const QVector<int>& afo)
 double HBlockGraph::findOptimalSolution(const QVector<int>& afo)
 {
 	// total cost
-	double totalCost = -1;
+	double totalCost = 0;
 
 	// solution
 	QVector<FoldOption*> solution;
@@ -234,16 +248,17 @@ double HBlockGraph::findOptimalSolution(const QVector<int>& afo)
 		for (auto fo: findOptimalSolution(collFog, component))
 		{
 			solution[fo->chainIdx] = fo;
-			totalCost += fo->getCost(weight);
+			totalCost += computeCost(fo);
 		}
 	}
 
 	// store the solution
 	testedAvailFoldOptions << afo;
 	foldSolutions << solution;
+	foldCost << totalCost;
 
 	// update the current solution
-	currSlnIdx = foldSolutions.size();
+	currSlnIdx = foldSolutions.size() - 1;
 
 	// garbage collection
 	delete collFog;
@@ -257,12 +272,16 @@ QVector<FoldOption*> HBlockGraph::findOptimalSolution(FoldOptionGraph* collFog, 
 	QVector<FoldOption*> partialSln;
 
 	// all fold options in the component
+	// these fold options are from allFoldOptions
 	QVector<FoldOption*> fns;
 	int nbCn = 0;
 	for (auto n : component) 
 	{
 		if (n->properties["type"].toString() == "option")
-			fns << (FoldOption*)n;
+		{
+			int idx = ((FoldOption*)n)->index;
+			fns << allFoldOptions[idx];
+		}
 		else nbCn++;
 	}
 
@@ -272,7 +291,7 @@ QVector<FoldOption*> HBlockGraph::findOptimalSolution(FoldOptionGraph* collFog, 
 		FoldOption* best_fo = nullptr;
 		double minCost = maxDouble();
 		for (auto fo : fns)	{
-			double cost = fo->getCost(weight);
+			double cost = computeCost(fo);
 			if (cost < minCost){
 				minCost = cost;	best_fo = fo;
 			}
@@ -335,7 +354,7 @@ QVector<double> HBlockGraph::genReversedWeights(const QVector<FoldOption*>& fns)
 	QVector<double> costs;
 	foreach(FoldOption* fn, fns)
 	{
-		double cost = fn->getCost(weight);
+		double cost = computeCost(fn);
 		costs << cost;
 		if (cost > maxCost) maxCost = cost;
 	}

@@ -28,6 +28,10 @@ TBlockGraph::TBlockGraph(QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& 
 	tChain = new TChainGraph(ss.front(), baseMaster, topMaster);
 	tChain->setFoldDuration(0, 1);
 	chains << tChain;
+
+	// the chain weights
+	chainWeights.clear();
+	chainWeights << 1.0;
 }
 
 FdGraph* TBlockGraph::getKeyframe(double t, bool useThk)
@@ -81,19 +85,45 @@ QVector<Vector2> TBlockGraph::computeObstacles(ShapeSuperKeyframe* ssKeyframe)
 QVector<int> TBlockGraph::getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe)
 {
 	QVector<Vector2> obstacles = computeObstacles(ssKeyframe);
+
+	// prune fold options
+	QVector<int> afo;
+	for (int i = 0; i < allFoldOptions.size(); i++)
+	{
+		// the fold option
+		FoldOption* fo = allFoldOptions[i];
+
+		// prune
+		if (!fo->regionProj.containsAny(obstacles, -0.01))
+			afo << i;
+	}
+
+	// result
+	return afo;
 }
 
 double TBlockGraph::findOptimalSolution(const QVector<int>& afo)
 {
 	// choose the one with the lowest cost
-	FoldOption* best_fn;
+	FoldOption* best_fo = nullptr;
 	double minCost = maxDouble();
-	foreach(FoldOption* fn, valid_options){
-		double cost = fn->getCost(weight);
+	for(auto fi : afo){
+		FoldOption* fo = allFoldOptions[fi];
+		double cost = computeCost(fo);
 		if (cost < minCost)
 		{
-			best_fn = fn;
+			best_fo = fo;
 			minCost = cost;
 		}
 	}
+
+	// store the solution
+	testedAvailFoldOptions << afo;
+	foldSolutions << (QVector<FoldOption*>() << best_fo);
+
+	// update the current solution
+	currSlnIdx = foldSolutions.size();
+
+	// return the cost
+	return minCost;
 }

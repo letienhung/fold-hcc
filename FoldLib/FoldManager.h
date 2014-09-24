@@ -80,7 +80,6 @@ public slots:
 	void generateKeyframes();
 
 	// output
-	void exportCollFOG();
 	void exportResultMesh();
 	void exportStat();
 

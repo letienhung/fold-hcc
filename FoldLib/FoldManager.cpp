@@ -239,9 +239,9 @@ int fdTime = timer.elapsed();
 		{
 			foreach (ChainGraph* chain, block->chains)
 			{
-				nbHinges += chain->nbHinges;
-				shinkedArea += chain->shrinkedArea;
-				totalArea += chain->patchArea;
+				//nbHinges += chain->nbHinges;
+				//shinkedArea += chain->shrinkedArea;
+				//totalArea += chain->patchArea;
 			}
 		}
 		foreach (PatchNode* m, selDc->masters) 
@@ -324,22 +324,13 @@ void FoldManager::exportResultMesh()
 	//}
 }
 
-void FoldManager::exportCollFOG()
-{
-	DcGraph* selDc = getSelDcGraph();
-	if (selDc)
-	{
-		selDc->exportCollFOG();
-	}
-}
-
 void FoldManager::selectSolution( int idx )
 {
 	// selected dc graph
 	BlockGraph* selBlock = getSelBlock();
 	if (!selBlock) return;
 
-	selBlock->applySolution(idx);
+	//selBlock->applySolution(idx);
 }
 
 void FoldManager::setNbKeyframes(int N)
@@ -372,8 +363,8 @@ void FoldManager::setParameters()
 	foreach (DcGraph* dc, dcGraphs){
 		foreach (BlockGraph* b, dc->blocks)
 		{
-			b->nbSplits = nbSplits;
-			b->nbChunks = nbChunks;
+			b->maxNbSplits = nbSplits;
+			b->maxNbChunks = nbChunks;
 			b->setThickness(thickness);
 
 			b->shapeAABB = constrainAABB;

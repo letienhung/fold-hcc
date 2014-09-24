@@ -49,9 +49,6 @@ ChainGraph::ChainGraph( FdNode* slave, PatchNode* base, PatchNode* top)
 	// side
 	foldToRight = true;
 
-	// patch area
-	patchArea = origSlave->mPatch.area();
-
 	//// debug
 	//addDebugSegment(baseJoint);
 	//addDebugSegment(slaveSeg);
@@ -127,26 +124,26 @@ void ChainGraph::setFoldDuration( double t0, double t1 )
 	duration = INTERVAL(t0, t1);
 }
 
-QVector<FoldOption*> ChainGraph::genFoldOptionWithDiffPositions( int nSplits, int nUsedChunks, int nChunks )
+QVector<FoldOption*> ChainGraph::genFoldOptionWithDiffPositions( int nSplits, int nChunks, int maxNbChunks )
 {
 	QVector<FoldOption*> options;
 
-	double chunkWidth = 1.0/double(nChunks);
-	double usedWidth = chunkWidth * nUsedChunks;
+	double chunkWidth = 1.0/double(maxNbChunks);
+	double usedWidth = chunkWidth * nChunks;
 
 	// start position
-	for (int i = 0; i <= nChunks - nUsedChunks; i++)
+	for (int i = 0; i <= maxNbChunks - nChunks; i++)
 	{
 		double startPos = chunkWidth * i;
 
 		// left
-		QString fnid1 = QString("%1:%2_%3_L_%4").arg(mID).arg(nSplits).arg(nUsedChunks).arg(startPos);
-		FoldOption* fn1 = new FoldOption(fnid1, false, usedWidth, startPos, nSplits, patchArea);
+		QString fnid1 = QString("%1:%2_%3_L_%4").arg(mID).arg(nSplits).arg(nChunks).arg(startPos);
+		FoldOption* fn1 = new FoldOption(fnid1, false, usedWidth, startPos, nSplits);
 		options.push_back(fn1);
 
 		// right
-		QString fnid2 = QString("%1:%2_%3_R_%4").arg(mID).arg(nSplits).arg(nUsedChunks).arg(startPos);
-		FoldOption* fn2 = new FoldOption(fnid2, true, usedWidth, startPos, nSplits, patchArea);
+		QString fnid2 = QString("%1:%2_%3_R_%4").arg(mID).arg(nSplits).arg(nChunks).arg(startPos);
+		FoldOption* fn2 = new FoldOption(fnid2, true, usedWidth, startPos, nSplits);
 		options.push_back(fn2);
 	}
 
@@ -164,7 +161,7 @@ FoldOption* ChainGraph::genDeleteFoldOption( int nSplits )
 {
 	// keep the number of slipts for computing the cost
 	QString fnid = mID + "_delete";
-	FoldOption* delete_fn = new FoldOption(fnid, true, 0, 0, nSplits, patchArea);
+	FoldOption* delete_fn = new FoldOption(fnid, true, 0, 0, nSplits);
 	delete_fn->addTag(DELETE_FOLD_OPTION);
 	delete_fn->region = Geom::Rectangle();
 	return delete_fn;
@@ -323,10 +320,6 @@ void ChainGraph::applyFoldOption( FoldOption* fn)
 	resetChainParts(fn);
 	resetHingeLinks(fn);
 	activateLinks(fn);
-
-	// statistics
-	nbHinges = fn->nSplits + 2;
-	shrinkedArea = fn->patchArea * (1 - fn->scale);
 }
 
 
@@ -404,4 +397,9 @@ void ChainGraph::addThickness(FdGraph* keyframe, double t)
 	// set thickness to chain parts
 	for (int i = 1; i < keyParts.size() - 1; i++)
 		keyParts[i]->setThickness(2 * halfThk);
+}
+
+double ChainGraph::getArea()
+{
+	return origSlave->mPatch.area();
 }

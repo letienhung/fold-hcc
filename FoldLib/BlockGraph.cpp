@@ -14,8 +14,8 @@ BlockGraph::BlockGraph(QString id, Geom::Box shape_aabb)
 	shapeAABB = shape_aabb;
 
 	// parameters for split and shrink
-	nbSplits = 1;
-	nbChunks = 2;
+	maxNbSplits = 1;
+	maxNbChunks = 2;
 
 	// thickness
 	thickness = 2;
@@ -197,7 +197,7 @@ void BlockGraph::genAllFoldOptions()
 	// collect all
 	Geom::Rectangle base_rect = baseMaster->mPatch;
 	for (int i = 0; i < chains.size(); i++){
-		for (auto fo : chains[i]->genFoldOptions(nbSplits, nbChunks))
+		for (auto fo : chains[i]->genFoldOptions(maxNbSplits, maxNbChunks))
 		{
 			// chain index
 			fo->chainIdx = i;
@@ -207,6 +207,9 @@ void BlockGraph::genAllFoldOptions()
 
 			// store
 			allFoldOptions << fo;
+
+			// index
+			fo->index = allFoldOptions.size() - 1;
 		}
 	}
 }
@@ -231,7 +234,7 @@ double BlockGraph::foldabilizeWrt(ShapeSuperKeyframe* ssKeyframe)
 	// find the optimal solution
 	double cost = findOptimalSolution(afo);
 
-	// return the cost
+	// return the cost (\in [0, 1])
 	return cost;
 }
 
@@ -253,4 +256,29 @@ void BlockGraph::applySolution()
 
 	// has been foldabilized
 	foldabilized = true;
+}
+
+double BlockGraph::computeCost(FoldOption* fo)
+{
+	// split
+	double a = fo->nSplits / (double)maxNbSplits;
+
+	// shrinking
+	double b = fo->scale;
+
+	// blended cost : c \in [0, 1]
+	double c = weight * a + (1 - weight) * b;
+
+	// normalized
+	double cost = chainWeights[fo->chainIdx] * c;
+
+	// return
+	return cost;
+}
+
+double BlockGraph::getChainArea()
+{
+	double a = 0;
+	for (auto c : chains)a += c->getArea();
+	return a;
 }

@@ -16,9 +16,16 @@ public:
 	// time interval
 	void setFoldDuration(double t0, double t1);
 
+	// thickness
+	void addThickness(FdGraph* keyframe, double t);
+
+	// the area of original slave patch
+	double getArea();
+
+public:
 	// fold options
 	FoldOption* genDeleteFoldOption(int nSplits);
-	QVector<FoldOption*> genFoldOptionWithDiffPositions(int nSplits, int nUsedChunks, int nChunks);
+	QVector<FoldOption*> genFoldOptionWithDiffPositions(int nSplits, int nChunks, int maxNbChunks);
 	virtual QVector<FoldOption*> genFoldOptions(int nSplits, int nChunks) = 0;
 
 	// fold region
@@ -34,12 +41,8 @@ public:
 	// folding
 	virtual void fold(double t) = 0;
 
-	// thickness
-	void addThickness(FdGraph* keyframe, double t);
-
 	// key frame
 	FdGraph* getKeyframe(double t, bool useThk);
-
 
 public:
 	PatchNode*			topMaster;	// top
@@ -86,9 +89,4 @@ public:
 	//				 rightSeg	
 	double halfThk;		// thickness of slave and top master
 	double baseOffset;	// offset caused by thickness of base master and its super siblings
-
-	// statics
-	int nbHinges;
-	double shrinkedArea;
-	double patchArea;
 };

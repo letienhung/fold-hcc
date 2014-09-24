@@ -275,7 +275,7 @@ void FdPlugin::test1()
 	BlockGraph* selBlk = f_manager->getSelBlock();
 	if (selBlk)
 	{
-		FoldOption fn("hhh", true, 1, 0, 5, 0);
+		FoldOption fn("hhh", true, 1, 0, 5);
 		for(int i = 0; i < selBlk->chains.size(); i++)
 		{
 

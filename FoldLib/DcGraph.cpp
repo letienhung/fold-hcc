@@ -23,6 +23,7 @@ DcGraph::DcGraph(QString id, FdGraph* scaffold, Vector3 v, double connThr)
 	createSlaves();
 	clusterSlaves();
 	createBlocks();
+	computeBlockWeights();
 
 	// master order constraints
 	// to-do: order constraints among all parts
@@ -584,8 +585,7 @@ void DcGraph::foldabilize()
 	foreach (BlockGraph* b, blocks)
 		b->foldabilized = false;
 
-	// initial time intervals
-	// greater than 1.0 means never be folded
+	// initial time intervals: t > 1.0 means not be folded
 	foreach (BlockGraph* b, blocks)
 		b->mFoldDuration = INTERVAL(1.0, 2.0);
 
@@ -605,27 +605,28 @@ void DcGraph::foldabilize()
 
 		// foldabilize the selected next block
 		BlockGraph* next_block = blocks[next_bid];
-		next_block->foldabilize(currKeyframe);
+		next_block->foldabilizeWrt(currKeyframe);
+		next_block->applySolution();
 
 
 		//return;
 
-		// set up time interval 
+		// set up time interval for selected block
 		double timeLength = next_block->getNbTopMasters() * timeScale;
 		double nextTime = currTime + timeLength;
 		next_block->mFoldDuration = INTERVAL(currTime, nextTime);
 
-		// get best next
+		// update the shape super key frame
 		std::cout << "\n============NEXT============\n";
 		currTime = nextTime;
 		delete currKeyframe;
 		currKeyframe = getShapeSuperKeyframe(currTime);
-
 		if(!currKeyframe){
 			std::cout << "Warning: cannot fold on this direction.\n";
 			return;
 		}
 
+		// get best next
 		next_bid = getBestNextBlockIndex(currTime, currKeyframe);
 	}
 
@@ -658,7 +659,8 @@ void DcGraph::foldabilize()
 			sCluster += slaveClusters[bidx];
 		
 		BlockGraph* mergedBlock = createBlock(sCluster);
-		mergedBlock->foldabilize(currKeyframe);
+		mergedBlock->foldabilizeWrt(currKeyframe);
+		mergedBlock->applySolution();
 		mergedBlock->mFoldDuration = INTERVAL(currTime, 1.0);
 	}
 
@@ -686,6 +688,7 @@ int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyf
 
 		// foldabilize nextBlock wrt the current super key frame
 		double nextCost = nextBlock->foldabilizeWrt(currKeyframe);
+		nextCost *= blockWeights[next_bid]; // normalized cost
 		nextBlock->applySolution();
 
 		// get the next super key frame 
@@ -717,10 +720,10 @@ int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyf
 
 			// invalid block folding generates large cost as being deleted
 			if (!next2Keyframe->isValid(sqzV))
-				next2Cost = next2Block->getDeletionCost();
+				next2Cost = 1.0; // deletion cost = 1.0
 
-			// update cost
-			nextCost += next2Cost;
+			// update cost : normalized cost
+			nextCost += next2Cost * blockWeights[next2_bid];
 
 			// garbage collection
 			delete next2Keyframe;
@@ -783,33 +786,6 @@ FdGraph* DcGraph::getSelKeyframe()
 	else return NULL;
 }
 
-void DcGraph::exportCollFOG()
-{
-	BlockGraph* selBlock = getSelBlock();
-	if (selBlock) selBlock->exportCollFOG();
-}
-
-void DcGraph::foldbzSelBlock()
-{
-	//BlockGraph* selBlock = getSelBlock();
-	//if (!selBlock) return;
-
-	//// foldabilize selected block
-	//FdGraph* currKeyframe = getKeyframe(0);
-	////selBlock->computeAvailFoldingRegion(currKeyframe, masterOrderGreater, masterOrderLess);
-	//selBlock->foldabilize();
-	//selBlock->mFoldDuration = TIME_INTERVAL(0.0, 1.0);
-	//selBlock->addTag(READY_TO_FOLD_TAG);
-
-	//// set unreachable time interval for other blocks
-	//TimeInterval ti = TIME_INTERVAL(1.0, 2.0);
-	//foreach (BlockGraph* block, blocks)
-	//{
-	//	if (block != selBlock)
-	//		block->mFoldDuration = ti;
-	//}
-}
-
 void DcGraph::selectKeyframe( int idx )
 {
 	if (idx >= 0 && idx < keyframes.size())
@@ -826,4 +802,19 @@ BlockGraph* DcGraph::mergeBlocks( QVector<BlockGraph*> blocks )
 double DcGraph::getConnectivityThr()
 {
 	return connThrRatio * computeAABB().radius();
+}
+
+void DcGraph::computeBlockWeights()
+{
+	blockWeights.clear();
+
+	double totalA = 0;
+	for (auto b : blocks)
+	{
+		double area = b->getChainArea();
+		blockWeights << area;
+		totalA += area;
+	}
+
+	for (auto& bw : blockWeights) bw /= totalA;
 }

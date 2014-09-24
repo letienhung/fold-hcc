@@ -34,10 +34,8 @@ public:
 	// blocks
 	int selBlockIdx;
 	QVector<BlockGraph*> blocks;
+	QVector<double> blockWeights;
 	QMap<QString, QSet<int> > masterBlockMap;
-
-	// fold order
-	QVector<BlockGraph*> blockSequence;
 
 	// time scale
 	double timeScale; // timeScale * block.timeUnits = normalized time
@@ -54,27 +52,25 @@ public:
 	double getConnectivityThr();
 
 	// decomposition
-	void createMasters();
 	FdNodeArray2D getPerpConnGroups();
 	void computeMasterOrderConstraints();
+	void createMasters();
 
-	void createSlaves(); 
 	void updateSlaves();
 	void updateSlaveMasterRelation();
+	void createSlaves(); 
 
-	void createBlocks();
 	void clusterSlaves();
 	BlockGraph* createBlock(QSet<int> sCluster);
+	void createBlocks();
+
+	void computeBlockWeights();
+
 	BlockGraph* mergeBlocks( QVector<BlockGraph*> blocks );
 
-
-	// foldem
+	// foldabilization
 	void foldabilize();
-	void foldbzSelBlock();
 	int getBestNextBlockIndex(double currT, ShapeSuperKeyframe* currKeyframe);
-
-	// export
-	void exportCollFOG();
 
 	// key frame
 	void generateKeyframes(int N);

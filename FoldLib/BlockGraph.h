@@ -21,6 +21,9 @@ public:
 	// #top masters: decides the folding duration 
 	double	getNbTopMasters();
 
+	// the total area of slave patches
+	double getChainArea();
+
 	// all fold options
 	void genAllFoldOptions();
 
@@ -43,6 +46,7 @@ public:
 	virtual QVector<int>	getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe) = 0; // prune fold options wrt. to obstacles
 	int						searchForExistedSolution(const QVector<int>& afo); // search for existed solution 
 	virtual double			findOptimalSolution(const QVector<int>& afo) = 0; // store the optimal solution and returns the cost
+	double					computeCost(FoldOption* fo);
 
 	// apply the current solution (currSlnIdx)
 	void applySolution();
@@ -52,6 +56,7 @@ public:
 	// chains
 	int selChainIdx;
 	QVector<ChainGraph*> chains;
+	QVector<double> chainWeights; // normalized area weights
 
 	// masters
 	PatchNode* baseMaster;
@@ -67,8 +72,8 @@ public:
 	Interval mFoldDuration;
 
 	// upper bound for modification
-	int nbSplits;
-	int nbChunks;
+	int maxNbSplits;
+	int maxNbChunks;
 
 	// trade-off weight for computing cost
 	double weight;

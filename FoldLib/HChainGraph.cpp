@@ -314,15 +314,15 @@ void HChainGraph::computePhaseSeparator()
 	angleSep = asin(RANGED(0, sin_angle, 1));
 }
 
-QVector<FoldOption*> HChainGraph::genFoldOptions(int nSplits, int nChunks)
+QVector<FoldOption*> HChainGraph::genFoldOptions(int maxNbSplits, int maxNbChunks)
 {
 	// nS: # splits; nC: # used chunks; nbChunks: total # of chunks
 	// enumerate all start positions and left/right side
 	// H-chain has min nS = 1 and are odd numbers, min nC = 1
 	QVector<FoldOption*> options;
-	for (int nS = 1; nS <= nSplits; nS += 2)
-	for (int nC = 1; nC <= nChunks; nC++)
-		options << genFoldOptionWithDiffPositions(nS, nC, nChunks);
+	for (int nS = 1; nS <= maxNbSplits; nS += 2)
+	for (int nC = 1; nC <= maxNbChunks; nC++)
+		options << genFoldOptionWithDiffPositions(nS, nC, maxNbChunks);
 
 	return options;
 }

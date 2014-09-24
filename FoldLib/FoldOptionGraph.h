@@ -17,12 +17,10 @@ public:
 class FoldOption : public Structure::Node
 {
 public:
-	FoldOption( QString id, bool right, double s, double p, int n, double area);
+	FoldOption( QString id, bool right, double s, double p, int n);
 	FoldOption(FoldOption &other);
 	~FoldOption();
 	Node* clone();
-
-	double getCost(double w);
 
 public:
 	// to which side to fold
@@ -38,15 +36,15 @@ public:
 	// chain Idx
 	int chainIdx;
 
+	// index in all fold options
+	int index;
+
 	// duration
 	Interval duration;
 
 	// fold region and its projection on the base of block
 	Geom::Rectangle region;
 	Geom::Rectangle2 regionProj;
-
-	// patch area
-	double patchArea;
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW

@@ -55,12 +55,8 @@ Geom::Rectangle TChainGraph::getFoldRegion(FoldOption* fn)
 //		|					   --- plane0
 QVector<Geom::Plane> TChainGraph::generateCutPlanes(FoldOption* fn)
 {
-	// constants
-	double L = slaveSeg.length();
-	double d = rightSeg.length();
-	double h = topTraj.length();
-
 	// start plane and step
+	double h = topTraj.length();
 	double step = h / (fn->nSplits + 1);
 	Geom::Plane start_plane = baseMaster->mPatch.getPlane();
 

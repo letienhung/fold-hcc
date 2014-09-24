@@ -35,9 +35,11 @@ ChainNode::~ChainNode()
 
 //////////////////////////////////////////////////////////////////////////
 
-FoldOption::FoldOption( QString id, bool right, double s, double p, int n, double area )
-	: Node(id), rightSide(right), scale(s), position(p), nSplits(n), patchArea(area)
+FoldOption::FoldOption( QString id, bool right, double s, double p, int n )
+	: Node(id), rightSide(right), scale(s), position(p), nSplits(n)
 {
+	chainIdx = -1;
+	index = -1;
 }
 
 FoldOption::FoldOption( FoldOption &other )
@@ -47,7 +49,12 @@ FoldOption::FoldOption( FoldOption &other )
 	scale = other.scale;
 	position = other.position;
 	nSplits = other.nSplits;
-	patchArea = other.patchArea;
+
+	chainIdx = other.chainIdx;
+	index = other.index;
+	duration = other.duration;
+	region = other.region;
+	regionProj = other.regionProj;
 }
 
 Structure::Node* FoldOption::clone()
@@ -59,21 +66,6 @@ FoldOption::~FoldOption()
 {
 
 }
-
-double FoldOption::getCost(double w)
-{
-	// cost of splitting
-	double cost1 = nSplits;
-
-	// cost of shrinking
-	double s = 1 - scale;
-	double cost2 = patchArea * s * s;
-
-	// blended cost
-	double cost = w * cost1 + (1 - w) * cost2;
-	return cost;
-}
-
 
 //////////////////////////////////////////////////////////////////////////
 
