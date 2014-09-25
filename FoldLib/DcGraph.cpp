@@ -590,13 +590,13 @@ void DcGraph::foldabilize()
 		b->mFoldDuration = INTERVAL(1.0, 2.0);
 
 	// choose best free block
-	std::cout << "\n\n============START============\n";
+	std::cout << "\n=============================\n============START============\n";
 	double currTime = 0.0;
 	ShapeSuperKeyframe* currKeyframe = getShapeSuperKeyframe(currTime);
 	int next_bid = getBestNextBlockIndex(currTime, currKeyframe);  
 
 
-	//return;
+	return;
 	
 
 	while (next_bid >= 0 && next_bid < blocks.size())
@@ -668,6 +668,27 @@ void DcGraph::foldabilize()
 	std::cout << "\n============FINISH============\n";
 }
 
+
+double DcGraph::foldabilizeBlock(int bid, double currTime, ShapeSuperKeyframe* currKf, 
+										double& nextTime, ShapeSuperKeyframe* nextKf)
+{
+	// foldabilize nextBlock wrt the current super key frame
+	BlockGraph* nextBlock = blocks[bid];
+	double cost = nextBlock->foldabilizeWrt(currKf);
+	cost *= blockWeights[bid]; // normalized cost
+	nextBlock->applySolution();
+
+	// get the next super key frame 
+	double timeLength = nextBlock->getNbTopMasters() * timeScale;
+	nextTime = currTime + timeLength;
+	nextBlock->mFoldDuration = INTERVAL(currTime, nextTime);
+	nextKf = getShapeSuperKeyframe(nextTime);
+
+	// the cost
+	return cost;
+}
+
+
 /**   currT                 nextT                 next2T
 	    |------nextBlock------|------next2Block------|
    currKeyframe          nextKeyframe           next2Keyframe
@@ -675,30 +696,25 @@ void DcGraph::foldabilize()
 // currKeyframe is a super keyframe providing context information
 int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyframe)
 {
-	// the best next block produces the minimum folding cost
 	double min_cost = maxDouble();
 	int best_next_bid = -1;
-
-	// for each block
 	for (int next_bid = 0; next_bid < blocks.size(); next_bid++)
 	{
 		// skip foldabilized blocks
 		BlockGraph* nextBlock = blocks[next_bid];
 		if (passed(currTime, nextBlock->mFoldDuration)) continue;
 
-		// foldabilize nextBlock wrt the current super key frame
-		double nextCost = nextBlock->foldabilizeWrt(currKeyframe);
-		nextCost *= blockWeights[next_bid]; // normalized cost
-		nextBlock->applySolution();
+		// save original time interval
+		Interval nextTi = nextBlock->mFoldDuration;
 
-		// get the next super key frame 
-		Interval next_ti = nextBlock->mFoldDuration;
-		double timeLength = nextBlock->getNbTopMasters() * timeScale;
-		double nextTime = currTime + timeLength;
-		nextBlock->mFoldDuration = INTERVAL(currTime, nextTime);
-		ShapeSuperKeyframe* nextKeyframe = getShapeSuperKeyframe(nextTime);
+		// foldabilize nextBlock
+		double nextTime;
+		ShapeSuperKeyframe* nextKeyframe;
+		double nextCost = foldabilizeBlock(next_bid, currTime, currKeyframe, nextTime, nextKeyframe);
+		
+		// the folding of nextBlock must be valid, otherwise stop forward evaluation
 		if (!nextKeyframe->isValid(sqzV)) 
-			continue; // ***the folding of nextBlock must be valid, otherwise stop forward evaluation
+			continue; 
 
 		// cost of folding remaining open blocks
 		for (int next2_bid = 0; next2_bid < blocks.size(); next2_bid++)
@@ -707,16 +723,13 @@ int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyf
 			BlockGraph* next2Block = blocks[next2_bid];
 			if (passed(nextTime, next2Block->mFoldDuration)) continue;
 
-			// foldabilize next2Block
-			double next2Cost = next2Block->foldabilizeWrt(nextKeyframe);
-			next2Block->applySolution();
+			// save original time interval
+			Interval next2Ti = nextBlock->mFoldDuration;
 
-			// the resulted super shape key frame must be valid
-			Interval next2_ti = next2Block->mFoldDuration;
-			double timeLength = next2Block->getNbTopMasters() * timeScale;
-			double next2Time = nextTime + timeLength;
-			next2Block->mFoldDuration = INTERVAL(nextTime, next2Time);
-			ShapeSuperKeyframe* next2Keyframe = getShapeSuperKeyframe(next2Time);
+			// foldabilize next2Block
+			double next2Time;
+			ShapeSuperKeyframe* next2Keyframe;
+			double next2Cost = foldabilizeBlock(next2_bid, nextTime, nextKeyframe, next2Time, next2Keyframe);
 
 			// invalid block folding generates large cost as being deleted
 			if (!next2Keyframe->isValid(sqzV))
@@ -729,7 +742,7 @@ int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyf
 			delete next2Keyframe;
 
 			// restore time interval in order to test another block
-			next2Block->mFoldDuration = next2_ti;
+			next2Block->mFoldDuration = next2Ti;
 		}
 
 		// nextBlock with lowest cost wins
@@ -742,7 +755,7 @@ int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyf
 		delete nextKeyframe;
 
 		// very important: restore time interval in order to test another block
-		nextBlock->mFoldDuration = next_ti;
+		nextBlock->mFoldDuration = nextTi;
 
 		// debug info
 		std::cout << blocks[next_bid]->mID.toStdString() << " : " << nextCost << std::endl;

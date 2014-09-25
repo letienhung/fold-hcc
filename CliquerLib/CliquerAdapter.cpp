@@ -100,7 +100,7 @@ QVector<QVector<int> > CliquerAdapter::getMaxWeightedCliques()
 	int n = clique_find_all(graph,0,0,true,NULL);
 
 	// read
-	std::cout << "#MWC = " << n << "\n";
+	//std::cout << "#MWC = " << n << "\n";
 	QVector<QVector<int> > qCliques;
 	for (int ci = 0; ci < n; ci++)
 	{
@@ -115,11 +115,11 @@ QVector<QVector<int> > CliquerAdapter::getMaxWeightedCliques()
 			{
 				qClique << i;
 				w += weights[i];
-				std::cout << i << " ";
+				//std::cout << i << " ";
 			}
 		}
 
-		std::cout << "\t: w = " << w << "\n";
+		//std::cout << "\t: w = " << w << "\n";
 
 		qCliques << qClique;
 		set_free(clique);
