@@ -406,12 +406,12 @@ BlockGraph* DcGraph::createBlock( QSet<int> sCluster )
 	// create
 	int bidx = blocks.size();
 	QString id = QString::number(bidx);
-	Geom::Box aabb = computeAABB().box();
 	BlockGraph* b;
 	if (ms.size() == 2 && ss.size() == 1 &&
 		(ms[0]->hasTag(EDGE_ROD_TAG) || ms[1]->hasTag(EDGE_ROD_TAG)))
-		b = new TBlockGraph("TB_" + id, ms, ss, mPairs, aabb);
-	else b = new HBlockGraph("HB_" + id, ms, ss, mPairs, aabb);
+		b = new TBlockGraph("TB_" + id, ms, ss, mPairs);
+	else b = new HBlockGraph("HB_" + id, ms, ss, mPairs);
+	b->setAabbConstraint(computeAABB().box());
 	blocks << b;
 
 	// master block map
@@ -566,7 +566,8 @@ void DcGraph::foldabilize()
 		b->mFoldDuration = INTERVAL(1.0, 2.0);
 
 	// choose best free block
-	std::cout << "\n=============================\n============START============\n";
+	std::cout << "\n============================="
+			  << "\n============START============\n";
 	double currTime = 0.0;
 	ShapeSuperKeyframe* currKeyframe = getShapeSuperKeyframe(currTime);
 	int next_bid = getBestNextBlockIndex(currTime, currKeyframe);  
@@ -627,7 +628,6 @@ void DcGraph::foldabilize()
 	std::cout << "\n============FINISH============\n";
 }
 
-
 double DcGraph::foldabilizeBlock(int bid, double currTime, ShapeSuperKeyframe* currKf, 
 										double& nextTime, ShapeSuperKeyframe*& nextKf)
 {
@@ -646,7 +646,6 @@ double DcGraph::foldabilizeBlock(int bid, double currTime, ShapeSuperKeyframe* c
 	// the cost
 	return cost;
 }
-
 
 /**   currT                 nextT                 next2T
 	    |------nextBlock------|------next2Block------|
@@ -667,6 +666,9 @@ int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyf
 		ShapeSuperKeyframe* nextKeyframe = nullptr;
 		Interval origNextTi = nextBlock->mFoldDuration; // back up
 		double nextCost = foldabilizeBlock(next_bid, currTime, currKeyframe, nextTime, nextKeyframe);
+
+		//nextBlock->showObstaclesAndFoldOptions();
+		//return -1;
 		
 		// the folding of nextBlock must be valid, otherwise skip further evaluation
 		if (nextKeyframe->isValid(sqzV))

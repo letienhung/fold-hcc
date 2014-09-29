@@ -7,7 +7,7 @@ class HBlockGraph : public BlockGraph
 {
 public:
 	HBlockGraph(QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& ss,
-		QVector< QVector<QString> >& mPairs, Geom::Box shape_aabb);
+		QVector< QVector<QString> >& mPairs);
 	~HBlockGraph();
 
 private:
@@ -24,6 +24,9 @@ private:
 	QVector< QVector<bool> > genDualAdjMatrix(FoldOptionGraph* collFog, const QVector<FoldOption*>& fns);
 	QVector<double> genReversedWeights(const QVector<FoldOption*>& fns);
 
+	// obstacles
+	QVector<Vector3> getObstaclePoints();
+
 public:
 	// key frame
 	virtual FdGraph* getKeyframe(double t, bool useThk) override;
@@ -31,6 +34,7 @@ public:
 	// foldabilization
 	virtual QVector<int> getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe) override;
 	virtual double findOptimalSolution(const QVector<int>& afo) override;
+
 public:
 	// master-chain relation
 	QMap<QString, QSet<int> > masterChainsMap;

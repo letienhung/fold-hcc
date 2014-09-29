@@ -358,18 +358,18 @@ void FoldManager::setThickness( double thk )
 
 void FoldManager::setParameters()
 {
-	Geom::Box constrainAABB = scaffold->computeAABB().box();
-	constrainAABB.scale(aabbScale);
+	Geom::Box aabb = scaffold->computeAABB().box();
+	aabb.scale(aabbScale);
 	foreach (DcGraph* dc, dcGraphs){
 		foreach (BlockGraph* b, dc->blocks)
 		{
+			b->setAabbConstraint(aabb);
 			b->maxNbSplits = nbSplits;
 			b->maxNbChunks = nbChunks;
 			b->setThickness(thickness);
-
-			b->shapeAABB = constrainAABB;
-
 			b->weight = costWeight;
+
+			b->resetAllFoldOptions();
 		}
 
 		dc->connThrRatio = connThrRatio;

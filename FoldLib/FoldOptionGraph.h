@@ -42,15 +42,13 @@ public:
 	// duration
 	Interval duration;
 
-	// fold region and its projection on the base of block
+	// fold region and its projection on the base of the block
 	Geom::Rectangle region;
 	Geom::Rectangle2 regionProj;
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
-#define DELETE_FOLD_OPTION	"deleteFoldOption"
-#define SELECTED_TAG "selectedFoldOption"
 
 class FoldOptionGraph : public Structure::Graph
 {

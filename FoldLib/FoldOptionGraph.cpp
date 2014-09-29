@@ -285,7 +285,7 @@ QString FoldOptionGraph::toGraphvizFormat( QString subcaption, QString caption )
 
 		// highlight by filling colors
 		QString other;
-		if (node->hasTag(SELECTED_TAG)) other = "style = filled";
+		//if (node->hasTag(SELECTED_TAG)) other = "style = filled";
 
 		out << "\t" << QString("%1 [label = \"%2\", color = \"%3\", shape = %4, %5];").arg(i).arg(label).arg(colorHex).arg(shape).arg(other) << "\n";
 

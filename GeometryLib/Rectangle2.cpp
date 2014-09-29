@@ -123,7 +123,7 @@ QVector<Geom::Segment2> Geom::Rectangle2::getEdgeSegments()
 	return edges;
 }
 
-
+// positive thr expands the rectangle while negative thr shrinks the rectangle
 bool Geom::Rectangle2::contains( Vector2& p, double thr /*= ZERO_TOLERANCE_LOW*/ )
 {
 	Vector2 coord = getCoordinates(p);

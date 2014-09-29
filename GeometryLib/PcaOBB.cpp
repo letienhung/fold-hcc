@@ -23,7 +23,7 @@ Geom::PcaOBB::PcaOBB( QVector<Vector3>& pnts)
 	
 	// project points on to base plane
 	// and find minOBB2
-	Geom::Rectangle baseRect = pcaBox.getPatch(0, -1);
+	Geom::Rectangle baseRect = pcaBox.getCrossSection(0, -1);
 	Geom::Plane basePlane = baseRect.getPlane();
 	QVector<Vector2> pnts2; 
 	double maxHeight = minDouble();

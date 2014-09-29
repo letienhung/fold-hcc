@@ -88,6 +88,7 @@ QMap< QString, QVector<Vector2> > SuperBlockGraph::computeObstacles()
 	// obstacles for each top master
 	QString base_mid = baseMaster->mID;
 	Geom::Rectangle base_rect = origBlock->baseMaster->mPatch;// ***use original base rect
+	origBlock->properties.remove(DEBUG_POINTS); // clear debug points
 	foreach(PatchNode* top_master, masters)
 	{
 		// skip base master
@@ -112,6 +113,9 @@ QMap< QString, QVector<Vector2> > SuperBlockGraph::computeObstacles()
 		QVector<Vector2> obs;
 		for (auto s : samples) obs << base_rect.getProjCoordinates(s);
 		obstacles[top_mid] = obs;
+
+		// debug
+		origBlock->appendToVectorProperty(DEBUG_POINTS, samples);
 	}
 
 	// restore the position of super shape key frame since it is shared

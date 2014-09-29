@@ -498,7 +498,7 @@ Geom::Segment Geom::Box::getSkeleton( int aid )
 	return Segment(fc0, fc1);
 }
 
-Geom::Rectangle Geom::Box::getPatch( int aid, double c )
+Geom::Rectangle Geom::Box::getCrossSection( int aid, double c )
 {
 	QVector<Vector3> conners;
 	foreach(Geom::Segment edge, getEdgeSegments(aid))

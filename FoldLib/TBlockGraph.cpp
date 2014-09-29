@@ -3,8 +3,7 @@
 #include "Numeric.h"
 
 TBlockGraph::TBlockGraph(QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& ss,
-	QVector< QVector<QString> >& mPairs, Geom::Box shape_aabb)
-	:BlockGraph(id, shape_aabb)
+	QVector< QVector<QString> >& mPairs) :BlockGraph(id)
 {
 	// clone nodes
 	foreach(PatchNode* m, ms)	{

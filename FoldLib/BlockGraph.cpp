@@ -4,14 +4,11 @@
 #include "ChainGraph.h"
 #include "TChainGraph.h"
 
-BlockGraph::BlockGraph(QString id, Geom::Box shape_aabb)
+BlockGraph::BlockGraph(QString id)
 	: FdGraph(id)
 {
 	// selected chain
 	selChainIdx = -1;
-
-	// shape AABB
-	shapeAABB = shape_aabb;
 
 	// parameters for split and shrink
 	maxNbSplits = 1;
@@ -36,6 +33,16 @@ BlockGraph::~BlockGraph()
 	foreach(ChainGraph* c, chains)
 		delete c;
 }
+
+void BlockGraph::setAabbConstraint(Geom::Box aabb)
+{
+	Geom::Rectangle base_rect = baseMaster->mPatch;
+	int aid = aabb.getAxisId(base_rect.Normal);
+	Geom::Rectangle cs_rect = aabb.getCrossSection(aid, 0);
+
+	aabbConstraint = base_rect.get2DRectangle(cs_rect);
+}
+
 
 FdGraph* BlockGraph::activeScaffold()
 {
@@ -196,8 +203,10 @@ void BlockGraph::genAllFoldOptions()
 
 	// collect all
 	Geom::Rectangle base_rect = baseMaster->mPatch;
-	for (int i = 0; i < chains.size(); i++){
-		for (auto fo : chains[i]->genFoldOptions(maxNbSplits, maxNbChunks))
+	for (int i = 0; i < chains.size(); i++)
+	{
+		// regular option
+		for (FoldOption* fo : chains[i]->genRegularFoldOptions(maxNbSplits, maxNbChunks))
 		{
 			// chain index
 			fo->chainIdx = i;
@@ -211,6 +220,12 @@ void BlockGraph::genAllFoldOptions()
 			// index
 			fo->index = allFoldOptions.size() - 1;
 		}
+
+		// delete option
+		FoldOption* dfo = chains[i]->genDeleteFoldOption(maxNbSplits);
+		dfo->chainIdx = i;
+		allFoldOptions << dfo;
+		dfo->index = allFoldOptions.size() - 1;
 	}
 }
 
@@ -264,7 +279,7 @@ double BlockGraph::computeCost(FoldOption* fo)
 	double a = fo->nSplits / (double)maxNbSplits;
 
 	// shrinking
-	double b = fo->scale;
+	double b = 1 - fo->scale;
 
 	// blended cost : c \in [0, 1]
 	double c = weight * a + (1 - weight) * b;
@@ -282,3 +297,37 @@ double BlockGraph::getChainArea()
 	for (auto c : chains)a += c->getArea();
 	return a;
 }
+
+void BlockGraph::showObstaclesAndFoldOptions()
+{
+	// clear
+	properties.remove(DEBUG_POINTS);
+	properties.remove(DEBUG_RECTS);
+
+	// assert idx
+	if (currSlnIdx < 0 || currSlnIdx >= foldSolutions.size())
+		return;
+
+	// obstacles
+	appendToVectorProperty(DEBUG_POINTS, obstaclePnts[currSlnIdx]);
+
+	// available fold options
+	QVector<Geom::Rectangle> rects;
+	Geom::Rectangle base_rect = baseMaster->mPatch;
+	for (int foi : testedAvailFoldOptions[currSlnIdx])
+		rects << base_rect.get3DRectangle(allFoldOptions[foi]->regionProj);
+	appendToVectorProperty(DEBUG_RECTS, rects);
+}
+
+void BlockGraph::resetAllFoldOptions()
+{
+	// regenerate all fold options
+	genAllFoldOptions();
+
+	// clear saved solutions
+	testedAvailFoldOptions.clear();
+	foldSolutions.clear();
+	foldCost.clear();
+	obstaclePnts.clear();
+}
+

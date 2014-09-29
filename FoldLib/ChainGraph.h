@@ -26,7 +26,7 @@ public:
 	// fold options
 	FoldOption* genDeleteFoldOption(int nSplits);
 	QVector<FoldOption*> genFoldOptionWithDiffPositions(int nSplits, int nChunks, int maxNbChunks);
-	virtual QVector<FoldOption*> genFoldOptions(int nSplits, int nChunks) = 0;
+	virtual QVector<FoldOption*> genRegularFoldOptions(int nSplits, int nChunks) = 0;
 
 	// fold region
 	virtual Geom::Rectangle getFoldRegion(FoldOption* fn) = 0;

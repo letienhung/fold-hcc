@@ -68,7 +68,7 @@ void PatchNode::createScaffold(bool useAid)
 	if (!useAid)
 		mAid = mBox.minAxisId();
 
-	mPatch = mBox.getPatch(mAid, 0);
+	mPatch = mBox.getCrossSection(mAid, 0);
 }
 
 void PatchNode::drawScaffold()

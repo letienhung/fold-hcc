@@ -7,8 +7,7 @@
 #include "FoldOptionGraph.h"
 
 HBlockGraph::HBlockGraph(QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& ss,
-	QVector< QVector<QString> >& mPairs, Geom::Box shape_aabb)
-	:BlockGraph(id, shape_aabb)
+	QVector< QVector<QString> >& mPairs) : BlockGraph(id)
 {
 	// clone nodes
 	foreach(PatchNode* m, ms)	{
@@ -158,21 +157,33 @@ QVector<int> HBlockGraph::getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe)
 {
 	// update obstacles
 	computeObstacles(ssKeyframe);
+	obstaclePnts << getObstaclePoints(); // store obstacles
 
 	// prune fold options
 	QVector<int> afo;
+	
 	for (int i = 0; i < allFoldOptions.size(); i++)
 	{
 		// the fold option
 		FoldOption* fo = allFoldOptions[i];
 
-		// the obstacles
-		QString top_mid = chainTopMasterMap[fo->chainIdx];
-		QVector<Vector2> &obs = obstacles[top_mid];
+		// always accept the delete fold option
+		// check acceptance for regular fold option
+		bool accepted = true;
+		if (fo->scale != 0)
+		{
+			// the obstacles
+			QString top_mid = chainTopMasterMap[fo->chainIdx];
+			QVector<Vector2> &obs = obstacles[top_mid];
 
-		// prune
-		if (!fo->regionProj.containsAny(obs, -0.01))
-			afo << i;
+			// prune
+			bool isColliding = fo->regionProj.containsAny(obs, -0.01);
+			bool inAABB = aabbConstraint.containsAll(fo->regionProj.getConners(), 0.01);
+			accepted = !isColliding && inAABB;
+		}
+
+		// store
+		if (accepted) afo << i;
 	}
 
 	// result
@@ -209,14 +220,14 @@ FoldOptionGraph* HBlockGraph::createCollisionGraph(const QVector<int>& afo)
 	{
 		// skip delete fold option
 		FoldOption* foi = fos[i];
-		if (foi->hasTag(DELETE_FOLD_OPTION)) continue;
+		if (foi->scale == 0) continue;
 
 		// collision with others
 		for (int j = i + 1; j < afo.size(); j++)
 		{
 			// skip delete fold option
 			FoldOption* foj = fos[j];
-			if (foj->hasTag(DELETE_FOLD_OPTION)) continue;
+			if (foj->scale == 0) continue;
 
 			// skip siblings
 			if (foi->chainIdx == foj->chainIdx) continue;
@@ -364,4 +375,15 @@ QVector<double> HBlockGraph::genReversedWeights(const QVector<FoldOption*>& fns)
 		weights.push_back(maxCost - cost);
 
 	return weights;
+}
+
+QVector<Vector3> HBlockGraph::getObstaclePoints()
+{
+	QVector<Vector3> pnts;
+	Geom::Rectangle base_rect = baseMaster->mPatch;
+	for (QString mid : obstacles.keys())
+	for (Vector2 p : obstacles[mid])
+		pnts << base_rect.getPosition(p);
+
+	return pnts;
 }

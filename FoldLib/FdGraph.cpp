@@ -198,8 +198,8 @@ void FdGraph::drawAABB()
 	{
 		int aid = properties["pushAId"].toInt();
 		Geom::Box box = computeAABB().box();
-		Geom::Rectangle patch1 = box.getPatch(aid, 1);
-		Geom::Rectangle patch2 = box.getPatch(aid, -1);
+		Geom::Rectangle patch1 = box.getCrossSection(aid, 1);
+		Geom::Rectangle patch2 = box.getCrossSection(aid, -1);
 
 		patch1.drawEdges(2.0, Qt::yellow);
 		patch2.drawEdges(2.0, Qt::yellow);

@@ -165,8 +165,6 @@ FoldOption* ChainGraph::genDeleteFoldOption( int nSplits )
 	// keep the number of slipts for computing the cost
 	QString fnid = mID + "_delete";
 	FoldOption* delete_fn = new FoldOption(fnid, true, 0, 0, nSplits);
-	delete_fn->addTag(DELETE_FOLD_OPTION);
-	delete_fn->region = Geom::Rectangle();
 	return delete_fn;
 }
 
@@ -310,7 +308,7 @@ void ChainGraph::activateLinks( FoldOption* fn )
 void ChainGraph::applyFoldOption( FoldOption* fn)
 {
 	// delete chain if fold option is null
-	if (fn->hasTag(DELETE_FOLD_OPTION)) {
+	if (fn->scale == 0) {
 		isDeleted = true;
 		std::cout << "Chain: " << mID.toStdString() << " is deleted.\n";
 		return;

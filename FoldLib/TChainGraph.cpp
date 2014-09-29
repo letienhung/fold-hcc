@@ -98,7 +98,7 @@ void TChainGraph::fold(double t)
 	restoreConfiguration();
 }
 
-QVector<FoldOption*> TChainGraph::genFoldOptions(int nSplits, int nChunks)
+QVector<FoldOption*> TChainGraph::genRegularFoldOptions(int nSplits, int nChunks)
 {
 	// nS: # splits; nC: # used chunks; nbChunks: total # of chunks
 	// enumerate all start positions and left/right side

@@ -11,7 +11,7 @@ public:
 	virtual Geom::Rectangle getFoldRegion(FoldOption* fn) override;
 
 	// fold options
-	virtual QVector<FoldOption*> genFoldOptions(int nSplits, int nChunks) override;
+	virtual QVector<FoldOption*> genRegularFoldOptions(int nSplits, int nChunks) override;
 
 	// cut planes
 	virtual QVector<Geom::Plane> generateCutPlanes(FoldOption* fn) override;

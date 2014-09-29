@@ -7,7 +7,7 @@ class TBlockGraph : public BlockGraph
 {
 public:
 	TBlockGraph(QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& ss,
-		QVector< QVector<QString> >& mPairs, Geom::Box shape_aabb);
+		QVector< QVector<QString> >& mPairs);
 
 	// key frame
 	virtual FdGraph* getKeyframe(double t, bool useThk) override;

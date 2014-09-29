@@ -314,7 +314,7 @@ void HChainGraph::computePhaseSeparator()
 	angleSep = asin(RANGED(0, sin_angle, 1));
 }
 
-QVector<FoldOption*> HChainGraph::genFoldOptions(int maxNbSplits, int maxNbChunks)
+QVector<FoldOption*> HChainGraph::genRegularFoldOptions(int maxNbSplits, int maxNbChunks)
 {
 	// nS: # splits; nC: # used chunks; nbChunks: total # of chunks
 	// enumerate all start positions and left/right side
