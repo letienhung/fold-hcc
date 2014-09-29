@@ -90,7 +90,7 @@ FdGraph* BlockGraph::getSuperKeyframe( double t )
 	// create super patch
 	PatchNode* superPatch = (PatchNode*)baseMaster->clone();
 	superPatch->mID = mID + "_super";
-	superPatch->addTag(SUPER_PATCH_TAG); 
+	superPatch->addTag(SUPER_MASTER_TAG); 
 
 	// collect projections of all nodes (including baseMaster) on baseMaster
 	Geom::Rectangle base_rect = superPatch->mPatch;

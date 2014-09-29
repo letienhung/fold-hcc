@@ -14,53 +14,6 @@ typedef QVector< QVector<FdNode*> > FdNodeArray2D;
 typedef QPair<double, double> Interval;
 #define	INTERVAL(negDist, posDist) qMakePair<double, double>(negDist, posDist)
 
-// tags
-#define BUNDLE_TAG "isBundle"
-#define	MASTER_TAG "isMasterPatch"
-#define EDGE_ROD_TAG "isEdgeRodNode"
-#define DELETED_TAG "hasDeleted"
-#define MERGED_PART_TAG "mergedMasterTag"
-#define SELECTED_TAG "isSelected"
-#define SUPER_PATCH_TAG "isMerged"
-#define MERGED_MASTERS "mergedMastersSet"
-#define	MASTER_SUPER_MAP "master_prediction_map"
-#define DELETE_FOLD_OPTION	"deleteFoldOption"
-#define ACTIVE_TAG "isActive"
-#define EDGE_ROD_ORIG "edgeRodOrigin"
-#define SPLIT_ORIG "splitOrigin"
-
-// propagation
-#define FIXED_NODE_TAG "hasFixed"
-#define ACTIVE_HINGE_TAG "isActiveHinge"
-
-// debug visual
-#define AFS "availFoldingSpace"
-#define SHOW_AFS "showAFS"
-
-#define MAXFR "MaxFondingRegion"
-#define MINFR "MinFoldingRegion"
-#define AFR_CP "AFR_constraint_points"
-#define AFR "AvailFoldingRegion"
-
-#define FOLD_REGIONS "filtered_fold_regions"
-#define DEBUG_PLANES "debugPlanes"
-
-// statistics
-#define NB_SPLIT "nbSplits"
-#define NB_CHUNKS "nbChunks"
-#define SQZ_DIRECTION "sqzDirection"
-#define NB_MASTER "nbMasters"
-#define NB_SLAVE "nbSlaves"
-#define NB_BLOCK "nbBlocks"
-#define NB_HINGES "nbHinges"
-#define SHRINKED_AREA "shrinkedArea"
-#define FD_TIME "fdTime"
-#define SPACE_SAVING "spaceSaving"
-
-#define CONN_THR_RATIO "connThrRatio"
-#define CONSTRAIN_AABB_SCALE "constrainAabbScale"
-#define COST_WEIGHT "costWeight"
-
 // Qt meta type
 Q_DECLARE_METATYPE(Vector3)
 Q_DECLARE_METATYPE(QVector<Vector3>)

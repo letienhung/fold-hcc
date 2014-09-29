@@ -191,39 +191,41 @@ Geom::AABB FdGraph::computeAABB()
 	return aabb;
 }
 
+
+void FdGraph::drawAABB()
+{
+	if (properties.contains("pushAId"))
+	{
+		int aid = properties["pushAId"].toInt();
+		Geom::Box box = computeAABB().box();
+		Geom::Rectangle patch1 = box.getPatch(aid, 1);
+		Geom::Rectangle patch2 = box.getPatch(aid, -1);
+
+		patch1.drawEdges(2.0, Qt::yellow);
+		patch2.drawEdges(2.0, Qt::yellow);
+
+		LineSegments ls(2.0);
+		foreach(Geom::Segment seg, box.getEdgeSegments(aid))
+			ls.addLine(seg.P0, seg.P1, Qt::cyan);
+		ls.draw();
+	}
+	else
+	{
+		Geom::AABB aabb = computeAABB();
+		aabb.box().drawWireframe(2.0, Qt::cyan);
+	}
+}
+
+
 void FdGraph::draw()
 {
 	Structure::Graph::draw();
 
 	// draw aabb
-	if (showAABB)
-	{
-
-		if (properties.contains("pushAId"))
-		{
-			int aid =  properties["pushAId"].toInt();
-			Geom::Box box = computeAABB().box();
-			Geom::Rectangle patch1 = box.getPatch(aid, 1);
-			Geom::Rectangle patch2 = box.getPatch(aid, -1);
-
-			patch1.drawEdges(2.0, Qt::yellow);
-			patch2.drawEdges(2.0, Qt::yellow);
-
-			LineSegments ls(2.0);
-			foreach (Geom::Segment seg, box.getEdgeSegments(aid))
-				ls.addLine(seg.P0, seg.P1, Qt::cyan);
-			ls.draw();
-		}
-		else
-		{
-			Geom::AABB aabb = computeAABB();
-			aabb.box().drawWireframe(2.0, Qt::cyan);
-		}
-	}
+	if (showAABB) drawAABB();
 
 	// debug
 	drawDebug();
-	drawSpecial();
 }
 
 FdNode* FdGraph::wrapAsBundleNode( QVector<QString> nids, Vector3 v )
@@ -402,6 +404,10 @@ PatchNode* FdGraph::changeRodToPatch( RodNode* rn, Vector3 v )
 
 void FdGraph::restoreConfiguration()
 { 
+	// tags
+
+
+
 	QQueue<FdNode*> activeNodes;
 	foreach(FdNode* fn, getFdNodes())
 		if (fn->hasTag(FIXED_NODE_TAG)) 
@@ -413,7 +419,7 @@ void FdGraph::restoreConfiguration()
 		foreach(Structure::Link* l, getLinks(anode->mID))
 		{
 			FdLink* fl = (FdLink*)l;
-			if (!fl->hasTag(ACTIVE_HINGE_TAG)) continue;
+			if (!fl->hasTag(ACTIVE_LINK_TAG)) continue;
 
 			if (fl->fix()) 
 			{
@@ -435,183 +441,67 @@ void FdGraph::translate(Vector3 v, bool withMesh)
 	}
 }
 
-void FdGraph::drawSpecial()
-{
-	if (properties.contains(AFR_CP))
-	{
-		QVector<Vector3> pnts = properties[AFR_CP].value<QVector<Vector3> >();
-		PointSoup ps;
-		foreach (Vector3 p, pnts) ps.addPoint(p, Qt::blue);
-		ps.draw();
-	}
-
-	if (properties.contains(AFR))
-	{
-		QVector<Vector3> pnts = properties[AFR].value<QVector<Vector3> >();
-		PointSoup ps;
-		foreach(Vector3 p, pnts) ps.addPoint(p, Qt::cyan);
-		ps.draw();
-	}
-
-	if (properties.contains(MINFR))
-	{
-		QVector<Vector3> pnts = properties[MINFR].value<QVector<Vector3> >();
-		PointSoup ps;
-		foreach(Vector3 p, pnts) ps.addPoint(p, Qt::red);
-		ps.draw();
-	}
-
-	if (properties.contains(MAXFR))
-	{
-		QVector<Vector3> pnts = properties[MAXFR].value<QVector<Vector3> >();
-		PointSoup ps;
-		foreach (Vector3 p, pnts) ps.addPoint(p, Qt::blue);
-		ps.draw();
-	}
-
-	if (properties.contains(FOLD_REGIONS))
-	{
-		QVector<Geom::Rectangle> regions = properties[FOLD_REGIONS].value< QVector<Geom::Rectangle> >();
-		foreach (Geom::Rectangle rect, regions)
-		{
-			rect.drawEdges(2.0, Qt::blue);
-		}
-	}
-
-	if (properties.contains(AFS) && hasTag(SHOW_AFS))
-	{
-		QColor color = Qt::green; color.setAlphaF(1.0);
-		QVector<Geom::Box> boxes = properties[AFS].value<QVector<Geom::Box> >();
-		foreach (Geom::Box box, boxes)
-		{
-			box.drawWireframe(2.0, color);
-		}
-	}
-
-	if (properties.contains(DEBUG_PLANES))
-	{
-		QVector<Geom::Plane> planes = properties[DEBUG_PLANES].value<QVector<Geom::Plane> >();
-		foreach (Geom::Plane p, planes)
-		{
-			p.draw();
-		}
-	}
-}
-
-
 void FdGraph::drawDebug()
 {
 	// debug points
-	if (properties.contains("debugPoints"))
+	if (properties.contains(DEBUG_POINTS))
 	{
-		QVector<Vector3> debugPoints = properties["debugPoints"].value<QVector<Vector3> >();
+		QVector<Vector3> debugPoints = properties[DEBUG_POINTS].value<QVector<Vector3> >();
 		PointSoup ps;
 		foreach (Vector3 p, debugPoints) ps.addPoint(p);
 		ps.draw();
 	}
 
 	// debug segments
-	if (properties.contains("debugSegs"))
+	if (properties.contains(DEBUG_SEGS))
 	{
-		QVector<Geom::Segment> debugSegs = properties["debugSegs"].value< QVector<Geom::Segment> >();
+		QVector<Geom::Segment> debugSegs = properties[DEBUG_SEGS].value< QVector<Geom::Segment> >();
 		foreach (Geom::Segment seg, debugSegs)
 		{
 			seg.draw();
 		}
 	}
 
-	// draw boxes
-	if (properties.contains("debugBoxes"))
+	// debug boxes
+	if (properties.contains(DEBUG_BOXES))
 	{
 		QColor color = Qt::green; color.setAlphaF(1.0);
-		QVector<Geom::Box> debugBoxes = properties["debugBoxes"].value<QVector<Geom::Box> >();
+		QVector<Geom::Box> debugBoxes = properties[DEBUG_BOXES].value<QVector<Geom::Box> >();
 		foreach (Geom::Box box, debugBoxes)
 		{
 			box.drawWireframe(2.0, color);
 		}
 	}
 
-	// sector cylinders
-	if (properties.contains("debugSectorCyliners"))
+	// debug planes
+	if (properties.contains(DEBUG_PLANES))
 	{
-		QVector<Geom::SectorCylinder> debugScs = properties["debugSectorCyliners"].value<QVector<Geom::SectorCylinder> >();
-		foreach (Geom::SectorCylinder sc, debugScs)
+		QVector<Geom::Plane> planes = properties[DEBUG_PLANES].value<QVector<Geom::Plane> >();
+		foreach(Geom::Plane p, planes)
 		{
-			sc.draw();
+			p.draw();
+		}
+	}
+
+	// debug rects
+	if (properties.contains(DEBUG_RECTS))
+	{
+		QVector<Geom::Rectangle> regions = properties[DEBUG_RECTS].value< QVector<Geom::Rectangle> >();
+		foreach(Geom::Rectangle rect, regions)
+		{
+			rect.drawEdges(2.0, Qt::blue);
 		}
 	}
 
 	// scaffold
-	if (properties.contains("debugScaffolds"))
+	if (properties.contains(DEBUG_SCAFFOLDS))
 	{
-		QVector<FdGraph*> debugSs = properties["debugScaffolds"].value<QVector<FdGraph*> >();
+		QVector<FdGraph*> debugSs = properties[DEBUG_SCAFFOLDS].value<QVector<FdGraph*> >();
 		foreach (FdGraph* ds, debugSs)
 		{
 			if (ds) ds->draw();
 		}
 	}
-}
-
-void FdGraph::addDebugSegment( Geom::Segment seg )
-{
-	addDebugSegments(QVector<Geom::Segment>() << seg);
-}
-
-void FdGraph::addDebugSegments( QVector<Geom::Segment>& segs )
-{
-	QVector<Geom::Segment> debugSegs;
-	if (properties.contains("debugSegs"))
-		debugSegs = properties["debugSegs"].value< QVector<Geom::Segment> >();
-
-	debugSegs += segs;
-
-	properties["debugSegs"].setValue(debugSegs);
-}
-
-void FdGraph::addDebugBox( Geom::Box box )
-{
-	addDebugBoxes(QVector<Geom::Box>() << box);
-}
-
-
-void FdGraph::addDebugBoxes( QVector<Geom::Box>& boxes )
-{
-	QVector<Geom::Box> debugBoxes;
-	if (properties.contains("debugBoxes"))
-		debugBoxes = properties["debugBoxes"].value<QVector<Geom::Box> >();
-
-	debugBoxes += boxes;
-	properties["debugBoxes"].setValue(debugBoxes);
-}
-
-void FdGraph::addDebugPoints( QVector<Vector3>& pnts )
-{
-	QVector<Vector3> debugPoints;
-	if (properties.contains("debugPoints"))
-		debugPoints = properties["debugPoints"].value<QVector<Vector3> >();
-
-	debugPoints += pnts;
-	properties["debugPoints"].setValue(debugPoints);
-}
-
-void FdGraph::addDebugSectorCylinders( QVector<Geom::SectorCylinder>& scs )
-{
-	QVector<Geom::SectorCylinder> debugScs;
-	if (properties.contains("debugSectorCyliners"))
-		debugScs = properties["debugSectorCyliners"].value<QVector<Geom::SectorCylinder> >();
-
-	debugScs += scs;
-	properties["debugSectorCyliners"].setValue(debugScs);
-}
-
-void FdGraph::addDebugScaffold( FdGraph* ds )
-{
-	QVector<FdGraph*> debugSs;
-	if (properties.contains("debugScaffolds"))
-		debugSs = properties["debugScaffolds"].value<QVector<FdGraph*> >();
-
-	debugSs += ds;
-	properties["debugScaffolds"].setValue(debugSs);
 }
 
 void FdGraph::unwrapBundleNodes()

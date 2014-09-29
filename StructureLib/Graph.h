@@ -44,7 +44,6 @@ public:
 	QVector<Node*> getNodesWithTag(QString tag);
 
 	// Visualize
-	bool isDraw;
 	virtual void draw();
 
 	// Selection

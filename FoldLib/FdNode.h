@@ -81,3 +81,20 @@ public:
 	NODE_TYPE mType;
 	int mAid; // axis index for creating scaffold
 };
+
+#define BUNDLE_TAG "isBundleNode"
+
+#define SPLIT_ORIG "splitOriginNode"
+
+#define EDGE_ROD_TAG "isEdgeRodNode"
+#define EDGE_ROD_ORIG "edgeRodOriginNode"
+
+#define	MASTER_TAG "isMasterPatch"
+#define MERGED_PART_TAG "isMergedNode"
+#define SUPER_MASTER_TAG "isSuperMaster"
+
+#define FIXED_NODE_TAG "hasFixed"
+
+#define ACTIVE_NODE_TAG "isActiveNode"
+
+#define MERGED_MASTERS "mergedMastersSet"

@@ -40,7 +40,6 @@ FdPlugin::FdPlugin()
 	showCuboid = true;
 	showScaffold = true;
 	showMesh = false;
-	showAFS = false;
 	drawNodeOrder = false;
 
 	// color dialog
@@ -102,9 +101,6 @@ void FdPlugin::updateScene()
 		active->showCuboids(showCuboid);
 		active->showScaffold(showScaffold);
 		active->showMeshes(showMesh);
-
-		if (showAFS) active->addTag(SHOW_AFS);
-		else active->removeTag(SHOW_AFS);
 	}
 
 	drawArea()->updateGL();
@@ -236,14 +232,6 @@ void FdPlugin::setShowKeyframe( int state )
 	showKeyframe = (state == Qt::Checked);
 	updateScene();
 }
-
-
-void FdPlugin::setShowAFS( int state )
-{
-	showAFS = (state == Qt::Checked);
-	updateScene();
-}
-
 
 void FdPlugin::exportCurrent()
 {

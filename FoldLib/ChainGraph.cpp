@@ -49,6 +49,9 @@ ChainGraph::ChainGraph( FdNode* slave, PatchNode* base, PatchNode* top)
 	// side
 	foldToRight = true;
 
+	// delete
+	isDeleted = false;
+
 	//// debug
 	//addDebugSegment(baseJoint);
 	//addDebugSegment(slaveSeg);
@@ -286,8 +289,8 @@ void ChainGraph::activateLinks( FoldOption* fn )
 	for (int i = 0; i < rightLinks.size(); i++)
 	{
 		// inactive both hinges
-		rightLinks[i]->removeTag(ACTIVE_HINGE_TAG);
-		leftLinks[i]->removeTag(ACTIVE_HINGE_TAG);
+		rightLinks[i]->removeTag(ACTIVE_LINK_TAG);
+		leftLinks[i]->removeTag(ACTIVE_LINK_TAG);
 
 		// active link
 		FdLink* activeLink;
@@ -296,7 +299,7 @@ void ChainGraph::activateLinks( FoldOption* fn )
 		else
 			activeLink = (fn->rightSide) ? leftLinks[i] : rightLinks[i];
 
-		activeLink->addTag(ACTIVE_HINGE_TAG);
+		activeLink->addTag(ACTIVE_LINK_TAG);
 		activeLinks << activeLink;
 	}
 
@@ -308,13 +311,13 @@ void ChainGraph::applyFoldOption( FoldOption* fn)
 {
 	// delete chain if fold option is null
 	if (fn->hasTag(DELETE_FOLD_OPTION)) {
-		addTag(DELETED_TAG);
+		isDeleted = true;
 		std::cout << "Chain: " << mID.toStdString() << " is deleted.\n";
 		return;
 	}
 	
 	// clear tag
-	removeTag(DELETED_TAG); 
+	isDeleted = false; 
 
 	// reset chains and hinges
 	resetChainParts(fn);

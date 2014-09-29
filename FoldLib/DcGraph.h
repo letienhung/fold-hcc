@@ -71,7 +71,7 @@ public:
 	// foldabilization
 	void foldabilize();
 	double foldabilizeBlock(int bid, double currTime, ShapeSuperKeyframe* currKf, 
-									double& nextTime, ShapeSuperKeyframe* nextKf);
+									double& nextTime, ShapeSuperKeyframe*& nextKf);
 	int getBestNextBlockIndex(double currT, ShapeSuperKeyframe* currKeyframe);
 
 	// key frame

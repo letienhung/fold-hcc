@@ -39,7 +39,6 @@ public:
 	bool showCuboid;
 	bool showScaffold;
 	bool showMesh;
-	bool showAFS;
 
 	bool drawNodeOrder;
 
@@ -63,7 +62,6 @@ public slots:
 	void setShowCuboid(int state);
 	void setShowScaffold(int state);
 	void setShowMesh(int state);
-	void setShowAFS(int state);
 
 	// scene and message
 	void updateScene();

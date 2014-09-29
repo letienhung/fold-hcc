@@ -86,9 +86,9 @@ FdNode* Hinge::fix()
 	}
 
 	// skip if free node is not free
-	if (free_node->hasTag(DELETED_TAG) ||free_node->hasTag(FIXED_NODE_TAG))
+	if (free_node->hasTag(FIXED_NODE_TAG))
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	// fix hinge position and orientation from fixed node

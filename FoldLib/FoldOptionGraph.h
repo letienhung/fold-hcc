@@ -49,6 +49,8 @@ public:
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
+#define DELETE_FOLD_OPTION	"deleteFoldOption"
+#define SELECTED_TAG "selectedFoldOption"
 
 class FoldOptionGraph : public Structure::Graph
 {

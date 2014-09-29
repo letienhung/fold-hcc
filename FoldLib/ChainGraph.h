@@ -89,4 +89,6 @@ public:
 	//				 rightSeg	
 	double halfThk;		// thickness of slave and top master
 	double baseOffset;	// offset caused by thickness of base master and its super siblings
+
+	bool isDeleted;		// deleted fold option has been applied to this chain
 };

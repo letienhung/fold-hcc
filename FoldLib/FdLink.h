@@ -22,4 +22,4 @@ public:
 	Hinge* hinge;
 };
 
-
+#define ACTIVE_LINK_TAG "isActiveLink"

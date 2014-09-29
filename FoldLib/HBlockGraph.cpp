@@ -112,7 +112,7 @@ FdGraph* HBlockGraph::getKeyframe(double t, bool useThk)
 		for (int i = 0; i < chains.size(); i++)
 		{
 			// skip deleted chain
-			if (chains[i]->hasTag(DELETED_TAG))
+			if (chains[i]->isDeleted)
 				chainKeyframes << nullptr;
 			else{
 				ChainGraph* cgraph = chains[i];

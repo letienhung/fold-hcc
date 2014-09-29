@@ -43,29 +43,21 @@ public:
 	// aabb
 	Geom::AABB computeAABB();
 
+	// configuration
+	void restoreConfiguration();
+
 	// visualization
-	void draw();
+	virtual void draw() override;
+	void drawAABB();
 	void showCuboids(bool show);
 	void showMeshes(bool show);
 	void showScaffold(bool show);
 
-	// configuration
-	void restoreConfiguration();
-
-	// debug
-	void drawSpecial();
-	void drawDebug();
-	void addDebugPoints(QVector<Vector3>& pnts);
-	void addDebugSegment(Geom::Segment seg);
-	void addDebugSegments(QVector<Geom::Segment>& segs);
-	void addDebugBox(Geom::Box box);
-	void addDebugBoxes(QVector<Geom::Box>& boxes);
-	void addDebugSectorCylinders(QVector<Geom::SectorCylinder>& scs);
-
-	void addDebugScaffold(FdGraph* ds);
-	
 	// rendering
 	void hideEdgeRods();
+
+	// debug
+	void drawDebug();
 
 public:
 	QString path;
@@ -74,3 +66,10 @@ public:
 
 typedef QSharedPointer<FdGraph> FdGraphPtr;
 Q_DECLARE_METATYPE(QVector<FdGraph*>)
+
+#define DEBUG_POINTS "debugPoints"
+#define DEBUG_SEGS "debugSegments"
+#define DEBUG_RECTS "debugRectangles"
+#define DEBUG_PLANES "debugPlanes"
+#define DEBUG_BOXES "debugBoxes"
+#define DEBUG_SCAFFOLDS "debugScaffolds"

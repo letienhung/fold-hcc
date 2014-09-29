@@ -104,3 +104,18 @@ signals:
 	void message(QString msg);
 };
 
+// statistics
+#define NB_SPLIT "nbSplits"
+#define NB_CHUNKS "nbChunks"
+#define SQZ_DIRECTION "sqzDirection"
+#define NB_MASTER "nbMasters"
+#define NB_SLAVE "nbSlaves"
+#define NB_BLOCK "nbBlocks"
+#define NB_HINGES "nbHinges"
+#define SHRINKED_AREA "shrinkedArea"
+#define FD_TIME "fdTime"
+#define SPACE_SAVING "spaceSaving"
+
+#define CONN_THR_RATIO "connThrRatio"
+#define CONSTRAIN_AABB_SCALE "constrainAabbScale"
+#define COST_WEIGHT "costWeight"

@@ -37,7 +37,6 @@ DcGraph::DcGraph(QString id, FdGraph* scaffold, Vector3 v, double connThr)
 	// selection
 	selBlockIdx = -1;
 	keyframeIdx = -1;
-
 	//////////////////////////////////////////////////////////////////////////
 	//QVector<Geom::Segment> normals;
 	//foreach (PatchNode* m, masters)
@@ -505,14 +504,10 @@ FdGraph* DcGraph::getKeyframe( double t )
 			showActive = true;
 			aOrigPos = blocks[i]->baseMaster->center();
 			aBaseMID = blocks[i]->baseMaster->mID;
-			aAFS = blocks[i]->properties[AFS].value<QVector<Geom::Box> >();
-			//aAFR_CP = blocks[i]->properties[AFR_CP].value<QVector<Vector3> >();
-			//aMaxFR = blocks[i]->properties[MAXFR].value<QVector<Vector3> >();
-			aFR = blocks[i]->properties[FOLD_REGIONS].value<QVector<Geom::Rectangle>>();
 			
 			// active slaves
 			foreach (FdNode* n, fblock->getFdNodes())
-				n->addTag(ACTIVE_TAG);
+				n->addTag(ACTIVE_NODE_TAG);
 		}
 	}
 
@@ -524,25 +519,6 @@ FdGraph* DcGraph::getKeyframe( double t )
 
 	// in case the combination fails
 	if (key_graph == nullptr) return nullptr;
-
-	// debug
-	if (showActive)
-	{
-		Vector3 activeCurrPosition = ((PatchNode*)key_graph->getNode(aBaseMID))->center();
-		Vector3 offsetV = activeCurrPosition - aOrigPos;
-		for (int i = 0; i < aAFS.size(); i++ ) aAFS[i].translate(offsetV);
-		key_graph->properties[AFS].setValue(aAFS);
-		for (int i = 0; i < aAFR_CP.size(); i++ ) aAFR_CP[i] += offsetV;
-		key_graph->properties[AFR_CP].setValue(aAFR_CP);
-		//for (int i = 0; i < aMaxFR.size(); i++ ) aMaxFR[i] += offsetV;
-		//key_graph->properties[MAXFR].setValue(aMaxFR);
-		for (int i = 0; i < aFR.size(); i++ ) aFR[i].translate(offsetV);
-		key_graph->properties[FOLD_REGIONS].setValue(aFR);
-	}
-
-	// debug
-	//addDebugScaffold(key_graph);
-
 
 	// path
 	key_graph->path = path;
@@ -594,50 +570,33 @@ void DcGraph::foldabilize()
 	double currTime = 0.0;
 	ShapeSuperKeyframe* currKeyframe = getShapeSuperKeyframe(currTime);
 	int next_bid = getBestNextBlockIndex(currTime, currKeyframe);  
+	std::cout << "Best next = " << next_bid << "\n";
 
-
-	return;
+	//return;
 	
 
 	while (next_bid >= 0 && next_bid < blocks.size())
 	{
-		std::cout << "Best next = " << blocks[next_bid]->mID.toStdString() << "\n";
-
-		// foldabilize the selected next block
 		BlockGraph* next_block = blocks[next_bid];
-		next_block->foldabilizeWrt(currKeyframe);
-		next_block->applySolution();
+		std::cout << "Foldabilizing block: " << next_block->mID.toStdString() << "\n";
 
-
-		//return;
-
-		// set up time interval for selected block
+		// time interval
 		double timeLength = next_block->getNbTopMasters() * timeScale;
 		double nextTime = currTime + timeLength;
+
+		// foldabilize
+		next_block->foldabilizeWrt(currKeyframe);
+		next_block->applySolution();
 		next_block->mFoldDuration = INTERVAL(currTime, nextTime);
 
-		// update the shape super key frame
+		// get best next
 		std::cout << "\n============NEXT============\n";
 		currTime = nextTime;
 		delete currKeyframe;
 		currKeyframe = getShapeSuperKeyframe(currTime);
-		if(!currKeyframe){
-			std::cout << "Warning: cannot fold on this direction.\n";
-			return;
-		}
-
-		// get best next
 		next_bid = getBestNextBlockIndex(currTime, currKeyframe);
+		std::cout << "Best next = " << next_bid << "\n";
 	}
-
-
-
-
-	return;
-
-
-
-
 
 	// remaining blocks (if any) are interlocking
 	QVector<BlockGraph*> blocks_copy = blocks;
@@ -670,7 +629,7 @@ void DcGraph::foldabilize()
 
 
 double DcGraph::foldabilizeBlock(int bid, double currTime, ShapeSuperKeyframe* currKf, 
-										double& nextTime, ShapeSuperKeyframe* nextKf)
+										double& nextTime, ShapeSuperKeyframe*& nextKf)
 {
 	// foldabilize nextBlock wrt the current super key frame
 	BlockGraph* nextBlock = blocks[bid];
@@ -700,62 +659,53 @@ int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyf
 	int best_next_bid = -1;
 	for (int next_bid = 0; next_bid < blocks.size(); next_bid++)
 	{
-		// skip foldabilized blocks
 		BlockGraph* nextBlock = blocks[next_bid];
-		if (passed(currTime, nextBlock->mFoldDuration)) continue;
-
-		// save original time interval
-		Interval nextTi = nextBlock->mFoldDuration;
+		if (passed(currTime, nextBlock->mFoldDuration)) continue; // skip foldabilized blocks
 
 		// foldabilize nextBlock
-		double nextTime;
-		ShapeSuperKeyframe* nextKeyframe;
+		double nextTime = -1.0;
+		ShapeSuperKeyframe* nextKeyframe = nullptr;
+		Interval origNextTi = nextBlock->mFoldDuration; // back up
 		double nextCost = foldabilizeBlock(next_bid, currTime, currKeyframe, nextTime, nextKeyframe);
 		
-		// the folding of nextBlock must be valid, otherwise stop forward evaluation
-		if (!nextKeyframe->isValid(sqzV)) 
-			continue; 
-
-		// cost of folding remaining open blocks
-		for (int next2_bid = 0; next2_bid < blocks.size(); next2_bid++)
+		// the folding of nextBlock must be valid, otherwise skip further evaluation
+		if (nextKeyframe->isValid(sqzV))
 		{
-			// skip foldabilized block
-			BlockGraph* next2Block = blocks[next2_bid];
-			if (passed(nextTime, next2Block->mFoldDuration)) continue;
+			// cost of folding remaining open blocks
+			for (int next2_bid = 0; next2_bid < blocks.size(); next2_bid++)
+			{
+				BlockGraph* next2Block = blocks[next2_bid];
+				if (passed(nextTime, next2Block->mFoldDuration)) continue; // skip foldabilized block
 
-			// save original time interval
-			Interval next2Ti = nextBlock->mFoldDuration;
+				// foldabilize next2Block
+				double next2Time;
+				ShapeSuperKeyframe* next2Keyframe;
+				Interval origNext2Ti = next2Block->mFoldDuration;
+				double next2Cost = foldabilizeBlock(next2_bid, nextTime, nextKeyframe, next2Time, next2Keyframe);
 
-			// foldabilize next2Block
-			double next2Time;
-			ShapeSuperKeyframe* next2Keyframe;
-			double next2Cost = foldabilizeBlock(next2_bid, nextTime, nextKeyframe, next2Time, next2Keyframe);
+				// invalid block folding generates large cost as being deleted
+				if (!next2Keyframe->isValid(sqzV)) next2Cost = 1.0; // deletion cost = 1.0
 
-			// invalid block folding generates large cost as being deleted
-			if (!next2Keyframe->isValid(sqzV))
-				next2Cost = 1.0; // deletion cost = 1.0
+				// update cost : normalized cost
+				nextCost += next2Cost * blockWeights[next2_bid];
 
-			// update cost : normalized cost
-			nextCost += next2Cost * blockWeights[next2_bid];
+				delete next2Keyframe; // garbage collection
+				next2Block->mFoldDuration = origNext2Ti; // restore time interval
+			}
 
-			// garbage collection
-			delete next2Keyframe;
-
-			// restore time interval in order to test another block
-			next2Block->mFoldDuration = next2Ti;
+			// nextBlock with lowest cost wins
+			if (nextCost < min_cost - ZERO_TOLERANCE_LOW){
+				min_cost = nextCost;
+				best_next_bid = next_bid;
+			}
+		}else
+		{
+			// invalid info for debug
+			nextCost = -1;
 		}
 
-		// nextBlock with lowest cost wins
-		if (nextCost < min_cost - ZERO_TOLERANCE_LOW){
-			min_cost = nextCost;
-			best_next_bid = next_bid;
-		}
-
-		// garbage collection
-		delete nextKeyframe;
-
-		// very important: restore time interval in order to test another block
-		nextBlock->mFoldDuration = nextTi;
+		delete nextKeyframe; // garbage collection
+		nextBlock->mFoldDuration = origNextTi;// restore time interval
 
 		// debug info
 		std::cout << blocks[next_bid]->mID.toStdString() << " : " << nextCost << std::endl;
@@ -784,7 +734,7 @@ void DcGraph::generateKeyframes( int N )
 		foreach (FdNode* n, kf->getFdNodes())
 		{
 			double grey = 240;
-			QColor c = (n->hasTag(ACTIVE_TAG) && !n->hasTag(MASTER_TAG)) ? 
+			QColor c = (n->hasTag(ACTIVE_NODE_TAG) && !n->hasTag(MASTER_TAG)) ? 
 				QColor::fromRgb(255, 110, 80) : QColor::fromRgb(grey, grey, grey);
 			c.setAlphaF(0.78);
 			n->mColor = c;

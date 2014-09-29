@@ -10,7 +10,7 @@ ShapeSuperKeyframe::ShapeSuperKeyframe(FdGraph* superKeyframe, StringSetMap moc_
 	QVector<PatchNode*> superMasters;
 	QVector<QSet<QString> > childMasters, childMasters_new;
 	foreach(PatchNode* m, getAllMasters(this)){
-		if (m->hasTag(SUPER_PATCH_TAG)) {
+		if (m->hasTag(SUPER_MASTER_TAG)) {
 			superMasters << m;
 			childMasters << m->properties[MERGED_MASTERS].value<QSet<QString> >();
 		}

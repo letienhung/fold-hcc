@@ -34,7 +34,7 @@ Structure::Link* FdLink::clone()
 
 void FdLink::draw()
 {
-	if (hasTag(ACTIVE_HINGE_TAG) && hinge)
+	if (hasTag(ACTIVE_LINK_TAG) && hinge)
 	{
 		hinge->draw();
 	}
