@@ -5,7 +5,7 @@ Hinge::Hinge()
 {
 }
 
-Hinge::Hinge( FdNode* n1, FdNode* n2, Point o, Vec3d x, Vector3 y, Vector3 z, double extent )
+Hinge::Hinge( ScaffoldNode* n1, ScaffoldNode* n2, Point o, Vec3d x, Vector3 y, Vector3 z, double extent )
 {
 	node1 = n1;
 	node2 = n2;
@@ -66,11 +66,11 @@ Hinge::HingeRecordInBox Hinge::createHingeRecord( Geom::Box& node_box )
 	return lr;
 }
 
-FdNode* Hinge::fix()
+ScaffoldNode* Hinge::fix()
 {
 	// if both nodes are fixed, treat node2 as free
 	// distinguish between fixed and free
-	FdNode *fixed_node, *free_node;
+	ScaffoldNode *fixed_node, *free_node;
 	HingeRecordInBox fixed_hr, free_hr;
 	Geom::Frame::RecordInFrame free_nr;
 	if (node1->hasTag(FIXED_NODE_TAG))
@@ -178,7 +178,7 @@ void Hinge::setState( int s )
 	}
 }
 
-Vector3 Hinge::getDihedralDirec( FdNode* n )
+Vector3 Hinge::getDihedralDirec( ScaffoldNode* n )
 {
 	if (node1 == n) 
 		return hX;

@@ -1,20 +1,20 @@
 #pragma once
 
-#include "FdGraph.h"
+#include "Scaffold.h"
 #include "PatchNode.h"
 #include "Numeric.h"
-#include "BlockGraph.h"
+#include "UnitScaffold.h"
 #include "FoldOptionGraph.h"
 #include "ShapeSuperKeyframe.h"
 
-// DcGraph encodes the decomposition of scaffold
-// including base patches and layers
+// ShapeGraph encodes the decomposition of scaffold
+// including base patches and blocks
 
-class DcGraph : public FdGraph
+class ShapeScaffold : public Scaffold
 {
 public:
-    DcGraph(QString id, FdGraph* scaffold, Vector3 v, double connThr);
-	~DcGraph();
+    ShapeScaffold(QString id, Scaffold* scaffold, Vector3 v, double connThr);
+	~ShapeScaffold();
 
 public:
 	// squeezing direction
@@ -27,13 +27,13 @@ public:
 	QMap<QString, QSet<QString> > masterOrderLess;
 
 	// slaves
-	QVector<FdNode*> slaves;
+	QVector<ScaffoldNode*> slaves;
 	QVector< QSet<int> > slave2master;
 	QVector< QSet<int> > slaveClusters;
 
 	// blocks
 	int selBlockIdx;
-	QVector<BlockGraph*> blocks;
+	QVector<UnitScaffold*> blocks;
 	QVector<double> blockWeights;
 	QMap<QString, QSet<int> > masterBlockMap;
 
@@ -42,7 +42,7 @@ public:
 
 	// folding results
 	int keyframeIdx;
-	QVector<FdGraph*> keyframes;
+	QVector<Scaffold*> keyframes;
 
 	// threshold
 	double connThrRatio;
@@ -61,12 +61,12 @@ public:
 	void createSlaves(); 
 
 	void clusterSlaves();
-	BlockGraph* createBlock(QSet<int> sCluster);
+	UnitScaffold* createBlock(QSet<int> sCluster);
 	void createBlocks();
 
 	void computeBlockWeights();
 
-	BlockGraph* mergeBlocks( QVector<BlockGraph*> blocks );
+	UnitScaffold* mergeBlocks( QVector<UnitScaffold*> blocks );
 
 	// foldabilization
 	void foldabilize();
@@ -76,17 +76,17 @@ public:
 
 	// key frame
 	void generateKeyframes(int N);
-	FdGraph* getKeyframe(double t);
+	Scaffold* getKeyframe(double t);
 	ShapeSuperKeyframe* getShapeSuperKeyframe(double t);
 
 public:
-	FdGraph* activeScaffold();
-	BlockGraph* getSelBlock();
+	Scaffold* activeScaffold();
+	UnitScaffold* getSelBlock();
 
 	QStringList getBlockLabels();
 	void selectBlock(QString id);
 
-	FdGraph* getSelKeyframe();
+	Scaffold* getSelKeyframe();
 	void selectKeyframe(int idx);
 };
 

@@ -1,6 +1,6 @@
 #include "FoldManager.h"
 #include "FdUtility.h"
-#include "ChainGraph.h"
+#include "ChainScaffold.h"
 
 #include <QFileDialog>
 #include <QDir>
@@ -21,7 +21,7 @@ FoldManager::FoldManager()
 	nbChunks = 2;
 	thickness = 0;
 
-	connThrRatio = 0.1;
+	connThrRatio = 0.05;
 	aabbScale = Vector3(1, 1, 1);
 
 	costWeight = 0.05;
@@ -35,7 +35,7 @@ FoldManager::~FoldManager()
 
 void FoldManager::clearDcGraphs()
 {
-	foreach(DcGraph* dc, dcGraphs)
+	foreach(ShapeScaffold* dc, dcGraphs)
 		delete dc;
 
 	dcGraphs.clear();
@@ -44,7 +44,7 @@ void FoldManager::clearDcGraphs()
 }
 
 // input
-void FoldManager::setScaffold( FdGraph* fdg )
+void FoldManager::setScaffold( Scaffold* fdg )
 {
 	scaffold = fdg;
 
@@ -86,9 +86,9 @@ void FoldManager::selectDcGraph( QString id )
 
 void FoldManager::selectBlock( QString id )
 {
-	if (getSelDcGraph()) 
+	if (getSelShapeScaffold())
 	{
-		getSelDcGraph()->selectBlock(id);
+		getSelShapeScaffold()->selectBlock(id);
 	}
 
 	updateChainList();
@@ -110,7 +110,7 @@ void FoldManager::selectChain( QString id )
 QStringList FoldManager::getDcGraphLabels()
 {
 	QStringList labels;
-	foreach (DcGraph* dc, dcGraphs)	
+	foreach (ShapeScaffold* dc, dcGraphs)	
 		labels << dc->mID;
 
 	// append string to select none
@@ -119,11 +119,11 @@ QStringList FoldManager::getDcGraphLabels()
 	return labels;
 }
 
-BlockGraph* FoldManager::getSelBlock()
+UnitScaffold* FoldManager::getSelBlock()
 {
-	if (getSelDcGraph())
+	if (getSelShapeScaffold())
 	{
-		return getSelDcGraph()->getSelBlock();
+		return getSelShapeScaffold()->getSelBlock();
 	}
 	else
 		return NULL;
@@ -135,7 +135,7 @@ void FoldManager::generateKeyframes()
 	setParameters();
 
 	// selected dc graph
-	DcGraph* selDc = getSelDcGraph();
+	ShapeScaffold* selDc = getSelShapeScaffold();
 	if (!selDc) return;
 
 	// forward message
@@ -147,22 +147,22 @@ void FoldManager::generateKeyframes()
 
 void FoldManager::selectKeyframe( int idx )
 {
-	DcGraph* selDc = getSelDcGraph();
+	ShapeScaffold* selDc = getSelShapeScaffold();
 	if (!selDc) return;
 
 	selDc->selectKeyframe(idx);
 	emit(sceneChanged());
 }
 
-FdGraph* FoldManager::getSelKeyframe()
+Scaffold* FoldManager::getSelKeyframe()
 {
-	DcGraph* selDc = getSelDcGraph();
+	ShapeScaffold* selDc = getSelShapeScaffold();
 	if (!selDc) return NULL;
 
 	return selDc->getSelKeyframe();
 }
 
-DcGraph* FoldManager::getSelDcGraph()
+ShapeScaffold* FoldManager::getSelShapeScaffold()
 {
 	if (selDcIdx >= 0 && selDcIdx < dcGraphs.size())
 		return dcGraphs[selDcIdx];
@@ -170,9 +170,9 @@ DcGraph* FoldManager::getSelDcGraph()
 		return NULL;
 }
 
-FdGraph* FoldManager::activeScaffold()
+Scaffold* FoldManager::activeScaffold()
 {
-	DcGraph* selLy = getSelDcGraph();
+	ShapeScaffold* selLy = getSelShapeScaffold();
 	if (selLy)	return selLy->activeScaffold();
 	else		return scaffold;
 }
@@ -181,7 +181,7 @@ void FoldManager::decompose()
 {
 	selDcIdx = dcGraphs.size();
 	QString id = "Dc_" + QString::number(selDcIdx);
-	dcGraphs.push_back(new DcGraph(id, scaffold, sqzV, connThrRatio));
+	dcGraphs.push_back(new ShapeScaffold(id, scaffold, sqzV, connThrRatio));
 
 	updateDcList();
 }
@@ -197,7 +197,7 @@ timer.start();
 
 	// decompose
 	decompose();
-	DcGraph* selDc = getSelDcGraph();
+	ShapeScaffold* selDc = getSelShapeScaffold();
 	
 	// parameters
 	setParameters();
@@ -226,7 +226,7 @@ int fdTime = timer.elapsed();
 		stat.properties[NB_SLAVE] = selDc->slaves.size();
 		stat.properties[NB_BLOCK] = selDc->blocks.size();
 
-		FdGraph* lastKeyframe = selDc->keyframes.last();
+		Scaffold* lastKeyframe = selDc->keyframes.last();
 		double origVol = scaffold->computeAABB().box().volume();
 		double fdVol = lastKeyframe->computeAABB().box().volume();
 		stat.properties[SPACE_SAVING] = 1 - fdVol / origVol;
@@ -235,9 +235,9 @@ int fdTime = timer.elapsed();
 
 		int nbHinges = 0;
 		double shinkedArea = 0, totalArea = 0;
-		foreach(BlockGraph* block, selDc->blocks)
+		foreach(UnitScaffold* block, selDc->blocks)
 		{
-			foreach (ChainGraph* chain, block->chains)
+			foreach (ChainScaffold* chain, block->chains)
 			{
 				//nbHinges += chain->nbHinges;
 				//shinkedArea += chain->shrinkedArea;
@@ -268,8 +268,8 @@ void FoldManager::updateDcList()
 void FoldManager::updateBlockList()
 {
 	QStringList layerLabels;
-	if (getSelDcGraph()) 
-		layerLabels = getSelDcGraph()->getBlockLabels();
+	if (getSelShapeScaffold()) 
+		layerLabels = getSelShapeScaffold()->getBlockLabels();
 
 	emit(blocksChanged(layerLabels));
 
@@ -288,7 +288,7 @@ void FoldManager::updateChainList()
 void FoldManager::updateKeyframeSlider()
 {
 	// selected dc graph
-	DcGraph* selDc = getSelDcGraph();
+	ShapeScaffold* selDc = getSelShapeScaffold();
 	if (!selDc) return;
 
 	emit(keyframesChanged(selDc->keyframes.size()-1));
@@ -297,7 +297,7 @@ void FoldManager::updateKeyframeSlider()
 void FoldManager::updateSolutionList()
 {
 	// selected dc graph
-	BlockGraph* selBlock = getSelBlock();
+	UnitScaffold* selBlock = getSelBlock();
 	if (!selBlock) return;
 
 	emit(solutionsChanged(selBlock->foldSolutions.size()));
@@ -327,7 +327,7 @@ void FoldManager::exportResultMesh()
 void FoldManager::selectSolution( int idx )
 {
 	// selected dc graph
-	BlockGraph* selBlock = getSelBlock();
+	UnitScaffold* selBlock = getSelBlock();
 	if (!selBlock) return;
 
 	//selBlock->applySolution(idx);
@@ -360,8 +360,8 @@ void FoldManager::setParameters()
 {
 	Geom::Box aabb = scaffold->computeAABB().box();
 	aabb.scale(aabbScale);
-	foreach (DcGraph* dc, dcGraphs){
-		foreach (BlockGraph* b, dc->blocks)
+	foreach (ShapeScaffold* dc, dcGraphs){
+		foreach (UnitScaffold* b, dc->blocks)
 		{
 			b->setAabbConstraint(aabb);
 			b->maxNbSplits = nbSplits;

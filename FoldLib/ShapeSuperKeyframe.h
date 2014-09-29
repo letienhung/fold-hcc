@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FdGraph.h"
+#include "Scaffold.h"
 
 // This class represents a key frame of the shape under certain time
 // Different from regular key frame, this class introduce "super master"
@@ -8,10 +8,10 @@
 // The master order constrains are also updated for super masters
 // These additional information helps compute various folding volumes
 
-class ShapeSuperKeyframe : public FdGraph
+class ShapeSuperKeyframe : public Scaffold
 {
 public:
-	ShapeSuperKeyframe(FdGraph* superKeyframe, StringSetMap moc_g);
+	ShapeSuperKeyframe(Scaffold* superKeyframe, StringSetMap moc_g);
 	// the map between master and super master
 	QMap<QString, QString> master2SuperMap;
 

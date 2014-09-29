@@ -1,11 +1,11 @@
 #pragma once
 
-#include <ChainGraph.h>
+#include "ChainScaffold.h"
 
-class HChainGraph : public ChainGraph
+class HChainScaffold : public ChainScaffold
 {
 public:
-	HChainGraph(FdNode* slave, PatchNode* base, PatchNode* top);
+	HChainScaffold(ScaffoldNode* slave, PatchNode* base, PatchNode* top);
 
 	// fold option
 	virtual Geom::Rectangle getFoldRegion(FoldOption* fn) override;

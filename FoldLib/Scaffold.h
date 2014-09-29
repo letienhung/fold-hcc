@@ -1,39 +1,39 @@
 #pragma once
 
 #include "Graph.h"
-#include "FdNode.h"
-#include "FdLink.h"
+#include "ScaffoldNode.h"
+#include "ScaffoldLink.h"
 #include "AABB.h"
 #include <QSharedPointer>
 #include "FdUtility.h"
 
 // FdGraph represents all segments of the input shape
 
-class FdGraph : public Structure::Graph
+class Scaffold : public Structure::Graph
 {
 public:
-	FdGraph(QString id = "");
-	virtual ~FdGraph();
-	FdGraph(FdGraph& other);
+	Scaffold(QString id = "");
+	virtual ~Scaffold();
+	Scaffold(Scaffold& other);
 
-	virtual Graph* clone();
-	FdLink* addLink(FdNode* n1, FdNode* n2);
+	virtual Graph* clone() override;
+	ScaffoldLink* addLink(ScaffoldNode* n1, ScaffoldNode* n2);
 
 public:
 	// accessors
-	QVector<FdNode*> getFdNodes();
-	FdNode* getFdNode(QString id);
-	FdNode* addNode(MeshPtr mesh, BOX_FIT_METHOD method = FIT_PCA);
-	FdNode* addNode(MeshPtr mesh, Geom::Box& box);
+	QVector<ScaffoldNode*> getFdNodes();
+	ScaffoldNode* getFdNode(QString id);
+	ScaffoldNode* addNode(MeshPtr mesh, BOX_FIT_METHOD method = FIT_PCA);
+	ScaffoldNode* addNode(MeshPtr mesh, Geom::Box& box);
 
 	// modifier
-	void changeNodeType(FdNode* n);
+	void changeNodeType(ScaffoldNode* n);
 	PatchNode* changeRodToPatch(RodNode* n, Vector3 v);
 	void translate(Vector3 v, bool withMesh = true);
 	void unwrapBundleNodes();
-	FdNode* wrapAsBundleNode(QVector<QString> nids, Vector3 v = Vector3(0, 0, 0));
-	QVector<FdNode*> split(QString nid, Geom::Plane& plane);
-	QVector<FdNode*> split(QString nid, QVector<Geom::Plane>& planes);
+	ScaffoldNode* wrapAsBundleNode(QVector<QString> nids, Vector3 v = Vector3(0, 0, 0));
+	QVector<ScaffoldNode*> split(QString nid, Geom::Plane& plane);
+	QVector<ScaffoldNode*> split(QString nid, QVector<Geom::Plane>& planes);
 
 	// I/O
 	void saveToFile(QString fname);
@@ -64,8 +64,8 @@ public:
 	bool showAABB;
 };
 
-typedef QSharedPointer<FdGraph> FdGraphPtr;
-Q_DECLARE_METATYPE(QVector<FdGraph*>)
+typedef QSharedPointer<Scaffold> ScaffoldPtr;
+Q_DECLARE_METATYPE(QVector<Scaffold*>)
 
 #define DEBUG_POINTS "debugPoints"
 #define DEBUG_SEGS "debugSegments"

@@ -1,6 +1,6 @@
 #include "ShapeSuperKeyframe.h"
 
-ShapeSuperKeyframe::ShapeSuperKeyframe(FdGraph* superKeyframe, StringSetMap moc_g)
+ShapeSuperKeyframe::ShapeSuperKeyframe(Scaffold* superKeyframe, StringSetMap moc_g)
 {
 	// clone all nodes
 	foreach(Structure::Node* n, superKeyframe->nodes)

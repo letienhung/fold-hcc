@@ -1,7 +1,7 @@
 #pragma once
 
-#include "FdGraph.h"
-#include "DcGraph.h"
+#include "Scaffold.h"
+#include "ShapeScaffold.h"
 #include "Numeric.h"
 #include <QObject>
 
@@ -15,11 +15,11 @@ public:
 
 public:
 	// input
-	FdGraph* scaffold; 
+	Scaffold* scaffold; 
 
 	// decomposition
 	int selDcIdx;
-	QVector<DcGraph*> dcGraphs;
+	QVector<ShapeScaffold*> dcGraphs;
 
 	// keyframes
 	int nbKeyframes;
@@ -46,16 +46,16 @@ public:
 	void updateSolutionList();
 
 	// getters
-	FdGraph* activeScaffold();
+	Scaffold* activeScaffold();
 	QStringList getDcGraphLabels();
-	DcGraph* getSelDcGraph();
-	BlockGraph* getSelBlock();
-	FdGraph* getSelKeyframe();
+	ShapeScaffold* getSelShapeScaffold();
+	UnitScaffold* getSelBlock();
+	Scaffold* getSelKeyframe();
 
 public slots:
 	/// Main pipeline	
 	// input
-	void setScaffold(FdGraph* fdg);
+	void setScaffold(Scaffold* fdg);
 
 	// parameters
 	void setSqzV (QString sqzV_str);

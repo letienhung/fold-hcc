@@ -1,4 +1,4 @@
-#include "FdLink.h"
+#include "ScaffoldLink.h"
 #include "RodNode.h"
 #include "PatchNode.h"
 #include "CustomDrawObjects.h"
@@ -10,29 +10,29 @@
 #include "Numeric.h"
 
 
-FdLink::FdLink( FdNode* n1, FdNode* n2, Hinge* h)
+ScaffoldLink::ScaffoldLink( ScaffoldNode* n1, ScaffoldNode* n2, Hinge* h)
 	: Link(n1, n2)
 {
 	hinge = h;
 }
 
-FdLink::FdLink( FdLink& other )
+ScaffoldLink::ScaffoldLink( ScaffoldLink& other )
 	:Link(other)
 {
 	hinge = NULL;
 }
 
-FdLink::~FdLink()
+ScaffoldLink::~ScaffoldLink()
 {
 	if (hinge) delete hinge;
 }
 
-Structure::Link* FdLink::clone()
+Structure::Link* ScaffoldLink::clone()
 {
-	return new FdLink(*this);
+	return new ScaffoldLink(*this);
 }
 
-void FdLink::draw()
+void ScaffoldLink::draw()
 {
 	if (hasTag(ACTIVE_LINK_TAG) && hinge)
 	{
@@ -40,7 +40,7 @@ void FdLink::draw()
 	}
 }
 
-FdNode* FdLink::fix()
+ScaffoldNode* ScaffoldLink::fix()
 {
 	if (hinge) 
 		return hinge->fix();

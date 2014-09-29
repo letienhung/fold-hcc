@@ -1,14 +1,14 @@
 #pragma once
 
-#include "FdGraph.h"
+#include "Scaffold.h"
 #include "PatchNode.h"
 #include "FoldOptionGraph.h"
 
-class ChainGraph : public FdGraph
+class ChainScaffold : public Scaffold
 {
 public:
-    ChainGraph(FdNode* slave, PatchNode* base, PatchNode* top);
-	~ChainGraph();
+    ChainScaffold(ScaffoldNode* slave, PatchNode* base, PatchNode* top);
+	~ChainScaffold();
 
 	// set up
 	void computeOrientations();
@@ -17,7 +17,7 @@ public:
 	void setFoldDuration(double t0, double t1);
 
 	// thickness
-	void addThickness(FdGraph* keyframe, double t);
+	void addThickness(Scaffold* keyframe, double t);
 
 	// the area of original slave patch
 	double getArea();
@@ -42,7 +42,7 @@ public:
 	virtual void fold(double t) = 0;
 
 	// key frame
-	FdGraph* getKeyframe(double t, bool useThk);
+	Scaffold* getKeyframe(double t, bool useThk);
 
 public:
 	PatchNode*			topMaster;	// top
@@ -67,9 +67,9 @@ public:
 	Vector3				rightSegV;	// direction of rightSeg
 	Geom::Segment		topTraj;	// trajectory of top's center during folding (base to top)
 
-	QVector<FdLink*>	rightLinks;	// right hinges 
-	QVector<FdLink*>	leftLinks;	// left hinges
-	QVector<FdLink*>	activeLinks;// active hinges
+	QVector<ScaffoldLink*>	rightLinks;	// right hinges 
+	QVector<ScaffoldLink*>	leftLinks;	// left hinges
+	QVector<ScaffoldLink*>	activeLinks;// active hinges
 
 	Interval			duration;	// time interval
 	bool				foldToRight;// folding side

@@ -2,20 +2,20 @@
 #include <QObject>
 
 #include "UtilityGlobal.h"
-#include "FdGraph.h"
+#include "Scaffold.h"
 #include "FdUtility.h"
 
-class GraphManager : public QObject
+class ScaffoldManager : public QObject
 {
 	Q_OBJECT
 
 public:
-    GraphManager();
-	~GraphManager();
+    ScaffoldManager();
+	~ScaffoldManager();
 
 public:
 	SurfaceMeshModel* entireMesh;
-	FdGraph* scaffold;
+	Scaffold* scaffold;
 
 	// ui 
 	BOX_FIT_METHOD fitMethod;
@@ -40,7 +40,7 @@ public slots:
 
 signals:
 	void scaffoldModified();
-	void scaffoldChanged(FdGraph* fdg);
+	void scaffoldChanged(Scaffold* fdg);
 	void message(QString msg);
 };
 

@@ -1,16 +1,16 @@
-#include "DcGraph.h"
+#include "ShapeScaffold.h"
 #include "PatchNode.h"
 #include <QFileInfo>
 #include "FdUtility.h"
 #include "SectorCylinder.h"
-#include "ChainGraph.h"
+#include "ChainScaffold.h"
 #include "IntrRect2Rect2.h"
-#include "TBlockGraph.h"
-#include "HBlockGraph.h"
+#include "TUnitScaffold.h"
+#include "HUnitScaffold.h"
 
 
-DcGraph::DcGraph(QString id, FdGraph* scaffold, Vector3 v, double connThr)
-	: FdGraph(*scaffold), baseMaster(nullptr) // clone the FdGraph
+ShapeScaffold::ShapeScaffold(QString id, Scaffold* scaffold, Vector3 v, double connThr)
+	: Scaffold(*scaffold), baseMaster(nullptr) // clone the FdGraph
 {
 	path = QFileInfo(path).absolutePath();
 	mID = id;
@@ -31,7 +31,7 @@ DcGraph::DcGraph(QString id, FdGraph* scaffold, Vector3 v, double connThr)
 
 	// time scale
 	double totalDuration = 0;
-	foreach (BlockGraph* b, blocks) totalDuration += b->getNbTopMasters();
+	foreach (UnitScaffold* b, blocks) totalDuration += b->getNbTopMasters();
 	timeScale = 1.0 / totalDuration;
 
 	// selection
@@ -44,12 +44,12 @@ DcGraph::DcGraph(QString id, FdGraph* scaffold, Vector3 v, double connThr)
 	//addDebugSegments(normals);
 }
 
-DcGraph::~DcGraph()
+ShapeScaffold::~ShapeScaffold()
 {
-	foreach (BlockGraph* l, blocks)	delete l;
+	foreach (UnitScaffold* l, blocks)	delete l;
 }
 
-FdNodeArray2D DcGraph::getPerpConnGroups()
+FdNodeArray2D ShapeScaffold::getPerpConnGroups()
 {
 	// squeezing direction
 	Geom::AABB aabb = computeAABB();
@@ -61,8 +61,8 @@ FdNodeArray2D DcGraph::getPerpConnGroups()
 	double connThr = getConnectivityThr();
 
 	// ==STEP 1==: nodes perp to squeezing direction
-	QVector<FdNode*> perpNodes;
-	foreach (FdNode* n, getFdNodes())
+	QVector<ScaffoldNode*> perpNodes;
+	foreach (ScaffoldNode* n, getFdNodes())
 	{
 		// perp node
 		if (n->isPerpTo(sqzV, perpThr))
@@ -70,7 +70,7 @@ FdNodeArray2D DcGraph::getPerpConnGroups()
 			perpNodes << n;
 		}
 		// virtual rod nodes from patch edges
-		else if (n->mType == FdNode::PATCH)
+		else if (n->mType == ScaffoldNode::PATCH)
 		{
 			PatchNode* pn = (PatchNode*)n;
 			foreach(RodNode* rn, pn->getEdgeRodNodes())
@@ -96,8 +96,8 @@ FdNodeArray2D DcGraph::getPerpConnGroups()
 	Geom::Box shapeBox = computeAABB().box();
 	Geom::Segment skeleton = shapeBox.getSkeleton(sqzAId);
 	double perpGroupThr = connThr / skeleton.length();
-	QMultiMap<double, FdNode*> posNodeMap;
-	foreach (FdNode* n, perpNodes){
+	QMultiMap<double, ScaffoldNode*> posNodeMap;
+	foreach (ScaffoldNode* n, perpNodes){
 		posNodeMap.insert(skeleton.getProjCoordinates(n->mBox.Center), n);
 	}
 	FdNodeArray2D perpGroups;
@@ -106,7 +106,7 @@ FdNodeArray2D DcGraph::getPerpConnGroups()
 	perpGroups << posNodeMap.values(pos0).toVector();
 	for (int i = 1; i < perpPos.size(); i++)
 	{
-		QVector<FdNode*> currNodes = posNodeMap.values(perpPos[i]).toVector();
+		QVector<ScaffoldNode*> currNodes = posNodeMap.values(perpPos[i]).toVector();
 		if (fabs(perpPos[i] - perpPos[i-1]) < perpGroupThr)
 			perpGroups.last() += currNodes;	// append to current group
 		else perpGroups << currNodes;		// create new group
@@ -116,25 +116,25 @@ FdNodeArray2D DcGraph::getPerpConnGroups()
 	FdNodeArray2D perpConnGroups;
 	perpConnGroups << perpGroups.front(); // ground
 	for (int i = 1; i < perpGroups.size(); i++){
-		foreach(QVector<FdNode*> connGroup, getConnectedGroups(perpGroups[i], connThr))
+		foreach(QVector<ScaffoldNode*> connGroup, getConnectedGroups(perpGroups[i], connThr))
 			perpConnGroups << connGroup;
 	}
 
 	return perpConnGroups;
 }
 
-void DcGraph::createMasters()
+void ShapeScaffold::createMasters()
 {
 	FdNodeArray2D perpConnGroups = getPerpConnGroups();
 
 	// merge connected groups into patches
-	foreach( QVector<FdNode*> pcGroup,  perpConnGroups)
+	foreach( QVector<ScaffoldNode*> pcGroup,  perpConnGroups)
 	{
 		// single node
 		if (pcGroup.size() == 1)
 		{
-			FdNode* n = pcGroup.front();
-			if (n->mType == FdNode::PATCH)	masters << (PatchNode*)n;
+			ScaffoldNode* n = pcGroup.front();
+			if (n->mType == ScaffoldNode::PATCH)	masters << (PatchNode*)n;
 			else masters << changeRodToPatch((RodNode*)n, sqzV);
 		}
 		// multiple nodes
@@ -142,7 +142,7 @@ void DcGraph::createMasters()
 		{
 			// check if all nodes in the pcGroup is virtual
 			bool allVirtual = true;
-			for(FdNode* pcNode : pcGroup){
+			for(ScaffoldNode* pcNode : pcGroup){
 				if (!pcNode->hasTag(EDGE_ROD_TAG))
 				{
 					allVirtual = false;
@@ -154,7 +154,7 @@ void DcGraph::createMasters()
 			if (!allVirtual)
 				masters << (PatchNode*)wrapAsBundleNode(getIds(pcGroup), sqzV);
 			// each edge rod is converted to a patch master
-			else for(FdNode* pcNode : pcGroup) 
+			else for(ScaffoldNode* pcNode : pcGroup) 
 				masters << changeRodToPatch((RodNode*)pcNode, sqzV);
 		}
 	}
@@ -171,7 +171,7 @@ void DcGraph::createMasters()
 	}
 }
 
-void DcGraph::computeMasterOrderConstraints()
+void ShapeScaffold::computeMasterOrderConstraints()
 {
 	// time stamps: bottom-up
 	double tScale;
@@ -221,15 +221,15 @@ void DcGraph::computeMasterOrderConstraints()
 	}
 }
 
-void DcGraph::updateSlaves()
+void ShapeScaffold::updateSlaves()
 {
 	// collect non-master parts as slaves
 	slaves.clear();
-	foreach (FdNode* n, getFdNodes())
+	foreach (ScaffoldNode* n, getFdNodes())
 		if (!n->hasTag(MASTER_TAG))	slaves << n;
 }
 
-void DcGraph::updateSlaveMasterRelation()
+void ShapeScaffold::updateSlaveMasterRelation()
 {
 	// initial
 	slave2master.clear();
@@ -240,7 +240,7 @@ void DcGraph::updateSlaveMasterRelation()
 	for (int i = 0; i < slaves.size(); i++)
 	{
 		// find adjacent master(s)
-		FdNode* slave = slaves[i];
+		ScaffoldNode* slave = slaves[i];
 		for (int j = 0; j < masters.size(); j++)
 		{
 			PatchNode* master = masters[j];
@@ -268,12 +268,12 @@ void DcGraph::updateSlaveMasterRelation()
 	}
 }
 
-void DcGraph::createSlaves()
+void ShapeScaffold::createSlaves()
 {
 	// split slave parts by master patches
 	double connThr = getConnectivityThr();
 	for (PatchNode* master : masters) {
-		for(FdNode* n : getFdNodes())
+		for(ScaffoldNode* n : getFdNodes())
 		{
 			if (n->hasTag(MASTER_TAG)) continue;
 			if(hasIntersection(n, master, connThr))
@@ -302,7 +302,7 @@ void DcGraph::createSlaves()
 			slaves[i]->deformToAttach(masters[mid]->mPatch.getPlane());
 }
 
-void DcGraph::clusterSlaves()
+void ShapeScaffold::clusterSlaves()
 {
 	// clear
 	slaveClusters.clear();
@@ -378,10 +378,10 @@ void DcGraph::clusterSlaves()
 	}
 }
 
-BlockGraph* DcGraph::createBlock( QSet<int> sCluster )
+UnitScaffold* ShapeScaffold::createBlock( QSet<int> sCluster )
 {
 	QVector<PatchNode*> ms;
-	QVector<FdNode*> ss;
+	QVector<ScaffoldNode*> ss;
 	QVector< QVector<QString> > mPairs;
 
 	QSet<int> mids; // master indices
@@ -406,11 +406,11 @@ BlockGraph* DcGraph::createBlock( QSet<int> sCluster )
 	// create
 	int bidx = blocks.size();
 	QString id = QString::number(bidx);
-	BlockGraph* b;
+	UnitScaffold* b;
 	if (ms.size() == 2 && ss.size() == 1 &&
 		(ms[0]->hasTag(EDGE_ROD_TAG) || ms[1]->hasTag(EDGE_ROD_TAG)))
-		b = new TBlockGraph("TB_" + id, ms, ss, mPairs);
-	else b = new HBlockGraph("HB_" + id, ms, ss, mPairs);
+		b = new TUnitScaffold("TB_" + id, ms, ss, mPairs);
+	else b = new HUnitScaffold("HB_" + id, ms, ss, mPairs);
 	b->setAabbConstraint(computeAABB().box());
 	blocks << b;
 
@@ -423,10 +423,10 @@ BlockGraph* DcGraph::createBlock( QSet<int> sCluster )
 	return b;
 }
 
-void DcGraph::createBlocks()
+void ShapeScaffold::createBlocks()
 {
 	// clear blocks
-	foreach (BlockGraph* b, blocks) delete b;
+	foreach (UnitScaffold* b, blocks) delete b;
 	blocks.clear();
 	masterBlockMap.clear();
 
@@ -437,7 +437,7 @@ void DcGraph::createBlocks()
 	}
 }
 
-BlockGraph* DcGraph::getSelBlock()
+UnitScaffold* ShapeScaffold::getSelBlock()
 {
 	if (selBlockIdx >= 0 && selBlockIdx < blocks.size())
 		return blocks[selBlockIdx];
@@ -445,17 +445,17 @@ BlockGraph* DcGraph::getSelBlock()
 		return NULL;
 }
 
-FdGraph* DcGraph::activeScaffold()
+Scaffold* ShapeScaffold::activeScaffold()
 {
-	BlockGraph* selLayer = getSelBlock();
+	UnitScaffold* selLayer = getSelBlock();
 	if (selLayer) return selLayer->activeScaffold();
 	else		  return this;
 }
 
-QStringList DcGraph::getBlockLabels()
+QStringList ShapeScaffold::getBlockLabels()
 {
 	QStringList labels;
-	foreach(BlockGraph* l, blocks)
+	foreach(UnitScaffold* l, blocks)
 		labels.append(l->mID);
 
 	// append string to select none
@@ -464,7 +464,7 @@ QStringList DcGraph::getBlockLabels()
 	return labels;
 }
 
-void DcGraph::selectBlock( QString id )
+void ShapeScaffold::selectBlock( QString id )
 {
 	// select layer named id
 	selBlockIdx = -1;
@@ -480,7 +480,7 @@ void DcGraph::selectBlock( QString id )
 		getSelBlock()->selectChain("");
 }
 
-FdGraph* DcGraph::getKeyframe( double t )
+Scaffold* ShapeScaffold::getKeyframe( double t )
 {
 	bool showActive = false;	
 	Vector3 aOrigPos;
@@ -491,11 +491,11 @@ FdGraph* DcGraph::getKeyframe( double t )
 	QVector<Geom::Rectangle> aFR; 
 	
 	// folded blocks
-	QVector<FdGraph*> foldedBlocks;
+	QVector<Scaffold*> foldedBlocks;
 	for (int i = 0; i < blocks.size(); i++)
 	{
 		double lt = getLocalTime(t, blocks[i]->mFoldDuration);
-		FdGraph* fblock = blocks[i]->getKeyframe(lt, true);
+		Scaffold* fblock = blocks[i]->getKeyframe(lt, true);
 		foldedBlocks << fblock;
 
 		// debug: active block
@@ -506,16 +506,16 @@ FdGraph* DcGraph::getKeyframe( double t )
 			aBaseMID = blocks[i]->baseMaster->mID;
 			
 			// active slaves
-			foreach (FdNode* n, fblock->getFdNodes())
+			foreach (ScaffoldNode* n, fblock->getFdNodes())
 				n->addTag(ACTIVE_NODE_TAG);
 		}
 	}
 
 	// shift layers and add nodes into scaffold
-	FdGraph *key_graph = combineFdGraphs(foldedBlocks, baseMaster->mID, masterBlockMap);
+	Scaffold *key_graph = combineFdGraphs(foldedBlocks, baseMaster->mID, masterBlockMap);
 
 	// delete folded blocks
-	foreach (FdGraph* b, foldedBlocks) delete b;
+	foreach (Scaffold* b, foldedBlocks) delete b;
 
 	// in case the combination fails
 	if (key_graph == nullptr) return nullptr;
@@ -526,15 +526,15 @@ FdGraph* DcGraph::getKeyframe( double t )
 	return key_graph;
 }
 
-ShapeSuperKeyframe* DcGraph::getShapeSuperKeyframe( double t )
+ShapeSuperKeyframe* ShapeScaffold::getShapeSuperKeyframe( double t )
 {
 	// super key frame for each block
-	QVector<FdGraph*> foldedBlocks;
+	QVector<Scaffold*> foldedBlocks;
 	QSet<QString> foldedParts;
 	for (int i = 0; i < blocks.size(); i++)
 	{
 		double lt = getLocalTime(t, blocks[i]->mFoldDuration);
-		FdGraph* fblock = blocks[i]->getSuperKeyframe(lt);
+		Scaffold* fblock = blocks[i]->getSuperKeyframe(lt);
 		foldedBlocks << fblock;
 
 		// nullptr means fblock is unable to fold at time t
@@ -542,7 +542,7 @@ ShapeSuperKeyframe* DcGraph::getShapeSuperKeyframe( double t )
 	}
 
 	// combine
-	FdGraph *keyframe = combineFdGraphs(foldedBlocks, baseMaster->mID, masterBlockMap);
+	Scaffold *keyframe = combineFdGraphs(foldedBlocks, baseMaster->mID, masterBlockMap);
 
 	// create shape super key frame
 	ShapeSuperKeyframe* ssKeyframe = new ShapeSuperKeyframe(keyframe, masterOrderGreater);
@@ -555,14 +555,14 @@ ShapeSuperKeyframe* DcGraph::getShapeSuperKeyframe( double t )
 	return ssKeyframe;
 }
 
-void DcGraph::foldabilize()
+void ShapeScaffold::foldabilize()
 {
 	// clear tags
-	foreach (BlockGraph* b, blocks)
+	foreach (UnitScaffold* b, blocks)
 		b->foldabilized = false;
 
 	// initial time intervals: t > 1.0 means not be folded
-	foreach (BlockGraph* b, blocks)
+	foreach (UnitScaffold* b, blocks)
 		b->mFoldDuration = INTERVAL(1.0, 2.0);
 
 	// choose best free block
@@ -578,7 +578,7 @@ void DcGraph::foldabilize()
 
 	while (next_bid >= 0 && next_bid < blocks.size())
 	{
-		BlockGraph* next_block = blocks[next_bid];
+		UnitScaffold* next_block = blocks[next_bid];
 		std::cout << "Foldabilizing block: " << next_block->mID.toStdString() << "\n";
 
 		// time interval
@@ -600,12 +600,12 @@ void DcGraph::foldabilize()
 	}
 
 	// remaining blocks (if any) are interlocking
-	QVector<BlockGraph*> blocks_copy = blocks;
+	QVector<UnitScaffold*> blocks_copy = blocks;
 	blocks.clear();
 	QVector<int> intlkBlockIndices;
 	for (int bid = 0; bid < blocks_copy.size(); bid ++)
 	{
-		BlockGraph* b = blocks_copy[bid];
+		UnitScaffold* b = blocks_copy[bid];
 		if (b->foldabilized) blocks << b;
 		else intlkBlockIndices << bid;
 	}
@@ -618,7 +618,7 @@ void DcGraph::foldabilize()
 		foreach (int bidx, intlkBlockIndices)
 			sCluster += slaveClusters[bidx];
 		
-		BlockGraph* mergedBlock = createBlock(sCluster);
+		UnitScaffold* mergedBlock = createBlock(sCluster);
 		mergedBlock->foldabilizeWrt(currKeyframe);
 		mergedBlock->applySolution();
 		mergedBlock->mFoldDuration = INTERVAL(currTime, 1.0);
@@ -628,11 +628,11 @@ void DcGraph::foldabilize()
 	std::cout << "\n============FINISH============\n";
 }
 
-double DcGraph::foldabilizeBlock(int bid, double currTime, ShapeSuperKeyframe* currKf, 
+double ShapeScaffold::foldabilizeBlock(int bid, double currTime, ShapeSuperKeyframe* currKf, 
 										double& nextTime, ShapeSuperKeyframe*& nextKf)
 {
 	// foldabilize nextBlock wrt the current super key frame
-	BlockGraph* nextBlock = blocks[bid];
+	UnitScaffold* nextBlock = blocks[bid];
 	double cost = nextBlock->foldabilizeWrt(currKf);
 	cost *= blockWeights[bid]; // normalized cost
 	nextBlock->applySolution();
@@ -652,13 +652,13 @@ double DcGraph::foldabilizeBlock(int bid, double currTime, ShapeSuperKeyframe* c
    currKeyframe          nextKeyframe           next2Keyframe
 **/  
 // currKeyframe is a super keyframe providing context information
-int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyframe)
+int ShapeScaffold::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyframe)
 {
 	double min_cost = maxDouble();
 	int best_next_bid = -1;
 	for (int next_bid = 0; next_bid < blocks.size(); next_bid++)
 	{
-		BlockGraph* nextBlock = blocks[next_bid];
+		UnitScaffold* nextBlock = blocks[next_bid];
 		if (passed(currTime, nextBlock->mFoldDuration)) continue; // skip foldabilized blocks
 
 		// foldabilize nextBlock
@@ -676,7 +676,7 @@ int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyf
 			// cost of folding remaining open blocks
 			for (int next2_bid = 0; next2_bid < blocks.size(); next2_bid++)
 			{
-				BlockGraph* next2Block = blocks[next2_bid];
+				UnitScaffold* next2Block = blocks[next2_bid];
 				if (passed(nextTime, next2Block->mFoldDuration)) continue; // skip foldabilized block
 
 				// foldabilize next2Block
@@ -717,14 +717,14 @@ int DcGraph::getBestNextBlockIndex(double currTime, ShapeSuperKeyframe* currKeyf
 	return best_next_bid;
 }
 
-void DcGraph::generateKeyframes( int N )
+void ShapeScaffold::generateKeyframes( int N )
 {
 	keyframes.clear();
 
 	double step = 1.0 / (N-1);
 	for (int i = 0; i < N; i++)
 	{
-		FdGraph* kf = getKeyframe(i * step);
+		Scaffold* kf = getKeyframe(i * step);
 		if(!kf) return;
 
 		keyframes << kf;
@@ -733,7 +733,7 @@ void DcGraph::generateKeyframes( int N )
 		kf->hideEdgeRods();
 
 		// color
-		foreach (FdNode* n, kf->getFdNodes())
+		foreach (ScaffoldNode* n, kf->getFdNodes())
 		{
 			double grey = 240;
 			QColor c = (n->hasTag(ACTIVE_NODE_TAG) && !n->hasTag(MASTER_TAG)) ? 
@@ -744,32 +744,32 @@ void DcGraph::generateKeyframes( int N )
 	}
 }
 
-FdGraph* DcGraph::getSelKeyframe()
+Scaffold* ShapeScaffold::getSelKeyframe()
 {
 	if (keyframeIdx >= 0 && keyframeIdx < keyframes.size())
 		return keyframes[keyframeIdx];
 	else return NULL;
 }
 
-void DcGraph::selectKeyframe( int idx )
+void ShapeScaffold::selectKeyframe( int idx )
 {
 	if (idx >= 0 && idx < keyframes.size())
 		keyframeIdx = idx;
 }
 
-BlockGraph* DcGraph::mergeBlocks( QVector<BlockGraph*> blocks )
+UnitScaffold* ShapeScaffold::mergeBlocks( QVector<UnitScaffold*> blocks )
 {
-    BlockGraph* mergedBlock = NULL;
+    UnitScaffold* mergedBlock = NULL;
 
 	return mergedBlock;
 }
 
-double DcGraph::getConnectivityThr()
+double ShapeScaffold::getConnectivityThr()
 {
 	return connThrRatio * computeAABB().radius();
 }
 
-void DcGraph::computeBlockWeights()
+void ShapeScaffold::computeBlockWeights()
 {
 	blockWeights.clear();
 

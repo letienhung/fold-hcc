@@ -1,18 +1,18 @@
 #pragma once
 
-#include "FdGraph.h"
+#include "Scaffold.h"
 #include "PatchNode.h"
 
-class HBlockGraph;
+class HUnitScaffold;
 class ShapeSuperKeyframe;
 
 // superBlock is a regular block with masters replaced by their corresponding super masters
 // super block is used for computing folding volumes
 
-class SuperBlockGraph : public FdGraph
+class SuperUnitScaffold : public Scaffold
 {
 public:
-	SuperBlockGraph(HBlockGraph* block, ShapeSuperKeyframe* ssKeyframe);
+	SuperUnitScaffold(HUnitScaffold* block, ShapeSuperKeyframe* ssKeyframe);
 
 	// obstacles for each top master
 	QMap< QString, QVector<Vector2> > computeObstacles();
@@ -23,7 +23,7 @@ private:
 
 private:
 	// the original block
-	HBlockGraph* origBlock;
+	HUnitScaffold* origBlock;
 
 	// the super shape key frame
 	ShapeSuperKeyframe* ssKeyframe;

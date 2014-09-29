@@ -1,13 +1,13 @@
-#include "ChainGraph.h"
+#include "ChainScaffold.h"
 #include "FdUtility.h"
 #include "RodNode.h"
 #include "Numeric.h"
 
-ChainGraph::ChainGraph( FdNode* slave, PatchNode* base, PatchNode* top)
-	: FdGraph(slave->mID)
+ChainScaffold::ChainScaffold( ScaffoldNode* slave, PatchNode* base, PatchNode* top)
+	: Scaffold(slave->mID)
 {
 	// slave
-	if (slave->mType == FdNode::ROD)
+	if (slave->mType == ScaffoldNode::ROD)
 	{
 		if(!baseMaster) return;
 
@@ -59,12 +59,12 @@ ChainGraph::ChainGraph( FdNode* slave, PatchNode* base, PatchNode* top)
 	//addDebugSegment(Geom::Segment(baseJoint.P0, baseJoint.P0 + rightSegV));
 }
 
-ChainGraph::~ChainGraph()
+ChainScaffold::~ChainScaffold()
 {
 	delete origSlave;
 }
 
-void ChainGraph::computeOrientations()
+void ChainScaffold::computeOrientations()
 {
 	// joints
 	baseJoint = detectJointSegment(origSlave, baseMaster);
@@ -104,13 +104,13 @@ void ChainGraph::computeOrientations()
 	topTraj = Geom::Segment(topCenterProj, topMaster->center());
 }
 
-FdGraph* ChainGraph::getKeyframe( double t, bool useThk )
+Scaffold* ChainScaffold::getKeyframe( double t, bool useThk )
 {
 	// fold w\o thickness
 	fold(t);
 
 	// key frame
-	FdGraph* keyframe = (FdGraph*)this->clone();
+	Scaffold* keyframe = (Scaffold*)this->clone();
 
 	// thickness
 	if (useThk) addThickness(keyframe, t);
@@ -118,7 +118,7 @@ FdGraph* ChainGraph::getKeyframe( double t, bool useThk )
 	return keyframe;
 }
 
-void ChainGraph::setFoldDuration( double t0, double t1 )
+void ChainScaffold::setFoldDuration( double t0, double t1 )
 {
 	if (t0 > t1) std::swap(t0, t1);
 	t0 += ZERO_TOLERANCE_LOW;
@@ -127,7 +127,7 @@ void ChainGraph::setFoldDuration( double t0, double t1 )
 	duration = INTERVAL(t0, t1);
 }
 
-QVector<FoldOption*> ChainGraph::genFoldOptionWithDiffPositions( int nSplits, int nChunks, int maxNbChunks )
+QVector<FoldOption*> ChainScaffold::genFoldOptionWithDiffPositions( int nSplits, int nChunks, int maxNbChunks )
 {
 	QVector<FoldOption*> options;
 
@@ -160,7 +160,7 @@ QVector<FoldOption*> ChainGraph::genFoldOptionWithDiffPositions( int nSplits, in
 	return options;
 }
 
-FoldOption* ChainGraph::genDeleteFoldOption( int nSplits )
+FoldOption* ChainScaffold::genDeleteFoldOption( int nSplits )
 {
 	// keep the number of slipts for computing the cost
 	QString fnid = mID + "_delete";
@@ -169,7 +169,7 @@ FoldOption* ChainGraph::genDeleteFoldOption( int nSplits )
 }
 
 
-void ChainGraph::resetChainParts(FoldOption* fn)
+void ChainScaffold::resetChainParts(FoldOption* fn)
 {
 	// clear
 	foreach (PatchNode* n, chainParts) removeNode(n->mID);
@@ -196,8 +196,8 @@ void ChainGraph::resetChainParts(FoldOption* fn)
 
 	// cut into pieces
 	QVector<Geom::Plane> cutPlanes = generateCutPlanes(fn);
-	QVector<FdNode*> splitNodes = FdGraph::split(origSlave->mID, cutPlanes);
-	foreach (FdNode* n, splitNodes) chainParts << (PatchNode*)n; 
+	QVector<ScaffoldNode*> splitNodes = Scaffold::split(origSlave->mID, cutPlanes);
+	foreach (ScaffoldNode* n, splitNodes) chainParts << (PatchNode*)n; 
 
 	// sort them
 	QMap<double, PatchNode*> distPartMap;
@@ -215,7 +215,7 @@ void ChainGraph::resetChainParts(FoldOption* fn)
 	properties[DEBUG_PLANES].setValue(cutPlanes);
 }
 
-void ChainGraph::resetHingeLinks(FoldOption* fn)
+void ChainScaffold::resetHingeLinks(FoldOption* fn)
 {
 	// remove hinge links
 	rightLinks.clear(); leftLinks.clear();
@@ -241,8 +241,8 @@ void ChainGraph::resetHingeLinks(FoldOption* fn)
 	Hinge* hingeL = new Hinge(chainParts[0], baseMaster, 
 		bJoint.P1, upV, -rightSegV, -jointV, bJoint.length());
 
-	FdLink* linkR = new FdLink(chainParts[0], baseMaster, hingeR);
-	FdLink* linkL = new FdLink(chainParts[0], baseMaster, hingeL);
+	ScaffoldLink* linkR = new ScaffoldLink(chainParts[0], baseMaster, hingeR);
+	ScaffoldLink* linkL = new ScaffoldLink(chainParts[0], baseMaster, hingeL);
 	Graph::addLink(linkR);	
 	Graph::addLink(linkL);
 	rightLinks << linkR; 
@@ -269,8 +269,8 @@ void ChainGraph::resetHingeLinks(FoldOption* fn)
 		Hinge* hingeL = new Hinge(part1, part2, 
 			bJoint.P1, upV, -upV, -jointV, bJoint.length());
 
-		FdLink* linkR = new FdLink(part1, part2, hingeR);
-		FdLink* linkL = new FdLink(part1, part2, hingeL);
+		ScaffoldLink* linkR = new ScaffoldLink(part1, part2, hingeR);
+		ScaffoldLink* linkL = new ScaffoldLink(part1, part2, hingeL);
 		Graph::addLink(linkR);	
 		Graph::addLink(linkL);
 		rightLinks << linkR; 
@@ -278,7 +278,7 @@ void ChainGraph::resetHingeLinks(FoldOption* fn)
 	}
 }
 
-void ChainGraph::activateLinks( FoldOption* fn )
+void ChainScaffold::activateLinks( FoldOption* fn )
 {
 	// clear
 	activeLinks.clear();
@@ -291,7 +291,7 @@ void ChainGraph::activateLinks( FoldOption* fn )
 		leftLinks[i]->removeTag(ACTIVE_LINK_TAG);
 
 		// active link
-		FdLink* activeLink;
+		ScaffoldLink* activeLink;
 		if (i % 2 == 0)
 			activeLink = (fn->rightSide) ? rightLinks[i] : leftLinks[i];
 		else
@@ -305,7 +305,7 @@ void ChainGraph::activateLinks( FoldOption* fn )
 	foldToRight = fn->rightSide;
 }
 
-void ChainGraph::applyFoldOption( FoldOption* fn)
+void ChainScaffold::applyFoldOption( FoldOption* fn)
 {
 	// delete chain if fold option is null
 	if (fn->scale == 0) {
@@ -324,7 +324,7 @@ void ChainGraph::applyFoldOption( FoldOption* fn)
 }
 
 
-void ChainGraph::addThickness(FdGraph* keyframe, double t)
+void ChainScaffold::addThickness(Scaffold* keyframe, double t)
 {
 	if (!baseMaster) return;
 
@@ -400,7 +400,7 @@ void ChainGraph::addThickness(FdGraph* keyframe, double t)
 		keyParts[i]->setThickness(2 * halfThk);
 }
 
-double ChainGraph::getArea()
+double ChainScaffold::getArea()
 {
 	return origSlave->mPatch.area();
 }

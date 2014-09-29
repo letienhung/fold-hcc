@@ -1,4 +1,4 @@
-#include "FdGraph.h"
+#include "Scaffold.h"
 
 #include <QDir>
 #include <QFile>
@@ -11,21 +11,21 @@
 #include "RodNode.h"
 #include "PatchNode.h"
 #include "BundleNode.h"
-#include "FdLink.h"
+#include "ScaffoldLink.h"
 
 #include "AABB.h"
 #include "MinOBB.h"
 #include "CustomDrawObjects.h"
 
 
-FdGraph::FdGraph(QString id /*= ""*/)
+Scaffold::Scaffold(QString id /*= ""*/)
 	:Graph(id)
 {
 	showAABB = false;
 	path = "";
 }
 
-FdGraph::FdGraph( FdGraph& other )
+Scaffold::Scaffold( Scaffold& other )
 	:Graph(other)
 {
 	path = other.path + "_cloned";
@@ -33,45 +33,45 @@ FdGraph::FdGraph( FdGraph& other )
 }
 
 
-FdGraph::~FdGraph()
+Scaffold::~Scaffold()
 {
 
 }
 
-Structure::Graph* FdGraph::clone()
+Structure::Graph* Scaffold::clone()
 {
-	return new FdGraph(*this);
+	return new Scaffold(*this);
 }
 
-FdLink* FdGraph::addLink( FdNode* n1, FdNode* n2 )
+ScaffoldLink* Scaffold::addLink( ScaffoldNode* n1, ScaffoldNode* n2 )
 {
-	FdLink* new_link = new FdLink(n1, n2);
+	ScaffoldLink* new_link = new ScaffoldLink(n1, n2);
 	Graph::addLink(new_link);
 
 	return new_link;
 }
 
 
-QVector<FdNode*> FdGraph::getFdNodes()
+QVector<ScaffoldNode*> Scaffold::getFdNodes()
 {
-	QVector<FdNode*> fdns;
+	QVector<ScaffoldNode*> fdns;
 	foreach(Structure::Node* n, nodes)
-		fdns.push_back((FdNode*)n);
+		fdns.push_back((ScaffoldNode*)n);
 	
 	return fdns;
 }
 
-FdNode* FdGraph::getFdNode(QString id)
+ScaffoldNode* Scaffold::getFdNode(QString id)
 {
 	Structure::Node* n = getNode(id);
 	if (n != nullptr) 
-		return (FdNode*)n;
+		return (ScaffoldNode*)n;
 	else 
 		return nullptr;
 }
 
 
-void FdGraph::exportMesh(QString fname)
+void Scaffold::exportMesh(QString fname)
 {
 	QFile file(fname);
 
@@ -79,15 +79,15 @@ void FdGraph::exportMesh(QString fname)
 	if (!file.open(QIODevice::Append | QIODevice::Text)) return;
 	
 	int v_offset = 0;
-	QVector<FdNode*> nodes = getFdNodes();
-	foreach(FdNode *n, nodes){
+	QVector<ScaffoldNode*> nodes = getFdNodes();
+	foreach(ScaffoldNode *n, nodes){
 		n->deformMesh();
 		n->exportMesh(file, v_offset);
 	}
 	file.close();
 }
 
-void FdGraph::saveToFile(QString fname)
+void Scaffold::saveToFile(QString fname)
 {
 	QFile file(fname);
 	if (!file.open(QIODevice::WriteOnly)) return;
@@ -100,7 +100,7 @@ void FdGraph::saveToFile(QString fname)
 	{
 		// nodes
 		xw.writeTaggedString("cN", QString::number(nbNodes()));
-		foreach(FdNode* node, getFdNodes())
+		foreach(ScaffoldNode* node, getFdNodes())
 		{
 			node->write(xw);
 		}
@@ -117,13 +117,13 @@ void FdGraph::saveToFile(QString fname)
 	QDir graphDir( fileInfo.absolutePath());
 	graphDir.mkdir(meshesFolder);
 	meshesFolder =  graphDir.path() + "/" + meshesFolder;
-	foreach(FdNode* node, getFdNodes())
+	foreach(ScaffoldNode* node, getFdNodes())
 	{
 		MeshHelper::saveOBJ(node->mMesh.data(), meshesFolder + '/' + node->mID + ".obj");
 	}
 }
 
-void FdGraph::loadFromFile(QString fname)
+void Scaffold::loadFromFile(QString fname)
 {
 	clear();
 	path = fname;
@@ -164,10 +164,10 @@ void FdGraph::loadFromFile(QString fname)
 		}
 
 		// create new node
-		FdNode* new_node;
+		ScaffoldNode* new_node;
 		MeshPtr m(mesh);
 		QString id = m->name;
-		if(ntype == FdNode::ROD)
+		if(ntype == ScaffoldNode::ROD)
 			new_node = new RodNode(id, box, m);
 		else
 			new_node = new PatchNode(id, box, m);
@@ -177,10 +177,10 @@ void FdGraph::loadFromFile(QString fname)
 }
 
 
-Geom::AABB FdGraph::computeAABB()
+Geom::AABB Scaffold::computeAABB()
 {
 	Geom::AABB aabb;
-	foreach (FdNode* n, getFdNodes())
+	foreach (ScaffoldNode* n, getFdNodes())
 	{
 		aabb.add(n->computeAABB());
 	}
@@ -192,7 +192,7 @@ Geom::AABB FdGraph::computeAABB()
 }
 
 
-void FdGraph::drawAABB()
+void Scaffold::drawAABB()
 {
 	if (properties.contains("pushAId"))
 	{
@@ -217,7 +217,7 @@ void FdGraph::drawAABB()
 }
 
 
-void FdGraph::draw()
+void Scaffold::draw()
 {
 	Structure::Graph::draw();
 
@@ -228,14 +228,14 @@ void FdGraph::draw()
 	drawDebug();
 }
 
-FdNode* FdGraph::wrapAsBundleNode( QVector<QString> nids, Vector3 v )
+ScaffoldNode* Scaffold::wrapAsBundleNode( QVector<QString> nids, Vector3 v )
 {
 	// retrieve all nodes
-	QVector<FdNode*> ns;
+	QVector<ScaffoldNode*> ns;
 	foreach(QString nid, nids)
 	{
 		Structure::Node* n = getNode(nid);
-		if (n) ns.push_back((FdNode*)n);
+		if (n) ns.push_back((ScaffoldNode*)n);
 	}
 
 	// trivial cases
@@ -243,22 +243,22 @@ FdNode* FdGraph::wrapAsBundleNode( QVector<QString> nids, Vector3 v )
 	if (ns.size() == 1) return ns[0];
 
 	// merge into a bundle node
-	QVector<FdNode*> subNodes;
-	foreach (FdNode* n, ns)	subNodes += n->getSubNodes();
+	QVector<ScaffoldNode*> subNodes;
+	foreach (ScaffoldNode* n, ns)	subNodes += n->getSubNodes();
 	QString bid = getBundleName(subNodes);
 	Geom::Box box = getBundleBox(subNodes);
 	BundleNode* bundleNode = new BundleNode(bid, box, subNodes, v); 
 	Structure::Graph::addNode(bundleNode);
 
 	// remove original nodes
-	foreach (FdNode* n, ns)
+	foreach (ScaffoldNode* n, ns)
 		Structure::Graph::removeNode(n->mID);
 
 	return bundleNode;
 }
 
 
-FdNode* FdGraph::addNode( MeshPtr mesh, BOX_FIT_METHOD method )
+ScaffoldNode* Scaffold::addNode( MeshPtr mesh, BOX_FIT_METHOD method )
 {
 	// fit box
 	QVector<Vector3> points = MeshHelper::getMeshVertices(mesh.data());
@@ -267,12 +267,12 @@ FdNode* FdGraph::addNode( MeshPtr mesh, BOX_FIT_METHOD method )
 	return addNode(mesh, box);
 }
 
-FdNode* FdGraph::addNode(MeshPtr mesh, Geom::Box& box)
+ScaffoldNode* Scaffold::addNode(MeshPtr mesh, Geom::Box& box)
 {
 	// create node depends on box type
 	int box_type = box.getType(5);
 
-	FdNode* node;
+	ScaffoldNode* node;
 	QString id = mesh->name;
 	if (box_type == Geom::Box::ROD)	
 		node = new RodNode(id, box, mesh);
@@ -285,7 +285,7 @@ FdNode* FdGraph::addNode(MeshPtr mesh, Geom::Box& box)
 	return node;
 }
 
-QVector<FdNode*> FdGraph::split( QString nid, Geom::Plane& plane)
+QVector<ScaffoldNode*> Scaffold::split( QString nid, Geom::Plane& plane)
 {
 	return split(nid, QVector<Geom::Plane>() << plane);
 }
@@ -293,12 +293,12 @@ QVector<FdNode*> FdGraph::split( QString nid, Geom::Plane& plane)
 // if cut planes intersect with the part, the part is split and replaced by chopped parts
 // otherwise the original part remains
 // the return value could either be the original part or the chopped fragment parts
-QVector<FdNode*> FdGraph::split( QString nid, QVector<Geom::Plane>& planes )
+QVector<ScaffoldNode*> Scaffold::split( QString nid, QVector<Geom::Plane>& planes )
 {
-	FdNode* fn = (FdNode*) getNode(nid);
+	ScaffoldNode* fn = (ScaffoldNode*) getNode(nid);
 
 	// in case
-	QVector<FdNode*> chopped;
+	QVector<ScaffoldNode*> chopped;
 	chopped << fn;
 	if (planes.isEmpty()) return chopped;
 	if (!fn) return chopped;
@@ -364,29 +364,29 @@ QVector<FdNode*> FdGraph::split( QString nid, QVector<Geom::Plane>& planes )
 	return chopped;
 }
 
-void FdGraph::showCuboids( bool show )
+void Scaffold::showCuboids( bool show )
 {
-	foreach(FdNode* n, getFdNodes())
+	foreach(ScaffoldNode* n, getFdNodes())
 		n->setShowCuboid(show);
 }
 
-void FdGraph::showScaffold( bool show )
+void Scaffold::showScaffold( bool show )
 {
-	foreach(FdNode* n, getFdNodes())
+	foreach(ScaffoldNode* n, getFdNodes())
 		n->setShowScaffold(show);
 }
 
-void FdGraph::showMeshes( bool show )
+void Scaffold::showMeshes( bool show )
 {
-	foreach(FdNode* n, getFdNodes())
+	foreach(ScaffoldNode* n, getFdNodes())
 		n->setShowMesh(show);
 }
 
-void FdGraph::changeNodeType( FdNode* n )
+void Scaffold::changeNodeType( ScaffoldNode* n )
 {
 	// create new node
 	Structure::Node* new_node;
-	if (n->mType == FdNode::PATCH)
+	if (n->mType == ScaffoldNode::PATCH)
 		new_node =new RodNode(n->mID, n->mBox, n->mMesh);
 	else
 		new_node = new PatchNode(n->mID, n->mBox, n->mMesh);
@@ -395,44 +395,44 @@ void FdGraph::changeNodeType( FdNode* n )
 	replaceNode(n, new_node);
 }
 
-PatchNode* FdGraph::changeRodToPatch( RodNode* rn, Vector3 v )
+PatchNode* Scaffold::changeRodToPatch( RodNode* rn, Vector3 v )
 {
 	PatchNode* pn = new PatchNode(rn,  v);
 	replaceNode(rn, pn);
 	return pn;
 }
 
-void FdGraph::restoreConfiguration()
+void Scaffold::restoreConfiguration()
 { 
 	// tags
 
 
 
-	QQueue<FdNode*> activeNodes;
-	foreach(FdNode* fn, getFdNodes())
+	QQueue<ScaffoldNode*> activeNodes;
+	foreach(ScaffoldNode* fn, getFdNodes())
 		if (fn->hasTag(FIXED_NODE_TAG)) 
 			activeNodes.enqueue(fn);
 
 	while (!activeNodes.isEmpty())
 	{
-		FdNode* anode = activeNodes.dequeue();
+		ScaffoldNode* anode = activeNodes.dequeue();
 		foreach(Structure::Link* l, getLinks(anode->mID))
 		{
-			FdLink* fl = (FdLink*)l;
+			ScaffoldLink* fl = (ScaffoldLink*)l;
 			if (!fl->hasTag(ACTIVE_LINK_TAG)) continue;
 
 			if (fl->fix()) 
 			{
 				Structure::Node* other_node = l->getNodeOther(anode->mID);
-				activeNodes.enqueue((FdNode*)other_node);
+				activeNodes.enqueue((ScaffoldNode*)other_node);
 			}
 		}
 	}
 }
 
-void FdGraph::translate(Vector3 v, bool withMesh)
+void Scaffold::translate(Vector3 v, bool withMesh)
 {
-	foreach(FdNode* n, getFdNodes())
+	foreach(ScaffoldNode* n, getFdNodes())
 	{
 		n->translate(v);
 
@@ -441,7 +441,7 @@ void FdGraph::translate(Vector3 v, bool withMesh)
 	}
 }
 
-void FdGraph::drawDebug()
+void Scaffold::drawDebug()
 {
 	// debug points
 	if (properties.contains(DEBUG_POINTS))
@@ -496,22 +496,22 @@ void FdGraph::drawDebug()
 	// scaffold
 	if (properties.contains(DEBUG_SCAFFOLDS))
 	{
-		QVector<FdGraph*> debugSs = properties[DEBUG_SCAFFOLDS].value<QVector<FdGraph*> >();
-		foreach (FdGraph* ds, debugSs)
+		QVector<Scaffold*> debugSs = properties[DEBUG_SCAFFOLDS].value<QVector<Scaffold*> >();
+		foreach (Scaffold* ds, debugSs)
 		{
 			if (ds) ds->draw();
 		}
 	}
 }
 
-void FdGraph::unwrapBundleNodes()
+void Scaffold::unwrapBundleNodes()
 {
 	foreach (Structure::Node* n, nodes)
 	{
 		if (n->hasTag(BUNDLE_TAG))
 		{
 			BundleNode* bnode = (BundleNode*)n;
-			foreach (FdNode* cn, bnode->mNodes)
+			foreach (ScaffoldNode* cn, bnode->mNodes)
 			{
 				Structure::Node* cn_copy = cn->clone();
 				Structure::Graph::addNode(cn_copy);
@@ -524,9 +524,9 @@ void FdGraph::unwrapBundleNodes()
 	}
 }
 
-void FdGraph::hideEdgeRods()
+void Scaffold::hideEdgeRods()
 {
-	foreach (FdNode* n, getFdNodes())
+	foreach (ScaffoldNode* n, getFdNodes())
 	{
 		if (n->hasTag(EDGE_ROD_TAG))
 		{

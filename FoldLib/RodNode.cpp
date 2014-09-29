@@ -3,9 +3,9 @@
 #include "CustomDrawObjects.h"
 
 RodNode::RodNode(QString id, Geom::Box &b, MeshPtr m)
-	: FdNode(id, b, m)
+	: ScaffoldNode(id, b, m)
 {
-	mType = FdNode::ROD;
+	mType = ScaffoldNode::ROD;
 	createScaffold(false);
 
 	mRodColor = mColor.lighter();
@@ -13,7 +13,7 @@ RodNode::RodNode(QString id, Geom::Box &b, MeshPtr m)
 }
 
 RodNode::RodNode(RodNode& other)
-	:FdNode(other)
+	:ScaffoldNode(other)
 {
 	mRod = other.mRod;
 	mRodColor = other.mRodColor;

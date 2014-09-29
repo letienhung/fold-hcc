@@ -5,12 +5,12 @@
 #include "Box.h"
 #include "SectorCylinder.h"
 
-class FdNode;
+class ScaffoldNode;
 class PatchNode;
-class FdGraph;
+class Scaffold;
 
 // typedef
-typedef QVector< QVector<FdNode*> > FdNodeArray2D;
+typedef QVector< QVector<ScaffoldNode*> > FdNodeArray2D;
 typedef QPair<double, double> Interval;
 #define	INTERVAL(negDist, posDist) qMakePair<double, double>(negDist, posDist)
 
@@ -31,31 +31,31 @@ Q_DECLARE_METATYPE(QSet<QString>)
 Q_DECLARE_METATYPE(QVector<Geom::Plane>)
 
 // distance between fd nodes
-Geom::Segment getDistSegment( FdNode* n1, FdNode* n2 );
-double getDistance( FdNode* n1, FdNode* n2 );
-double getDistance( FdNode* n, QVector<FdNode*> nset);
+Geom::Segment getDistSegment( ScaffoldNode* n1, ScaffoldNode* n2 );
+double getDistance( ScaffoldNode* n1, ScaffoldNode* n2 );
+double getDistance( ScaffoldNode* n, QVector<ScaffoldNode*> nset);
 
 // relation among fd nodes
-FdNodeArray2D getConnectedGroups( QVector<FdNode*> nodes, double disThr );
+FdNodeArray2D getConnectedGroups( QVector<ScaffoldNode*> nodes, double disThr );
 Geom::Segment detectJointSegment(PatchNode* slave, PatchNode* master);
-bool hasIntersection(FdNode* slave, PatchNode* master, double thr);
+bool hasIntersection(ScaffoldNode* slave, PatchNode* master, double thr);
 
 // helpers
-QVector<QString> getIds(QVector<FdNode*> nodes);
+QVector<QString> getIds(QVector<ScaffoldNode*> nodes);
 StrArray2D getIds(FdNodeArray2D nodeArray);
 
 // relation with plan
 enum PLANE_RELATION{ON_PLANE, POS_PLANE, NEG_PLANE, ISCT_PLANE};
-PLANE_RELATION relationWithPlane(FdNode* n, Geom::Plane plane, double thr);
-bool onPlane( FdNode* n, Geom::Plane& plane );
+PLANE_RELATION relationWithPlane(ScaffoldNode* n, Geom::Plane plane, double thr);
+bool onPlane( ScaffoldNode* n, Geom::Plane& plane );
 
 // box fitting
 enum BOX_FIT_METHOD{FIT_AABB, FIT_MIN, FIT_PCA};
 Geom::Box fitBox(QVector<Vector3>& pnts, BOX_FIT_METHOD method = FIT_PCA);
 
 // bundle nodes
-QString getBundleName(const QVector<FdNode*>& nodes);
-Geom::Box getBundleBox(const QVector<FdNode*>& nodes);
+QString getBundleName(const QVector<ScaffoldNode*>& nodes);
+Geom::Box getBundleBox(const QVector<ScaffoldNode*>& nodes);
 
 // time intervals
 bool overlap(Interval itv1, Interval itv2);
@@ -64,14 +64,14 @@ bool passed(double t, Interval itv);
 double getLocalTime(double globalT, Interval itv);
 
 // masters
-QVector<PatchNode*> getAllMasters(FdGraph* scaffold);
-QVector<QString> getAllMasterIds(FdGraph* scaffold);
-int nbMasters(FdGraph* scaffold);
-QMap<QString, double> getTimeStampsNormalized(QVector<FdNode*> nodes, Vector3 v, double &tScale);
+QVector<PatchNode*> getAllMasters(Scaffold* scaffold);
+QVector<QString> getAllMasterIds(Scaffold* scaffold);
+int nbMasters(Scaffold* scaffold);
+QMap<QString, double> getTimeStampsNormalized(QVector<ScaffoldNode*> nodes, Vector3 v, double &tScale);
 QMap<QString, double> getTimeStampsNormalized(QVector<PatchNode*> pnodes, Vector3 v, double &tScale);
 
 // combination
-FdGraph* combineFdGraphs(QVector<FdGraph*> decmps, QString baseMid, 
+Scaffold* combineFdGraphs(QVector<Scaffold*> decmps, QString baseMid, 
 	QMap<QString, QSet<int> >& masterDecmpMap);
 
 // volume

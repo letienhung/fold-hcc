@@ -1,18 +1,18 @@
 #pragma once
 
-#include "BlockGraph.h"
+#include "UnitScaffold.h"
 #include "FoldOptionGraph.h"
 
-class HBlockGraph : public BlockGraph
+class HUnitScaffold : public UnitScaffold
 {
 public:
-	HBlockGraph(QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& ss,
+	HUnitScaffold(QString id, QVector<PatchNode*>& ms, QVector<ScaffoldNode*>& ss,
 		QVector< QVector<QString> >& mPairs);
-	~HBlockGraph();
+	~HUnitScaffold();
 
 private:
 	// H chains
-	void createChains(QVector<FdNode*>& ss, QVector< QVector<QString> >& mPairs);
+	void createChains(QVector<ScaffoldNode*>& ss, QVector< QVector<QString> >& mPairs);
 	void computeChainWeights();
 
 	// obstacles
@@ -29,7 +29,7 @@ private:
 
 public:
 	// key frame
-	virtual FdGraph* getKeyframe(double t, bool useThk) override;
+	virtual Scaffold* getKeyframe(double t, bool useThk) override;
 
 	// foldabilization
 	virtual QVector<int> getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe) override;

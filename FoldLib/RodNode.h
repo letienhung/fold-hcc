@@ -1,8 +1,8 @@
 #pragma once
 
-#include "FdNode.h"
+#include "ScaffoldNode.h"
 
-class RodNode : public FdNode
+class RodNode : public ScaffoldNode
 {
 public:
     RodNode(QString id, Geom::Box &b, MeshPtr m);

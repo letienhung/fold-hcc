@@ -39,44 +39,46 @@ DESTDIR = $$PWD/$$CFG/lib
 HEADERS += \
     PatchNode.h \
     RodNode.h \
-    GraphManager.h \
-    FdGraph.h \
-    FdLink.h \
-    FdNode.h \
-    DcGraph.h \
+    ScaffoldManager.h \
+    ShapeScaffold.h \
+    ScaffoldLink.h \
+    ScaffoldNode.h \
     FoldManager.h \
     FdUtility.h \
-    BlockGraph.h \
-    ChainGraph.h \
+    UnitScaffold.h \
+    ChainScaffold.h \
     Hinge.h \
     BundleNode.h \
     FoldOptionGraph.h \
     ShapeSuperKeyframe.h \
-    SuperBlockGraph.h \
-    TChainGraph.h \
-    TBlockGraph.h \
-    HBlockGraph.h \
-    HChainGraph.h
+    SuperUnitScaffold.h \
+    TChainScaffold.h \
+    TUnitScaffold.h \
+    HUnitScaffold.h \
+    HChainScaffold.h \
+    Decomposer.h \
+    Scaffold.h
 
 SOURCES += \
     PatchNode.cpp \
     RodNode.cpp \
-    GraphManager.cpp \
-    FdGraph.cpp \
-    FdLink.cpp \
-    FdNode.cpp \
-    DcGraph.cpp \
+    ScaffoldManager.cpp \
+    Scaffold.cpp \
+    ScaffoldLink.cpp \
+    ScaffoldNode.cpp \
+    ShapeScaffold.cpp \
     FoldManager.cpp \
     FdUtility.cpp \
-    BlockGraph.cpp \
-    ChainGraph.cpp \
+    UnitScaffold.cpp \
+    ChainScaffold.cpp \
     Hinge.cpp \
     BundleNode.cpp \
     FoldOptionGraph.cpp \
     ShapeSuperKeyframe.cpp \
-    SuperBlockGraph.cpp \
-    TChainGraph.cpp \
-    TBlockGraph.cpp \
-    HBlockGraph.cpp \
-    HChainGraph.cpp
+    SuperUnitScaffold.cpp \
+    TChainScaffold.cpp \
+    TUnitScaffold.cpp \
+    HUnitScaffold.cpp \
+    HChainScaffold.cpp \
+    Decomposer.cpp
 

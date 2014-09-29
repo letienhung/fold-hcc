@@ -2,7 +2,7 @@
 
 #include "interfaces/ModePluginDockWidget.h"
 #include "SurfaceMeshPlugins.h"
-#include "GraphManager.h"
+#include "ScaffoldManager.h"
 #include "FoldManager.h"
 #include <QColorDialog>
 
@@ -29,7 +29,7 @@ class FdPlugin : public SurfaceMeshModePlugin
 
 public:
 	FdWidget* widget;
-	GraphManager* g_manager;
+	ScaffoldManager* s_manager;
 	FoldManager* f_manager;
 
 	bool showDecomp;
@@ -47,8 +47,8 @@ public:
     FdPlugin();
 	
 	// helpers
-	FdGraph* activeScaffold();
-	QVector<FdNode*> selectedFdNodes();
+	Scaffold* activeScaffold();
+	QVector<ScaffoldNode*> selectedSfNodes();
 
 public slots:
 	// to graph manager

@@ -1,16 +1,16 @@
-#include "TBlockGraph.h"
-#include "TChainGraph.h"
+#include "TUnitScaffold.h"
+#include "TChainScaffold.h"
 #include "Numeric.h"
 
-TBlockGraph::TBlockGraph(QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& ss,
-	QVector< QVector<QString> >& mPairs) :BlockGraph(id)
+TUnitScaffold::TUnitScaffold(QString id, QVector<PatchNode*>& ms, QVector<ScaffoldNode*>& ss,
+	QVector< QVector<QString> >& mPairs) :UnitScaffold(id)
 {
 	// clone nodes
 	foreach(PatchNode* m, ms)	{
 		masters << (PatchNode*)m->clone();
 		Structure::Graph::addNode(masters.last());
 	}
-	foreach(FdNode* s, ss)
+	foreach(ScaffoldNode* s, ss)
 		Structure::Graph::addNode(s->clone());
 
 	// the base and virtual top masters
@@ -24,7 +24,7 @@ TBlockGraph::TBlockGraph(QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& 
 		baseMaster->mPatch.flipNormal();
 
 	// the chain
-	tChain = new TChainGraph(ss.front(), baseMaster, topMaster);
+	tChain = new TChainScaffold(ss.front(), baseMaster, topMaster);
 	tChain->setFoldDuration(0, 1);
 	chains << tChain;
 
@@ -33,9 +33,9 @@ TBlockGraph::TBlockGraph(QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& 
 	chainWeights << 1.0;
 }
 
-FdGraph* TBlockGraph::getKeyframe(double t, bool useThk)
+Scaffold* TUnitScaffold::getKeyframe(double t, bool useThk)
 {
-	FdGraph* keyframe = nullptr;
+	Scaffold* keyframe = nullptr;
 
 	// chains have been created and ready to fold
 	// IOW, the block has been foldabilized
@@ -49,11 +49,11 @@ FdGraph* TBlockGraph::getKeyframe(double t, bool useThk)
 	{
 		// t = 0 : the entire block
 		if (t < 0.5)
-			keyframe = (FdGraph*)tChain->clone();
+			keyframe = (Scaffold*)tChain->clone();
 		else
 		// t = 1 : just the base master
 		{
-			keyframe = new FdGraph();
+			keyframe = new Scaffold();
 			keyframe->Structure::Graph::addNode(baseMaster->clone());
 		}
 	}
@@ -61,7 +61,7 @@ FdGraph* TBlockGraph::getKeyframe(double t, bool useThk)
 	return keyframe;
 }
 
-QVector<Vector2> TBlockGraph::computeObstacles(ShapeSuperKeyframe* ssKeyframe)
+QVector<Vector2> TUnitScaffold::computeObstacles(ShapeSuperKeyframe* ssKeyframe)
 {
 	// in-between external parts
 	Geom::Rectangle base_rect = baseMaster->mPatch;
@@ -81,7 +81,7 @@ QVector<Vector2> TBlockGraph::computeObstacles(ShapeSuperKeyframe* ssKeyframe)
 }
 
 
-QVector<int> TBlockGraph::getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe)
+QVector<int> TUnitScaffold::getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe)
 {
 	QVector<Vector2> obstacles = computeObstacles(ssKeyframe);
 
@@ -101,7 +101,7 @@ QVector<int> TBlockGraph::getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe)
 	return afo;
 }
 
-double TBlockGraph::findOptimalSolution(const QVector<int>& afo)
+double TUnitScaffold::findOptimalSolution(const QVector<int>& afo)
 {
 	// choose the one with the lowest cost
 	FoldOption* best_fo = nullptr;

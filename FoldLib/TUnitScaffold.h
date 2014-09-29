@@ -1,16 +1,16 @@
 #pragma once
 
-#include "BlockGraph.h"
-class TChainGraph;
+#include "UnitScaffold.h"
+class TChainScaffold;
 
-class TBlockGraph : public BlockGraph
+class TUnitScaffold : public UnitScaffold
 {
 public:
-	TBlockGraph(QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& ss,
+	TUnitScaffold(QString id, QVector<PatchNode*>& ms, QVector<ScaffoldNode*>& ss,
 		QVector< QVector<QString> >& mPairs);
 
 	// key frame
-	virtual FdGraph* getKeyframe(double t, bool useThk) override;
+	virtual Scaffold* getKeyframe(double t, bool useThk) override;
 
 	// foldabilize
 	virtual QVector<int> getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe) override;
@@ -21,7 +21,7 @@ private:
 
 public:
 	// pointer
-	TChainGraph* tChain;
+	TChainScaffold* tChain;
 	PatchNode* topMaster;
 
 public:

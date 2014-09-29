@@ -1,20 +1,20 @@
-#include "HBlockGraph.h"
+#include "HUnitScaffold.h"
 #include "Numeric.h"
-#include "HChainGraph.h"
+#include "HChainScaffold.h"
 #include "CliquerAdapter.h"
 #include "IntrRect2Rect2.h"
-#include "SuperBlockGraph.h"
+#include "SuperUnitScaffold.h"
 #include "FoldOptionGraph.h"
 
-HBlockGraph::HBlockGraph(QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& ss,
-	QVector< QVector<QString> >& mPairs) : BlockGraph(id)
+HUnitScaffold::HUnitScaffold(QString id, QVector<PatchNode*>& ms, QVector<ScaffoldNode*>& ss,
+	QVector< QVector<QString> >& mPairs) : UnitScaffold(id)
 {
 	// clone nodes
 	foreach(PatchNode* m, ms)	{
 		masters << (PatchNode*)m->clone();
 		Structure::Graph::addNode(masters.last());
 	}
-	foreach(FdNode* s, ss)
+	foreach(ScaffoldNode* s, ss)
 		Structure::Graph::addNode(s->clone());
 
 	// sort masters
@@ -41,7 +41,7 @@ HBlockGraph::HBlockGraph(QString id, QVector<PatchNode*>& ms, QVector<FdNode*>& 
 	genAllFoldOptions();
 }
 
-void HBlockGraph::createChains(QVector<FdNode*>& ss, QVector< QVector<QString> >& mPairs)
+void HUnitScaffold::createChains(QVector<ScaffoldNode*>& ss, QVector< QVector<QString> >& mPairs)
 {
 	// create chain for each slave with its two masters
 	for (int i = 0; i < ss.size(); i++)
@@ -56,7 +56,7 @@ void HBlockGraph::createChains(QVector<FdNode*>& ss, QVector< QVector<QString> >
 		// create chain
 		PatchNode* master_low = (PatchNode*)getNode(mid_low);
 		PatchNode* master_high = (PatchNode*)getNode(mid_high);
-		ChainGraph* hc = new HChainGraph(ss[i], master_low, master_high);
+		ChainScaffold* hc = new HChainScaffold(ss[i], master_low, master_high);
 		double t0 = 1.0 - masterTimeStamps[mid_high];
 		double t1 = 1.0 - masterTimeStamps[mid_low];
 		hc->setFoldDuration(t0, t1);
@@ -71,7 +71,7 @@ void HBlockGraph::createChains(QVector<FdNode*>& ss, QVector< QVector<QString> >
 	}
 }
 
-void HBlockGraph::computeChainWeights()
+void HUnitScaffold::computeChainWeights()
 {
 	chainWeights.clear();
 
@@ -87,34 +87,34 @@ void HBlockGraph::computeChainWeights()
 }
 
 
-HBlockGraph::~HBlockGraph()
+HUnitScaffold::~HUnitScaffold()
 {
 }
 
 // The keyframe is the configuration of the block at given time \p t
 // This is also called regular keyframe to distinguish from super keyframe
-FdGraph* HBlockGraph::getKeyframe(double t, bool useThk)
+Scaffold* HUnitScaffold::getKeyframe(double t, bool useThk)
 {
-	FdGraph* keyframe = nullptr;
+	Scaffold* keyframe = nullptr;
 
 	// the block is not ready to fold
 	if (t <= 0)
 	{
-		keyframe = (FdGraph*)this->clone();
+		keyframe = (Scaffold*)this->clone();
 	}
 	// chains have been created and ready to fold
 	// IOW, the block has been foldabilized
 	else if (foldabilized)
 	{
 		// keyframe of each chain
-		QVector<FdGraph*> chainKeyframes;
+		QVector<Scaffold*> chainKeyframes;
 		for (int i = 0; i < chains.size(); i++)
 		{
 			// skip deleted chain
 			if (chains[i]->isDeleted)
 				chainKeyframes << nullptr;
 			else{
-				ChainGraph* cgraph = chains[i];
+				ChainScaffold* cgraph = chains[i];
 				double localT = getLocalTime(t, cgraph->duration);
 				chainKeyframes << chains[i]->getKeyframe(localT, useThk);
 			}
@@ -130,7 +130,7 @@ FdGraph* HBlockGraph::getKeyframe(double t, bool useThk)
 		}
 
 		// local garbage collection
-		foreach(FdGraph* c, chainKeyframes)
+		foreach(Scaffold* c, chainKeyframes)
 		if (c) delete c;
 	}
 
@@ -141,10 +141,10 @@ FdGraph* HBlockGraph::getKeyframe(double t, bool useThk)
 	return keyframe;
 }
 
-void HBlockGraph::computeObstacles(ShapeSuperKeyframe* ssKeyframe)
+void HUnitScaffold::computeObstacles(ShapeSuperKeyframe* ssKeyframe)
 {
 	// create super block
-	SuperBlockGraph *superBlock = new SuperBlockGraph(this, ssKeyframe);
+	SuperUnitScaffold *superBlock = new SuperUnitScaffold(this, ssKeyframe);
 
 	// request from super block
 	obstacles = superBlock->computeObstacles();
@@ -153,7 +153,7 @@ void HBlockGraph::computeObstacles(ShapeSuperKeyframe* ssKeyframe)
 	delete superBlock;
 }
 
-QVector<int> HBlockGraph::getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe)
+QVector<int> HUnitScaffold::getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe)
 {
 	// update obstacles
 	computeObstacles(ssKeyframe);
@@ -190,7 +190,7 @@ QVector<int> HBlockGraph::getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe)
 	return afo;
 }
 
-FoldOptionGraph* HBlockGraph::createCollisionGraph(const QVector<int>& afo)
+FoldOptionGraph* HUnitScaffold::createCollisionGraph(const QVector<int>& afo)
 {
 	FoldOptionGraph* collFog = new FoldOptionGraph();
 
@@ -244,7 +244,7 @@ FoldOptionGraph* HBlockGraph::createCollisionGraph(const QVector<int>& afo)
 	return collFog;
 }
 
-double HBlockGraph::findOptimalSolution(const QVector<int>& afo)
+double HUnitScaffold::findOptimalSolution(const QVector<int>& afo)
 {
 	// total cost
 	double totalCost = 0;
@@ -278,7 +278,7 @@ double HBlockGraph::findOptimalSolution(const QVector<int>& afo)
 	return totalCost;
 }
 
-QVector<FoldOption*> HBlockGraph::findOptimalSolution(FoldOptionGraph* collFog, const QVector<Structure::Node*>& component)
+QVector<FoldOption*> HUnitScaffold::findOptimalSolution(FoldOptionGraph* collFog, const QVector<Structure::Node*>& component)
 {
 	QVector<FoldOption*> partialSln;
 
@@ -327,7 +327,7 @@ QVector<FoldOption*> HBlockGraph::findOptimalSolution(FoldOptionGraph* collFog, 
 	return partialSln;
 }
 
-QVector< QVector<bool> > HBlockGraph::genDualAdjMatrix(FoldOptionGraph* collFog, const QVector<FoldOption*>& fns)
+QVector< QVector<bool> > HUnitScaffold::genDualAdjMatrix(FoldOptionGraph* collFog, const QVector<FoldOption*>& fns)
 {
 	QVector<bool> dumpy(fns.size(), true);
 	QVector< QVector<bool> > conn(fns.size(), dumpy);
@@ -357,7 +357,7 @@ QVector< QVector<bool> > HBlockGraph::genDualAdjMatrix(FoldOptionGraph* collFog,
 }
 
 // max weights means lowest cost: weights = maxCost - cost
-QVector<double> HBlockGraph::genReversedWeights(const QVector<FoldOption*>& fns)
+QVector<double> HUnitScaffold::genReversedWeights(const QVector<FoldOption*>& fns)
 {
 	QVector<double> weights;
 
@@ -377,7 +377,7 @@ QVector<double> HBlockGraph::genReversedWeights(const QVector<FoldOption*>& fns)
 	return weights;
 }
 
-QVector<Vector3> HBlockGraph::getObstaclePoints()
+QVector<Vector3> HUnitScaffold::getObstaclePoints()
 {
 	QVector<Vector3> pnts;
 	Geom::Rectangle base_rect = baseMaster->mPatch;

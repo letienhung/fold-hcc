@@ -1,20 +1,20 @@
 #pragma once
 
-#include "FdGraph.h"
+#include "Scaffold.h"
 #include "ShapeSuperKeyframe.h"
 
 class FoldOption;
-class ChainGraph;
+class ChainScaffold;
 
-class BlockGraph : public FdGraph
+class UnitScaffold : public Scaffold
 {
 public:
-	BlockGraph(QString id);
-	~BlockGraph();
+	UnitScaffold(QString id);
+	~UnitScaffold();
 
 	// selection
-	ChainGraph* getSelChain();
-	FdGraph* activeScaffold();
+	ChainScaffold* getSelChain();
+	Scaffold* activeScaffold();
 	void selectChain(QString id);
 	QStringList getChainLabels();
 
@@ -45,8 +45,8 @@ public:
 public:
 	//*** CORE
 	// key frame
-	virtual FdGraph*	getKeyframe(double t, bool useThk) = 0; // intermediate config. at local time t
-	FdGraph*			getSuperKeyframe(double t);	// key frame with super master that merges all collapsed masters
+	virtual Scaffold*	getKeyframe(double t, bool useThk) = 0; // intermediate config. at local time t
+	Scaffold*			getSuperKeyframe(double t);	// key frame with super master that merges all collapsed masters
 
 	/* foldabilization : compute the best fold solution wrt the given super shape key frame
 	   the best solution is indicated by currSlnIdx
@@ -64,7 +64,7 @@ public:
 	//*** ENTITIES
 	// chains
 	int selChainIdx;
-	QVector<ChainGraph*> chains;
+	QVector<ChainScaffold*> chains;
 	QVector<double> chainWeights; // normalized area weights
 
 	// masters

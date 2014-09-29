@@ -2,7 +2,7 @@
 
 #include "RodNode.h"
 #include "PatchNode.h"
-#include "FdGraph.h"
+#include "Scaffold.h"
 
 #include "DistSegSeg.h"
 #include "DistSegRect.h"
@@ -15,7 +15,7 @@
 
 #include <iomanip>
 
-FdNodeArray2D getConnectedGroups( QVector<FdNode*> nodes, double disThr )
+FdNodeArray2D getConnectedGroups( QVector<ScaffoldNode*> nodes, double disThr )
 {
 	FdNodeArray2D clusters;
 	if (nodes.isEmpty()) return clusters;
@@ -25,7 +25,7 @@ FdNodeArray2D getConnectedGroups( QVector<FdNode*> nodes, double disThr )
 	int nbVisited = 0;
 
 	// initial current graph
-	QVector<FdNode*> curr_g;
+	QVector<ScaffoldNode*> curr_g;
 	curr_g.push_back(nodes[0]);
 	visited[0] = true;
 	nbVisited++;
@@ -74,17 +74,17 @@ FdNodeArray2D getConnectedGroups( QVector<FdNode*> nodes, double disThr )
 	return clusters;
 }
 
-Geom::Segment getDistSegment( FdNode* n1, FdNode* n2 )
+Geom::Segment getDistSegment( ScaffoldNode* n1, ScaffoldNode* n2 )
 {
 	Geom::Segment ds;
 
-	if (n1->mType == FdNode::ROD)
+	if (n1->mType == ScaffoldNode::ROD)
 	{
 		RodNode* node1 = (RodNode*)n1;
 		Geom::Segment rod1 = node1->mRod;
 
 		// rod-rod
-		if (n2->mType == FdNode::ROD)
+		if (n2->mType == ScaffoldNode::ROD)
 		{
 			RodNode* node2 = (RodNode*)n2;
 			Geom::Segment rod2 = node2->mRod;
@@ -109,7 +109,7 @@ Geom::Segment getDistSegment( FdNode* n1, FdNode* n2 )
 		Geom::Rectangle rect1 = node1->mPatch;
 
 		// patch-rod
-		if (n2->mType == FdNode::ROD)
+		if (n2->mType == ScaffoldNode::ROD)
 		{
 			RodNode* node2 = (RodNode*)n2;
 			Geom::Segment rod2 = node2->mRod;
@@ -131,15 +131,15 @@ Geom::Segment getDistSegment( FdNode* n1, FdNode* n2 )
 	return ds;
 }
 
-double getDistance( FdNode* n1, FdNode* n2 )
+double getDistance( ScaffoldNode* n1, ScaffoldNode* n2 )
 {
 	return getDistSegment(n1, n2).length();
 }
 
-double getDistance( FdNode* n, QVector<FdNode*> nset )
+double getDistance( ScaffoldNode* n, QVector<ScaffoldNode*> nset )
 {
 	double minDist = maxDouble();
-	foreach (FdNode* to, nset)
+	foreach (ScaffoldNode* to, nset)
 	{
 		double dist = getDistance(n, to);
 		if (dist < minDist) minDist = dist;
@@ -151,14 +151,14 @@ double getDistance( FdNode* n, QVector<FdNode*> nset )
 StrArray2D getIds( FdNodeArray2D nodeArray )
 {
 	StrArray2D idArray2D;
-	foreach (QVector<FdNode*> ns, nodeArray) idArray2D << getIds(ns);
+	foreach (QVector<ScaffoldNode*> ns, nodeArray) idArray2D << getIds(ns);
 	return idArray2D;
 }
 
-QVector<QString> getIds( QVector<FdNode*> nodes )
+QVector<QString> getIds( QVector<ScaffoldNode*> nodes )
 {
 	QVector<QString> ids;
-	foreach(FdNode* n, nodes)	ids.push_back(n->mID);
+	foreach(ScaffoldNode* n, nodes)	ids.push_back(n->mID);
 	return ids;
 }
 
@@ -207,7 +207,7 @@ Geom::Box fitBox( QVector<Vector3>& pnts, BOX_FIT_METHOD method )
 	return box;
 }
 
-PLANE_RELATION relationWithPlane( FdNode* n, Geom::Plane plane, double thr )
+PLANE_RELATION relationWithPlane( ScaffoldNode* n, Geom::Plane plane, double thr )
 {
 	double minDist = maxDouble();
 	double maxDist = minDouble();
@@ -238,15 +238,15 @@ PLANE_RELATION relationWithPlane( FdNode* n, Geom::Plane plane, double thr )
 
 }
 
-bool onPlane( FdNode* n, Geom::Plane& plane )
+bool onPlane( ScaffoldNode* n, Geom::Plane& plane )
 {
 	return (relationWithPlane(n, plane, 0.2) == ON_PLANE);
 }
 
-QString getBundleName( const QVector<FdNode*>& nodes )
+QString getBundleName( const QVector<ScaffoldNode*>& nodes )
 {
 	QString bname;
-	foreach (FdNode* n, nodes)
+	foreach (ScaffoldNode* n, nodes)
 	{
 		bname += "+" + n->mID;
 	}
@@ -254,10 +254,10 @@ QString getBundleName( const QVector<FdNode*>& nodes )
 	return "(" + bname + ")";
 }
 
-Geom::Box getBundleBox( const QVector<FdNode*>& nodes )
+Geom::Box getBundleBox( const QVector<ScaffoldNode*>& nodes )
 {
 	QVector<Vector3> points;
-	foreach (FdNode* n, nodes)
+	foreach (ScaffoldNode* n, nodes)
 	{
 		points += n->mBox.getConnerPoints();
 	}
@@ -265,7 +265,7 @@ Geom::Box getBundleBox( const QVector<FdNode*>& nodes )
 	return fitBox(points);
 }
 
-bool hasIntersection( FdNode* slave, PatchNode* master, double thr )
+bool hasIntersection( ScaffoldNode* slave, PatchNode* master, double thr )
 {
 	if (getDistance(slave, master) > thr) return false;
 
@@ -300,7 +300,7 @@ bool within( double t, Interval itv )
 	return inRange(t, itv.first, itv.second);
 }
 
-QVector<PatchNode*> getAllMasters( FdGraph* scaffold )
+QVector<PatchNode*> getAllMasters( Scaffold* scaffold )
 {
 	QVector<PatchNode*> masters;
 	foreach(Structure::Node* n, scaffold->getNodesWithTag(MASTER_TAG))
@@ -309,14 +309,14 @@ QVector<PatchNode*> getAllMasters( FdGraph* scaffold )
 	return masters;
 }
 
-FdGraph* combineFdGraphs( QVector<FdGraph*> decmps, QString baseMid, 
+Scaffold* combineFdGraphs( QVector<Scaffold*> decmps, QString baseMid, 
 								QMap<QString, QSet<int> >& masterDecmpMap )
 {
 	// trivial combination
 	if (decmps.size() == 1)
 	{
 		if (decmps[0] == nullptr) return nullptr;
-		else return (FdGraph*)decmps.front()->clone();
+		else return (Scaffold*)decmps.front()->clone();
 	}
 
 	// combined tags
@@ -338,8 +338,8 @@ FdGraph* combineFdGraphs( QVector<FdGraph*> decmps, QString baseMid,
 	if (base_decmp_id == -1) return nullptr;
 
 	// create scaffold for combination
-	FdGraph* combination = new FdGraph();
-	FdGraph* base_decmp = decmps[base_decmp_id];
+	Scaffold* combination = new Scaffold();
+	Scaffold* base_decmp = decmps[base_decmp_id];
 	PatchNode* baseMaster = (PatchNode*)base_decmp->getNode(baseMid);
 	combination->Structure::Graph::addNode(baseMaster->clone());
 	masterCombined[baseMid] = true;
@@ -361,7 +361,7 @@ FdGraph* combineFdGraphs( QVector<FdGraph*> decmps, QString baseMid,
 			if (decmpCombined[decmp_id]) continue;
 
 			// translate
-			FdGraph* decmp = decmps[decmp_id];
+			Scaffold* decmp = decmps[decmp_id];
 			PatchNode* oldMaster = (PatchNode*)decmp->getNode(curr_mid);
 			if(!oldMaster) return NULL;
 
@@ -399,12 +399,12 @@ FdGraph* combineFdGraphs( QVector<FdGraph*> decmps, QString baseMid,
 	return combination;
 }
 
-int nbMasters( FdGraph* scaffold )
+int nbMasters( Scaffold* scaffold )
 {
 	return getAllMasters(scaffold).size();
 }
 
-QVector<QString> getAllMasterIds( FdGraph* scaffold )
+QVector<QString> getAllMasterIds( Scaffold* scaffold )
 {
 	QVector<QString> mids;
 	foreach (PatchNode* m, getAllMasters(scaffold))
@@ -418,7 +418,7 @@ bool passed( double t, Interval itv )
 	return t >= itv.second;
 }
 
-QMap<QString, double> getTimeStampsNormalized( QVector<FdNode*> nodes, Vector3 v, double &tScale )
+QMap<QString, double> getTimeStampsNormalized( QVector<ScaffoldNode*> nodes, Vector3 v, double &tScale )
 {
 	QMap<QString, double> timeStamps;
 
@@ -429,7 +429,7 @@ QMap<QString, double> getTimeStampsNormalized( QVector<FdNode*> nodes, Vector3 v
 	double minT = maxDouble();
 	double maxT = -maxDouble();
 	Geom::AABB aabb;
-	foreach (FdNode* n, nodes)
+	foreach (ScaffoldNode* n, nodes)
 	{
 		double t = timeLine.getProjTime(n->center());
 		timeStamps[n->mID] = t;
@@ -459,7 +459,7 @@ QMap<QString, double> getTimeStampsNormalized( QVector<FdNode*> nodes, Vector3 v
 
 QMap<QString, double> getTimeStampsNormalized( QVector<PatchNode*> pnodes, Vector3 v, double &tScale )
 {
-	QVector<FdNode*> nodes;
+	QVector<ScaffoldNode*> nodes;
 	foreach (PatchNode* pn, pnodes) nodes << pn;
 	return getTimeStampsNormalized(nodes, v, tScale);
 }

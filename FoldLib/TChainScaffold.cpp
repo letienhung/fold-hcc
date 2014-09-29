@@ -1,13 +1,13 @@
-#include "TChainGraph.h"
+#include "TChainScaffold.h"
 #include "Numeric.h"
 
-TChainGraph::TChainGraph(FdNode* slave, PatchNode* base, PatchNode* top)
-:ChainGraph(slave, base, top)
+TChainScaffold::TChainScaffold(ScaffoldNode* slave, PatchNode* base, PatchNode* top)
+:ChainScaffold(slave, base, top)
 {
 	// do nothing
 }
 
-Geom::Rectangle TChainGraph::getFoldRegion(FoldOption* fn)
+Geom::Rectangle TChainScaffold::getFoldRegion(FoldOption* fn)
 {
 	Geom::Rectangle base_rect = baseMaster->mPatch;
 	Geom::Segment topJointProj = base_rect.getProjection(topJoint);
@@ -53,7 +53,7 @@ Geom::Rectangle TChainGraph::getFoldRegion(FoldOption* fn)
 //		|d					   ---
 //		|						|step
 //		|					   --- plane0
-QVector<Geom::Plane> TChainGraph::generateCutPlanes(FoldOption* fn)
+QVector<Geom::Plane> TChainScaffold::generateCutPlanes(FoldOption* fn)
 {
 	// start plane and step
 	double h = topTraj.length();
@@ -74,7 +74,7 @@ QVector<Geom::Plane> TChainGraph::generateCutPlanes(FoldOption* fn)
 	return cutPlanes;
 }
 
-void TChainGraph::fold(double t)
+void TChainScaffold::fold(double t)
 {
 	// free all nodes
 	foreach(Structure::Node* n, nodes)
@@ -98,7 +98,7 @@ void TChainGraph::fold(double t)
 	restoreConfiguration();
 }
 
-QVector<FoldOption*> TChainGraph::genRegularFoldOptions(int nSplits, int nChunks)
+QVector<FoldOption*> TChainScaffold::genRegularFoldOptions(int nSplits, int nChunks)
 {
 	// nS: # splits; nC: # used chunks; nbChunks: total # of chunks
 	// enumerate all start positions and left/right side

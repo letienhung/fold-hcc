@@ -1,30 +1,30 @@
-#include "GraphManager.h"
+#include "ScaffoldManager.h"
 #include "SegMeshLoader.h"
 #include "RodNode.h"
 #include "PatchNode.h"
-#include "FdGraph.h"
+#include "Scaffold.h"
 
 #include <QFileInfo>
 #include <QFileDialog>
 
 
-GraphManager::GraphManager()
+ScaffoldManager::ScaffoldManager()
 {
 	entireMesh = NULL;
-	scaffold = new FdGraph();
+	scaffold = new Scaffold();
 
 	fitMethod = FIT_AABB;
 	refitMethod = FIT_MIN;
 }
 
 
-GraphManager::~GraphManager()
+ScaffoldManager::~ScaffoldManager()
 {
 	delete scaffold;
 }
 
 
-void GraphManager::createScaffold()
+void ScaffoldManager::createScaffold()
 {
 	SegMeshLoader sml(entireMesh);
 	QVector<SurfaceMeshModel*> subMeshes = sml.getSegMeshes();
@@ -42,7 +42,7 @@ void GraphManager::createScaffold()
 	emit(scaffoldChanged(scaffold));
 }
 
-void GraphManager::saveScaffold()
+void ScaffoldManager::saveScaffold()
 {
 	if (!scaffold) return;
 
@@ -54,7 +54,7 @@ void GraphManager::saveScaffold()
 	emit(message("Saved."));
 }
 
-void GraphManager::loadScaffold()
+void ScaffoldManager::loadScaffold()
 {
 	QString dataPath = getcwd() + "/data-syn";
 	QString filename = QFileDialog::getOpenFileName(0, tr("Load Scaffold"), dataPath, tr("Graph Files (*.xml)"));
@@ -65,49 +65,49 @@ void GraphManager::loadScaffold()
 	emit(message("Loaded."));
 }
 
-void GraphManager::setMesh( SurfaceMeshModel* mesh )
+void ScaffoldManager::setMesh( SurfaceMeshModel* mesh )
 {
 	this->entireMesh = mesh;
 	qDebug() << "Set active mesh as " << entireMesh->path;
 }
 
-void GraphManager::changeNodeType()
+void ScaffoldManager::changeNodeType()
 {
 	foreach(Structure::Node* n, scaffold->getSelectedNodes())
 	{
-		scaffold->changeNodeType((FdNode*)n);
+		scaffold->changeNodeType((ScaffoldNode*)n);
 	}
 
 	emit(scaffoldModified());
 }
 
-void GraphManager::refitNodes()
+void ScaffoldManager::refitNodes()
 {
 	foreach(Structure::Node* n, scaffold->getSelectedNodes())
 	{
-		FdNode* fn = (FdNode*)n;
+		ScaffoldNode* fn = (ScaffoldNode*)n;
 		fn->refit(refitMethod); 
 	}
 
 	emit(scaffoldModified());
 }
 
-void GraphManager::linkNodes()
+void ScaffoldManager::linkNodes()
 {
 	QVector<Structure::Node*> sn = scaffold->getSelectedNodes();
 	if (sn.size() < 2) return;
 
-	scaffold->addLink((FdNode*)sn[0], (FdNode*)sn[1]);
+	scaffold->addLink((ScaffoldNode*)sn[0], (ScaffoldNode*)sn[1]);
 
 	emit(scaffoldModified());
 }
 
-void GraphManager::test()
+void ScaffoldManager::test()
 {
 
 }
 
-void GraphManager::setFitMethod( int method )
+void ScaffoldManager::setFitMethod( int method )
 {
 	if (method == 0)
 		fitMethod = FIT_AABB;
@@ -117,7 +117,7 @@ void GraphManager::setFitMethod( int method )
 		fitMethod = FIT_PCA;
 }
 
-void GraphManager::setRefitMethod( int method )
+void ScaffoldManager::setRefitMethod( int method )
 {
 	if (method == 0)
 		fitMethod = FIT_MIN;

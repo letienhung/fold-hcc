@@ -1,14 +1,14 @@
-#include "HChainGraph.h"
+#include "HChainScaffold.h"
 #include "Numeric.h"
 
-HChainGraph::HChainGraph(FdNode* slave, PatchNode* base, PatchNode* top)
-	:ChainGraph(slave, base, top)
+HChainScaffold::HChainScaffold(ScaffoldNode* slave, PatchNode* base, PatchNode* top)
+	:ChainScaffold(slave, base, top)
 {
 	// uniform
 	useUniformHeight = true;
 }
 
-Geom::Rectangle HChainGraph::getFoldRegion(FoldOption* fn)
+Geom::Rectangle HChainScaffold::getFoldRegion(FoldOption* fn)
 {
 	Geom::Rectangle base_rect = baseMaster->mPatch;
 	Geom::Segment topJointProj = base_rect.getProjection(topJoint);
@@ -55,7 +55,7 @@ Geom::Rectangle HChainGraph::getFoldRegion(FoldOption* fn)
 //		|d					   ---
 //		|						|step
 //		|					   --- plane0
-QVector<Geom::Plane> HChainGraph::generateCutPlanes(FoldOption* fn)
+QVector<Geom::Plane> HChainScaffold::generateCutPlanes(FoldOption* fn)
 {
 	// constants
 	double L = slaveSeg.length();
@@ -89,7 +89,7 @@ QVector<Geom::Plane> HChainGraph::generateCutPlanes(FoldOption* fn)
 	return cutPlanes;
 }
 
-void HChainGraph::fold(double t)
+void HChainScaffold::fold(double t)
 {
 	// free all nodes
 	foreach(Structure::Node* n, nodes)
@@ -108,7 +108,7 @@ void HChainGraph::fold(double t)
 	restoreConfiguration();
 }
 
-void HChainGraph::foldUniformAngle(double t)
+void HChainScaffold::foldUniformAngle(double t)
 {
 	// hinge angles
 	double d = rightSeg.length();
@@ -177,7 +177,7 @@ void HChainGraph::foldUniformAngle(double t)
 	topMaster->translate(topPos - topMaster->center());
 }
 
-void HChainGraph::foldUniformHeight(double t)
+void HChainScaffold::foldUniformHeight(double t)
 {
 	// constant
 	int n = chainParts.size();
@@ -296,7 +296,7 @@ void HChainGraph::foldUniformHeight(double t)
 	topMaster->translate(topPos - topMaster->center());
 }
 
-void HChainGraph::computePhaseSeparator()
+void HChainScaffold::computePhaseSeparator()
 {
 	// constant
 	int n = chainParts.size();
@@ -314,7 +314,7 @@ void HChainGraph::computePhaseSeparator()
 	angleSep = asin(RANGED(0, sin_angle, 1));
 }
 
-QVector<FoldOption*> HChainGraph::genRegularFoldOptions(int maxNbSplits, int maxNbChunks)
+QVector<FoldOption*> HChainScaffold::genRegularFoldOptions(int maxNbSplits, int maxNbChunks)
 {
 	// nS: # splits; nC: # used chunks; nbChunks: total # of chunks
 	// enumerate all start positions and left/right side

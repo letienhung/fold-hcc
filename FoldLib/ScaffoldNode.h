@@ -8,21 +8,21 @@
 #include "AABB.h"
 #include "FdUtility.h"
 
-class FdNode : public Structure::Node
+class ScaffoldNode : public Structure::Node
 {
 public: 
 	enum NODE_TYPE{NONE, ROD, PATCH};
 
 public:
-	FdNode(QString id = "");
-    FdNode(QString id, Geom::Box &b, MeshPtr m);
-	FdNode(FdNode& other);
-	virtual ~FdNode();
+	ScaffoldNode(QString id = "");
+    ScaffoldNode(QString id, Geom::Box &b, MeshPtr m);
+	ScaffoldNode(ScaffoldNode& other);
+	virtual ~ScaffoldNode();
 
 	Node* clone() = 0;
 
 	// bundle node return all children, otherwise nothing
-	virtual QVector<FdNode*> getSubNodes();
+	virtual QVector<ScaffoldNode*> getSubNodes();
 
 	// visualization
 	bool isHidden;
@@ -55,9 +55,9 @@ public:
 
 	// modification
 	virtual void translate(Vector3 t);
-	FdNode* cloneChopped(Geom::Box& chopBox);
-	virtual FdNode* cloneChopped(Geom::Plane& chopper);
-	virtual FdNode* cloneChopped(Geom::Plane& chopper1, Geom::Plane& chopper2);
+	ScaffoldNode* cloneChopped(Geom::Box& chopBox);
+	virtual ScaffoldNode* cloneChopped(Geom::Plane& chopper);
+	virtual ScaffoldNode* cloneChopped(Geom::Plane& chopper1, Geom::Plane& chopper2);
 	void deformToAttach(Geom::Plane& plane);
 	virtual void setThickness(double thk);
 	 

@@ -1,11 +1,11 @@
-#include "BlockGraph.h"
+#include "UnitScaffold.h"
 #include "FdUtility.h"
 #include "Numeric.h"
-#include "ChainGraph.h"
-#include "TChainGraph.h"
+#include "ChainScaffold.h"
+#include "TChainScaffold.h"
 
-BlockGraph::BlockGraph(QString id)
-	: FdGraph(id)
+UnitScaffold::UnitScaffold(QString id)
+	: Scaffold(id)
 {
 	// selected chain
 	selChainIdx = -1;
@@ -28,13 +28,13 @@ BlockGraph::BlockGraph(QString id)
 	currSlnIdx = -1;
 }
 
-BlockGraph::~BlockGraph()
+UnitScaffold::~UnitScaffold()
 {
-	foreach(ChainGraph* c, chains)
+	foreach(ChainScaffold* c, chains)
 		delete c;
 }
 
-void BlockGraph::setAabbConstraint(Geom::Box aabb)
+void UnitScaffold::setAabbConstraint(Geom::Box aabb)
 {
 	Geom::Rectangle base_rect = baseMaster->mPatch;
 	int aid = aabb.getAxisId(base_rect.Normal);
@@ -44,14 +44,14 @@ void BlockGraph::setAabbConstraint(Geom::Box aabb)
 }
 
 
-FdGraph* BlockGraph::activeScaffold()
+Scaffold* UnitScaffold::activeScaffold()
 {
-	FdGraph* selChain = getSelChain();
+	Scaffold* selChain = getSelChain();
 	if (selChain)  return selChain;
 	else		   return this;
 }
 
-ChainGraph* BlockGraph::getSelChain()
+ChainScaffold* UnitScaffold::getSelChain()
 {
 	if (selChainIdx >= 0 && selChainIdx < chains.size())
 		return chains[selChainIdx];
@@ -59,7 +59,7 @@ ChainGraph* BlockGraph::getSelChain()
 		return NULL;
 }
 
-void BlockGraph::selectChain( QString id )
+void UnitScaffold::selectChain( QString id )
 {
 	selChainIdx = -1;
 	for (int i = 0; i < chains.size(); i++)
@@ -72,10 +72,10 @@ void BlockGraph::selectChain( QString id )
 	}
 }
 
-QStringList BlockGraph::getChainLabels()
+QStringList UnitScaffold::getChainLabels()
 {
 	QStringList labels;
-	foreach(FdGraph* c, chains)
+	foreach(Scaffold* c, chains)
 		labels.push_back(c->mID);
 
 	// append string to select none
@@ -86,10 +86,10 @@ QStringList BlockGraph::getChainLabels()
 
 // The super keyframe is the keyframe + superPatch
 // which is an additional patch representing the folded block
-FdGraph* BlockGraph::getSuperKeyframe( double t )
+Scaffold* UnitScaffold::getSuperKeyframe( double t )
 {
 	// regular key frame w\o thickness
-	FdGraph* keyframe = getKeyframe(t, false);
+	Scaffold* keyframe = getKeyframe(t, false);
 
 	// do nothing if the block is NOT fully folded
 	if (t < 1) return keyframe;
@@ -102,9 +102,9 @@ FdGraph* BlockGraph::getSuperKeyframe( double t )
 	// collect projections of all nodes (including baseMaster) on baseMaster
 	Geom::Rectangle base_rect = superPatch->mPatch;
 	QVector<Vector2> projPnts2 = base_rect.get2DConners();
-	foreach(FdNode* n, keyframe->getFdNodes())
+	foreach(ScaffoldNode* n, keyframe->getFdNodes())
 	{
-		if (n->mType == FdNode::PATCH)
+		if (n->mType == ScaffoldNode::PATCH)
 		{
 			Geom::Rectangle part_rect = ((PatchNode*)n)->mPatch;
 			projPnts2 << base_rect.get2DRectangle(part_rect).getConners();
@@ -122,7 +122,7 @@ FdGraph* BlockGraph::getSuperKeyframe( double t )
 	superPatch->resize(aabb2);
 
 	// merged parts and masters
-	foreach (FdNode* n, keyframe->getFdNodes())
+	foreach (ScaffoldNode* n, keyframe->getFdNodes())
 	{
 		n->addTag(MERGED_PART_TAG); 
 		if (n->hasTag(MASTER_TAG))
@@ -135,22 +135,22 @@ FdGraph* BlockGraph::getSuperKeyframe( double t )
 	return keyframe;
 }
 
-double BlockGraph::getNbTopMasters()
+double UnitScaffold::getNbTopMasters()
 {
 	return nbMasters(this) - 1;
 }
 
-void BlockGraph::setThickness( double thk )
+void UnitScaffold::setThickness( double thk )
 {
 	thickness = thk;
-	foreach (ChainGraph* chain, chains)	
+	foreach (ChainScaffold* chain, chains)	
 	{
 		chain->halfThk = thickness / 2;
 		chain->baseOffset = thickness / 2;
 	}
 }
 
-QVector<QString> BlockGraph::getInbetweenExternalParts(Vector3 base_center, Vector3 top_center, ShapeSuperKeyframe* ssKeyframe)
+QVector<QString> UnitScaffold::getInbetweenExternalParts(Vector3 base_center, Vector3 top_center, ShapeSuperKeyframe* ssKeyframe)
 {
 	// time line
 	Vector3 sqzV = baseMaster->mPatch.Normal;
@@ -164,7 +164,7 @@ QVector<QString> BlockGraph::getInbetweenExternalParts(Vector3 base_center, Vect
 
 	// find parts in between m1 and m2
 	QVector<QString> inbetweens;
-	foreach(FdNode* n, ssKeyframe->getFdNodes())
+	foreach(ScaffoldNode* n, ssKeyframe->getFdNodes())
 	{
 		// skip parts that has been folded
 		if (n->hasTag(MERGED_PART_TAG)) continue;
@@ -196,7 +196,7 @@ QVector<QString> BlockGraph::getInbetweenExternalParts(Vector3 base_center, Vect
 	return inbetweens;
 }
 
-void BlockGraph::genAllFoldOptions()
+void UnitScaffold::genAllFoldOptions()
 {
 	// clear
 	allFoldOptions.clear();
@@ -229,7 +229,7 @@ void BlockGraph::genAllFoldOptions()
 	}
 }
 
-int BlockGraph::searchForExistedSolution(const QVector<int>& afo)
+int UnitScaffold::searchForExistedSolution(const QVector<int>& afo)
 {
 	for (int i = 0; i < testedAvailFoldOptions.size(); i++)
 		if (testedAvailFoldOptions[i] == afo) return i;
@@ -237,7 +237,7 @@ int BlockGraph::searchForExistedSolution(const QVector<int>& afo)
 	return -1;
 }
 
-double BlockGraph::foldabilizeWrt(ShapeSuperKeyframe* ssKeyframe)
+double UnitScaffold::foldabilizeWrt(ShapeSuperKeyframe* ssKeyframe)
 {
 	QVector<int> afo = getAvailFoldOptions(ssKeyframe);
 	
@@ -253,7 +253,7 @@ double BlockGraph::foldabilizeWrt(ShapeSuperKeyframe* ssKeyframe)
 	return cost;
 }
 
-void BlockGraph::applySolution()
+void UnitScaffold::applySolution()
 {
 	// assert idx
 	if (currSlnIdx < 0 || currSlnIdx >= foldSolutions.size())
@@ -273,7 +273,7 @@ void BlockGraph::applySolution()
 	foldabilized = true;
 }
 
-double BlockGraph::computeCost(FoldOption* fo)
+double UnitScaffold::computeCost(FoldOption* fo)
 {
 	// split
 	double a = fo->nSplits / (double)maxNbSplits;
@@ -291,14 +291,14 @@ double BlockGraph::computeCost(FoldOption* fo)
 	return cost;
 }
 
-double BlockGraph::getChainArea()
+double UnitScaffold::getChainArea()
 {
 	double a = 0;
 	for (auto c : chains)a += c->getArea();
 	return a;
 }
 
-void BlockGraph::showObstaclesAndFoldOptions()
+void UnitScaffold::showObstaclesAndFoldOptions()
 {
 	// clear
 	properties.remove(DEBUG_POINTS);
@@ -319,7 +319,7 @@ void BlockGraph::showObstaclesAndFoldOptions()
 	appendToVectorProperty(DEBUG_RECTS, rects);
 }
 
-void BlockGraph::resetAllFoldOptions()
+void UnitScaffold::resetAllFoldOptions()
 {
 	// regenerate all fold options
 	genAllFoldOptions();

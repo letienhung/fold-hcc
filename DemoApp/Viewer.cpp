@@ -82,7 +82,7 @@ void Viewer::draw()
 	{
 		if( fmanager->property("isDone").toBool() )
 		{
-			DcGraph* dcgraph = fmanager->getSelDcGraph();
+			ShapeScaffold* dcgraph = fmanager->getSelDcGraph();
 
 			if( !dcgraph->keyframes.isEmpty() )
 			{

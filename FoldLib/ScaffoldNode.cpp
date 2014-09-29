@@ -1,4 +1,4 @@
-#include "FdNode.h"
+#include "ScaffoldNode.h"
 #include "CustomDrawObjects.h"
 #include "Numeric.h"
 #include "AABB.h"
@@ -10,7 +10,7 @@
 #include "PatchNode.h"
 #include "PcaOBB.h"
 
-FdNode::FdNode(QString id)
+ScaffoldNode::ScaffoldNode(QString id)
 	: Node(id)
 {
 	mType = NONE;
@@ -26,7 +26,7 @@ FdNode::FdNode(QString id)
 
 }
 
-FdNode::FdNode(QString id, Geom::Box &b, MeshPtr m )
+ScaffoldNode::ScaffoldNode(QString id, Geom::Box &b, MeshPtr m )
 	:Node(id)
 {
 	mMesh = m;
@@ -46,7 +46,7 @@ FdNode::FdNode(QString id, Geom::Box &b, MeshPtr m )
 	isHidden = false;
 }
 
-FdNode::FdNode(FdNode& other)
+ScaffoldNode::ScaffoldNode(ScaffoldNode& other)
 	:Node(other)
 {
 	mMesh = other.mMesh;
@@ -66,20 +66,20 @@ FdNode::FdNode(FdNode& other)
 }
 
 
-FdNode::~FdNode()
+ScaffoldNode::~ScaffoldNode()
 {
 
 }
 
 
-void FdNode::setRandomColor()
+void ScaffoldNode::setRandomColor()
 {
 	mColor = qRandomColor3(0, 0.5, 0.7);
 	mColor.setAlphaF(0.78);
 }
 
 
-void FdNode::draw()
+void ScaffoldNode::draw()
 {
 	if (isHidden) return;
 
@@ -107,7 +107,7 @@ void FdNode::draw()
 }
 
 
-void FdNode::drawMesh()
+void ScaffoldNode::drawMesh()
 {
 	if (mMesh.isNull()) return;
 
@@ -117,20 +117,20 @@ void FdNode::drawMesh()
 	//QuickMeshDraw::drawMeshSharpEdges(mMesh.data(), QColor(0,0,0,255), 4);
 }
 
-void FdNode::encodeMesh()
+void ScaffoldNode::encodeMesh()
 {
 	if (mMesh.isNull()) return;
 
 	meshCoords = MeshHelper::encodeMeshInBox(mMesh.data(), origBox);
 }
 
-void FdNode::deformMesh()
+void ScaffoldNode::deformMesh()
 {
 	if (mMesh.isNull()) return;
 	MeshHelper::decodeMeshInBox(mMesh.data(), mBox, meshCoords);
 }
 
-void FdNode::write( XmlWriter& xw )
+void ScaffoldNode::write( XmlWriter& xw )
 {
 	xw.writeOpenTag("node");
 	{
@@ -143,7 +143,7 @@ void FdNode::write( XmlWriter& xw )
 	xw.writeCloseTag("node");
 }
 
-void FdNode::refit( BOX_FIT_METHOD method )
+void ScaffoldNode::refit( BOX_FIT_METHOD method )
 {
 	if (mMesh.isNull()) return;
 
@@ -155,32 +155,32 @@ void FdNode::refit( BOX_FIT_METHOD method )
 	createScaffold(false);
 }
 
-Geom::AABB FdNode::computeAABB()
+Geom::AABB ScaffoldNode::computeAABB()
 {
 	return Geom::AABB(mBox.getConnerPoints());
 }
 
-void FdNode::drawWithName( int name )
+void ScaffoldNode::drawWithName( int name )
 {
 	glPushName(name);
 	mBox.draw();
 	glPopName();
 }
 
-bool FdNode::isPerpTo( Vector3 v, double dotThreshold )
+bool ScaffoldNode::isPerpTo( Vector3 v, double dotThreshold )
 {
 	Q_UNUSED(v);
 	Q_UNUSED(dotThreshold);
 	return false;
 }
 
-SurfaceMesh::Vector3 FdNode::center()
+SurfaceMesh::Vector3 ScaffoldNode::center()
 {
 	return mBox.Center;
 }
 
 // clone partial node on the positive side of the chopper plane
-FdNode* FdNode::cloneChopped( Geom::Plane& chopper )
+ScaffoldNode* ScaffoldNode::cloneChopped( Geom::Plane& chopper )
 {
 	// cut point along skeleton
 	int aid = mBox.getAxisId(chopper.Normal);
@@ -197,7 +197,7 @@ FdNode* FdNode::cloneChopped( Geom::Plane& chopper )
 	return cloneChopped(chopBox);
 }
 
-FdNode* FdNode::cloneChopped( Geom::Plane& chopper1, Geom::Plane& chopper2 )
+ScaffoldNode* ScaffoldNode::cloneChopped( Geom::Plane& chopper1, Geom::Plane& chopper2 )
 {
 	// cut point along skeleton
 	int aid = mBox.getAxisId(chopper1.Normal);
@@ -213,10 +213,10 @@ FdNode* FdNode::cloneChopped( Geom::Plane& chopper1, Geom::Plane& chopper2 )
 	return cloneChopped(chopBox);
 }
 
-FdNode* FdNode::cloneChopped( Geom::Box& chopBox )
+ScaffoldNode* ScaffoldNode::cloneChopped( Geom::Box& chopBox )
 {
-	FdNode *choppedNode;
-	if (mType == FdNode::ROD)
+	ScaffoldNode *choppedNode;
+	if (mType == ScaffoldNode::ROD)
 		choppedNode = new RodNode(mMesh->name, chopBox, mMesh);
 	else
 		choppedNode = new PatchNode(mMesh->name, chopBox, mMesh);
@@ -225,18 +225,18 @@ FdNode* FdNode::cloneChopped( Geom::Box& chopBox )
 	return choppedNode;
 }
 
-QString FdNode::getMeshName()
+QString ScaffoldNode::getMeshName()
 {
 	if (mMesh.isNull()) return "NULL";
 	else return mMesh->name;
 }
 
-QVector<FdNode*> FdNode::getSubNodes()
+QVector<ScaffoldNode*> ScaffoldNode::getSubNodes()
 {
-	return QVector<FdNode*>() << this;
+	return QVector<ScaffoldNode*>() << this;
 }
 
-void FdNode::cloneMesh()
+void ScaffoldNode::cloneMesh()
 {
 	deformMesh();
 	SurfaceMeshModel *mesh = new SurfaceMeshModel;
@@ -267,7 +267,7 @@ void FdNode::cloneMesh()
 	showMesh = true;
 }
 
-void FdNode::exportMesh(QFile &file, int &v_offset)
+void ScaffoldNode::exportMesh(QFile &file, int &v_offset)
 {
 	cloneMesh();
 	QTextStream out(&file);
@@ -288,7 +288,7 @@ void FdNode::exportMesh(QFile &file, int &v_offset)
 	v_offset += mMesh->n_vertices();
 }
 
-void FdNode::deformToAttach( Geom::Plane& plane )
+void ScaffoldNode::deformToAttach( Geom::Plane& plane )
 {
 	int aid = mBox.getAxisId(plane.Normal);
 	Geom::Segment sklt = mBox.getSkeleton(aid);
@@ -317,29 +317,29 @@ void FdNode::deformToAttach( Geom::Plane& plane )
 
 // mesh is not translated
 // call deformMesh to update the location of mesh
-void FdNode::translate( Vector3 t )
+void ScaffoldNode::translate( Vector3 t )
 {
 	mBox.translate(t);
 	createScaffold(true);
 }
 
-void FdNode::setThickness( double thk )
+void ScaffoldNode::setThickness( double thk )
 {
     Q_UNUSED(thk)
 	// do nothing
 }
 
-void FdNode::setShowCuboid( bool show )
+void ScaffoldNode::setShowCuboid( bool show )
 {
 	showCuboid = show;
 }
 
-void FdNode::setShowScaffold( bool show )
+void ScaffoldNode::setShowScaffold( bool show )
 {
 	showScaffold = show;
 }
 
-void FdNode::setShowMesh( bool show )
+void ScaffoldNode::setShowMesh( bool show )
 {
 	showMesh = show;
 }

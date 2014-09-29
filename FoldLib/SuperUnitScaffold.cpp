@@ -1,10 +1,10 @@
-#include "SuperBlockGraph.h"
-#include "HBlockGraph.h"
+#include "SuperUnitScaffold.h"
+#include "HUnitScaffold.h"
 #include "ShapeSuperKeyframe.h"
-#include "ChainGraph.h"
+#include "ChainScaffold.h"
 #include "Numeric.h"
 
-SuperBlockGraph::SuperBlockGraph(HBlockGraph* block, ShapeSuperKeyframe* sskf)
+SuperUnitScaffold::SuperUnitScaffold(HUnitScaffold* block, ShapeSuperKeyframe* sskf)
 : origBlock(block), ssKeyframe(sskf)
 {
 	// map from master to super master within this block
@@ -47,7 +47,7 @@ SuperBlockGraph::SuperBlockGraph(HBlockGraph* block, ShapeSuperKeyframe* sskf)
 		masters << (PatchNode*)getNode(master2Super[m->mID]);
 }
 
-QVector<QString> SuperBlockGraph::getUnrelatedExternalMasters(QString base_mid, QString top_mid)
+QVector<QString> SuperUnitScaffold::getUnrelatedExternalMasters(QString base_mid, QString top_mid)
 {
 	QVector<QString> urMasters;
 
@@ -73,13 +73,13 @@ QVector<QString> SuperBlockGraph::getUnrelatedExternalMasters(QString base_mid, 
 	return urMasters;
 }
 
-QMap< QString, QVector<Vector2> > SuperBlockGraph::computeObstacles()
+QMap< QString, QVector<Vector2> > SuperUnitScaffold::computeObstacles()
 {
 	QMap< QString, QVector<Vector2> > obstacles;
 
 	// align super shape key frame with this super block
 	Vector3 pos_block = baseMaster->center();
-	FdNode* fnode = (FdNode*)ssKeyframe->getNode(baseMaster->mID);
+	ScaffoldNode* fnode = (ScaffoldNode*)ssKeyframe->getNode(baseMaster->mID);
 	if (!fnode) return obstacles;
 	Vector3 pos_keyframe = fnode->center();
 	Vector3 offset = pos_block - pos_keyframe;

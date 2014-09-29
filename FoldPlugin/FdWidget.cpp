@@ -10,14 +10,14 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 
 	// structural abstraction
 	plugin->connect(ui->createScaffold, SIGNAL(clicked()), SLOT(resetMesh()));
-	plugin->g_manager->connect(ui->fitMethod, SIGNAL(currentIndexChanged(int)), SLOT(setFitMethod(int)));
-	plugin->g_manager->connect(ui->createScaffold, SIGNAL(clicked()), SLOT(createScaffold()));
-	plugin->g_manager->connect(ui->refitMethod, SIGNAL(currentIndexChanged(int)), SLOT(setRefitMethod(int)));
-	plugin->g_manager->connect(ui->fitCuboid, SIGNAL(clicked()), SLOT(refitNodes()));
-	plugin->g_manager->connect(ui->changeCuboidType, SIGNAL(clicked()), SLOT(changeNodeType()));
+	plugin->s_manager->connect(ui->fitMethod, SIGNAL(currentIndexChanged(int)), SLOT(setFitMethod(int)));
+	plugin->s_manager->connect(ui->createScaffold, SIGNAL(clicked()), SLOT(createScaffold()));
+	plugin->s_manager->connect(ui->refitMethod, SIGNAL(currentIndexChanged(int)), SLOT(setRefitMethod(int)));
+	plugin->s_manager->connect(ui->fitCuboid, SIGNAL(clicked()), SLOT(refitNodes()));
+	plugin->s_manager->connect(ui->changeCuboidType, SIGNAL(clicked()), SLOT(changeNodeType()));
 
-	plugin->g_manager->connect(ui->saveScaffold, SIGNAL(clicked()), SLOT(saveScaffold()));
-	plugin->g_manager->connect(ui->loadScaffold, SIGNAL(clicked()), SLOT(loadScaffold()));
+	plugin->s_manager->connect(ui->saveScaffold, SIGNAL(clicked()), SLOT(saveScaffold()));
+	plugin->s_manager->connect(ui->loadScaffold, SIGNAL(clicked()), SLOT(loadScaffold()));
 
 	// visual options
 	plugin->connect(ui->showDecomp, SIGNAL(stateChanged(int)), SLOT(setShowDecomp(int)));
