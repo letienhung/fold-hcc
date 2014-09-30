@@ -20,11 +20,11 @@ public:
 	// squeezing direction
 	Vector3 sqzV;
 
+	// threshold
+	double connThrRatio;
+
 	// masters
-	PatchNode* baseMaster; // non-virtual master
 	QVector<PatchNode*> masters;
-	QMap<QString, QSet<QString> > masterOrderGreater;
-	QMap<QString, QSet<QString> > masterOrderLess;
 
 	// slaves
 	QVector<ScaffoldNode*> slaves;
@@ -33,9 +33,14 @@ public:
 
 	// blocks
 	int selBlockIdx;
-	QVector<UnitScaffold*> blocks;
-	QVector<double> blockWeights;
-	QMap<QString, QSet<int> > masterBlockMap;
+	QVector<UnitScaffold*> units;
+	QVector<double> unitWeights;
+
+	// more about masters
+	PatchNode* baseMaster; // non-virtual master
+	QMap<QString, QSet<int> > masterUnitMap;
+	QMap<QString, QSet<QString> > masterOrderGreater;
+	QMap<QString, QSet<QString> > masterOrderLess;
 
 	// time scale
 	double timeScale; // timeScale * block.timeUnits = normalized time
@@ -44,35 +49,26 @@ public:
 	int keyframeIdx;
 	QVector<Scaffold*> keyframes;
 
-	// threshold
-	double connThrRatio;
+private:
+	// block 
+	void computeUnitWeights();
+
+	// master order constraints
+	void computeMasterOrderConstraints();
+
+	// create blocks
+	UnitScaffold* createUnit(QSet<int> sCluster);
+	void createUnits();
 
 public:
-	// threshold
+	// threshold for connectivity
 	double getConnectivityThr();
-
-	// decomposition
-	FdNodeArray2D getPerpConnGroups();
-	void computeMasterOrderConstraints();
-	void createMasters();
-
-	void updateSlaves();
-	void updateSlaveMasterRelation();
-	void createSlaves(); 
-
-	void clusterSlaves();
-	UnitScaffold* createBlock(QSet<int> sCluster);
-	void createBlocks();
-
-	void computeBlockWeights();
-
-	UnitScaffold* mergeBlocks( QVector<UnitScaffold*> blocks );
 
 	// foldabilization
 	void foldabilize();
-	double foldabilizeBlock(int bid, double currTime, ShapeSuperKeyframe* currKf, 
+	double foldabilizeUnit(int bid, double currTime, ShapeSuperKeyframe* currKf, 
 									double& nextTime, ShapeSuperKeyframe*& nextKf);
-	int getBestNextBlockIndex(double currT, ShapeSuperKeyframe* currKeyframe);
+	int getBestNextUnitIdx(double currT, ShapeSuperKeyframe* currKeyframe);
 
 	// key frame
 	void generateKeyframes(int N);
@@ -81,10 +77,10 @@ public:
 
 public:
 	Scaffold* activeScaffold();
-	UnitScaffold* getSelBlock();
+	UnitScaffold* getSelUnit();
 
-	QStringList getBlockLabels();
-	void selectBlock(QString id);
+	QStringList getUnitLabels();
+	void selectUnit(QString id);
 
 	Scaffold* getSelKeyframe();
 	void selectKeyframe(int idx);

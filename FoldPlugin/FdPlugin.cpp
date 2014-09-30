@@ -23,13 +23,13 @@ FdPlugin::FdPlugin()
 
 	// graph manager
 	s_manager = new ScaffoldManager();
-	this->connect(s_manager, SIGNAL(scaffoldChanged(FdGraph*)), SLOT(resetScene()));
+	this->connect(s_manager, SIGNAL(scaffoldChanged(Scaffold*)), SLOT(resetScene()));
 	this->connect(s_manager, SIGNAL(scaffoldModified()), SLOT(updateScene()));
 	this->connect(s_manager, SIGNAL(message(QString)), SLOT(showStatus(QString)));
 
 	// fold manager
 	f_manager = new FoldManager();
-	f_manager->connect(s_manager, SIGNAL(scaffoldChanged(FdGraph*)), SLOT(setScaffold(FdGraph*)));
+	f_manager->connect(s_manager, SIGNAL(scaffoldChanged(Scaffold*)), SLOT(setScaffold(Scaffold*)));
 	this->connect(f_manager, SIGNAL(sceneChanged()), SLOT(updateScene()));
 	this->connect(f_manager, SIGNAL(message(QString)), SLOT(showStatus(QString)));
 	
@@ -77,7 +77,7 @@ void FdPlugin::decorate()
 		activeScaffold()->draw();
 
 		if( drawNodeOrder ){
-			foreach(ScaffoldNode * n, activeScaffold()->getFdNodes()){
+			for(ScaffoldNode * n : activeScaffold()->getScfdNodes()){
 				qglviewer::Vec center = drawArea()->camera()->projectedCoordinatesOf(qglviewer::Vec(n->center()));
 				drawArea()->renderText( center.x, center.y, QString("[%1]").arg(activeScaffold()->nodes.indexOf(n)) );
 			}
@@ -401,7 +401,7 @@ void FdPlugin::unhideAllNodes()
 	Scaffold* activeFd = activeScaffold();
 	if (activeFd)
 	{
-		foreach(ScaffoldNode* n, activeFd->getFdNodes())
+		for(ScaffoldNode* n : activeFd->getScfdNodes())
 			n->isHidden = false;
 	}
 
@@ -420,7 +420,7 @@ void FdPlugin::colorMasterSlave()
 	Scaffold* activeFd = activeScaffold();
 	if (activeFd)
 	{
-		foreach (ScaffoldNode* n, activeFd->getFdNodes())
+		for (ScaffoldNode* n : activeFd->getScfdNodes())
 		{
 			double grey = 240;
 			QColor c = (!n->hasTag(MASTER_TAG)) ? 
@@ -509,7 +509,7 @@ void FdPlugin::exportSVG()
 			// Style
 			QString style = "fill-opacity='0.78' stroke-width='0.25' stroke-linecap='round' stroke-linejoin='round' ";
 
-			QVector<ScaffoldNode*> fdnodes = afd->getFdNodes();
+			QVector<ScaffoldNode*> fdnodes = afd->getScfdNodes();
 
 			if(this->showCuboid)
 			{
@@ -638,7 +638,7 @@ bool FdPlugin::keyPressEvent(QKeyEvent* event)
 	if (event->modifiers().testFlag(Qt::ControlModifier) &&
 		event->key() == Qt::Key_C)
 	{
-		for each (auto n in scaffold->getFdNodes())
+		for each (auto n in scaffold->getScfdNodes())
 		{
 			n->setRandomColor();
 		}

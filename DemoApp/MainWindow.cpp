@@ -56,7 +56,7 @@ void MainWindow::loadShape( QString shapeName )
 {
 	qDebug() << "Loading shape:" << shapeName;
 
-	FdGraph * scaffold = new FdGraph();
+	Scaffold * scaffold = new Scaffold();
 	scaffold->loadFromFile( shapeParamters[ shapeName ]["shapeFile"].toString() );
 
 	// Visual options
@@ -115,7 +115,7 @@ void MainWindow::foldabilize()
 
 	// Visual clean up
 	{
-		foreach(FdGraph * fgraph, fmanager->getSelDcGraph()->keyframes)
+		for(Scaffold * fgraph : fmanager->getSelShapeScaffold()->keyframes)
 			fgraph->properties.clear();
 		ui->widget->theta = 0.0;
 	}

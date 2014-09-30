@@ -88,7 +88,7 @@ void FoldManager::selectBlock( QString id )
 {
 	if (getSelShapeScaffold())
 	{
-		getSelShapeScaffold()->selectBlock(id);
+		getSelShapeScaffold()->selectUnit(id);
 	}
 
 	updateChainList();
@@ -123,7 +123,7 @@ UnitScaffold* FoldManager::getSelBlock()
 {
 	if (getSelShapeScaffold())
 	{
-		return getSelShapeScaffold()->getSelBlock();
+		return getSelShapeScaffold()->getSelUnit();
 	}
 	else
 		return NULL;
@@ -224,7 +224,7 @@ int fdTime = timer.elapsed();
 
 		stat.properties[NB_MASTER] = selDc->masters.size();
 		stat.properties[NB_SLAVE] = selDc->slaves.size();
-		stat.properties[NB_BLOCK] = selDc->blocks.size();
+		stat.properties[NB_BLOCK] = selDc->units.size();
 
 		Scaffold* lastKeyframe = selDc->keyframes.last();
 		double origVol = scaffold->computeAABB().box().volume();
@@ -235,7 +235,7 @@ int fdTime = timer.elapsed();
 
 		int nbHinges = 0;
 		double shinkedArea = 0, totalArea = 0;
-		foreach(UnitScaffold* block, selDc->blocks)
+		foreach(UnitScaffold* block, selDc->units)
 		{
 			foreach (ChainScaffold* chain, block->chains)
 			{
@@ -269,7 +269,7 @@ void FoldManager::updateBlockList()
 {
 	QStringList layerLabels;
 	if (getSelShapeScaffold()) 
-		layerLabels = getSelShapeScaffold()->getBlockLabels();
+		layerLabels = getSelShapeScaffold()->getUnitLabels();
 
 	emit(blocksChanged(layerLabels));
 
@@ -361,7 +361,7 @@ void FoldManager::setParameters()
 	Geom::Box aabb = scaffold->computeAABB().box();
 	aabb.scale(aabbScale);
 	foreach (ShapeScaffold* dc, dcGraphs){
-		foreach (UnitScaffold* b, dc->blocks)
+		foreach (UnitScaffold* b, dc->units)
 		{
 			b->setAabbConstraint(aabb);
 			b->maxNbSplits = nbSplits;

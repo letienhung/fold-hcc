@@ -52,7 +52,7 @@ ScaffoldLink* Scaffold::addLink( ScaffoldNode* n1, ScaffoldNode* n2 )
 }
 
 
-QVector<ScaffoldNode*> Scaffold::getFdNodes()
+QVector<ScaffoldNode*> Scaffold::getScfdNodes()
 {
 	QVector<ScaffoldNode*> fdns;
 	foreach(Structure::Node* n, nodes)
@@ -79,7 +79,7 @@ void Scaffold::exportMesh(QString fname)
 	if (!file.open(QIODevice::Append | QIODevice::Text)) return;
 	
 	int v_offset = 0;
-	QVector<ScaffoldNode*> nodes = getFdNodes();
+	QVector<ScaffoldNode*> nodes = getScfdNodes();
 	foreach(ScaffoldNode *n, nodes){
 		n->deformMesh();
 		n->exportMesh(file, v_offset);
@@ -100,7 +100,7 @@ void Scaffold::saveToFile(QString fname)
 	{
 		// nodes
 		xw.writeTaggedString("cN", QString::number(nbNodes()));
-		foreach(ScaffoldNode* node, getFdNodes())
+		foreach(ScaffoldNode* node, getScfdNodes())
 		{
 			node->write(xw);
 		}
@@ -117,7 +117,7 @@ void Scaffold::saveToFile(QString fname)
 	QDir graphDir( fileInfo.absolutePath());
 	graphDir.mkdir(meshesFolder);
 	meshesFolder =  graphDir.path() + "/" + meshesFolder;
-	foreach(ScaffoldNode* node, getFdNodes())
+	foreach(ScaffoldNode* node, getScfdNodes())
 	{
 		MeshHelper::saveOBJ(node->mMesh.data(), meshesFolder + '/' + node->mID + ".obj");
 	}
@@ -180,7 +180,7 @@ void Scaffold::loadFromFile(QString fname)
 Geom::AABB Scaffold::computeAABB()
 {
 	Geom::AABB aabb;
-	foreach (ScaffoldNode* n, getFdNodes())
+	foreach (ScaffoldNode* n, getScfdNodes())
 	{
 		aabb.add(n->computeAABB());
 	}
@@ -366,19 +366,19 @@ QVector<ScaffoldNode*> Scaffold::split( QString nid, QVector<Geom::Plane>& plane
 
 void Scaffold::showCuboids( bool show )
 {
-	foreach(ScaffoldNode* n, getFdNodes())
+	foreach(ScaffoldNode* n, getScfdNodes())
 		n->setShowCuboid(show);
 }
 
 void Scaffold::showScaffold( bool show )
 {
-	foreach(ScaffoldNode* n, getFdNodes())
+	foreach(ScaffoldNode* n, getScfdNodes())
 		n->setShowScaffold(show);
 }
 
 void Scaffold::showMeshes( bool show )
 {
-	foreach(ScaffoldNode* n, getFdNodes())
+	foreach(ScaffoldNode* n, getScfdNodes())
 		n->setShowMesh(show);
 }
 
@@ -409,7 +409,7 @@ void Scaffold::restoreConfiguration()
 
 
 	QQueue<ScaffoldNode*> activeNodes;
-	foreach(ScaffoldNode* fn, getFdNodes())
+	foreach(ScaffoldNode* fn, getScfdNodes())
 		if (fn->hasTag(FIXED_NODE_TAG)) 
 			activeNodes.enqueue(fn);
 
@@ -432,7 +432,7 @@ void Scaffold::restoreConfiguration()
 
 void Scaffold::translate(Vector3 v, bool withMesh)
 {
-	foreach(ScaffoldNode* n, getFdNodes())
+	foreach(ScaffoldNode* n, getScfdNodes())
 	{
 		n->translate(v);
 
@@ -526,7 +526,7 @@ void Scaffold::unwrapBundleNodes()
 
 void Scaffold::hideEdgeRods()
 {
-	foreach (ScaffoldNode* n, getFdNodes())
+	foreach (ScaffoldNode* n, getScfdNodes())
 	{
 		if (n->hasTag(EDGE_ROD_TAG))
 		{

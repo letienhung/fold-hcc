@@ -102,7 +102,7 @@ Scaffold* UnitScaffold::getSuperKeyframe( double t )
 	// collect projections of all nodes (including baseMaster) on baseMaster
 	Geom::Rectangle base_rect = superPatch->mPatch;
 	QVector<Vector2> projPnts2 = base_rect.get2DConners();
-	foreach(ScaffoldNode* n, keyframe->getFdNodes())
+	foreach(ScaffoldNode* n, keyframe->getScfdNodes())
 	{
 		if (n->mType == ScaffoldNode::PATCH)
 		{
@@ -122,7 +122,7 @@ Scaffold* UnitScaffold::getSuperKeyframe( double t )
 	superPatch->resize(aabb2);
 
 	// merged parts and masters
-	foreach (ScaffoldNode* n, keyframe->getFdNodes())
+	foreach (ScaffoldNode* n, keyframe->getScfdNodes())
 	{
 		n->addTag(MERGED_PART_TAG); 
 		if (n->hasTag(MASTER_TAG))
@@ -164,7 +164,7 @@ QVector<QString> UnitScaffold::getInbetweenExternalParts(Vector3 base_center, Ve
 
 	// find parts in between m1 and m2
 	QVector<QString> inbetweens;
-	foreach(ScaffoldNode* n, ssKeyframe->getFdNodes())
+	foreach(ScaffoldNode* n, ssKeyframe->getScfdNodes())
 	{
 		// skip parts that has been folded
 		if (n->hasTag(MERGED_PART_TAG)) continue;
