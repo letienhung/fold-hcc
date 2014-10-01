@@ -1,6 +1,7 @@
 #pragma once
 #include "Graph.h"
 #include "FdUtility.h"
+#include "TimeInterval.h"
 
 class ChainNode : public Structure::Node
 {
@@ -40,7 +41,7 @@ public:
 	int index;
 
 	// duration
-	Interval duration;
+	TimeInterval duration;
 
 	// fold region and its projection on the base of the block
 	Geom::Rectangle region;

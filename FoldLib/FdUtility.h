@@ -11,8 +11,6 @@ class Scaffold;
 
 // typedef
 typedef QVector< QVector<ScaffoldNode*> > FdNodeArray2D;
-typedef QPair<double, double> Interval;
-#define	INTERVAL(negDist, posDist) qMakePair<double, double>(negDist, posDist)
 
 // Qt meta type
 Q_DECLARE_METATYPE(Vector3)
@@ -57,12 +55,6 @@ Geom::Box fitBox(QVector<Vector3>& pnts, BOX_FIT_METHOD method = FIT_PCA);
 QString getBundleName(const QVector<ScaffoldNode*>& nodes);
 Geom::Box getBundleBox(const QVector<ScaffoldNode*>& nodes);
 
-// time intervals
-bool overlap(Interval itv1, Interval itv2);
-bool within(double t, Interval itv);
-bool passed(double t, Interval itv);
-double getLocalTime(double globalT, Interval itv);
-
 // masters
 QVector<PatchNode*> getAllMasters(Scaffold* scaffold);
 QVector<QString> getAllMasterIds(Scaffold* scaffold);
@@ -71,7 +63,7 @@ QMap<QString, double> getTimeStampsNormalized(QVector<ScaffoldNode*> nodes, Vect
 QMap<QString, double> getTimeStampsNormalized(QVector<PatchNode*> pnodes, Vector3 v, double &tScale);
 
 // combination
-Scaffold* combineFdGraphs(QVector<Scaffold*> decmps, QString baseMid, 
+Scaffold* combineScaffolds(QVector<Scaffold*> decmps, QString baseMid, 
 	QMap<QString, QSet<int> >& masterDecmpMap);
 
 // volume

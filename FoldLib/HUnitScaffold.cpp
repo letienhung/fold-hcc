@@ -104,7 +104,7 @@ Scaffold* HUnitScaffold::getKeyframe(double t, bool useThk)
 	}
 	// chains have been created and ready to fold
 	// IOW, the block has been foldabilized
-	else if (foldabilized)
+	else
 	{
 		// keyframe of each chain
 		QVector<Scaffold*> chainKeyframes;
@@ -114,14 +114,14 @@ Scaffold* HUnitScaffold::getKeyframe(double t, bool useThk)
 			if (chains[i]->isDeleted)
 				chainKeyframes << nullptr;
 			else{
-				ChainScaffold* cgraph = chains[i];
-				double localT = getLocalTime(t, cgraph->duration);
+				ChainScaffold* cs = chains[i];
+				double localT = cs->duration.getLocalTime(t);
 				chainKeyframes << chains[i]->getKeyframe(localT, useThk);
 			}
 		}
 
 		// combine 
-		keyframe = combineFdGraphs(chainKeyframes, baseMaster->mID, masterChainsMap);
+		keyframe = combineScaffolds(chainKeyframes, baseMaster->mID, masterChainsMap);
 
 		// thickness of masters
 		if (useThk){
@@ -233,7 +233,7 @@ FoldOptionGraph* HUnitScaffold::createCollisionGraph(const QVector<int>& afo)
 			if (foi->chainIdx == foj->chainIdx) continue;
 
 			// skip if time interval don't overlap
-			if (!overlap(foi->duration, foj->duration)) continue;
+			if (!foi->duration.overlaps(foj->duration)) continue;
 
 			// collision test using fold region
 			if (Geom::IntrRect2Rect2::test(foi->regionProj, foj->regionProj))

@@ -21,9 +21,11 @@ HEADERS += \
     Numeric.h \
     CustomDrawObjects.h \
     XmlWriter.h \
-    RootFinder.h
+    RootFinder.h \
+    TimeInterval.h
 
 SOURCES += \
     Numeric.cpp \
     UtilityGlobal.cpp \
-    XmlWriter.cpp
+    XmlWriter.cpp \
+    TimeInterval.cpp

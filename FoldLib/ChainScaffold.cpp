@@ -40,7 +40,7 @@ ChainScaffold::ChainScaffold( ScaffoldNode* slave, PatchNode* base, PatchNode* t
 	computeOrientations();
 
 	// fold duration
-	duration = INTERVAL(1, 2);
+	duration.set(1, 2);
 
 	// thickness
 	halfThk = 0;
@@ -124,7 +124,7 @@ void ChainScaffold::setFoldDuration( double t0, double t1 )
 	t0 += ZERO_TOLERANCE_LOW;
 	t1 -= ZERO_TOLERANCE_LOW; 
 
-	duration = INTERVAL(t0, t1);
+	duration.set(t0, t1);
 }
 
 QVector<FoldOption*> ChainScaffold::genFoldOptionWithDiffPositions( int nSplits, int nChunks, int maxNbChunks )

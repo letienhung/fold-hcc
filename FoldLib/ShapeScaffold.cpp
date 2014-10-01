@@ -218,7 +218,7 @@ Scaffold* ShapeScaffold::getKeyframe( double t )
 	QVector<Scaffold*> foldedBlocks;
 	for (int i = 0; i < units.size(); i++)
 	{
-		double lt = getLocalTime(t, units[i]->mFoldDuration);
+		double lt = units[i]->mFoldDuration.getLocalTime(t);
 		Scaffold* fblock = units[i]->getKeyframe(lt, true);
 		foldedBlocks << fblock;
 
@@ -236,7 +236,7 @@ Scaffold* ShapeScaffold::getKeyframe( double t )
 	}
 
 	// shift layers and add nodes into scaffold
-	Scaffold *key_graph = combineFdGraphs(foldedBlocks, baseMaster->mID, masterUnitMap);
+	Scaffold *key_graph = combineScaffolds(foldedBlocks, baseMaster->mID, masterUnitMap);
 
 	// delete folded blocks
 	foreach (Scaffold* b, foldedBlocks) delete b;
@@ -253,27 +253,27 @@ Scaffold* ShapeScaffold::getKeyframe( double t )
 ShapeSuperKeyframe* ShapeScaffold::getShapeSuperKeyframe( double t )
 {
 	// super key frame for each block
-	QVector<Scaffold*> foldedBlocks;
+	QVector<Scaffold*> foldedUnits;
 	QSet<QString> foldedParts;
 	for (int i = 0; i < units.size(); i++)
 	{
-		double lt = getLocalTime(t, units[i]->mFoldDuration);
+		double lt = units[i]->mFoldDuration.getLocalTime(t);
 		Scaffold* fblock = units[i]->getSuperKeyframe(lt);
-		foldedBlocks << fblock;
+		foldedUnits << fblock;
 
 		// nullptr means fblock is unable to fold at time t
 		if (fblock == nullptr) return nullptr;
 	}
 
 	// combine
-	Scaffold *keyframe = combineFdGraphs(foldedBlocks, baseMaster->mID, masterUnitMap);
+	Scaffold *keyframe = combineScaffolds(foldedUnits, baseMaster->mID, masterUnitMap);
 
 	// create shape super key frame
 	ShapeSuperKeyframe* ssKeyframe = new ShapeSuperKeyframe(keyframe, masterOrderGreater);
 
 	// garbage collection
 	delete keyframe;
-	for (int i = 0; i < foldedBlocks.size(); i++) delete foldedBlocks[i];
+	for (int i = 0; i < foldedUnits.size(); i++) delete foldedUnits[i];
 
 	// return
 	return ssKeyframe;
@@ -281,71 +281,67 @@ ShapeSuperKeyframe* ShapeScaffold::getShapeSuperKeyframe( double t )
 
 void ShapeScaffold::foldabilize()
 {
-	// clear tags
-	foreach (UnitScaffold* b, units)
-		b->foldabilized = false;
-
-	// initial time intervals: t > 1.0 means not be folded
-	foreach (UnitScaffold* b, units)
-		b->mFoldDuration = INTERVAL(1.0, 2.0);
+	// initialization
+	for (UnitScaffold* u : units)
+		u->mFoldDuration.set(1.0, 2.0); // t > 1.0 means not be folded
 
 	// choose best free block
 	std::cout << "\n============================="
 			  << "\n============START============\n";
 	double currTime = 0.0;
 	ShapeSuperKeyframe* currKeyframe = getShapeSuperKeyframe(currTime);
-	int next_bid = getBestNextUnitIdx(currTime, currKeyframe);  
-	std::cout << "Best next = " << next_bid << "\n";
+	int next_uid = getBestNextUnitIdx(currTime, currKeyframe);  
+	std::cout << "Best next = " << next_uid << "\n";
 
 	//return;
 	
 
-	while (next_bid >= 0 && next_bid < units.size())
+	while (next_uid >= 0 && next_uid < units.size())
 	{
-		UnitScaffold* next_block = units[next_bid];
-		std::cout << "Foldabilizing block: " << next_block->mID.toStdString() << "\n";
+		UnitScaffold* next_unit = units[next_uid];
+		std::cout << "Foldabilizing unit: " << next_unit->mID.toStdString() << "\n";
 
 		// time interval
-		double timeLength = next_block->getNbTopMasters() * timeScale;
+		double timeLength = next_unit->getNbTopMasters() * timeScale;
 		double nextTime = currTime + timeLength;
 
 		// foldabilize
-		next_block->foldabilizeWrt(currKeyframe);
-		next_block->applySolution();
-		next_block->mFoldDuration = INTERVAL(currTime, nextTime);
+		next_unit->foldabilizeWrt(currKeyframe);
+		next_unit->applySolution();
+		next_unit->mFoldDuration.set(currTime, nextTime);
 
 		// get best next
 		std::cout << "\n============NEXT============\n";
 		currTime = nextTime;
 		delete currKeyframe;
 		currKeyframe = getShapeSuperKeyframe(currTime);
-		next_bid = getBestNextUnitIdx(currTime, currKeyframe);
-		std::cout << "Best next = " << next_bid << "\n";
+		next_uid = getBestNextUnitIdx(currTime, currKeyframe);
+		std::cout << "Best next = " << next_uid << "\n";
 	}
 
 	// remaining blocks (if any) are interlocking
-	QVector<UnitScaffold*> blocks_copy = units;
+	QVector<UnitScaffold*> units_copy = units;
 	units.clear();
-	QVector<int> intlkBlockIndices;
-	for (int bid = 0; bid < blocks_copy.size(); bid ++)
+	QVector<int> intlkUnitIdx;
+	for (int uid = 0; uid < units_copy.size(); uid ++)
 	{
-		UnitScaffold* b = blocks_copy[bid];
-		if (b->foldabilized) units << b;
-		else intlkBlockIndices << bid;
+		UnitScaffold* u = units_copy[uid];
+		if (!u->mFoldDuration.hasReached(1.0)) units << u;
+		else intlkUnitIdx << uid;
 	}
 
 	// merge them as single block to foldabilize
-	if (!intlkBlockIndices.isEmpty())
+	if (!intlkUnitIdx.isEmpty())
 	{
 		std::cout << "\n=====MERGE INTERLOCKING======\n";
 		QSet<int> sCluster;
-		foreach (int bidx, intlkBlockIndices)
-			sCluster += slaveClusters[bidx];
+		foreach (int uidx, intlkUnitIdx)
+			sCluster += slaveClusters[uidx];
 		
 		UnitScaffold* mergedBlock = createUnit(sCluster);
 		mergedBlock->foldabilizeWrt(currKeyframe);
 		mergedBlock->applySolution();
-		mergedBlock->mFoldDuration = INTERVAL(currTime, 1.0);
+		mergedBlock->mFoldDuration.set(currTime, 1.0);
 	}
 
 	delete currKeyframe;
@@ -364,7 +360,7 @@ double ShapeScaffold::foldabilizeUnit(int bid, double currTime, ShapeSuperKeyfra
 	// get the next super key frame 
 	double timeLength = nextBlock->getNbTopMasters() * timeScale;
 	nextTime = currTime + timeLength;
-	nextBlock->mFoldDuration = INTERVAL(currTime, nextTime);
+	nextBlock->mFoldDuration.set(currTime, nextTime);
 	nextKf = getShapeSuperKeyframe(nextTime);
 
 	// the cost
@@ -383,12 +379,12 @@ int ShapeScaffold::getBestNextUnitIdx(double currTime, ShapeSuperKeyframe* currK
 	for (int next_bid = 0; next_bid < units.size(); next_bid++)
 	{
 		UnitScaffold* nextBlock = units[next_bid];
-		if (passed(currTime, nextBlock->mFoldDuration)) continue; // skip foldabilized blocks
+		if (nextBlock->mFoldDuration.hasPassed(currTime)) continue; // skip foldabilized blocks
 
 		// foldabilize nextBlock
 		double nextTime = -1.0;
 		ShapeSuperKeyframe* nextKeyframe = nullptr;
-		Interval origNextTi = nextBlock->mFoldDuration; // back up
+		TimeInterval origNextTi = nextBlock->mFoldDuration; // back up
 		double nextCost = foldabilizeUnit(next_bid, currTime, currKeyframe, nextTime, nextKeyframe);
 
 		//nextBlock->showObstaclesAndFoldOptions();
@@ -401,12 +397,12 @@ int ShapeScaffold::getBestNextUnitIdx(double currTime, ShapeSuperKeyframe* currK
 			for (int next2_bid = 0; next2_bid < units.size(); next2_bid++)
 			{
 				UnitScaffold* next2Block = units[next2_bid];
-				if (passed(nextTime, next2Block->mFoldDuration)) continue; // skip foldabilized block
+				if (next2Block->mFoldDuration.hasPassed(nextTime)) continue; // skip foldabilized block
 
 				// foldabilize next2Block
 				double next2Time;
 				ShapeSuperKeyframe* next2Keyframe;
-				Interval origNext2Ti = next2Block->mFoldDuration;
+				TimeInterval origNext2Ti = next2Block->mFoldDuration;
 				double next2Cost = foldabilizeUnit(next2_bid, nextTime, nextKeyframe, next2Time, next2Keyframe);
 
 				// invalid block folding generates large cost as being deleted

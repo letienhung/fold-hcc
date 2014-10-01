@@ -71,7 +71,7 @@ public:
 	QVector<ScaffoldLink*>	leftLinks;	// left hinges
 	QVector<ScaffoldLink*>	activeLinks;// active hinges
 
-	Interval			duration;	// time interval
+	TimeInterval		duration;	// time interval
 	bool				foldToRight;// folding side
 
 

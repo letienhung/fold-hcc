@@ -175,15 +175,6 @@ Geom::Segment detectJointSegment( PatchNode* slave, PatchNode* master )
 	return jointSeg;
 }
 
-double getLocalTime( double globalT, Interval itv )
-{
-	if (globalT <= itv.first) return 0;
-	else if(globalT > itv.first && globalT < itv.second)
-		return (globalT - itv.first) / (itv.second - itv.first);
-	else return 1;
-}
-
-
 Geom::Box fitBox( QVector<Vector3>& pnts, BOX_FIT_METHOD method )
 {
 	Geom::Box box;
@@ -289,17 +280,6 @@ bool hasIntersection( ScaffoldNode* slave, PatchNode* master, double thr )
 	}
 }
 
-bool overlap( Interval itv1, Interval itv2 )
-{
-	return within(itv1.first, itv2) || within(itv1.second, itv2) ||
-		within(itv2.first, itv1) || within(itv2.second, itv1);
-}
-
-bool within( double t, Interval itv )
-{
-	return inRange(t, itv.first, itv.second);
-}
-
 QVector<PatchNode*> getAllMasters( Scaffold* scaffold )
 {
 	QVector<PatchNode*> masters;
@@ -309,7 +289,7 @@ QVector<PatchNode*> getAllMasters( Scaffold* scaffold )
 	return masters;
 }
 
-Scaffold* combineFdGraphs( QVector<Scaffold*> decmps, QString baseMid, 
+Scaffold* combineScaffolds( QVector<Scaffold*> decmps, QString baseMid, 
 								QMap<QString, QSet<int> >& masterDecmpMap )
 {
 	// trivial combination
@@ -413,10 +393,6 @@ QVector<QString> getAllMasterIds( Scaffold* scaffold )
 	return mids;
 }
 
-bool passed( double t, Interval itv )
-{
-	return t >= itv.second;
-}
 
 QMap<QString, double> getTimeStampsNormalized( QVector<ScaffoldNode*> nodes, Vector3 v, double &tScale )
 {

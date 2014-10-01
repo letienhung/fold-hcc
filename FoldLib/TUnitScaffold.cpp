@@ -6,11 +6,11 @@ TUnitScaffold::TUnitScaffold(QString id, QVector<PatchNode*>& ms, QVector<Scaffo
 	QVector< QVector<QString> >& mPairs) :UnitScaffold(id)
 {
 	// clone nodes
-	foreach(PatchNode* m, ms)	{
+	for(PatchNode* m : ms)	{
 		masters << (PatchNode*)m->clone();
 		Structure::Graph::addNode(masters.last());
 	}
-	foreach(ScaffoldNode* s, ss)
+	for(ScaffoldNode* s : ss)
 		Structure::Graph::addNode(s->clone());
 
 	// the base and virtual top masters
@@ -37,26 +37,10 @@ Scaffold* TUnitScaffold::getKeyframe(double t, bool useThk)
 {
 	Scaffold* keyframe = nullptr;
 
-	// chains have been created and ready to fold
-	// IOW, the block has been foldabilized
-	if (foldabilized)
-	{
-		keyframe = tChain->getKeyframe(t, useThk);
-	}
-	// the block is not ready
-	// can only answer request on t = 0 and t = 1
+	if (t <= 0)
+		keyframe = (Scaffold*)tChain->clone();
 	else
-	{
-		// t = 0 : the entire block
-		if (t < 0.5)
-			keyframe = (Scaffold*)tChain->clone();
-		else
-		// t = 1 : just the base master
-		{
-			keyframe = new Scaffold();
-			keyframe->Structure::Graph::addNode(baseMaster->clone());
-		}
-	}
+		keyframe = tChain->getKeyframe(t, useThk);
 
 	return keyframe;
 }

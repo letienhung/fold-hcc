@@ -196,7 +196,7 @@ void HChainScaffold::foldUniformHeight(double t)
 	if (h >= heightSep)
 	{
 		double alpha_orig = acos(RANGED(0, d / L, 1));
-		Interval alpha_it = INTERVAL(angleSep, alpha_orig);
+		TimeInterval alpha_it(angleSep, alpha_orig);
 		double x = 2 * b * h;
 		double y = 2 * b * d;
 		double z = d * d + h * h + b * b - A * A;
@@ -208,7 +208,7 @@ void HChainScaffold::foldUniformHeight(double t)
 		QVector<double> roots = findRoots(aa, bb, cc);
 		foreach(double r, roots){
 			alpha = acos(RANGED(0, r, 1));
-			if (within(alpha, alpha_it)) break;
+			if (alpha_it.contains(alpha)) break;
 		}
 		if (alpha == 0) alpha = alpha_orig; //set original angle if no roots found
 
@@ -234,7 +234,7 @@ void HChainScaffold::foldUniformHeight(double t)
 	// phase-II: return
 	else
 	{
-		Interval alpha_it = INTERVAL(0, angleSep);
+		TimeInterval alpha_it(0, angleSep);
 		double B = b * b * n * (n - 2);
 		double C = -2 * b * d * (n - 1) * (n - 1);
 		double D = A * A - h * h - b * b - (n - 1) * (n - 1) * d * d;
@@ -250,7 +250,7 @@ void HChainScaffold::foldUniformHeight(double t)
 			if (r < 0) continue;
 
 			alpha = acos(RANGED(0, r, 1));
-			if (within(alpha, alpha_it))
+			if (alpha_it.contains(alpha))
 			{
 				double cos_beta = (b * r - d) / a;
 				beta = acos(RANGED(0, cos_beta, 1));

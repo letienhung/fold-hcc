@@ -21,9 +21,6 @@ UnitScaffold::UnitScaffold(QString id)
 	// cost weight
 	weight = 0.05;
 	
-	// tag
-	foldabilized = false;
-
 	// current fold solution
 	currSlnIdx = -1;
 }
@@ -160,7 +157,7 @@ QVector<QString> UnitScaffold::getInbetweenExternalParts(Vector3 base_center, Ve
 	double t0 = timeLine.getProjTime(base_center);
 	double t1 = timeLine.getProjTime(top_center);
 	double epsilon = 0.05 * (t1 - t0);
-	Interval m1m2 = INTERVAL(t0 + epsilon, t1 - epsilon);
+	TimeInterval m1m2(t0 + epsilon, t1 - epsilon);
 
 	// find parts in between m1 and m2
 	QVector<QString> inbetweens;
@@ -177,7 +174,7 @@ QVector<QString> UnitScaffold::getInbetweenExternalParts(Vector3 base_center, Ve
 		{
 			double t = timeLine.getProjTime(n->center());
 
-			if (within(t, m1m2)) 	inbetweens << n->mID;
+			if (m1m2.contains(t)) 	inbetweens << n->mID;
 		}
 		else
 			// slave		
@@ -187,9 +184,9 @@ QVector<QString> UnitScaffold::getInbetweenExternalParts(Vector3 base_center, Ve
 			double t0 = timeLine.getProjTime(sklt.P0);
 			double t1 = timeLine.getProjTime(sklt.P1);
 			if (t0 > t1) std::swap(t0, t1);
-			Interval ti = INTERVAL(t0, t1);
+			TimeInterval ti(t0, t1);
 
-			if (overlap(ti, m1m2))	inbetweens << n->mID;
+			if (ti.overlaps(m1m2))	inbetweens << n->mID;
 		}
 	}
 
@@ -257,10 +254,7 @@ void UnitScaffold::applySolution()
 {
 	// assert idx
 	if (currSlnIdx < 0 || currSlnIdx >= foldSolutions.size())
-	{
-		foldabilized = false;
 		return;
-	}
 
 	// apply selected fold option to each chain
 	for (int i = 0; i < chains.size(); i++)
@@ -268,9 +262,6 @@ void UnitScaffold::applySolution()
 		FoldOption* fn = foldSolutions[currSlnIdx][i];
 		chains[i]->applyFoldOption(fn);
 	}
-
-	// has been foldabilized
-	foldabilized = true;
 }
 
 double UnitScaffold::computeCost(FoldOption* fo)
@@ -329,5 +320,10 @@ void UnitScaffold::resetAllFoldOptions()
 	foldSolutions.clear();
 	foldCost.clear();
 	obstaclePnts.clear();
+}
+
+bool UnitScaffold::hasFoldabilized()
+{
+	return mFoldDuration.hasPassed(1.0);
 }
 
