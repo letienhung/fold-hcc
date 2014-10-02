@@ -1,10 +1,10 @@
 #include "Decomposer.h"
 
-#include "DecScaffold.h"
-#include "TUnitScaffold.h"
-#include "HUnitScaffold.h"
+#include "DecScaff.h"
+#include "TUnitScaff.h"
+#include "HUnitScaff.h"
 
-Decomposer::Decomposer(DecScaffold* ss)
+Decomposer::Decomposer(DecScaff* ss)
 {
 	scfd = ss;
 }
@@ -28,8 +28,8 @@ FdNodeArray2D Decomposer::getPerpConnGroups()
 	double connThr = scfd->getConnectivityThr();
 
 	// ==STEP 1==: nodes perp to squeezing direction
-	QVector<ScaffoldNode*> perpNodes;
-	foreach(ScaffoldNode* n, scfd->getScfdNodes())
+	QVector<ScaffNode*> perpNodes;
+	foreach(ScaffNode* n, scfd->getScfdNodes())
 	{
 		// perp node
 		if (n->isPerpTo(scfd->sqzV, perpThr))
@@ -37,7 +37,7 @@ FdNodeArray2D Decomposer::getPerpConnGroups()
 			perpNodes << n;
 		}
 		// virtual rod nodes from patch edges
-		else if (n->mType == ScaffoldNode::PATCH)
+		else if (n->mType == ScaffNode::PATCH)
 		{
 			PatchNode* pn = (PatchNode*)n;
 			foreach(RodNode* rn, pn->getEdgeRodNodes())
@@ -63,8 +63,8 @@ FdNodeArray2D Decomposer::getPerpConnGroups()
 	Geom::Box shapeBox = scfd->computeAABB().box();
 	Geom::Segment skeleton = shapeBox.getSkeleton(sqzAId);
 	double perpGroupThr = connThr / skeleton.length();
-	QMultiMap<double, ScaffoldNode*> posNodeMap;
-	foreach(ScaffoldNode* n, perpNodes){
+	QMultiMap<double, ScaffNode*> posNodeMap;
+	foreach(ScaffNode* n, perpNodes){
 		posNodeMap.insert(skeleton.getProjCoordinates(n->mBox.Center), n);
 	}
 	FdNodeArray2D perpGroups;
@@ -73,7 +73,7 @@ FdNodeArray2D Decomposer::getPerpConnGroups()
 	perpGroups << posNodeMap.values(pos0).toVector();
 	for (int i = 1; i < perpPos.size(); i++)
 	{
-		QVector<ScaffoldNode*> currNodes = posNodeMap.values(perpPos[i]).toVector();
+		QVector<ScaffNode*> currNodes = posNodeMap.values(perpPos[i]).toVector();
 		if (fabs(perpPos[i] - perpPos[i - 1]) < perpGroupThr)
 			perpGroups.last() += currNodes;	// append to current group
 		else perpGroups << currNodes;		// create new group
@@ -83,7 +83,7 @@ FdNodeArray2D Decomposer::getPerpConnGroups()
 	FdNodeArray2D perpConnGroups;
 	perpConnGroups << perpGroups.front(); // ground
 	for (int i = 1; i < perpGroups.size(); i++){
-		foreach(QVector<ScaffoldNode*> connGroup, getConnectedGroups(perpGroups[i], connThr))
+		foreach(QVector<ScaffNode*> connGroup, getConnectedGroups(perpGroups[i], connThr))
 			perpConnGroups << connGroup;
 	}
 
@@ -100,8 +100,8 @@ void Decomposer::createMasters()
 		// single node
 		if (pcGroup.size() == 1)
 		{
-			ScaffoldNode* n = pcGroup.front();
-			if (n->mType == ScaffoldNode::PATCH)	scfd->masters << (PatchNode*)n;
+			ScaffNode* n = pcGroup.front();
+			if (n->mType == ScaffNode::PATCH)	scfd->masters << (PatchNode*)n;
 			else scfd->masters << scfd->changeRodToPatch((RodNode*)n, scfd->sqzV);
 		}
 		// multiple nodes
@@ -109,7 +109,7 @@ void Decomposer::createMasters()
 		{
 			// check if all nodes in the pcGroup is virtual
 			bool allVirtual = true;
-			for (ScaffoldNode* pcNode : pcGroup){
+			for (ScaffNode* pcNode : pcGroup){
 				if (!pcNode->hasTag(EDGE_ROD_TAG))
 				{
 					allVirtual = false;
@@ -121,7 +121,7 @@ void Decomposer::createMasters()
 			if (!allVirtual)
 				scfd->masters << (PatchNode*)scfd->wrapAsBundleNode(getIds(pcGroup), scfd->sqzV);
 			// each edge rod is converted to a patch master
-			else for (ScaffoldNode* pcNode : pcGroup)
+			else for (ScaffNode* pcNode : pcGroup)
 				scfd->masters << scfd->changeRodToPatch((RodNode*)pcNode, scfd->sqzV);
 		}
 	}
@@ -142,7 +142,7 @@ void Decomposer::updateSlaves()
 {
 	// collect non-master parts as slaves
 	scfd->slaves.clear();
-	for(ScaffoldNode* n : scfd->getScfdNodes())
+	for(ScaffNode* n : scfd->getScfdNodes())
 	if (!n->hasTag(MASTER_TAG))	scfd->slaves << n;
 }
 
@@ -157,7 +157,7 @@ void Decomposer::updateSlaveMasterRelation()
 	for (int i = 0; i < scfd->slaves.size(); i++)
 	{
 		// find adjacent master(s)
-		ScaffoldNode* slave = scfd->slaves[i];
+		ScaffNode* slave = scfd->slaves[i];
 		for (int j = 0; j < scfd->masters.size(); j++)
 		{
 			PatchNode* master = scfd->masters[j];
@@ -190,7 +190,7 @@ void Decomposer::createSlaves()
 	// split slave parts by master patches
 	double connThr = scfd->getConnectivityThr();
 	for (PatchNode* master : scfd->masters) {
-		for (ScaffoldNode* n : scfd->getScfdNodes())
+		for (ScaffNode* n : scfd->getScfdNodes())
 		{
 			if (n->hasTag(MASTER_TAG)) continue;
 			if (hasIntersection(n, master, connThr))
@@ -240,7 +240,7 @@ void Decomposer::clusterSlaves()
 		if (midPair.size() != 2) continue; // T-slave
 		QString nj = QString::number(midPair.front());
 		QString nk = QString::number(midPair.last());
-		if (ms_graph->getLink(nj, nk) == NULL)
+		if (ms_graph->getLink(nj, nk) == nullptr)
 			ms_graph->addLink(nj, nk);
 	}
 

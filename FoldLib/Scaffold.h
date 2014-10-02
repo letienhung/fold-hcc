@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Graph.h"
-#include "ScaffoldNode.h"
-#include "ScaffoldLink.h"
+#include "ScaffNode.h"
+#include "ScaffLink.h"
 #include "AABB.h"
 #include <QSharedPointer>
 #include "FdUtility.h"
@@ -17,23 +17,23 @@ public:
 	Scaffold(Scaffold& other);
 
 	virtual Graph* clone() override;
-	ScaffoldLink* addLink(ScaffoldNode* n1, ScaffoldNode* n2);
+	ScaffLink* addLink(ScaffNode* n1, ScaffNode* n2);
 
 public:
 	// accessors
-	QVector<ScaffoldNode*> getScfdNodes();
-	ScaffoldNode* getFdNode(QString id);
-	ScaffoldNode* addNode(MeshPtr mesh, BOX_FIT_METHOD method = FIT_PCA);
-	ScaffoldNode* addNode(MeshPtr mesh, Geom::Box& box);
+	QVector<ScaffNode*> getScfdNodes();
+	ScaffNode* getFdNode(QString id);
+	ScaffNode* addNode(MeshPtr mesh, BOX_FIT_METHOD method = FIT_PCA);
+	ScaffNode* addNode(MeshPtr mesh, Geom::Box& box);
 
 	// modifier
-	void changeNodeType(ScaffoldNode* n);
+	void changeNodeType(ScaffNode* n);
 	PatchNode* changeRodToPatch(RodNode* n, Vector3 v);
 	void translate(Vector3 v, bool withMesh = true);
 	void unwrapBundleNodes();
-	ScaffoldNode* wrapAsBundleNode(QVector<QString> nids, Vector3 v = Vector3(0, 0, 0));
-	QVector<ScaffoldNode*> split(QString nid, Geom::Plane& plane);
-	QVector<ScaffoldNode*> split(QString nid, QVector<Geom::Plane>& planes);
+	ScaffNode* wrapAsBundleNode(QVector<QString> nids, Vector3 v = Vector3(0, 0, 0));
+	QVector<ScaffNode*> split(QString nid, Geom::Plane& plane);
+	QVector<ScaffNode*> split(QString nid, QVector<Geom::Plane>& planes);
 
 	// I/O
 	void saveToFile(QString fname);

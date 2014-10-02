@@ -3,7 +3,7 @@
 #include "Frame.h"
 #include "Box.h"
 
-#include "ScaffoldNode.h"
+#include "ScaffNode.h"
 
 //			hX   hZ
 //			^   /
@@ -19,9 +19,9 @@ class Hinge
 {
 public:
 	Hinge();
-	Hinge(ScaffoldNode* n1, ScaffoldNode* n2, Vector3 c, Vector3 x, Vector3 y, Vector3 z, double extent);
+	Hinge(ScaffNode* n1, ScaffNode* n2, Vector3 c, Vector3 x, Vector3 y, Vector3 z, double extent);
 
-	ScaffoldNode	*node1, *node2;
+	ScaffNode	*node1, *node2;
 
 	Vector3	Origin;						// contact point
 	Vector3	hX, hY, hZ;					// axis and dihedral directions
@@ -44,10 +44,10 @@ public:
 
 public:
 	// restore the configuration of self and two incident nodes
-	ScaffoldNode* fix();
+	ScaffNode* fix();
 
 	// getters
-	Vector3 getDihedralDirec(ScaffoldNode* n);
+	Vector3 getDihedralDirec(ScaffNode* n);
 
 	// state
 	void setState(int s);

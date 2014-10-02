@@ -704,7 +704,7 @@ static std::vector<double> randomColor()
 
 static std::vector< std::vector<double> > randomColors( int count )
 {
-	srand(time(NULL));
+	srand(time(nullptr));
 
 	std::vector< std::vector<double> > colors(count);
     for (int i = 0; i < count; i++)

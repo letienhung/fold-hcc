@@ -14,15 +14,15 @@
 
 // Helpful functor
 struct CompareFdNode{
-	bool operator()(ScaffoldNode* a, ScaffoldNode* b){ return a->mBox.Center.z() < b->mBox.Center.z(); }
+	bool operator()(ScaffNode* a, ScaffNode* b){ return a->mBox.Center.z() < b->mBox.Center.z(); }
 };
 
 FdPlugin::FdPlugin()
 {
-	widget = NULL;
+	widget = nullptr;
 
 	// graph manager
-	s_manager = new ScaffoldManager();
+	s_manager = new ScaffManager();
 	this->connect(s_manager, SIGNAL(scaffoldChanged(Scaffold*)), SLOT(resetScene()));
 	this->connect(s_manager, SIGNAL(scaffoldModified()), SLOT(updateScene()));
 	this->connect(s_manager, SIGNAL(message(QString)), SLOT(showStatus(QString)));
@@ -43,7 +43,7 @@ FdPlugin::FdPlugin()
 	drawNodeOrder = false;
 
 	// color dialog
-	qColorDialog = NULL;
+	qColorDialog = nullptr;
 }
 
 void FdPlugin::create()
@@ -77,7 +77,7 @@ void FdPlugin::decorate()
 		activeScaffold()->draw();
 
 		if( drawNodeOrder ){
-			for(ScaffoldNode * n : activeScaffold()->getScfdNodes()){
+			for(ScaffNode * n : activeScaffold()->getScfdNodes()){
 				qglviewer::Vec center = drawArea()->camera()->projectedCoordinatesOf(qglviewer::Vec(n->center()));
 				drawArea()->renderText( center.x, center.y, QString("[%1]").arg(activeScaffold()->nodes.indexOf(n)) );
 			}
@@ -153,7 +153,7 @@ bool FdPlugin::postSelection( const QPoint& point )
 	{
 		int nidx = drawArea()->selectedName();
 
-		ScaffoldNode* sn = (ScaffoldNode*)activeFd->getNode(nidx);
+		ScaffNode* sn = (ScaffNode*)activeFd->getNode(nidx);
 		if (sn)
 		{
 			bool isSelected = activeFd->selectNode(nidx);
@@ -172,7 +172,7 @@ bool FdPlugin::postSelection( const QPoint& point )
 		// set current color
 		if (qColorDialog && !selectedSfNodes().isEmpty())
 		{
-			ScaffoldNode* selNode = selectedSfNodes().front();
+			ScaffNode* selNode = selectedSfNodes().front();
 			qColorDialog->setCurrentColor(selNode->mColor);
 		}
 	}
@@ -181,15 +181,15 @@ bool FdPlugin::postSelection( const QPoint& point )
 }
 
 
-QVector<ScaffoldNode*> FdPlugin::selectedSfNodes()
+QVector<ScaffNode*> FdPlugin::selectedSfNodes()
 {
-	QVector<ScaffoldNode*> selNodes;
+	QVector<ScaffNode*> selNodes;
 
 	Scaffold* activeFd = activeScaffold();
 	if (activeFd)
 	{
 		foreach(Structure::Node* n, activeFd->getSelectedNodes())
-			selNodes << (ScaffoldNode*)n;
+			selNodes << (ScaffNode*)n;
 	}
 
 	return selNodes;
@@ -235,17 +235,17 @@ void FdPlugin::setShowKeyframe( int state )
 
 void FdPlugin::exportCurrent()
 {
-	QString filename = QFileDialog::getSaveFileName(0, tr("Save Current Scaffold"), NULL, tr("Mesh Files (*.obj)"));
+	QString filename = QFileDialog::getSaveFileName(0, tr("Save Current Scaffold"), nullptr, tr("Mesh Files (*.obj)"));
 	activeScaffold()->exportMesh(filename);
 	showMessage("Current mesh has been exported.");
 }
 
 void FdPlugin::exportAllObj()
 {
-	DecScaffold* selDec = f_manager->shapeDec;
+	DecScaff* selDec = f_manager->shapeDec;
 	if (!selDec) return;
 
-	QString filename = QFileDialog::getSaveFileName(0, tr("Save Current Keyframes"), NULL, tr("Mesh file (*.obj)"));
+	QString filename = QFileDialog::getSaveFileName(0, tr("Save Current Keyframes"), nullptr, tr("Mesh file (*.obj)"));
 	QString basefilename = filename;
 	basefilename.chop(4);
 
@@ -257,17 +257,17 @@ void FdPlugin::exportAllObj()
 	}
 }
 
-#include "ChainScaffold.h"
+#include "ChainScaff.h"
 void FdPlugin::test1()
 {
-	UnitScaffold* selUnit = f_manager->getSelUnit();
+	UnitScaff* selUnit = f_manager->getSelUnit();
 	if (selUnit)
 	{
 		FoldOption fn("hhh", true, 1, 0, 5);
 		for(int i = 0; i < selUnit->chains.size(); i++)
 		{
 
-			ChainScaffold* chain = selUnit->chains[i];
+			ChainScaff* chain = selUnit->chains[i];
 			chain->applyFoldOption(&fn);
 			//chain->fold(0.5);
 			continue;
@@ -289,7 +289,7 @@ void FdPlugin::test2()
 
 void FdPlugin::showColorDialog()
 {
-	if(qColorDialog == NULL)
+	if(qColorDialog == nullptr)
 	{
 		// create
 		qColorDialog = new QColorDialog();
@@ -324,7 +324,7 @@ void FdPlugin::showColorDialog()
 
 void FdPlugin::updateSelNodesColor( QColor c )
 {
-	foreach(ScaffoldNode* n, selectedSfNodes())
+	foreach(ScaffNode* n, selectedSfNodes())
 	{
 		if (c.alpha() > 200) c.setAlpha(200);
 		n->mColor = c;
@@ -350,7 +350,7 @@ void FdPlugin::saveSnapshotAll()
 {
 	if (!f_manager) return;
 	
-	DecScaffold* shapeDec = f_manager->shapeDec;
+	DecScaff* shapeDec = f_manager->shapeDec;
 	if (!shapeDec) return;
 
 	showKeyframe = true;
@@ -369,8 +369,8 @@ void FdPlugin::saveSnapshotAll()
 
 void FdPlugin::hideSelectedNodes()
 {
-	QVector<ScaffoldNode*> snodes = selectedSfNodes();
-	foreach(ScaffoldNode* n, snodes)
+	QVector<ScaffNode*> snodes = selectedSfNodes();
+	foreach(ScaffNode* n, snodes)
 	{
 		n->isHidden = true;
 
@@ -379,7 +379,7 @@ void FdPlugin::hideSelectedNodes()
 		{
 			foreach(Scaffold* kf, f_manager->shapeDec->keyframes)
 			{
-				ScaffoldNode* kn = (ScaffoldNode*)kf->getNode(n->mID);
+				ScaffNode* kn = (ScaffNode*)kf->getNode(n->mID);
 				kn->isHidden = true;
 			}
 		}
@@ -401,7 +401,7 @@ void FdPlugin::unhideAllNodes()
 	Scaffold* activeFd = activeScaffold();
 	if (activeFd)
 	{
-		for(ScaffoldNode* n : activeFd->getScfdNodes())
+		for(ScaffNode* n : activeFd->getScfdNodes())
 			n->isHidden = false;
 	}
 
@@ -420,7 +420,7 @@ void FdPlugin::colorMasterSlave()
 	Scaffold* activeFd = activeScaffold();
 	if (activeFd)
 	{
-		for (ScaffoldNode* n : activeFd->getScfdNodes())
+		for (ScaffNode* n : activeFd->getScfdNodes())
 		{
 			double grey = 240;
 			QColor c = (!n->hasTag(MASTER_TAG)) ? 
@@ -435,12 +435,12 @@ void FdPlugin::colorMasterSlave()
 
 void FdPlugin::exportPNG()
 {
-	DecScaffold* shapeDec = f_manager->shapeDec;
+	DecScaff* shapeDec = f_manager->shapeDec;
 	if (!shapeDec) return;
 
 	showKeyframe = true;
 
-	QString filename = QFileDialog::getSaveFileName(0, tr("Save Current Scaffold"), NULL, tr("PNG file (*.png)"));
+	QString filename = QFileDialog::getSaveFileName(0, tr("Save Current Scaffold"), nullptr, tr("PNG file (*.png)"));
 	QString basefilename = filename;
 	basefilename.chop(4);
 
@@ -486,7 +486,7 @@ void FdPlugin::exportSVG()
 		// output file
 		if(filename.length() < 1) 
 		{
-			filename = QFileDialog::getSaveFileName(0, tr("Save Current Scaffold"), NULL, tr("SVG file (*.svg)"));
+			filename = QFileDialog::getSaveFileName(0, tr("Save Current Scaffold"), nullptr, tr("SVG file (*.svg)"));
 			basefilename = filename;
 			basefilename.chop(4);
 		}
@@ -509,7 +509,7 @@ void FdPlugin::exportSVG()
 			// Style
 			QString style = "fill-opacity='0.78' stroke-width='0.25' stroke-linecap='round' stroke-linejoin='round' ";
 
-			QVector<ScaffoldNode*> fdnodes = afd->getScfdNodes();
+			QVector<ScaffNode*> fdnodes = afd->getScfdNodes();
 
 			if(this->showCuboid)
 			{
@@ -520,14 +520,14 @@ void FdPlugin::exportSVG()
 				std::reverse(fdnodes.begin(), fdnodes.end());
 			}
 
-			foreach (ScaffoldNode* n, fdnodes)
+			foreach (ScaffNode* n, fdnodes)
 			{
 				// skip hidden stuff for clean rendering
 				if (n->hasTag(EDGE_ROD_TAG)) continue;
 
 				if( this->showScaffold )
 				{
-					if (n->mType == ScaffoldNode::PATCH)
+					if (n->mType == ScaffNode::PATCH)
 					{
 						/*// Edges
 						foreach (Geom::Segment seg, ((PatchNode*)n)->mPatch.getEdgeSegments()){
@@ -607,7 +607,7 @@ bool FdPlugin::keyPressEvent(QKeyEvent* event)
 		selGraphs << scaffold;
 
 		QStringList selectedNodeNames;
-		foreach(ScaffoldNode * n, selectedSfNodes()) selectedNodeNames << n->mID;
+		foreach(ScaffNode * n, selectedSfNodes()) selectedNodeNames << n->mID;
 
 		// We are changing keyframes
 		if (showKeyframe && f_manager->shapeDec) selGraphs = f_manager->shapeDec->keyframes;

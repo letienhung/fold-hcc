@@ -77,7 +77,7 @@ Structure::Link* Structure::Graph::addLink( QString nid1, QString nid2 )
 	if (n1 && n2)
 		return addLink(n1, n2);
 	else
-		return NULL;
+		return nullptr;
 }
 
 int Structure::Graph::getNodeIndex( QString nid )
@@ -133,7 +133,7 @@ void Structure::Graph::removeNode( QString nid )
 
 bool Structure::Graph::removeLink( Link* link )
 {
-	if (link == NULL) return false;
+	if (link == nullptr) return false;
 
 	// link index
 	int idx = getLinkIndex(link->nid1, link->nid2);

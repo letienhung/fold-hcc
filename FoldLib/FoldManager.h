@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Scaffold.h"
-#include "DecScaffold.h"
+#include "DecScaff.h"
 #include "Numeric.h"
 #include <QObject>
 
@@ -18,7 +18,7 @@ public:
 	Scaffold* inputScaffold; 
 
 	// decomposition
-	DecScaffold* shapeDec;
+	DecScaff* shapeDec;
 
 	// keyframes
 	int nbKeyframes;
@@ -44,7 +44,7 @@ public:
 
 	// getters
 	Scaffold* activeScaffold();
-	UnitScaffold* getSelUnit();
+	UnitScaff* getSelUnit();
 	Scaffold* getSelKeyframe();
 
 public slots:

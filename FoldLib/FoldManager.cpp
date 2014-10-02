@@ -1,6 +1,6 @@
 #include "FoldManager.h"
 #include "FdUtility.h"
-#include "ChainScaffold.h"
+#include "ChainScaff.h"
 
 #include <QFileDialog>
 #include <QDir>
@@ -67,7 +67,7 @@ void FoldManager::selectChain( QString id )
 	emit(sceneChanged());
 }
 
-UnitScaffold* FoldManager::getSelUnit()
+UnitScaff* FoldManager::getSelUnit()
 {
 	if (shapeDec)
 		return shapeDec->getSelUnit();
@@ -107,7 +107,7 @@ Scaffold* FoldManager::getSelKeyframe()
 
 Scaffold* FoldManager::activeScaffold()
 {
-	DecScaffold* as = shapeDec;
+	DecScaff* as = shapeDec;
 	if (as)	return as->activeScaffold();
 	else	return inputScaffold;
 }
@@ -116,7 +116,7 @@ void FoldManager::decompose()
 {
 	if (shapeDec) delete shapeDec;
 
-	shapeDec = new DecScaffold("", inputScaffold, sqzV, connThrRatio);
+	shapeDec = new DecScaff("", inputScaffold, sqzV, connThrRatio);
 
 	updateUnitList();
 	updateKeyframeSlider();
@@ -124,7 +124,7 @@ void FoldManager::decompose()
 
 void FoldManager::foldabilize()
 {
-	if (inputScaffold == NULL)
+	if (inputScaffold == nullptr)
 		return;
 
 // start
@@ -170,9 +170,9 @@ int fdTime = timer.elapsed();
 
 		int nbHinges = 0;
 		double shinkedArea = 0, totalArea = 0;
-		for(UnitScaffold* unit : shapeDec->units)
+		for(UnitScaff* unit : shapeDec->units)
 		{
-			for (ChainScaffold* chain : unit->chains)
+			for (ChainScaff* chain : unit->chains)
 			{
 				//nbHinges += chain->nbHinges;
 				//shinkedArea += chain->shrinkedArea;
@@ -268,7 +268,7 @@ void FoldManager::setParameters()
 	Geom::Box aabb = inputScaffold->computeAABB().box();
 	aabb.scale(aabbScale);
 
-	for(UnitScaffold* unit : shapeDec->units)
+	for(UnitScaff* unit : shapeDec->units)
 	{
 		unit->setAabbConstraint(aabb);
 		unit->maxNbSplits = nbSplits;
@@ -306,7 +306,7 @@ void FoldManager::exportStat()
 {
 	if (stat.hasTag(FD_TIME))
 	{
-		QString filename = QFileDialog::getSaveFileName(0, tr("Save Statistics"), NULL, tr("Txt file (*.txt)"));
+		QString filename = QFileDialog::getSaveFileName(0, tr("Save Statistics"), nullptr, tr("Txt file (*.txt)"));
 
 		QFile file( filename );
 		if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) return;

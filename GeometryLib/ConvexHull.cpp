@@ -177,7 +177,7 @@ bool Geom::ConvexHull::Update (int i)
 		mHull.erase(tri);
 
 		delete tri;
-		tri = NULL;
+		tri = nullptr;
     }
 
     // Insert the new edges formed by the input point and the terminator
@@ -249,7 +249,7 @@ void Geom::ConvexHull::ExtractIndices ()
 			mIndices.push_back(tri->V[j]);
 		}
 		delete tri;
-		tri = NULL;
+		tri = nullptr;
 	}
 	mHull.clear();
 }
@@ -262,7 +262,7 @@ void Geom::ConvexHull::DeleteHull ()
 	{
 		TriFace* tri = *iter;
 		delete tri;
-		tri = NULL;
+		tri = nullptr;
 	}
 	mHull.clear();
 }

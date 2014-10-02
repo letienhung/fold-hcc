@@ -144,7 +144,7 @@ bool FoldOptionGraph::areSiblings( QString nid1, QString nid2 )
 
 ChainNode* FoldOptionGraph::getChainNode( QString fnid )
 {
-	if (!verifyNodeType(fnid, "option")) return NULL;
+	if (!verifyNodeType(fnid, "option")) return nullptr;
 
 	Structure::Link* l = getFoldinglinks(fnid)[0];
 	return (ChainNode*)l->getNodeOther(fnid);

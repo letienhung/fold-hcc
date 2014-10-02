@@ -11,7 +11,7 @@
 #include "RodNode.h"
 #include "PatchNode.h"
 #include "BundleNode.h"
-#include "ScaffoldLink.h"
+#include "ScaffLink.h"
 
 #include "AABB.h"
 #include "MinOBB.h"
@@ -43,29 +43,29 @@ Structure::Graph* Scaffold::clone()
 	return new Scaffold(*this);
 }
 
-ScaffoldLink* Scaffold::addLink( ScaffoldNode* n1, ScaffoldNode* n2 )
+ScaffLink* Scaffold::addLink( ScaffNode* n1, ScaffNode* n2 )
 {
-	ScaffoldLink* new_link = new ScaffoldLink(n1, n2);
+	ScaffLink* new_link = new ScaffLink(n1, n2);
 	Graph::addLink(new_link);
 
 	return new_link;
 }
 
 
-QVector<ScaffoldNode*> Scaffold::getScfdNodes()
+QVector<ScaffNode*> Scaffold::getScfdNodes()
 {
-	QVector<ScaffoldNode*> fdns;
+	QVector<ScaffNode*> fdns;
 	foreach(Structure::Node* n, nodes)
-		fdns.push_back((ScaffoldNode*)n);
+		fdns.push_back((ScaffNode*)n);
 	
 	return fdns;
 }
 
-ScaffoldNode* Scaffold::getFdNode(QString id)
+ScaffNode* Scaffold::getFdNode(QString id)
 {
 	Structure::Node* n = getNode(id);
 	if (n != nullptr) 
-		return (ScaffoldNode*)n;
+		return (ScaffNode*)n;
 	else 
 		return nullptr;
 }
@@ -79,8 +79,8 @@ void Scaffold::exportMesh(QString fname)
 	if (!file.open(QIODevice::Append | QIODevice::Text)) return;
 	
 	int v_offset = 0;
-	QVector<ScaffoldNode*> nodes = getScfdNodes();
-	foreach(ScaffoldNode *n, nodes){
+	QVector<ScaffNode*> nodes = getScfdNodes();
+	foreach(ScaffNode *n, nodes){
 		n->deformMesh();
 		n->exportMesh(file, v_offset);
 	}
@@ -100,7 +100,7 @@ void Scaffold::saveToFile(QString fname)
 	{
 		// nodes
 		xw.writeTaggedString("cN", QString::number(nbNodes()));
-		foreach(ScaffoldNode* node, getScfdNodes())
+		foreach(ScaffNode* node, getScfdNodes())
 		{
 			node->write(xw);
 		}
@@ -117,7 +117,7 @@ void Scaffold::saveToFile(QString fname)
 	QDir graphDir( fileInfo.absolutePath());
 	graphDir.mkdir(meshesFolder);
 	meshesFolder =  graphDir.path() + "/" + meshesFolder;
-	foreach(ScaffoldNode* node, getScfdNodes())
+	foreach(ScaffNode* node, getScfdNodes())
 	{
 		MeshHelper::saveOBJ(node->mMesh.data(), meshesFolder + '/' + node->mID + ".obj");
 	}
@@ -164,10 +164,10 @@ void Scaffold::loadFromFile(QString fname)
 		}
 
 		// create new node
-		ScaffoldNode* new_node;
+		ScaffNode* new_node;
 		MeshPtr m(mesh);
 		QString id = m->name;
-		if(ntype == ScaffoldNode::ROD)
+		if(ntype == ScaffNode::ROD)
 			new_node = new RodNode(id, box, m);
 		else
 			new_node = new PatchNode(id, box, m);
@@ -180,7 +180,7 @@ void Scaffold::loadFromFile(QString fname)
 Geom::AABB Scaffold::computeAABB()
 {
 	Geom::AABB aabb;
-	foreach (ScaffoldNode* n, getScfdNodes())
+	foreach (ScaffNode* n, getScfdNodes())
 	{
 		aabb.add(n->computeAABB());
 	}
@@ -228,37 +228,37 @@ void Scaffold::draw()
 	drawDebug();
 }
 
-ScaffoldNode* Scaffold::wrapAsBundleNode( QVector<QString> nids, Vector3 v )
+ScaffNode* Scaffold::wrapAsBundleNode( QVector<QString> nids, Vector3 v )
 {
 	// retrieve all nodes
-	QVector<ScaffoldNode*> ns;
+	QVector<ScaffNode*> ns;
 	foreach(QString nid, nids)
 	{
 		Structure::Node* n = getNode(nid);
-		if (n) ns.push_back((ScaffoldNode*)n);
+		if (n) ns.push_back((ScaffNode*)n);
 	}
 
 	// trivial cases
-	if (ns.isEmpty()) return NULL;
+	if (ns.isEmpty()) return nullptr;
 	if (ns.size() == 1) return ns[0];
 
 	// merge into a bundle node
-	QVector<ScaffoldNode*> subNodes;
-	foreach (ScaffoldNode* n, ns)	subNodes += n->getSubNodes();
+	QVector<ScaffNode*> subNodes;
+	foreach (ScaffNode* n, ns)	subNodes += n->getSubNodes();
 	QString bid = getBundleName(subNodes);
 	Geom::Box box = getBundleBox(subNodes);
 	BundleNode* bundleNode = new BundleNode(bid, box, subNodes, v); 
 	Structure::Graph::addNode(bundleNode);
 
 	// remove original nodes
-	foreach (ScaffoldNode* n, ns)
+	foreach (ScaffNode* n, ns)
 		Structure::Graph::removeNode(n->mID);
 
 	return bundleNode;
 }
 
 
-ScaffoldNode* Scaffold::addNode( MeshPtr mesh, BOX_FIT_METHOD method )
+ScaffNode* Scaffold::addNode( MeshPtr mesh, BOX_FIT_METHOD method )
 {
 	// fit box
 	QVector<Vector3> points = MeshHelper::getMeshVertices(mesh.data());
@@ -267,12 +267,12 @@ ScaffoldNode* Scaffold::addNode( MeshPtr mesh, BOX_FIT_METHOD method )
 	return addNode(mesh, box);
 }
 
-ScaffoldNode* Scaffold::addNode(MeshPtr mesh, Geom::Box& box)
+ScaffNode* Scaffold::addNode(MeshPtr mesh, Geom::Box& box)
 {
 	// create node depends on box type
 	int box_type = box.getType(5);
 
-	ScaffoldNode* node;
+	ScaffNode* node;
 	QString id = mesh->name;
 	if (box_type == Geom::Box::ROD)	
 		node = new RodNode(id, box, mesh);
@@ -285,7 +285,7 @@ ScaffoldNode* Scaffold::addNode(MeshPtr mesh, Geom::Box& box)
 	return node;
 }
 
-QVector<ScaffoldNode*> Scaffold::split( QString nid, Geom::Plane& plane)
+QVector<ScaffNode*> Scaffold::split( QString nid, Geom::Plane& plane)
 {
 	return split(nid, QVector<Geom::Plane>() << plane);
 }
@@ -293,12 +293,12 @@ QVector<ScaffoldNode*> Scaffold::split( QString nid, Geom::Plane& plane)
 // if cut planes intersect with the part, the part is split and replaced by chopped parts
 // otherwise the original part remains
 // the return value could either be the original part or the chopped fragment parts
-QVector<ScaffoldNode*> Scaffold::split( QString nid, QVector<Geom::Plane>& planes )
+QVector<ScaffNode*> Scaffold::split( QString nid, QVector<Geom::Plane>& planes )
 {
-	ScaffoldNode* fn = (ScaffoldNode*) getNode(nid);
+	ScaffNode* fn = (ScaffNode*) getNode(nid);
 
 	// in case
-	QVector<ScaffoldNode*> chopped;
+	QVector<ScaffNode*> chopped;
 	chopped << fn;
 	if (planes.isEmpty()) return chopped;
 	if (!fn) return chopped;
@@ -366,27 +366,27 @@ QVector<ScaffoldNode*> Scaffold::split( QString nid, QVector<Geom::Plane>& plane
 
 void Scaffold::showCuboids( bool show )
 {
-	foreach(ScaffoldNode* n, getScfdNodes())
+	foreach(ScaffNode* n, getScfdNodes())
 		n->setShowCuboid(show);
 }
 
 void Scaffold::showScaffold( bool show )
 {
-	foreach(ScaffoldNode* n, getScfdNodes())
+	foreach(ScaffNode* n, getScfdNodes())
 		n->setShowScaffold(show);
 }
 
 void Scaffold::showMeshes( bool show )
 {
-	foreach(ScaffoldNode* n, getScfdNodes())
+	foreach(ScaffNode* n, getScfdNodes())
 		n->setShowMesh(show);
 }
 
-void Scaffold::changeNodeType( ScaffoldNode* n )
+void Scaffold::changeNodeType( ScaffNode* n )
 {
 	// create new node
 	Structure::Node* new_node;
-	if (n->mType == ScaffoldNode::PATCH)
+	if (n->mType == ScaffNode::PATCH)
 		new_node =new RodNode(n->mID, n->mBox, n->mMesh);
 	else
 		new_node = new PatchNode(n->mID, n->mBox, n->mMesh);
@@ -408,23 +408,23 @@ void Scaffold::restoreConfiguration()
 
 
 
-	QQueue<ScaffoldNode*> activeNodes;
-	foreach(ScaffoldNode* fn, getScfdNodes())
+	QQueue<ScaffNode*> activeNodes;
+	foreach(ScaffNode* fn, getScfdNodes())
 		if (fn->hasTag(FIXED_NODE_TAG)) 
 			activeNodes.enqueue(fn);
 
 	while (!activeNodes.isEmpty())
 	{
-		ScaffoldNode* anode = activeNodes.dequeue();
+		ScaffNode* anode = activeNodes.dequeue();
 		foreach(Structure::Link* l, getLinks(anode->mID))
 		{
-			ScaffoldLink* fl = (ScaffoldLink*)l;
+			ScaffLink* fl = (ScaffLink*)l;
 			if (!fl->hasTag(ACTIVE_LINK_TAG)) continue;
 
 			if (fl->fix()) 
 			{
 				Structure::Node* other_node = l->getNodeOther(anode->mID);
-				activeNodes.enqueue((ScaffoldNode*)other_node);
+				activeNodes.enqueue((ScaffNode*)other_node);
 			}
 		}
 	}
@@ -432,7 +432,7 @@ void Scaffold::restoreConfiguration()
 
 void Scaffold::translate(Vector3 v, bool withMesh)
 {
-	foreach(ScaffoldNode* n, getScfdNodes())
+	foreach(ScaffNode* n, getScfdNodes())
 	{
 		n->translate(v);
 
@@ -511,7 +511,7 @@ void Scaffold::unwrapBundleNodes()
 		if (n->hasTag(BUNDLE_TAG))
 		{
 			BundleNode* bnode = (BundleNode*)n;
-			foreach (ScaffoldNode* cn, bnode->mNodes)
+			foreach (ScaffNode* cn, bnode->mNodes)
 			{
 				Structure::Node* cn_copy = cn->clone();
 				Structure::Graph::addNode(cn_copy);
@@ -526,7 +526,7 @@ void Scaffold::unwrapBundleNodes()
 
 void Scaffold::hideEdgeRods()
 {
-	foreach (ScaffoldNode* n, getScfdNodes())
+	foreach (ScaffNode* n, getScfdNodes())
 	{
 		if (n->hasTag(EDGE_ROD_TAG))
 		{

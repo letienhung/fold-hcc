@@ -1,10 +1,10 @@
 #pragma once
 
-#include "ScaffoldNode.h"
+#include "ScaffNode.h"
 
 class RodNode;
 
-class PatchNode : public ScaffoldNode
+class PatchNode : public ScaffNode
 {
 public:
     PatchNode(QString id, Geom::Box &b, MeshPtr m, Vector3 v = Vector3(0, 0, 0));

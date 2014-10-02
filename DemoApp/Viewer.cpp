@@ -82,7 +82,7 @@ void Viewer::draw()
 	{
 		if( fmanager->property("isDone").toBool() )
 		{
-			DecScaffold* dec = fmanager->shapeDec;
+			DecScaff* dec = fmanager->shapeDec;
 
 			if( !dec->keyframes.isEmpty() )
 			{

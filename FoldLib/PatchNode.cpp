@@ -5,9 +5,9 @@
 #include "RodNode.h"
 
 PatchNode::PatchNode(QString id, Geom::Box &b, MeshPtr m, Vector3 v)
-	: ScaffoldNode(id, b, m)
+	: ScaffNode(id, b, m)
 {
-	mType = ScaffoldNode::PATCH;
+	mType = ScaffNode::PATCH;
 
 	if (v.norm() < ZERO_TOLERANCE_LOW)
 	{
@@ -22,9 +22,9 @@ PatchNode::PatchNode(QString id, Geom::Box &b, MeshPtr m, Vector3 v)
 }
 
 PatchNode::PatchNode(RodNode* rodNode, Vector3 v)
-	: ScaffoldNode(rodNode->mID)
+	: ScaffNode(rodNode->mID)
 {
-	mType = ScaffoldNode::PATCH;
+	mType = ScaffNode::PATCH;
 
 	// create new box
 	Vector3 X = rodNode->mRod.Direction;
@@ -49,7 +49,7 @@ PatchNode::PatchNode(RodNode* rodNode, Vector3 v)
 
 
 PatchNode::PatchNode(PatchNode& other)
-	:ScaffoldNode(other)
+	:ScaffNode(other)
 {
 	mPatch = other.mPatch;
 }

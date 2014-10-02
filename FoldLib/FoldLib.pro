@@ -39,46 +39,46 @@ DESTDIR = $$PWD/$$CFG/lib
 HEADERS += \
     PatchNode.h \
     RodNode.h \
-    ScaffoldManager.h \
-    ScaffoldLink.h \
-    ScaffoldNode.h \
     FoldManager.h \
     FdUtility.h \
-    UnitScaffold.h \
-    ChainScaffold.h \
     Hinge.h \
     BundleNode.h \
     FoldOptionGraph.h \
     ShapeSuperKeyframe.h \
-    SuperUnitScaffold.h \
-    TChainScaffold.h \
-    TUnitScaffold.h \
-    HUnitScaffold.h \
-    HChainScaffold.h \
     Decomposer.h \
     Scaffold.h \
-    DecScaffold.h
+    ChainScaff.h \
+    DecScaff.h \
+    HChainScaff.h \
+    HUnitScaff.h \
+    ScaffLink.h \
+    ScaffManager.h \
+    ScaffNode.h \
+    SuperUnitScaff.h \
+    TChainScaff.h \
+    TUnitScaff.h \
+    UnitScaff.h
 
 SOURCES += \
     PatchNode.cpp \
     RodNode.cpp \
-    ScaffoldManager.cpp \
     Scaffold.cpp \
-    ScaffoldLink.cpp \
-    ScaffoldNode.cpp \
     FoldManager.cpp \
     FdUtility.cpp \
-    UnitScaffold.cpp \
-    ChainScaffold.cpp \
     Hinge.cpp \
     BundleNode.cpp \
     FoldOptionGraph.cpp \
     ShapeSuperKeyframe.cpp \
-    SuperUnitScaffold.cpp \
-    TChainScaffold.cpp \
-    TUnitScaffold.cpp \
-    HUnitScaffold.cpp \
-    HChainScaffold.cpp \
     Decomposer.cpp \
-    DecScaffold.cpp
+    ChainScaff.cpp \
+    DecScaff.cpp \
+    HChainScaff.cpp \
+    HUnitScaff.cpp \
+    ScaffLink.cpp \
+    ScaffManager.cpp \
+    ScaffNode.cpp \
+    SuperUnitScaff.cpp \
+    TChainScaff.cpp \
+    TUnitScaff.cpp \
+    UnitScaff.cpp
 

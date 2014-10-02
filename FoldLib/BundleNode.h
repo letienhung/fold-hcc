@@ -6,7 +6,7 @@
 class BundleNode : public PatchNode
 {
 public:
-    BundleNode(QString id, Geom::Box& b, QVector<ScaffoldNode*> nodes, Vector3 v = Vector3(0, 0, 0));
+    BundleNode(QString id, Geom::Box& b, QVector<ScaffNode*> nodes, Vector3 v = Vector3(0, 0, 0));
 	BundleNode(BundleNode& other);
 	~BundleNode();
 
@@ -22,10 +22,10 @@ public:
 
 	void exportMesh(QFile &file, int& v_offset);
 
-	QVector<ScaffoldNode*> getSubNodes();
+	QVector<ScaffNode*> getSubNodes();
 
-	ScaffoldNode* cloneChopped(Geom::Plane& chopper);
-	ScaffoldNode* cloneChopped(Geom::Plane& chopper1, Geom::Plane& chopper2);
+	ScaffNode* cloneChopped(Geom::Plane& chopper);
+	ScaffNode* cloneChopped(Geom::Plane& chopper1, Geom::Plane& chopper2);
 
 	// visual
 	void setShowCuboid(bool show);
@@ -35,7 +35,7 @@ public:
 	void translate(Vector3 v);
 
 public:
-	QVector<ScaffoldNode*> mNodes;
+	QVector<ScaffNode*> mNodes;
 	QVector<Geom::Frame::RecordInFrame> mNodeFrameRecords;
 };
 
