@@ -2,12 +2,12 @@
 
 #include "FdUtility.h"
 
-class ShapeScaffold;
+class DecScaffold;
 
 class Decomposer
 {
 public:
-	Decomposer(ShapeScaffold* ss);
+	Decomposer(DecScaffold* ss);
 	void execute();
 
 private:
@@ -22,6 +22,6 @@ private:
 	void clusterSlaves();
 
 private:
-	ShapeScaffold* scfd;
+	DecScaffold* scfd;
 };
 

@@ -483,7 +483,7 @@
           <number>7</number>
          </property>
          <property name="minimum">
-          <double>0.000001000000000</double>
+          <double>0.050000000000000</double>
          </property>
          <property name="maximum">
           <double>0.200000000000000</double>
@@ -577,7 +577,7 @@
            </widget>
           </item>
           <item row="2" column="0">
-           <widget class="QPushButton" name="clearDcList">
+           <widget class="QPushButton" name="clearDecList">
             <property name="text">
              <string>Clear</string>
             </property>
@@ -600,24 +600,10 @@
          </layout>
         </widget>
        </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_7">
-         <property name="text">
-          <string>--Dcs--</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="3">
-        <widget class="QLabel" name="label_11">
-         <property name="text">
-          <string>--Block Sln.--</string>
-         </property>
-        </widget>
-       </item>
        <item row="2" column="1">
         <widget class="QLabel" name="label_8">
          <property name="text">
-          <string>--Blocks--</string>
+          <string>--Units--</string>
          </property>
         </widget>
        </item>
@@ -629,16 +615,10 @@
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QListWidget" name="blockList"/>
-       </item>
-       <item row="3" column="3">
-        <widget class="QListWidget" name="slnList"/>
+        <widget class="QListWidget" name="unitList"/>
        </item>
        <item row="3" column="2">
         <widget class="QListWidget" name="chainList"/>
-       </item>
-       <item row="3" column="0">
-        <widget class="QListWidget" name="dcList"/>
        </item>
        <item row="4" column="0" colspan="4">
         <widget class="QGroupBox" name="groupBox_6">

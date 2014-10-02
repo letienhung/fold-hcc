@@ -1,10 +1,10 @@
 #include "Decomposer.h"
 
-#include "ShapeScaffold.h"
+#include "DecScaffold.h"
 #include "TUnitScaffold.h"
 #include "HUnitScaffold.h"
 
-Decomposer::Decomposer(ShapeScaffold* ss)
+Decomposer::Decomposer(DecScaffold* ss)
 {
 	scfd = ss;
 }

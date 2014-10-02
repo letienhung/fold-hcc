@@ -7,14 +7,14 @@
 #include "FoldOptionGraph.h"
 #include "ShapeSuperKeyframe.h"
 
-// ShapeGraph encodes the decomposition of scaffold
+// DecGraph encodes the decomposition of the scaffold for input shape
 // including base patches and blocks
 
-class ShapeScaffold : public Scaffold
+class DecScaffold : public Scaffold
 {
 public:
-    ShapeScaffold(QString id, Scaffold* scaffold, Vector3 v, double connThr);
-	~ShapeScaffold();
+    DecScaffold(QString id, Scaffold* scaffold, Vector3 v, double connThr);
+	~DecScaffold();
 
 public:
 	// squeezing direction

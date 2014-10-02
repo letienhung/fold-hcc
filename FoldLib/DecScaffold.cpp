@@ -1,4 +1,4 @@
-#include "ShapeScaffold.h"
+#include "DecScaffold.h"
 #include "PatchNode.h"
 #include <QFileInfo>
 #include "FdUtility.h"
@@ -9,7 +9,7 @@
 #include "HUnitScaffold.h"
 #include "Decomposer.h"
 
-ShapeScaffold::ShapeScaffold(QString id, Scaffold* scaffold, Vector3 v, double connThr)
+DecScaffold::DecScaffold(QString id, Scaffold* scaffold, Vector3 v, double connThr)
 	: Scaffold(*scaffold), baseMaster(nullptr) // clone the FdGraph
 {
 	path = QFileInfo(path).absolutePath();
@@ -44,12 +44,12 @@ ShapeScaffold::ShapeScaffold(QString id, Scaffold* scaffold, Vector3 v, double c
 	//addDebugSegments(normals);
 }
 
-ShapeScaffold::~ShapeScaffold()
+DecScaffold::~DecScaffold()
 {
 	foreach (UnitScaffold* l, units)	delete l;
 }
 
-UnitScaffold* ShapeScaffold::createUnit(QSet<int> sCluster)
+UnitScaffold* DecScaffold::createUnit(QSet<int> sCluster)
 {
 	QVector<PatchNode*> ms;
 	QVector<ScaffoldNode*> ss;
@@ -94,7 +94,7 @@ UnitScaffold* ShapeScaffold::createUnit(QSet<int> sCluster)
 	return b;
 }
 
-void ShapeScaffold::createUnits()
+void DecScaffold::createUnits()
 {
 	// clear blocks
 	for (auto b : units) delete b;
@@ -111,7 +111,7 @@ void ShapeScaffold::createUnits()
 }
 
 
-void ShapeScaffold::computeMasterOrderConstraints()
+void DecScaffold::computeMasterOrderConstraints()
 {
 	// time stamps: bottom-up
 	double tScale;
@@ -161,7 +161,7 @@ void ShapeScaffold::computeMasterOrderConstraints()
 	}
 }
 
-UnitScaffold* ShapeScaffold::getSelUnit()
+UnitScaffold* DecScaffold::getSelUnit()
 {
 	if (selBlockIdx >= 0 && selBlockIdx < units.size())
 		return units[selBlockIdx];
@@ -169,14 +169,14 @@ UnitScaffold* ShapeScaffold::getSelUnit()
 		return NULL;
 }
 
-Scaffold* ShapeScaffold::activeScaffold()
+Scaffold* DecScaffold::activeScaffold()
 {
 	UnitScaffold* selLayer = getSelUnit();
 	if (selLayer) return selLayer->activeScaffold();
 	else		  return this;
 }
 
-QStringList ShapeScaffold::getUnitLabels()
+QStringList DecScaffold::getUnitLabels()
 {
 	QStringList labels;
 	foreach(UnitScaffold* l, units)
@@ -188,7 +188,7 @@ QStringList ShapeScaffold::getUnitLabels()
 	return labels;
 }
 
-void ShapeScaffold::selectUnit( QString id )
+void DecScaffold::selectUnit( QString id )
 {
 	// select layer named id
 	selBlockIdx = -1;
@@ -204,7 +204,7 @@ void ShapeScaffold::selectUnit( QString id )
 		getSelUnit()->selectChain("");
 }
 
-Scaffold* ShapeScaffold::getKeyframe( double t )
+Scaffold* DecScaffold::getKeyframe( double t )
 {
 	bool showActive = false;	
 	Vector3 aOrigPos;
@@ -250,7 +250,7 @@ Scaffold* ShapeScaffold::getKeyframe( double t )
 	return key_graph;
 }
 
-ShapeSuperKeyframe* ShapeScaffold::getShapeSuperKeyframe( double t )
+ShapeSuperKeyframe* DecScaffold::getShapeSuperKeyframe( double t )
 {
 	// super key frame for each block
 	QVector<Scaffold*> foldedUnits;
@@ -279,7 +279,7 @@ ShapeSuperKeyframe* ShapeScaffold::getShapeSuperKeyframe( double t )
 	return ssKeyframe;
 }
 
-void ShapeScaffold::foldabilize()
+void DecScaffold::foldabilize()
 {
 	// initialization
 	for (UnitScaffold* u : units)
@@ -348,7 +348,7 @@ void ShapeScaffold::foldabilize()
 	std::cout << "\n============FINISH============\n";
 }
 
-double ShapeScaffold::foldabilizeUnit(int bid, double currTime, ShapeSuperKeyframe* currKf, 
+double DecScaffold::foldabilizeUnit(int bid, double currTime, ShapeSuperKeyframe* currKf, 
 										double& nextTime, ShapeSuperKeyframe*& nextKf)
 {
 	// foldabilize nextBlock wrt the current super key frame
@@ -372,7 +372,7 @@ double ShapeScaffold::foldabilizeUnit(int bid, double currTime, ShapeSuperKeyfra
    currKeyframe          nextKeyframe           next2Keyframe
 **/  
 // currKeyframe is a super keyframe providing context information
-int ShapeScaffold::getBestNextUnitIdx(double currTime, ShapeSuperKeyframe* currKeyframe)
+int DecScaffold::getBestNextUnitIdx(double currTime, ShapeSuperKeyframe* currKeyframe)
 {
 	double min_cost = maxDouble();
 	int best_next_bid = -1;
@@ -437,7 +437,7 @@ int ShapeScaffold::getBestNextUnitIdx(double currTime, ShapeSuperKeyframe* currK
 	return best_next_bid;
 }
 
-void ShapeScaffold::generateKeyframes( int N )
+void DecScaffold::generateKeyframes( int N )
 {
 	keyframes.clear();
 
@@ -464,25 +464,25 @@ void ShapeScaffold::generateKeyframes( int N )
 	}
 }
 
-Scaffold* ShapeScaffold::getSelKeyframe()
+Scaffold* DecScaffold::getSelKeyframe()
 {
 	if (keyframeIdx >= 0 && keyframeIdx < keyframes.size())
 		return keyframes[keyframeIdx];
 	else return NULL;
 }
 
-void ShapeScaffold::selectKeyframe( int idx )
+void DecScaffold::selectKeyframe( int idx )
 {
 	if (idx >= 0 && idx < keyframes.size())
 		keyframeIdx = idx;
 }
 
-double ShapeScaffold::getConnectivityThr()
+double DecScaffold::getConnectivityThr()
 {
 	return connThrRatio * computeAABB().radius();
 }
 
-void ShapeScaffold::computeUnitWeights()
+void DecScaffold::computeUnitWeights()
 {
 	unitWeights.clear();
 

@@ -9,9 +9,8 @@
 
 FoldManager::FoldManager()
 {
-	scaffold = NULL;
-
-	selDcIdx = -1;
+	inputScaffold = nullptr;
+	shapeDec = nullptr;
 
 	sqzV = Vector3(0, 0, 1);
 
@@ -21,35 +20,25 @@ FoldManager::FoldManager()
 	nbChunks = 2;
 	thickness = 0;
 
-	connThrRatio = 0.05;
+	connThrRatio = 0.07;
 	aabbScale = Vector3(1, 1, 1);
 
-	costWeight = 0.05;
+	costWeight = 0.5;
 	useNewCost = false;
 }
 
 FoldManager::~FoldManager()
 {
-	clearDcGraphs();
-}
-
-void FoldManager::clearDcGraphs()
-{
-	foreach(ShapeScaffold* dc, dcGraphs)
-		delete dc;
-
-	dcGraphs.clear();
-
-	updateDcList();
+	if (shapeDec) delete shapeDec;
 }
 
 // input
-void FoldManager::setScaffold( Scaffold* fdg )
+void FoldManager::setInputScaffold( Scaffold* input )
 {
-	scaffold = fdg;
+	inputScaffold = input;
 
-	clearDcGraphs();
-	updateDcList();
+	updateUnitList();
+	updateKeyframeSlider();
 }
 
 void FoldManager::setSqzV( QString sqzV_str )
@@ -60,73 +49,30 @@ void FoldManager::setSqzV( QString sqzV_str )
 	if (sqzV_str == "Z") sqzV[2] = 1;
 }
 
-void FoldManager::selectDcGraph( QString id )
+void FoldManager::selectUnit( QString id )
 {
-	// selected lyGraph index
-	selDcIdx = -1;
-	for (int i = 0; i < dcGraphs.size(); i++)
-	{
-		if (dcGraphs[i]->mID == id)
-		{	
-			selDcIdx = i;
-			break;
-		}
-	}
-
-	// disable selection on block and chains
-	selectBlock("");
-
-	// update list
-	updateBlockList();
-	updateKeyframeSlider();
-
-	// update scene
-	emit(sceneChanged());
-}
-
-void FoldManager::selectBlock( QString id )
-{
-	if (getSelShapeScaffold())
-	{
-		getSelShapeScaffold()->selectUnit(id);
-	}
+	if (shapeDec)
+		shapeDec->selectUnit(id);
 
 	updateChainList();
-	updateSolutionList();
 
 	emit(sceneChanged());
 }
 
 void FoldManager::selectChain( QString id )
 { 
-	if (getSelBlock())
-	{
-		getSelBlock()->selectChain(id);
-	}
+	if (shapeDec)
+		getSelUnit()->selectChain(id);
 
 	emit(sceneChanged());
 }
 
-QStringList FoldManager::getDcGraphLabels()
+UnitScaffold* FoldManager::getSelUnit()
 {
-	QStringList labels;
-	foreach (ShapeScaffold* dc, dcGraphs)	
-		labels << dc->mID;
-
-	// append string to select none
-	labels << "--none--";
-
-	return labels;
-}
-
-UnitScaffold* FoldManager::getSelBlock()
-{
-	if (getSelShapeScaffold())
-	{
-		return getSelShapeScaffold()->getSelUnit();
-	}
+	if (shapeDec)
+		return shapeDec->getSelUnit();
 	else
-		return NULL;
+		return nullptr;
 }
 
 void FoldManager::generateKeyframes()
@@ -134,12 +80,11 @@ void FoldManager::generateKeyframes()
 	// thickness
 	setParameters();
 
-	// selected dc graph
-	ShapeScaffold* selDc = getSelShapeScaffold();
-	if (!selDc) return;
+	// selected dec scaffold
+	if (!shapeDec) return;
 
 	// forward message
-	selDc->generateKeyframes(nbKeyframes);
+	shapeDec->generateKeyframes(nbKeyframes);
 
 	// emit signals
 	updateKeyframeSlider();
@@ -147,48 +92,39 @@ void FoldManager::generateKeyframes()
 
 void FoldManager::selectKeyframe( int idx )
 {
-	ShapeScaffold* selDc = getSelShapeScaffold();
-	if (!selDc) return;
+	if (!shapeDec) return;
 
-	selDc->selectKeyframe(idx);
+	shapeDec->selectKeyframe(idx);
 	emit(sceneChanged());
 }
 
 Scaffold* FoldManager::getSelKeyframe()
 {
-	ShapeScaffold* selDc = getSelShapeScaffold();
-	if (!selDc) return NULL;
+	if (!shapeDec) return nullptr;
 
-	return selDc->getSelKeyframe();
-}
-
-ShapeScaffold* FoldManager::getSelShapeScaffold()
-{
-	if (selDcIdx >= 0 && selDcIdx < dcGraphs.size())
-		return dcGraphs[selDcIdx];
-	else
-		return NULL;
+	return shapeDec->getSelKeyframe();
 }
 
 Scaffold* FoldManager::activeScaffold()
 {
-	ShapeScaffold* selLy = getSelShapeScaffold();
-	if (selLy)	return selLy->activeScaffold();
-	else		return scaffold;
+	DecScaffold* as = shapeDec;
+	if (as)	return as->activeScaffold();
+	else	return inputScaffold;
 }
 
 void FoldManager::decompose()
 {
-	selDcIdx = dcGraphs.size();
-	QString id = "Dc_" + QString::number(selDcIdx);
-	dcGraphs.push_back(new ShapeScaffold(id, scaffold, sqzV, connThrRatio));
+	if (shapeDec) delete shapeDec;
 
-	updateDcList();
+	shapeDec = new DecScaffold("", inputScaffold, sqzV, connThrRatio);
+
+	updateUnitList();
+	updateKeyframeSlider();
 }
 
 void FoldManager::foldabilize()
 {
-	if (scaffold == NULL)
+	if (inputScaffold == NULL)
 		return;
 
 // start
@@ -197,21 +133,20 @@ timer.start();
 
 	// decompose
 	decompose();
-	ShapeScaffold* selDc = getSelShapeScaffold();
 	
 	// parameters
 	setParameters();
 
 	// foldabilize
-	selDc->foldabilize(); 
+	shapeDec->foldabilize(); 
 	
 // timer
 int fdTime = timer.elapsed();
 
 	// forward message
-	selDc->generateKeyframes(nbKeyframes);
+	shapeDec->generateKeyframes(nbKeyframes);
 
-	if(selDc->keyframes.isEmpty()) return;
+	if (shapeDec->keyframes.isEmpty()) return;
 
 	// emit signals
 	updateKeyframeSlider();
@@ -222,12 +157,12 @@ int fdTime = timer.elapsed();
 		stat.properties[NB_CHUNKS] = nbChunks;
 		stat.properties[SQZ_DIRECTION].setValue(sqzV);
 
-		stat.properties[NB_MASTER] = selDc->masters.size();
-		stat.properties[NB_SLAVE] = selDc->slaves.size();
-		stat.properties[NB_BLOCK] = selDc->units.size();
+		stat.properties[NB_MASTER] = shapeDec->masters.size();
+		stat.properties[NB_SLAVE] = shapeDec->slaves.size();
+		stat.properties[NB_BLOCK] = shapeDec->units.size();
 
-		Scaffold* lastKeyframe = selDc->keyframes.last();
-		double origVol = scaffold->computeAABB().box().volume();
+		Scaffold* lastKeyframe = shapeDec->keyframes.last();
+		double origVol = inputScaffold->computeAABB().box().volume();
 		double fdVol = lastKeyframe->computeAABB().box().volume();
 		stat.properties[SPACE_SAVING] = 1 - fdVol / origVol;
 
@@ -235,16 +170,16 @@ int fdTime = timer.elapsed();
 
 		int nbHinges = 0;
 		double shinkedArea = 0, totalArea = 0;
-		foreach(UnitScaffold* block, selDc->units)
+		for(UnitScaffold* unit : shapeDec->units)
 		{
-			foreach (ChainScaffold* chain, block->chains)
+			for (ChainScaffold* chain : unit->chains)
 			{
 				//nbHinges += chain->nbHinges;
 				//shinkedArea += chain->shrinkedArea;
 				//totalArea += chain->patchArea;
 			}
 		}
-		foreach (PatchNode* m, selDc->masters) 
+		for (PatchNode* m : shapeDec->masters)
 			totalArea += m->mPatch.area();
 
 		stat.properties[NB_HINGES] = nbHinges;
@@ -257,21 +192,13 @@ int fdTime = timer.elapsed();
 	}
 }
 
-void FoldManager::updateDcList()
+void FoldManager::updateUnitList()
 {
-	emit(DcGraphsChanged(getDcGraphLabels()));
+	QStringList unitLabels;
+	if (shapeDec) 
+		unitLabels = shapeDec->getUnitLabels();
 
-	updateBlockList();
-	updateKeyframeSlider();
-}
-
-void FoldManager::updateBlockList()
-{
-	QStringList layerLabels;
-	if (getSelShapeScaffold()) 
-		layerLabels = getSelShapeScaffold()->getUnitLabels();
-
-	emit(blocksChanged(layerLabels));
+	emit(unitsChanged(unitLabels));
 
 	updateChainList();
 }
@@ -279,28 +206,17 @@ void FoldManager::updateBlockList()
 void FoldManager::updateChainList()
 {
 	QStringList chainLables;
-	if (getSelBlock())
-		chainLables = getSelBlock()->getChainLabels();
+	if (getSelUnit())
+		chainLables = getSelUnit()->getChainLabels();
 
 	emit(chainsChanged(chainLables));
 }
 
 void FoldManager::updateKeyframeSlider()
 {
-	// selected dc graph
-	ShapeScaffold* selDc = getSelShapeScaffold();
-	if (!selDc) return;
+	if (!shapeDec) return;
 
-	emit(keyframesChanged(selDc->keyframes.size()-1));
-}
-
-void FoldManager::updateSolutionList()
-{
-	// selected dc graph
-	UnitScaffold* selBlock = getSelBlock();
-	if (!selBlock) return;
-
-	emit(solutionsChanged(selBlock->foldSolutions.size()));
+	emit(keyframesChanged(shapeDec->keyframes.size()-1));
 }
 
 void FoldManager::exportResultMesh()
@@ -324,15 +240,6 @@ void FoldManager::exportResultMesh()
 	//}
 }
 
-void FoldManager::selectSolution( int idx )
-{
-	// selected dc graph
-	UnitScaffold* selBlock = getSelBlock();
-	if (!selBlock) return;
-
-	//selBlock->applySolution(idx);
-}
-
 void FoldManager::setNbKeyframes(int N)
 {
 	nbKeyframes = N;
@@ -341,39 +248,38 @@ void FoldManager::setNbKeyframes(int N)
 void FoldManager::setNbSplits( int N )
 {
 	nbSplits = N;
-	if (!dcGraphs.isEmpty()) setParameters();
+	if (!shapeDec) setParameters();
 }
 
 void FoldManager::setNbChunks( int N )
 {
 	nbChunks = N;
-	if (!dcGraphs.isEmpty()) setParameters();
+	if (!shapeDec) setParameters();
 }
 
 void FoldManager::setThickness( double thk )
 {
 	thickness = thk;
-	if (!dcGraphs.isEmpty()) setParameters();
+	if (!shapeDec) setParameters();
 }
 
 void FoldManager::setParameters()
 {
-	Geom::Box aabb = scaffold->computeAABB().box();
+	Geom::Box aabb = inputScaffold->computeAABB().box();
 	aabb.scale(aabbScale);
-	foreach (ShapeScaffold* dc, dcGraphs){
-		foreach (UnitScaffold* b, dc->units)
-		{
-			b->setAabbConstraint(aabb);
-			b->maxNbSplits = nbSplits;
-			b->maxNbChunks = nbChunks;
-			b->setThickness(thickness);
-			b->weight = costWeight;
 
-			b->resetAllFoldOptions();
-		}
+	for(UnitScaffold* unit : shapeDec->units)
+	{
+		unit->setAabbConstraint(aabb);
+		unit->maxNbSplits = nbSplits;
+		unit->maxNbChunks = nbChunks;
+		unit->setThickness(thickness);
+		unit->weight = costWeight;
 
-		dc->connThrRatio = connThrRatio;
+		unit->resetAllFoldOptions();
 	}
+
+	shapeDec->connThrRatio = connThrRatio;
 }
 
 void FoldManager::setConnThrRatio(double thr)

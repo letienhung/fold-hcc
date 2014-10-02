@@ -92,7 +92,6 @@ void MainWindow::loadShape( QString shapeName )
 		fmanager->nbSplits = shapeParamters[ shapeName ]["nSplits"].toInt();
 		fmanager->nbChunks = shapeParamters[ shapeName ]["nChunks"].toInt();
 		fmanager->useNewCost = shapeParamters[ shapeName ]["newCost"].toInt();
-		fmanager->useUniformHeight = shapeParamters[ shapeName ]["uniformHeight"].toInt();
 		fmanager->setThickness( 0.5 );
 		fmanager->setNbKeyframes( 100 );
 	}
@@ -115,7 +114,7 @@ void MainWindow::foldabilize()
 
 	// Visual clean up
 	{
-		for(Scaffold * fgraph : fmanager->getSelShapeScaffold()->keyframes)
+		for(Scaffold * fgraph : fmanager->shapeDec->keyframes)
 			fgraph->properties.clear();
 		ui->widget->theta = 0.0;
 	}

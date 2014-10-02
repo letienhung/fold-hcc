@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Scaffold.h"
-#include "ShapeScaffold.h"
+#include "DecScaffold.h"
 #include "Numeric.h"
 #include <QObject>
 
@@ -15,11 +15,10 @@ public:
 
 public:
 	// input
-	Scaffold* scaffold; 
+	Scaffold* inputScaffold; 
 
 	// decomposition
-	int selDcIdx;
-	QVector<ShapeScaffold*> dcGraphs;
+	DecScaffold* shapeDec;
 
 	// keyframes
 	int nbKeyframes;
@@ -39,23 +38,19 @@ public:
 
 public:
 	// update Ui
-	void updateDcList();
-	void updateBlockList();
+	void updateUnitList();
 	void updateChainList();
 	void updateKeyframeSlider();
-	void updateSolutionList();
 
 	// getters
 	Scaffold* activeScaffold();
-	QStringList getDcGraphLabels();
-	ShapeScaffold* getSelShapeScaffold();
-	UnitScaffold* getSelBlock();
+	UnitScaffold* getSelUnit();
 	Scaffold* getSelKeyframe();
 
 public slots:
 	/// Main pipeline	
 	// input
-	void setScaffold(Scaffold* fdg);
+	void setInputScaffold(Scaffold* fdg);
 
 	// parameters
 	void setSqzV (QString sqzV_str);
@@ -84,23 +79,16 @@ public slots:
 	void exportStat();
 
 	// selection signal from Ui
-	void selectDcGraph(QString id);
-	void selectBlock(QString id);
+	void selectUnit(QString id);
 	void selectChain(QString id);
 	void selectKeyframe(int idx);
-	void selectSolution(int idx);
-
-	// reset dc graphs
-	void clearDcGraphs();
 
 signals:
 	// notify others about changes
 	void sceneChanged();
-	void DcGraphsChanged(QStringList labels);
-	void blocksChanged(QStringList labels);
+	void unitsChanged(QStringList labels);
 	void chainsChanged(QStringList labels);
 	void keyframesChanged(int N);
-	void solutionsChanged(int N);
 	void message(QString msg);
 };
 

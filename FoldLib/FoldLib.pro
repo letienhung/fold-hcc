@@ -40,7 +40,6 @@ HEADERS += \
     PatchNode.h \
     RodNode.h \
     ScaffoldManager.h \
-    ShapeScaffold.h \
     ScaffoldLink.h \
     ScaffoldNode.h \
     FoldManager.h \
@@ -57,7 +56,8 @@ HEADERS += \
     HUnitScaffold.h \
     HChainScaffold.h \
     Decomposer.h \
-    Scaffold.h
+    Scaffold.h \
+    DecScaffold.h
 
 SOURCES += \
     PatchNode.cpp \
@@ -66,7 +66,6 @@ SOURCES += \
     Scaffold.cpp \
     ScaffoldLink.cpp \
     ScaffoldNode.cpp \
-    ShapeScaffold.cpp \
     FoldManager.cpp \
     FdUtility.cpp \
     UnitScaffold.cpp \
@@ -80,5 +79,6 @@ SOURCES += \
     TUnitScaffold.cpp \
     HUnitScaffold.cpp \
     HChainScaffold.cpp \
-    Decomposer.cpp
+    Decomposer.cpp \
+    DecScaffold.cpp
 

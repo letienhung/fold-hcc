@@ -3,7 +3,7 @@
 #include "Numeric.h"
 
 TUnitScaffold::TUnitScaffold(QString id, QVector<PatchNode*>& ms, QVector<ScaffoldNode*>& ss,
-	QVector< QVector<QString> >& mPairs) :UnitScaffold(id)
+	QVector< QVector<QString> >& ) :UnitScaffold(id)
 {
 	// clone nodes
 	for(PatchNode* m : ms)	{

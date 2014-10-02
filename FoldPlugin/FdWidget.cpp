@@ -27,7 +27,6 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->connect(ui->showScaffold, SIGNAL(stateChanged(int)), SLOT(setShowScaffold(int)));
 	plugin->connect(ui->showMesh, SIGNAL(stateChanged(int)), SLOT(setShowMesh(int)));
 	plugin->connect(ui->showAABB, SIGNAL(stateChanged(int)), SLOT(setShowAABB(int)));
-	plugin->connect(ui->showAFS, SIGNAL(stateChanged(int)), SLOT(setShowAFS(int)));
 
 	// foldabilize
 	plugin->f_manager->connect(ui->sqzV, SIGNAL(currentIndexChanged(QString)), SLOT(setSqzV(QString)));
@@ -35,28 +34,20 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->f_manager->connect(ui->nbChunks, SIGNAL(valueChanged(int)), SLOT(setNbChunks(int)));
 	plugin->f_manager->connect(ui->thickness, SIGNAL(valueChanged(double)), SLOT(setThickness(double)));
 	plugin->f_manager->connect(ui->foldabilize, SIGNAL(clicked()), SLOT(foldabilize()));
+
+	// export
 	plugin->connect(ui->exportVector, SIGNAL(clicked()), SLOT(exportSVG()));
 	plugin->f_manager->connect(ui->exportStat, SIGNAL(clicked()), SLOT(exportStat()));
 	plugin->connect(ui->exportPNG, SIGNAL(clicked()), SLOT(exportPNG()));
 
 	// decompose
 	plugin->f_manager->connect(ui->decompose, SIGNAL(clicked()), SLOT(decompose()));
-	this->connect(plugin->f_manager, SIGNAL(DcGraphsChanged(QStringList)), SLOT(setDcGraphList(QStringList)));
-	this->connect(plugin->f_manager, SIGNAL(blocksChanged(QStringList)), SLOT(setBlockList(QStringList)));
+	this->connect(plugin->f_manager, SIGNAL(unitsChanged(QStringList)), SLOT(setUnitList(QStringList)));
 	this->connect(plugin->f_manager, SIGNAL(chainsChanged(QStringList)), SLOT(setChainList(QStringList)));
-	this->connect(ui->dcList, SIGNAL(itemSelectionChanged()), SLOT(selectDcGraph()));
-	this->connect(ui->blockList, SIGNAL(itemSelectionChanged()), SLOT(selectBlock()));
+	this->connect(ui->unitList, SIGNAL(itemSelectionChanged()), SLOT(selectUnit()));
 	this->connect(ui->chainList, SIGNAL(itemSelectionChanged()), SLOT(selectChain()));
-	plugin->f_manager->connect(this, SIGNAL(dcGraphSelectionChanged(QString)), SLOT(selectDcGraph(QString)));
-	plugin->f_manager->connect(this, SIGNAL(blockSelectionChanged(QString)), SLOT(selectBlock(QString)));
+	plugin->f_manager->connect(this, SIGNAL(unitSelectionChanged(QString)), SLOT(selectUnit(QString)));
 	plugin->f_manager->connect(this, SIGNAL(chainSelectionChanged(QString)), SLOT(selectChain(QString)));
-	plugin->f_manager->connect(ui->clearDcList, SIGNAL(clicked()), SLOT(clearDcGraphs()));
-
-	// selected block
-	this->connect(plugin->f_manager, SIGNAL(solutionsChanged(int)), SLOT(setSolutionList(int)));
-	this->connect(ui->slnList, SIGNAL(itemSelectionChanged()), SLOT(selectSolution()));
-	plugin->f_manager->connect(this, SIGNAL(solutionSelectionChanged(int)), SLOT(selectSolution(int)));
-	plugin->f_manager->connect(ui->exportCollFOG, SIGNAL(clicked()), SLOT(exportCollFOG()));
 
 	// key frames
 	plugin->f_manager->connect(ui->nbKeyframes, SIGNAL(valueChanged(int)), SLOT(setNbKeyframes(int)));
@@ -79,7 +70,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->connect(ui->unhideAllNodes, SIGNAL(clicked()), SLOT(unhideAllNodes()));
 	plugin->connect(ui->hideEdgeRods, SIGNAL(clicked()), SLOT(hideEdgeRods()));
 
-	// threshold
+	// parameters
 	plugin->f_manager->connect(ui->connThrRation, SIGNAL(valueChanged(double)), SLOT(setConnThrRatio(double)));
 	plugin->f_manager->connect(ui->aabbX, SIGNAL(valueChanged(double)), SLOT(setAabbX(double)));
 	plugin->f_manager->connect(ui->aabbY, SIGNAL(valueChanged(double)), SLOT(setAabbY(double)));
@@ -102,16 +93,10 @@ FdWidget::~FdWidget()
     delete ui;
 }
 
-void FdWidget::setDcGraphList( QStringList labels )
+void FdWidget::setUnitList( QStringList labels )
 {
-	ui->dcList->clear();
-	ui->dcList->addItems(labels);
-}
-
-void FdWidget::setBlockList( QStringList labels )
-{
-	ui->blockList->clear();
-	ui->blockList->addItems(labels);
+	ui->unitList->clear();
+	ui->unitList->addItems(labels);
 }
 
 void FdWidget::setChainList( QStringList labels )
@@ -128,34 +113,13 @@ void FdWidget::setKeyframeSlider( int N )
 	if(N > 1) forceShowKeyFrame();
 }
 
-void FdWidget::setSolutionList( int N )
+void FdWidget::selectUnit()
 {
-	ui->slnList->clear();
-	QStringList labels;
-	for (int i = 0; i < N; i++)
-		labels << QString::number(i);
-
-	ui->slnList->addItems(labels);
-}
-
-
-void FdWidget::selectDcGraph()
-{
-	QList<QListWidgetItem *> selItems = ui->dcList->selectedItems();
+	QList<QListWidgetItem *> selItems = ui->unitList->selectedItems();
 
 	if (!selItems.isEmpty())
 	{
-		emit(dcGraphSelectionChanged(selItems.front()->text()));
-	}
-}
-
-void FdWidget::selectBlock()
-{
-	QList<QListWidgetItem *> selItems = ui->blockList->selectedItems();
-
-	if (!selItems.isEmpty())
-	{
-		emit(blockSelectionChanged(selItems.front()->text()));
+		emit(unitSelectionChanged(selItems.front()->text()));
 	}
 }
 
@@ -168,16 +132,3 @@ void FdWidget::selectChain()
 		emit(chainSelectionChanged(selItems.front()->text()));
 	}
 }
-
-
-void FdWidget::selectSolution()
-{
-	QList<QListWidgetItem *> selItems = ui->slnList->selectedItems();
-
-	if (!selItems.isEmpty())
-	{
-		int idx = selItems.front()->text().toInt();
-		emit(solutionSelectionChanged(idx));
-	}
-}
-

@@ -24,25 +24,19 @@ private:
 
 public slots:
 	// from Ui
-	void selectDcGraph();
-	void selectBlock();
+	void selectUnit();
 	void selectChain();
-	void selectSolution();
 
 	// to Ui
-	void setDcGraphList(QStringList labels);
-	void setBlockList(QStringList labels);
+	void setUnitList(QStringList labels);
 	void setChainList(QStringList labels);
 	void setKeyframeSlider(int N);
-	void setSolutionList(int N);
 	
 	void forceShowKeyFrame();
 
 signals:
-	void dcGraphSelectionChanged(QString id);
-	void blockSelectionChanged(QString id);
+	void unitSelectionChanged(QString id);
 	void chainSelectionChanged(QString id);
 	void keyframeSelectionChanged(int idx);
-	void solutionSelectionChanged(int idx);
 };
 

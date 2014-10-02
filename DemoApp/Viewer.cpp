@@ -82,12 +82,12 @@ void Viewer::draw()
 	{
 		if( fmanager->property("isDone").toBool() )
 		{
-			ShapeScaffold* dcgraph = fmanager->getSelDcGraph();
+			DecScaffold* dec = fmanager->shapeDec;
 
-			if( !dcgraph->keyframes.isEmpty() )
+			if( !dec->keyframes.isEmpty() )
 			{
 				double t = abs( sin(theta) );
-				int idx = t * (dcgraph->keyframes.size()-1);
+				int idx = t * (dec->keyframes.size()-1);
 
 				fmanager->selectKeyframe( idx );
 				fmanager->getSelKeyframe()->draw();

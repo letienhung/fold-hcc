@@ -29,7 +29,7 @@ FdPlugin::FdPlugin()
 
 	// fold manager
 	f_manager = new FoldManager();
-	f_manager->connect(s_manager, SIGNAL(scaffoldChanged(Scaffold*)), SLOT(setScaffold(Scaffold*)));
+	f_manager->connect(s_manager, SIGNAL(scaffoldChanged(Scaffold*)), SLOT(setInputScaffold(Scaffold*)));
 	this->connect(f_manager, SIGNAL(sceneChanged()), SLOT(updateScene()));
 	this->connect(f_manager, SIGNAL(message(QString)), SLOT(showStatus(QString)));
 	
@@ -242,32 +242,32 @@ void FdPlugin::exportCurrent()
 
 void FdPlugin::exportAllObj()
 {
-	ShapeScaffold* selSS = f_manager->getSelShapeScaffold();
-	if (!selSS) return;
+	DecScaffold* selDec = f_manager->shapeDec;
+	if (!selDec) return;
 
 	QString filename = QFileDialog::getSaveFileName(0, tr("Save Current Keyframes"), NULL, tr("Mesh file (*.obj)"));
 	QString basefilename = filename;
 	basefilename.chop(4);
 
-	for (int i = 0; i < selSS->keyframes.size(); i++)
+	for (int i = 0; i < selDec->keyframes.size(); i++)
 	{	
 		filename = basefilename + QString("%1").arg(QString::number(i), 3, '0') + ".obj";
 		f_manager->selectKeyframe(i);
-		selSS->getSelKeyframe()->exportMesh(filename);
+		selDec->getSelKeyframe()->exportMesh(filename);
 	}
 }
 
 #include "ChainScaffold.h"
 void FdPlugin::test1()
 {
-	UnitScaffold* selBlk = f_manager->getSelBlock();
-	if (selBlk)
+	UnitScaffold* selUnit = f_manager->getSelUnit();
+	if (selUnit)
 	{
 		FoldOption fn("hhh", true, 1, 0, 5);
-		for(int i = 0; i < selBlk->chains.size(); i++)
+		for(int i = 0; i < selUnit->chains.size(); i++)
 		{
 
-			ChainScaffold* chain = selBlk->chains[i];
+			ChainScaffold* chain = selUnit->chains[i];
 			chain->applyFoldOption(&fn);
 			//chain->fold(0.5);
 			continue;
@@ -350,16 +350,16 @@ void FdPlugin::saveSnapshotAll()
 {
 	if (!f_manager) return;
 	
-	ShapeScaffold* selDc = f_manager->getSelShapeScaffold();
-	if (!selDc) return;
+	DecScaffold* shapeDec = f_manager->shapeDec;
+	if (!shapeDec) return;
 
 	showKeyframe = true;
-	QString filename = selDc->path + "/snapshot";
+	QString filename = shapeDec->path + "/snapshot";
 	drawArea()->setSnapshotFormat("PNG");
 	drawArea()->setSnapshotQuality(100);
 	drawArea()->setSnapshotFileName(filename);
 
-	for (int i = 0; i < selDc->keyframes.size(); i++)
+	for (int i = 0; i < shapeDec->keyframes.size(); i++)
 	{
 		f_manager->selectKeyframe(i);
 		updateScene();
@@ -377,7 +377,7 @@ void FdPlugin::hideSelectedNodes()
 		// hide this node on all key frames
 		if (showKeyframe)
 		{
-			foreach(Scaffold* kf, f_manager->getSelShapeScaffold()->keyframes)
+			foreach(Scaffold* kf, f_manager->shapeDec->keyframes)
 			{
 				ScaffoldNode* kn = (ScaffoldNode*)kf->getNode(n->mID);
 				kn->isHidden = true;
@@ -387,8 +387,8 @@ void FdPlugin::hideSelectedNodes()
 
 	if( snodes.isEmpty() ){
 		activeScaffold()->properties.clear();
-		if (showKeyframe && f_manager->getSelShapeScaffold()) 
-			foreach(Scaffold * scfd, f_manager->getSelShapeScaffold()->keyframes){
+		if (showKeyframe && f_manager->shapeDec) 
+			foreach(Scaffold * scfd, f_manager->shapeDec->keyframes){
 				scfd->properties.clear();
 		}
 	}
@@ -435,8 +435,8 @@ void FdPlugin::colorMasterSlave()
 
 void FdPlugin::exportPNG()
 {
-	ShapeScaffold* selDc = f_manager->getSelShapeScaffold();
-	if (!selDc) return;
+	DecScaffold* shapeDec = f_manager->shapeDec;
+	if (!shapeDec) return;
 
 	showKeyframe = true;
 
@@ -444,7 +444,7 @@ void FdPlugin::exportPNG()
 	QString basefilename = filename;
 	basefilename.chop(4);
 
-	for (int i = 0; i < selDc->keyframes.size(); i++)
+	for (int i = 0; i < shapeDec->keyframes.size(); i++)
 	{	
 		filename = basefilename + QString("%1").arg(QString::number(i), 3, '0') + ".png";
 		f_manager->selectKeyframe(i);
@@ -477,7 +477,7 @@ void FdPlugin::exportSVG()
 
 		// keyframes
 		QVector<Scaffold*> selGraphs; 
-		if (showKeyframe && f_manager->getSelShapeScaffold()) selGraphs = f_manager->getSelShapeScaffold()->keyframes;
+		if (showKeyframe && f_manager->shapeDec) selGraphs = f_manager->shapeDec->keyframes;
 		foreach(Scaffold* g, selGraphs) activeFds << g;
 	}
 
@@ -610,7 +610,7 @@ bool FdPlugin::keyPressEvent(QKeyEvent* event)
 		foreach(ScaffoldNode * n, selectedSfNodes()) selectedNodeNames << n->mID;
 
 		// We are changing keyframes
-		if (showKeyframe && f_manager->getSelShapeScaffold()) selGraphs = f_manager->getSelShapeScaffold()->keyframes;
+		if (showKeyframe && f_manager->shapeDec) selGraphs = f_manager->shapeDec->keyframes;
 		
 		foreach(Scaffold* g, selGraphs)
 		{
