@@ -21,7 +21,7 @@ public:
 
 public:
 	// accessors
-	QVector<ScaffNode*> getScfdNodes();
+	QVector<ScaffNode*> getScaffNodes();
 	ScaffNode* getFdNode(QString id);
 	ScaffNode* addNode(MeshPtr mesh, BOX_FIT_METHOD method = FIT_PCA);
 	ScaffNode* addNode(MeshPtr mesh, Geom::Box& box);
@@ -72,4 +72,4 @@ Q_DECLARE_METATYPE(QVector<Scaffold*>)
 #define DEBUG_RECTS "debugRectangles"
 #define DEBUG_PLANES "debugPlanes"
 #define DEBUG_BOXES "debugBoxes"
-#define DEBUG_SCAFFOLDS "debugScaffolds"
+#define DEBUG_SCAFFS "debugScaffolds"

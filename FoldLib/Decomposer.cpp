@@ -29,7 +29,7 @@ FdNodeArray2D Decomposer::getPerpConnGroups()
 
 	// ==STEP 1==: nodes perp to squeezing direction
 	QVector<ScaffNode*> perpNodes;
-	foreach(ScaffNode* n, scfd->getScfdNodes())
+	foreach(ScaffNode* n, scfd->getScaffNodes())
 	{
 		// perp node
 		if (n->isPerpTo(scfd->sqzV, perpThr))
@@ -142,7 +142,7 @@ void Decomposer::updateSlaves()
 {
 	// collect non-master parts as slaves
 	scfd->slaves.clear();
-	for(ScaffNode* n : scfd->getScfdNodes())
+	for(ScaffNode* n : scfd->getScaffNodes())
 	if (!n->hasTag(MASTER_TAG))	scfd->slaves << n;
 }
 
@@ -190,7 +190,7 @@ void Decomposer::createSlaves()
 	// split slave parts by master patches
 	double connThr = scfd->getConnectivityThr();
 	for (PatchNode* master : scfd->masters) {
-		for (ScaffNode* n : scfd->getScfdNodes())
+		for (ScaffNode* n : scfd->getScaffNodes())
 		{
 			if (n->hasTag(MASTER_TAG)) continue;
 			if (hasIntersection(n, master, connThr))

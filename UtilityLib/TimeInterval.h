@@ -9,7 +9,6 @@ public:
 	bool contains(double t);
 	bool contains(TimeInterval other);
 	bool hasPassed(double t);
-	bool hasReached(double t);
 
 	double getLocalTime(double t);
 	double getDuration();

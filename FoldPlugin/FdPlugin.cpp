@@ -77,7 +77,7 @@ void FdPlugin::decorate()
 		activeScaffold()->draw();
 
 		if( drawNodeOrder ){
-			for(ScaffNode * n : activeScaffold()->getScfdNodes()){
+			for(ScaffNode * n : activeScaffold()->getScaffNodes()){
 				qglviewer::Vec center = drawArea()->camera()->projectedCoordinatesOf(qglviewer::Vec(n->center()));
 				drawArea()->renderText( center.x, center.y, QString("[%1]").arg(activeScaffold()->nodes.indexOf(n)) );
 			}
@@ -401,7 +401,7 @@ void FdPlugin::unhideAllNodes()
 	Scaffold* activeFd = activeScaffold();
 	if (activeFd)
 	{
-		for(ScaffNode* n : activeFd->getScfdNodes())
+		for(ScaffNode* n : activeFd->getScaffNodes())
 			n->isHidden = false;
 	}
 
@@ -420,7 +420,7 @@ void FdPlugin::colorMasterSlave()
 	Scaffold* activeFd = activeScaffold();
 	if (activeFd)
 	{
-		for (ScaffNode* n : activeFd->getScfdNodes())
+		for (ScaffNode* n : activeFd->getScaffNodes())
 		{
 			double grey = 240;
 			QColor c = (!n->hasTag(MASTER_TAG)) ? 
@@ -509,7 +509,7 @@ void FdPlugin::exportSVG()
 			// Style
 			QString style = "fill-opacity='0.78' stroke-width='0.25' stroke-linecap='round' stroke-linejoin='round' ";
 
-			QVector<ScaffNode*> fdnodes = afd->getScfdNodes();
+			QVector<ScaffNode*> fdnodes = afd->getScaffNodes();
 
 			if(this->showCuboid)
 			{
@@ -638,7 +638,7 @@ bool FdPlugin::keyPressEvent(QKeyEvent* event)
 	if (event->modifiers().testFlag(Qt::ControlModifier) &&
 		event->key() == Qt::Key_C)
 	{
-		for each (auto n in scaffold->getScfdNodes())
+		for each (auto n in scaffold->getScaffNodes())
 		{
 			n->setRandomColor();
 		}

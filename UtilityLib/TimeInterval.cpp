@@ -27,13 +27,6 @@ bool TimeInterval::hasPassed(double t)
 	return t >= this->end;
 }
 
-
-bool TimeInterval::hasReached(double t)
-{
-	return t >= this->start;
-}
-
-
 double TimeInterval::getLocalTime(double t)
 {
 	double locT = -1;

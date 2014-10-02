@@ -84,7 +84,7 @@ void FoldManager::generateKeyframes()
 	if (!shapeDec) return;
 
 	// forward message
-	shapeDec->generateKeyframes(nbKeyframes);
+	shapeDec->genKeyframes(nbKeyframes);
 
 	// emit signals
 	updateKeyframeSlider();
@@ -144,7 +144,7 @@ timer.start();
 int fdTime = timer.elapsed();
 
 	// forward message
-	shapeDec->generateKeyframes(nbKeyframes);
+	shapeDec->genKeyframes(nbKeyframes);
 
 	if (shapeDec->keyframes.isEmpty()) return;
 
