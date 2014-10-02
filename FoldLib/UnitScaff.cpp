@@ -23,6 +23,9 @@ UnitScaff::UnitScaff(QString id)
 	
 	// current fold solution
 	currSlnIdx = -1;
+
+	// importance 
+	importance = 0;
 }
 
 UnitScaff::~UnitScaff()
@@ -282,7 +285,7 @@ double UnitScaff::computeCost(FoldOption* fo)
 	return cost;
 }
 
-double UnitScaff::getChainArea()
+double UnitScaff::getFoldablePatchArea()
 {
 	double a = 0;
 	for (auto c : chains)a += c->getArea();

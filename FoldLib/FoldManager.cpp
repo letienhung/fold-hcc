@@ -170,15 +170,15 @@ int fdTime = timer.elapsed();
 
 		int nbHinges = 0;
 		double shinkedArea = 0, totalArea = 0;
-		for(UnitScaff* unit : shapeDec->units)
-		{
-			for (ChainScaff* chain : unit->chains)
-			{
-				//nbHinges += chain->nbHinges;
-				//shinkedArea += chain->shrinkedArea;
-				//totalArea += chain->patchArea;
-			}
-		}
+		//for(UnitScaff* unit : shapeDec->units)
+		//{
+		//	for (ChainScaff* chain : unit->chains)
+		//	{
+		//		nbHinges += chain->nbHinges;
+		//		shinkedArea += chain->shrinkedArea;
+		//		totalArea += chain->patchArea;
+		//	}
+		//}
 		for (PatchNode* m : shapeDec->masters)
 			totalArea += m->mPatch.area();
 

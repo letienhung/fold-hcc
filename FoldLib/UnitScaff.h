@@ -26,7 +26,7 @@ public:
 	double	getNbTopMasters();
 
 	// the total area of slave patches
-	double getChainArea();
+	double getFoldablePatchArea();
 
 	// all fold options
 	void genAllFoldOptions();
@@ -90,6 +90,9 @@ public:
 
 	// trade-off weight for computing cost
 	double weight;
+
+	// normalized importance wrt. patch area
+	double importance; 
 
 	// thickness
 	bool useThickness;

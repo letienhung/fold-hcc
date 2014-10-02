@@ -23,7 +23,7 @@ DecScaff::DecScaff(QString id, Scaffold* scaffold, Vector3 v, double connThr)
 	createUnits();
 
 	// unit weights
-	computeUnitWeights();
+	computeUnitImportance();
 
 	// master order constraints
 	// to-do: order constraints among all parts
@@ -278,16 +278,14 @@ void DecScaff::foldabilize()
 			  << "\n============START============\n";
 	double currTime = 0.0;
 	ShapeSuperKeyframe* currKeyframe = getShapeSuperKeyframe(currTime);
-	int next_uid = getBestNextUnitIdx(currTime, currKeyframe);  
-	std::cout << "**\nBest next = " << next_uid << "\n";
+	UnitScaff* next_unit = getBestNextUnit(currTime, currKeyframe);
 
 	//return;
 	
-
-	while (next_uid >= 0 && next_uid < units.size())
+	while (next_unit)
 	{
-		UnitScaff* next_unit = units[next_uid];
-		std::cout << "Foldabilizing unit: " << next_unit->mID.toStdString() << "\n";
+		std::cout << "**\nBest next = " << next_unit->mID.toStdString() << "\n"
+				  << "Foldabilizing unit: " << next_unit->mID.toStdString() << "\n";
 
 		// time interval
 		double timeLength = next_unit->getNbTopMasters() * timeScale;
@@ -297,14 +295,13 @@ void DecScaff::foldabilize()
 		next_unit->foldabilizeWrt(currKeyframe);
 		next_unit->applySolution();
 		next_unit->mFoldDuration.set(currTime, nextTime);
+		std::cout << "\n=======UNIT SEPARATOR=========\n";
 
 		// get best next
-		std::cout << "\n============NEXT============\n";
 		currTime = nextTime;
 		delete currKeyframe;
 		currKeyframe = getShapeSuperKeyframe(currTime);
-		next_uid = getBestNextUnitIdx(currTime, currKeyframe);
-		std::cout << "**\nBest next = " << next_uid << "\n";
+		next_unit = getBestNextUnit(currTime, currKeyframe);
 	}
 
 	// remaining blocks (if any) are interlocking
@@ -336,22 +333,21 @@ void DecScaff::foldabilize()
 	std::cout << "\n============FINISH============\n";
 }
 
-double DecScaff::foldabilizeUnit(int bid, double currTime, ShapeSuperKeyframe* currKf, 
+double DecScaff::foldabilizeUnit(UnitScaff* unit, double currTime, ShapeSuperKeyframe* currKf,
 										double& nextTime, ShapeSuperKeyframe*& nextKf)
 {
-	// foldabilize nextBlock wrt the current super key frame
-	UnitScaff* nextBlock = units[bid];
-	double cost = nextBlock->foldabilizeWrt(currKf);
-	cost *= unitWeights[bid]; // normalized cost
-	nextBlock->applySolution();
+	// foldabilize nextUnit wrt the current super key frame
+	double cost = unit->foldabilizeWrt(currKf);
+	unit->applySolution();
 
 	// get the next super key frame 
-	double timeLength = nextBlock->getNbTopMasters() * timeScale;
+	double timeLength = unit->getNbTopMasters() * timeScale;
 	nextTime = currTime + timeLength;
-	nextBlock->mFoldDuration.set(currTime, nextTime);
+	unit->mFoldDuration.set(currTime, nextTime);
 	nextKf = getShapeSuperKeyframe(nextTime);
 
-	// the cost
+	// the normalized cost wrt. the importance
+	cost *= unit->importance;
 	return cost;
 }
 
@@ -360,70 +356,76 @@ double DecScaff::foldabilizeUnit(int bid, double currTime, ShapeSuperKeyframe* c
    currKeyframe          nextKeyframe           next2Keyframe
 **/  
 // currKeyframe is a super keyframe providing context information
-int DecScaff::getBestNextUnitIdx(double currTime, ShapeSuperKeyframe* currKeyframe)
+UnitScaff* DecScaff::getBestNextUnit(double currTime, ShapeSuperKeyframe* currKeyframe)
 {
-	double min_cost = maxDouble();
-	int best_next_bid = -1;
-	for (int next_uid = 0; next_uid < units.size(); next_uid++)
-	{
-		UnitScaff* nextBlock = units[next_uid];
-		if (nextBlock->mFoldDuration.hasPassed(currTime)) continue; // skip foldabilized blocks
+	// unfolded units
+	QVector<UnitScaff*> unfoldedUnits;
+	for (UnitScaff* u : units){
+		if (!u->mFoldDuration.hasPassed(currTime))
+			unfoldedUnits << u;
+	}
 
-		// foldabilize nextBlock
-		std::cout << "*\nEvaluating unit " << next_uid << "\n";
+	// trivial cases
+	if (unfoldedUnits.isEmpty()) return nullptr;
+	if (unfoldedUnits.size() == 1) return unfoldedUnits.front();
+
+	// choose the best
+	UnitScaff* nextBest = nullptr;
+	double min_cost = maxDouble();
+	for (UnitScaff* nextUnit : unfoldedUnits)
+	{
+		// foldabilize nextUnit
+		std::cout << "*\nEvaluating unit: " << nextUnit->mID.toStdString() << "\n";
 		double nextTime = -1.0;
 		ShapeSuperKeyframe* nextKeyframe = nullptr;
-		TimeInterval origNextTi = nextBlock->mFoldDuration; // back up
-		double nextCost = foldabilizeUnit(next_uid, currTime, currKeyframe, nextTime, nextKeyframe);
+		TimeInterval origNextTi = nextUnit->mFoldDuration; // back up
+		double nextCost = foldabilizeUnit(nextUnit, currTime, currKeyframe, nextTime, nextKeyframe);
 
 		//nextBlock->showObstaclesAndFoldOptions();
 		//return -1;
 		
-		// the folding of nextBlock must be valid, otherwise skip further evaluation
+		// the folding of nextUnit must be valid, otherwise skip further evaluation
 		if (nextKeyframe->isValid(sqzV))
 		{
-			// cost of folding remaining open blocks
-			for (int next2_bid = 0; next2_bid < units.size(); next2_bid++)
+			// cost of folding remaining unfolded units
+			for (UnitScaff* next2Unit : unfoldedUnits)
 			{
-				UnitScaff* next2Block = units[next2_bid];
-				if (next2Block->mFoldDuration.hasPassed(nextTime)) continue; // skip foldabilized block
+				// skip nextUnit
+				if (next2Unit == nextUnit) continue;
 
-				// foldabilize next2Block
+				// foldabilize next2Unit
 				double next2Time;
 				ShapeSuperKeyframe* next2Keyframe;
-				TimeInterval origNext2Ti = next2Block->mFoldDuration;
-				double next2Cost = foldabilizeUnit(next2_bid, nextTime, nextKeyframe, next2Time, next2Keyframe);
+				TimeInterval origNext2Ti = next2Unit->mFoldDuration;
+				double next2Cost = foldabilizeUnit(next2Unit, nextTime, nextKeyframe, next2Time, next2Keyframe);
 
 				// invalid block folding generates large cost as being deleted
-				if (!next2Keyframe->isValid(sqzV)) next2Cost = 1.0; // deletion cost = 1.0
-
-				// update cost : normalized cost
-				nextCost += next2Cost * unitWeights[next2_bid];
+				if (!next2Keyframe->isValid(sqzV)) next2Cost = next2Unit->importance; // deletion cost = 1.0
 
 				delete next2Keyframe; // garbage collection
-				next2Block->mFoldDuration = origNext2Ti; // restore time interval
+				next2Unit->mFoldDuration = origNext2Ti; // restore time interval
 			}
 
 			// nextBlock with lowest cost wins
 			if (nextCost < min_cost - ZERO_TOLERANCE_LOW){
 				min_cost = nextCost;
-				best_next_bid = next_uid;
+				nextBest = nextUnit;
 			}
 		}else
 		{
-			// invalid info for debug
+			// debug
 			nextCost = -1;
 		}
 
 		delete nextKeyframe; // garbage collection
-		nextBlock->mFoldDuration = origNextTi;// restore time interval
+		nextUnit->mFoldDuration = origNextTi;// restore time interval
 
 		// debug info
-		std::cout << units[next_uid]->mID.toStdString() << " : " << nextCost << std::endl;
+		std::cout << "Cost = " << nextCost << std::endl;
 	}
 
 	// found the best next block in terms of introducing most free space for others
-	return best_next_bid;
+	return nextBest;
 }
 
 void DecScaff::genKeyframes( int N )
@@ -474,17 +476,12 @@ double DecScaff::getConnectivityThr()
 	return connThrRatio * computeAABB().radius();
 }
 
-void DecScaff::computeUnitWeights()
+void DecScaff::computeUnitImportance()
 {
-	unitWeights.clear();
-
 	double totalA = 0;
-	for (auto b : units)
-	{
-		double area = b->getChainArea();
-		unitWeights << area;
-		totalA += area;
-	}
+	for (UnitScaff* u : units)
+		totalA += u->getFoldablePatchArea();
 
-	for (auto& bw : unitWeights) bw /= totalA;
+	for (UnitScaff* u : units)
+		u->importance = u->getFoldablePatchArea() / totalA;
 }

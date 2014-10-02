@@ -34,7 +34,6 @@ public:
 	// blocks
 	int selBlockIdx;
 	QVector<UnitScaff*> units;
-	QVector<double> unitWeights;
 
 	// more about masters
 	PatchNode* baseMaster; // non-virtual master
@@ -51,7 +50,7 @@ public:
 
 private:
 	// block 
-	void computeUnitWeights();
+	void computeUnitImportance();
 
 	// master order constraints
 	void computeMasterOrderConstraints();
@@ -66,9 +65,9 @@ public:
 
 	// foldabilization
 	void foldabilize();
-	double foldabilizeUnit(int bid, double currTime, ShapeSuperKeyframe* currKf, 
-									double& nextTime, ShapeSuperKeyframe*& nextKf);
-	int getBestNextUnitIdx(double currT, ShapeSuperKeyframe* currKeyframe);
+	double foldabilizeUnit(UnitScaff* unit, double currTime, ShapeSuperKeyframe* currKf,
+												double& nextTime, ShapeSuperKeyframe*& nextKf);
+	UnitScaff* getBestNextUnit(double currT, ShapeSuperKeyframe* currKeyframe);
 
 	// key frame
 	void genKeyframes(int N);
