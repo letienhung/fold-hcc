@@ -250,7 +250,7 @@ ShapeSuperKeyframe* DecScaff::getShapeSuperKeyframe( double t )
 		foldedUnits << fblock;
 
 		// nullptr means fblock is unable to fold at time t
-		if (fblock == nullptr) return nullptr;
+		if (!fblock) return nullptr;
 	}
 
 	// combine
@@ -295,7 +295,7 @@ void DecScaff::foldabilize()
 		next_unit->foldabilizeWrt(currKeyframe);
 		next_unit->applySolution();
 		next_unit->mFoldDuration.set(currTime, nextTime);
-		std::cout << "\n=======UNIT SEPARATOR=========\n";
+		std::cout << "\n-----------//-----------\n";
 
 		// get best next
 		currTime = nextTime;

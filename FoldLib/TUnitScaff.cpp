@@ -38,7 +38,7 @@ Scaffold* TUnitScaff::getKeyframe(double t, bool useThk)
 	Scaffold* keyframe = nullptr;
 
 	if (t <= 0)
-		keyframe = (Scaffold*)tChain->clone();
+		keyframe = (Scaffold*)this->clone();
 	else
 		keyframe = tChain->getKeyframe(t, useThk);
 
@@ -76,9 +76,19 @@ QVector<int> TUnitScaff::getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe)
 		// the fold option
 		FoldOption* fo = allFoldOptions[i];
 
-		// prune
-		if (!fo->regionProj.containsAny(obstacles, -0.01))
-			afo << i;
+		// always accept the delete fold option
+		// check acceptance for regular fold option
+		bool accepted = true;
+		if (fo->scale != 0)
+		{
+			// prune
+			bool isColliding = fo->regionProj.containsAny(obstacles, -0.01);
+			bool inAABB = aabbConstraint.containsAll(fo->regionProj.getConners(), 0.01);
+			accepted = !isColliding && inAABB;
+		}
+		
+		// store
+		if (accepted) afo << i;
 	}
 
 	// result
