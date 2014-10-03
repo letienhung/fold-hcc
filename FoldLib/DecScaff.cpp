@@ -387,6 +387,7 @@ UnitScaff* DecScaff::getBestNextUnit(double currTime, ShapeSuperKeyframe* currKe
 		// the folding of nextUnit must be valid, otherwise skip further evaluation
 		if (nextKeyframe->isValid(sqzV))
 		{
+			std::cout << "Look forward...\n";
 			// cost of folding remaining unfolded units
 			for (UnitScaff* next2Unit : unfoldedUnits)
 			{
@@ -394,6 +395,7 @@ UnitScaff* DecScaff::getBestNextUnit(double currTime, ShapeSuperKeyframe* currKe
 				if (next2Unit == nextUnit) continue;
 
 				// foldabilize next2Unit
+				std::cout << "==> " << next2Unit->mID.toStdString() << "\n";
 				double next2Time;
 				ShapeSuperKeyframe* next2Keyframe;
 				TimeInterval origNext2Ti = next2Unit->mFoldDuration;
@@ -406,22 +408,22 @@ UnitScaff* DecScaff::getBestNextUnit(double currTime, ShapeSuperKeyframe* currKe
 				next2Unit->mFoldDuration = origNext2Ti; // restore time interval
 			}
 
+			// debug info
+			std::cout << "Cost = " << nextCost << std::endl;
+
 			// nextBlock with lowest cost wins
 			if (nextCost < min_cost - ZERO_TOLERANCE_LOW){
 				min_cost = nextCost;
 				nextBest = nextUnit;
 			}
-		}else
+		}
+		else
 		{
-			// debug
-			nextCost = -1;
+			std::cout << "Invalid folding.\n";
 		}
 
 		delete nextKeyframe; // garbage collection
 		nextUnit->mFoldDuration = origNextTi;// restore time interval
-
-		// debug info
-		std::cout << "Cost = " << nextCost << std::endl;
 	}
 
 	// found the best next block in terms of introducing most free space for others

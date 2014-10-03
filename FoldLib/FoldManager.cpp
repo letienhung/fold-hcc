@@ -248,19 +248,19 @@ void FoldManager::setNbKeyframes(int N)
 void FoldManager::setNbSplits( int N )
 {
 	nbSplits = N;
-	if (!shapeDec) setParameters();
+	if (shapeDec) setParameters();
 }
 
 void FoldManager::setNbChunks( int N )
 {
 	nbChunks = N;
-	if (!shapeDec) setParameters();
+	if (shapeDec) setParameters();
 }
 
 void FoldManager::setThickness( double thk )
 {
 	thickness = thk;
-	if (!shapeDec) setParameters();
+	if (shapeDec) setParameters();
 }
 
 void FoldManager::setParameters()
