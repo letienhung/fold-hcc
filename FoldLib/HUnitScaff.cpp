@@ -75,7 +75,7 @@ Scaffold* HUnitScaff::getKeyframe(double t, bool useThk)
 {
 	Scaffold* keyframe = nullptr;
 
-	// the block is not ready to fold
+	// the unit is not ready to fold
 	if (t <= 0)
 	{
 		keyframe = (Scaffold*)this->clone();

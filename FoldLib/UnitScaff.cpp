@@ -308,3 +308,8 @@ double UnitScaff::findOptimalSolution(const QVector<int>& afo)
 	return 0;
 }
 
+void UnitScaff::setImportance(double imp)
+{
+	importance = imp;
+}
+

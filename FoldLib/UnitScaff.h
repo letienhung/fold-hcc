@@ -27,21 +27,18 @@ public:
 	void selectChain(QString id);
 	QStringList getChainLabels();
 
-	// set aabb constraint
-	void setAabbConstraint(Geom::Box aabb);
-
 	// all fold options
 	void genAllFoldOptions();
 	void resetAllFoldOptions();
+	 
+	// getters
+	double getNbTopMasters();	// #top masters: decides the folding duration
+	double getTotalSlaveArea(); // the total area of slave patches
 
-	// #top masters: decides the folding duration 
-	double	getNbTopMasters();
-
-	// the total area of slave patches
-	double getTotalSlaveArea();
-
-	// thickness
+	// setters
+	void setAabbConstraint(Geom::Box aabb);
 	void setThickness(double thk);
+	virtual void setImportance(double imp);
 
 	// visualize intermediate stuff
 	void showObstaclesAndFoldOptions();

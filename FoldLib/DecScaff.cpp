@@ -512,5 +512,5 @@ void DecScaff::computeUnitImportance()
 		totalA += u->getTotalSlaveArea();
 
 	for (UnitScaff* u : units)
-		u->importance = u->getTotalSlaveArea() / totalA;
+		u->setImportance(u->getTotalSlaveArea() / totalA);
 }
