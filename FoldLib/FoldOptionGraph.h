@@ -3,7 +3,7 @@
 #include "FdUtility.h"
 #include "TimeInterval.h"
 
-class ChainNode : public Structure::Node
+class ChainNode final : public Structure::Node
 {
 public:
 	ChainNode(int idx, QString id);
@@ -15,7 +15,7 @@ public:
 	int chainIdx; 
 };
 
-class FoldOption : public Structure::Node
+class FoldOption final : public Structure::Node
 {
 public:
 	FoldOption( QString id, bool right, double s, double p, int n);

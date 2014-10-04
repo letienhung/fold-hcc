@@ -5,7 +5,7 @@
 #include "Scaffold.h"
 #include "FdUtility.h"
 
-class ScaffManager : public QObject
+class ScaffManager final : public QObject
 {
 	Q_OBJECT
 

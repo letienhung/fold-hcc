@@ -3,7 +3,7 @@
 #include "PatchNode.h"
 #include "Frame.h"
 
-class BundleNode : public PatchNode
+class BundleNode final : public PatchNode
 {
 public:
     BundleNode(QString id, Geom::Box& b, QVector<ScaffNode*> nodes, Vector3 v = Vector3(0, 0, 0));

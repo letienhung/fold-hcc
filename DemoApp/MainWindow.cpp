@@ -72,7 +72,7 @@ void MainWindow::loadShape( QString shapeName )
 	}
 
 	fmanager = new FoldManager;
-	fmanager->scaffold = scaffold;
+	fmanager->inputScaffold = scaffold;
 	
 	// Connect parameters and UI elements with manager
 	{

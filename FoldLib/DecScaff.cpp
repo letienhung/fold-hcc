@@ -7,6 +7,7 @@
 #include "IntrRect2Rect2.h"
 #include "TUnitScaff.h"
 #include "HUnitScaff.h"
+#include "ZUnitScaff.h"
 #include "Decomposer.h"
 
 DecScaff::DecScaff(QString id, Scaffold* scaffold, Vector3 v, double connThr)
@@ -46,20 +47,51 @@ DecScaff::DecScaff(QString id, Scaffold* scaffold, Vector3 v, double connThr)
 
 DecScaff::~DecScaff()
 {
-	foreach (UnitScaff* l, units)	delete l;
+	for (UnitScaff* l : units)	delete l;
+}
+
+
+bool DecScaff::areParallel(QVector<ScaffNode*>& ns)
+{
+	// all patch nodes
+	QVector<PatchNode*> pns;
+	for (ScaffNode* n : ns)
+		if (n->mType == ScaffNode::PATCH)
+			pns << (PatchNode*)n;
+
+	// no patches
+	if (pns.isEmpty()) return true;
+
+	// consistency of patch normals
+	bool parallel = true;
+	Vector3 N0 = pns[0]->mPatch.Normal;
+	for (int i = 0; i < pns.size(); i++)
+	{
+		Vector3 Ni = pns[i]->mPatch.Normal;
+		double dotProd = dot(N0, Ni);
+		if (fabs(dotProd) < 0.95)
+		{
+			parallel = false;
+			break;
+		}
+	}
+
+	return parallel;
 }
 
 UnitScaff* DecScaff::createUnit(QSet<int> sCluster)
 {
+	UnitScaff* unit;
+
+	// masters, slaves and master pairs
 	QVector<PatchNode*> ms;
 	QVector<ScaffNode*> ss;
 	QVector< QVector<QString> > mPairs;
 
 	QSet<int> mids; // master indices
-	foreach(int sidx, sCluster)
+	for(int sidx : sCluster)
 	{
-		// slaves
-		ss << slaves[sidx];
+		ss << slaves[sidx]; // slaves
 
 		QVector<QString> mp;
 		for (int mid : slave2master[sidx]){
@@ -67,37 +99,33 @@ UnitScaff* DecScaff::createUnit(QSet<int> sCluster)
 			mp << masters[mid]->mID;
 		}
 
-		// master pairs
-		mPairs << mp;
+		mPairs << mp; // master pairs
 	}
-
-	// masters
-	foreach(int mid, mids)	ms << masters[mid];
+	for(int mid : mids)	ms << masters[mid]; // masters
 
 	// create
-	int bidx = units.size();
-	QString id = QString::number(bidx);
-	UnitScaff* b;
+	int unitIdx = units.size();
+	QString id = QString::number(unitIdx);
 	if (ms.size() == 2 && ss.size() == 1 &&
 		(ms[0]->hasTag(EDGE_ROD_TAG) || ms[1]->hasTag(EDGE_ROD_TAG)))
-		b = new TUnitScaff("TB_" + id, ms, ss, mPairs);
-	else b = new HUnitScaff("HB_" + id, ms, ss, mPairs);
-	b->setAabbConstraint(computeAABB().box());
-	units << b;
+		unit = new TUnitScaff("TB_" + id, ms, ss, mPairs);
+	else if (areParallel(ss))
+		unit = new ZUnitScaff("ZB_" + id, ms, ss, mPairs);
+	else 
+		unit = new HUnitScaff("HB_" + id, ms, ss, mPairs);
 
-	// master block map
-	for (auto m : ms) masterUnitMap[m->mID] << bidx;
+	// parameters
+	unit->setAabbConstraint(computeAABB().box());
+	unit->path = path;
+	for (PatchNode* m : ms) masterUnitMap[m->mID] << unitIdx;
 
-	// set up path
-	b->path = path;
-
-	return b;
+	return unit;
 }
 
 void DecScaff::createUnits()
 {
-	// clear blocks
-	for (auto b : units) delete b;
+	// clear units
+	for (auto u : units) delete u;
 	units.clear();
 	masterUnitMap.clear();
 
@@ -107,9 +135,8 @@ void DecScaff::createUnits()
 
 	// each slave cluster forms a block
 	for (auto sc : slaveClusters)
-		createUnit(sc);
+		units << createUnit(sc);
 }
-
 
 void DecScaff::computeMasterOrderConstraints()
 {
@@ -482,8 +509,8 @@ void DecScaff::computeUnitImportance()
 {
 	double totalA = 0;
 	for (UnitScaff* u : units)
-		totalA += u->getFoldablePatchArea();
+		totalA += u->getTotalSlaveArea();
 
 	for (UnitScaff* u : units)
-		u->importance = u->getFoldablePatchArea() / totalA;
+		u->importance = u->getTotalSlaveArea() / totalA;
 }

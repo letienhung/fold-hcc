@@ -10,9 +10,17 @@ class ChainScaff;
 class UnitScaff : public Scaffold
 {
 public:
-	UnitScaff(QString id);
+	UnitScaff(QString id, QVector<PatchNode*>& ms, QVector<ScaffNode*>& ss,
+		QVector< QVector<QString> >& mPairs);
 	~UnitScaff();
 
+	// chain importance wrt. patch area
+	virtual void sortMasters() = 0;
+	virtual void createChains(QVector<ScaffNode*>& ss, QVector< QVector<QString> >& mPairs) = 0;
+	void computeChainImportances();
+
+
+public:
 	// selection
 	ChainScaff* getSelChain();
 	Scaffold* activeScaffold();
@@ -22,29 +30,21 @@ public:
 	// set aabb constraint
 	void setAabbConstraint(Geom::Box aabb);
 
+	// all fold options
+	void genAllFoldOptions();
+	void resetAllFoldOptions();
+
 	// #top masters: decides the folding duration 
 	double	getNbTopMasters();
 
 	// the total area of slave patches
-	double getFoldablePatchArea();
-
-	// all fold options
-	void genAllFoldOptions();
+	double getTotalSlaveArea();
 
 	// thickness
 	void setThickness(double thk);
 
-	// helper
-	QVector<QString> getInbetweenExternalParts(Vector3 base_center, Vector3 top_center, ShapeSuperKeyframe* ssKeyframe);
-
 	// visualize intermediate stuff
 	void showObstaclesAndFoldOptions();
-
-	// reset all fold options
-	void resetAllFoldOptions();
-
-	// foldabilized
-	bool hasFoldabilized();
 
 public:
 	//*** CORE
@@ -55,21 +55,20 @@ public:
 	/* foldabilization : compute the best fold solution wrt the given super shape key frame
 	   the best solution is indicated by currSlnIdx
 	   all tested set of avail fold options with their fold solutions are also stored to avoid repeated computation	*/
-	double					foldabilizeWrt(ShapeSuperKeyframe* ssKeyframe); // foldabilize a block wrt. the context and returns the cost 
-	virtual QVector<int>	getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe) = 0; // prune fold options wrt. to obstacles
+	virtual double			foldabilizeWrt(ShapeSuperKeyframe* ssKeyframe); // foldabilize a block wrt. the context and returns the cost 
+	virtual QVector<int>	getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe); // prune fold options wrt. to obstacles
 	int						searchForExistedSolution(const QVector<int>& afo); // search for existed solution 
-	virtual double			findOptimalSolution(const QVector<int>& afo) = 0; // store the optimal solution and returns the cost
+	virtual double			findOptimalSolution(const QVector<int>& afo); // store the optimal solution and returns the cost
 	double					computeCost(FoldOption* fo);
 
 	// apply the current solution (currSlnIdx)
-	void applySolution();
+	virtual void applySolution();
 
 public:
 	//*** ENTITIES
 	// chains
 	int selChainIdx;
 	QVector<ChainScaff*> chains;
-	QVector<double> chainWeights; // normalized area weights
 
 	// masters
 	PatchNode* baseMaster;

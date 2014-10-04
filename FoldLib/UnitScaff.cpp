@@ -4,28 +4,34 @@
 #include "ChainScaff.h"
 #include "TChainScaff.h"
 
-UnitScaff::UnitScaff(QString id)
-	: Scaffold(id)
+UnitScaff::UnitScaff(QString id, QVector<PatchNode*>& ms, QVector<ScaffNode*>& ss,
+	QVector< QVector<QString> >& mPairs) : Scaffold(id)
 {
-	// selected chain
+	// clone nodes
+	foreach(PatchNode* m, ms)	{
+		masters << (PatchNode*)m->clone();
+		Structure::Graph::addNode(masters.last());
+	}
+	foreach(ScaffNode* s, ss)
+		Structure::Graph::addNode(s->clone());
+
+	// selected chain index
 	selChainIdx = -1;
 
-	// parameters for split and shrink
+	// upper bound of modification
 	maxNbSplits = 1;
 	maxNbChunks = 2;
 
-	// thickness
-	thickness = 2;
-	useThickness = false;
-
 	// cost weight
 	weight = 0.05;
+	importance = 0;  // importance 
 	
 	// current fold solution
 	currSlnIdx = -1;
 
-	// importance 
-	importance = 0;
+	// thickness
+	thickness = 2;
+	useThickness = false;
 }
 
 UnitScaff::~UnitScaff()
@@ -137,7 +143,7 @@ Scaffold* UnitScaff::getSuperKeyframe( double t )
 
 double UnitScaff::getNbTopMasters()
 {
-	return nbMasters(this) - 1;
+	return getNodesWithTag(MASTER_TAG).size() - 1;
 }
 
 void UnitScaff::setThickness( double thk )
@@ -148,52 +154,6 @@ void UnitScaff::setThickness( double thk )
 		chain->halfThk = thickness / 2;
 		chain->baseOffset = thickness / 2;
 	}
-}
-
-QVector<QString> UnitScaff::getInbetweenExternalParts(Vector3 base_center, Vector3 top_center, ShapeSuperKeyframe* ssKeyframe)
-{
-	// time line
-	Vector3 sqzV = baseMaster->mPatch.Normal;
-	Geom::Line timeLine(Vector3(0, 0, 0), sqzV);
-
-	// position on time line
-	double t0 = timeLine.getProjTime(base_center);
-	double t1 = timeLine.getProjTime(top_center);
-	double epsilon = 0.05 * (t1 - t0);
-	TimeInterval m1m2(t0 + epsilon, t1 - epsilon);
-
-	// find parts in between m1 and m2
-	QVector<QString> inbetweens;
-	foreach(ScaffNode* n, ssKeyframe->getScaffNodes())
-	{
-		// skip parts that has been folded
-		if (n->hasTag(MERGED_PART_TAG)) continue;
-
-		// skip parts in this block
-		if (containsNode(n->mID)) continue;
-
-		// master
-		if (n->hasTag(MASTER_TAG))
-		{
-			double t = timeLine.getProjTime(n->center());
-
-			if (m1m2.contains(t)) 	inbetweens << n->mID;
-		}
-		else
-			// slave		
-		{
-			int aid = n->mBox.getAxisId(sqzV);
-			Geom::Segment sklt = n->mBox.getSkeleton(aid);
-			double t0 = timeLine.getProjTime(sklt.P0);
-			double t1 = timeLine.getProjTime(sklt.P1);
-			if (t0 > t1) std::swap(t0, t1);
-			TimeInterval ti(t0, t1);
-
-			if (ti.overlaps(m1m2))	inbetweens << n->mID;
-		}
-	}
-
-	return inbetweens;
 }
 
 void UnitScaff::genAllFoldOptions()
@@ -279,16 +239,16 @@ double UnitScaff::computeCost(FoldOption* fo)
 	double c = weight * a + (1 - weight) * b;
 
 	// normalized
-	double cost = chainWeights[fo->chainIdx] * c;
+	double cost = chains[fo->chainIdx]->importance * c;
 
 	// return
 	return cost;
 }
 
-double UnitScaff::getFoldablePatchArea()
+double UnitScaff::getTotalSlaveArea()
 {
 	double a = 0;
-	for (auto c : chains)a += c->getArea();
+	for (ChainScaff* c : chains)a += c->getSlaveArea();
 	return a;
 }
 
@@ -325,8 +285,26 @@ void UnitScaff::resetAllFoldOptions()
 	obstaclePnts.clear();
 }
 
-bool UnitScaff::hasFoldabilized()
+void UnitScaff::computeChainImportances()
 {
-	return mFoldDuration.hasPassed(1.0);
+	double totalA = 0;
+	for (ChainScaff* c : chains)
+	{
+		double area = c->getSlaveArea();
+		totalA += area;
+	}
+
+	for (ChainScaff* c : chains)
+		c->importance = c->getSlaveArea() / totalA;
+}
+
+QVector<int> UnitScaff::getAvailFoldOptions(ShapeSuperKeyframe*)
+{
+	return QVector<int>();
+}
+
+double UnitScaff::findOptimalSolution(const QVector<int>& afo)
+{
+	return 0;
 }
 

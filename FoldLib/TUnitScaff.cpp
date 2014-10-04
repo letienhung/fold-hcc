@@ -3,35 +3,43 @@
 #include "Numeric.h"
 
 TUnitScaff::TUnitScaff(QString id, QVector<PatchNode*>& ms, QVector<ScaffNode*>& ss,
-	QVector< QVector<QString> >& ) :UnitScaff(id)
+	QVector< QVector<QString> >& mPairs) :UnitScaff(id, ms, ss, mPairs)
 {
-	// clone nodes
-	for(PatchNode* m : ms)	{
-		masters << (PatchNode*)m->clone();
-		Structure::Graph::addNode(masters.last());
-	}
-	for(ScaffNode* s : ss)
-		Structure::Graph::addNode(s->clone());
+	// decompose
+	sortMasters();
+	createChains(ss, mPairs);
+	computeChainImportances();
 
+	// generate all fold options
+	genAllFoldOptions();
+}
+
+
+void TUnitScaff::sortMasters()
+{
 	// the base and virtual top masters
-	bool isVirtualFirst = masters.front()->hasTag(EDGE_ROD_TAG);
-	topMaster = isVirtualFirst? masters.front() : masters.last();
-	baseMaster = isVirtualFirst ? masters.last() : masters.front();
+	bool vFront = masters.front()->hasTag(EDGE_ROD_TAG);
+	topMaster = vFront ? masters.front() : masters.last();
+	baseMaster = vFront ? masters.last() : masters.front();
+}
 
+void TUnitScaff::createChains(QVector<ScaffNode*>& ss, QVector< QVector<QString> >& )
+{
+	// in case that the T chain is up-side-down
 	// make sure the normal of base master pointing to the same side as the chain part
 	Vector3 chain2base = (ss.front()->center() - baseMaster->center()).normalized();
 	if (dot(baseMaster->mPatch.Normal, chain2base) < 0)
 		baseMaster->mPatch.flipNormal();
 
-	// the chain
+	// create the chain
 	tChain = new TChainScaff(ss.front(), baseMaster, topMaster);
 	tChain->setFoldDuration(0, 1);
-	chains << tChain;
 
-	// the chain weights
-	chainWeights.clear();
-	chainWeights << 1.0;
+	// store to chains
+	chains << tChain;
 }
+
+
 
 Scaffold* TUnitScaff::getKeyframe(double t, bool useThk)
 {
@@ -49,16 +57,16 @@ QVector<Vector2> TUnitScaff::computeObstacles(ShapeSuperKeyframe* ssKeyframe)
 {
 	// in-between external parts
 	Geom::Rectangle base_rect = baseMaster->mPatch;
-	QVector<QString> obstacleParts = getInbetweenExternalParts(baseMaster->center(), topMaster->center(), ssKeyframe);
+	QVector<ScaffNode*> obstacleParts = ssKeyframe->getInbetweenExternalParts(this, baseMaster->center(), topMaster->center());
 
 	// sample obstacle parts
 	QVector<Vector3> samples;
-	for (auto nid : obstacleParts)
-		samples << ssKeyframe->getFdNode(nid)->sampleBoundabyOfScaffold(100);
+	for (ScaffNode* obsPart : obstacleParts)
+		samples << obsPart->sampleBoundabyOfScaffold(100);
 
 	// projection
 	obstacles.clear();
-	for (auto s : samples)
+	for (Vector3 s : samples)
 		obstacles << base_rect.getProjCoordinates(s);
 
 	return obstacles;

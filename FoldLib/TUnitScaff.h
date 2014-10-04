@@ -3,21 +3,27 @@
 #include "UnitScaff.h"
 class TChainScaff;
 
-class TUnitScaff : public UnitScaff
+class TUnitScaff final: public UnitScaff
 {
 public:
 	TUnitScaff(QString id, QVector<PatchNode*>& ms, QVector<ScaffNode*>& ss,
 		QVector< QVector<QString> >& mPairs);
 
+private:
+	// decompose
+	void sortMasters();
+	void createChains(QVector<ScaffNode*>& ss, QVector< QVector<QString> >& mPairs);
+
+	// obstacles
+	QVector<Vector2> computeObstacles(ShapeSuperKeyframe* ssKeyframe);
+
+public:
 	// key frame
 	virtual Scaffold* getKeyframe(double t, bool useThk) override;
 
 	// foldabilize
 	virtual QVector<int> getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe) override;
 	virtual double findOptimalSolution(const QVector<int>& afo) override;
-
-private:
-	QVector<Vector2> computeObstacles(ShapeSuperKeyframe* ssKeyframe);
 
 public:
 	// pointer

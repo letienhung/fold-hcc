@@ -5,7 +5,7 @@
 #include "Numeric.h"
 #include <QObject>
 
-class FoldManager : public QObject
+class FoldManager final : public QObject
 {
 	Q_OBJECT
 

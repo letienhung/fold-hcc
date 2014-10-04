@@ -95,14 +95,14 @@ void Viewer::draw()
 		}
 		else
 		{
-			fmanager->scaffold->draw();
+			fmanager->inputScaffold->draw();
 		}
 
 		// Draw folding direction
 		{
 			glEnable(GL_LIGHTING);
 
-			this->aabb = fmanager->scaffold->computeAABB();
+			this->aabb = fmanager->inputScaffold->computeAABB();
 
 			double scale = aabb.radius() * 0.25;
 			glPushMatrix();
@@ -127,7 +127,7 @@ void Viewer::setFoldManager(FoldManager * manager)
 {
 	if(!manager) return;
 
-	double meshSize = manager->scaffold->computeAABB().radius();
+	double meshSize = manager->inputScaffold->computeAABB().radius();
 	camera()->setSceneRadius( meshSize * 2 );
 	camera()->showEntireScene();
 	camera()->setUpVector(Vec(0,0,1));

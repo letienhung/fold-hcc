@@ -10,7 +10,7 @@
 // DecGraph encodes the decomposition of the scaffold for input shape
 // including base patches and blocks
 
-class DecScaff : public Scaffold
+class DecScaff final : public Scaffold
 {
 public:
     DecScaff(QString id, Scaffold* scaffold, Vector3 v, double connThr);
@@ -56,6 +56,7 @@ private:
 	void computeMasterOrderConstraints();
 
 	// create blocks
+	bool areParallel(QVector<ScaffNode*>& ns);
 	UnitScaff* createUnit(QSet<int> sCluster);
 	void createUnits();
 

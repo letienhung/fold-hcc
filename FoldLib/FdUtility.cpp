@@ -280,15 +280,6 @@ bool hasIntersection( ScaffNode* slave, PatchNode* master, double thr )
 	}
 }
 
-QVector<PatchNode*> getAllMasters( Scaffold* scaffold )
-{
-	QVector<PatchNode*> masters;
-	foreach(Structure::Node* n, scaffold->getNodesWithTag(MASTER_TAG))
-		masters << (PatchNode*)n;
-
-	return masters;
-}
-
 Scaffold* combineScaffolds( QVector<Scaffold*> decmps, QString baseMid, 
 								QMap<QString, QSet<int> >& masterDecmpMap )
 {
@@ -378,21 +369,6 @@ Scaffold* combineScaffolds( QVector<Scaffold*> decmps, QString baseMid,
 
 	return combination;
 }
-
-int nbMasters( Scaffold* scaffold )
-{
-	return getAllMasters(scaffold).size();
-}
-
-QVector<QString> getAllMasterIds( Scaffold* scaffold )
-{
-	QVector<QString> mids;
-	foreach (PatchNode* m, getAllMasters(scaffold))
-		mids << m->mID;
-
-	return mids;
-}
-
 
 QMap<QString, double> getTimeStampsNormalized( QVector<ScaffNode*> nodes, Vector3 v, double &tScale )
 {

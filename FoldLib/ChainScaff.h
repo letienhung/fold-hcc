@@ -20,7 +20,7 @@ public:
 	void addThickness(Scaffold* keyframe, double t);
 
 	// the area of original slave patch
-	double getArea();
+	double getSlaveArea();
 
 public:
 	// fold options
@@ -91,4 +91,6 @@ public:
 	double baseOffset;	// offset caused by thickness of base master and its super siblings
 
 	bool isDeleted;		// deleted fold option has been applied to this chain
+
+	double importance;	// normalized importance wrt. patch area
 };

@@ -2,7 +2,7 @@
 
 #include "ChainScaff.h"
 
-class HChainScaff : public ChainScaff
+class HChainScaff final : public ChainScaff
 {
 public:
 	HChainScaff(ScaffNode* slave, PatchNode* base, PatchNode* top);

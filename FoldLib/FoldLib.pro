@@ -57,7 +57,8 @@ HEADERS += \
     SuperUnitScaff.h \
     TChainScaff.h \
     TUnitScaff.h \
-    UnitScaff.h
+    UnitScaff.h \
+    ZUnitScaff.h
 
 SOURCES += \
     PatchNode.cpp \
@@ -80,5 +81,6 @@ SOURCES += \
     SuperUnitScaff.cpp \
     TChainScaff.cpp \
     TUnitScaff.cpp \
-    UnitScaff.cpp
+    UnitScaff.cpp \
+    ZUnitScaff.cpp
 

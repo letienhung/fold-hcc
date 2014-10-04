@@ -7,17 +7,19 @@
 #include "FoldOptionGraph.h"
 
 HUnitScaff::HUnitScaff(QString id, QVector<PatchNode*>& ms, QVector<ScaffNode*>& ss,
-	QVector< QVector<QString> >& mPairs) : UnitScaff(id)
+	QVector< QVector<QString> >& mPairs) : UnitScaff(id, ms, ss, mPairs)
 {
-	// clone nodes
-	foreach(PatchNode* m, ms)	{
-		masters << (PatchNode*)m->clone();
-		Structure::Graph::addNode(masters.last());
-	}
-	foreach(ScaffNode* s, ss)
-		Structure::Graph::addNode(s->clone());
+	// decompose
+	sortMasters();
+	createChains(ss, mPairs);
+	computeChainImportances();
 
-	// sort masters
+	// generate all fold options
+	genAllFoldOptions();
+}
+
+void HUnitScaff::sortMasters()
+{
 	masterTimeStamps = getTimeStampsNormalized(masters, masters.front()->mPatch.Normal, timeScale);
 	QMultiMap<double, QString> timeMasterMap;
 	foreach(PatchNode* m, masters)
@@ -30,16 +32,8 @@ HUnitScaff::HUnitScaff(QString id, QVector<PatchNode*>& ms, QVector<ScaffNode*>&
 		timeMasterMap.insert(masterTimeStamps[m->mID], m->mID);
 	}
 	sortedMasters = timeMasterMap.values().toVector();
-
-	// create chains
-	createChains(ss, mPairs);
-
-	// compute chain weights
-	computeChainWeights();
-
-	// generate all fold options
-	genAllFoldOptions();
 }
+
 
 void HUnitScaff::createChains(QVector<ScaffNode*>& ss, QVector< QVector<QString> >& mPairs)
 {
@@ -70,22 +64,6 @@ void HUnitScaff::createChains(QVector<ScaffNode*>& ss, QVector< QVector<QString>
 		chainTopMasterMap[i] = mid_high;
 	}
 }
-
-void HUnitScaff::computeChainWeights()
-{
-	chainWeights.clear();
-
-	double totalA = 0;
-	for(auto c : chains)
-	{
-		double area = c->getArea();
-		chainWeights << area;
-		totalA += area;
-	}
-
-	for (auto& cw : chainWeights) cw /= totalA;
-}
-
 
 HUnitScaff::~HUnitScaff()
 {
@@ -125,8 +103,8 @@ Scaffold* HUnitScaff::getKeyframe(double t, bool useThk)
 
 		// thickness of masters
 		if (useThk){
-			foreach(PatchNode* m, getAllMasters(keyframe))
-				m->setThickness(thickness);
+			for (Structure::Node* n : keyframe->getNodesWithTag(MASTER_TAG))
+				((ScaffNode*)n)->setThickness(thickness);
 		}
 
 		// local garbage collection

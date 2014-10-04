@@ -52,6 +52,9 @@ ChainScaff::ChainScaff( ScaffNode* slave, PatchNode* base, PatchNode* top)
 	// delete
 	isDeleted = false;
 
+	// importance 
+	importance = 0;
+
 	//// debug
 	//addDebugSegment(baseJoint);
 	//addDebugSegment(slaveSeg);
@@ -400,7 +403,7 @@ void ChainScaff::addThickness(Scaffold* keyframe, double t)
 		keyParts[i]->setThickness(2 * halfThk);
 }
 
-double ChainScaff::getArea()
+double ChainScaff::getSlaveArea()
 {
 	return origSlave->mPatch.area();
 }

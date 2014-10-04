@@ -2,13 +2,15 @@
 
 #include "Scaffold.h"
 
+class UnitScaff;
+
 // This class represents a key frame of the shape under certain time
 // Different from regular key frame, this class introduce "super master"
 // to represent collapsed/merged masters and their mapping relations as well
 // The master order constrains are also updated for super masters
 // These additional information helps compute various folding volumes
 
-class ShapeSuperKeyframe : public Scaffold
+class ShapeSuperKeyframe final : public Scaffold
 {
 public:
 	ShapeSuperKeyframe(Scaffold* superKeyframe, StringSetMap moc_g);
@@ -18,7 +20,13 @@ public:
 	// update the master oder constrains with super masters
 	StringSetMap mocGreater, mocLess;
 
-	// A FdGraph is valid only if all order constraints are met
+	// valid only if all order constraints are met
 	bool isValid(Vector3 sqzV);
+
+	// in between parts
+	QVector<ScaffNode*> getInbetweenExternalParts(UnitScaff* unit, Vector3 p0, Vector3 p1);
+
+	// unrelated masters
+	QVector<ScaffNode*> getUnrelatedExternalMasters(QString base_mid, QString top_mid);
 };
 

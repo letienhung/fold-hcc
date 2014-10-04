@@ -6,7 +6,7 @@
 #include "RodNode.h"
 #include "PatchNode.h"
 
-class ScaffLink : public Structure::Link
+class ScaffLink final : public Structure::Link
 {
 public:
     ScaffLink(ScaffNode* n1, ScaffNode* n2, Hinge* h = nullptr);

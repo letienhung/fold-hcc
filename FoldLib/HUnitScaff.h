@@ -3,7 +3,7 @@
 #include "UnitScaff.h"
 #include "FoldOptionGraph.h"
 
-class HUnitScaff : public UnitScaff
+class HUnitScaff final: public UnitScaff
 {
 public:
 	HUnitScaff(QString id, QVector<PatchNode*>& ms, QVector<ScaffNode*>& ss,
@@ -11,9 +11,9 @@ public:
 	~HUnitScaff();
 
 private:
-	// H chains
+	// decompose
+	void sortMasters();
 	void createChains(QVector<ScaffNode*>& ss, QVector< QVector<QString> >& mPairs);
-	void computeChainWeights();
 
 	// obstacles
 	void computeObstacles(ShapeSuperKeyframe* ssKeyframe);

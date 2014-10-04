@@ -2,7 +2,7 @@
 
 #include "ScaffNode.h"
 
-class RodNode : public ScaffNode
+class RodNode final : public ScaffNode
 {
 public:
     RodNode(QString id, Geom::Box &b, MeshPtr m);

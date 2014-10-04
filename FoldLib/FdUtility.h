@@ -55,10 +55,6 @@ Geom::Box fitBox(QVector<Vector3>& pnts, BOX_FIT_METHOD method = FIT_PCA);
 QString getBundleName(const QVector<ScaffNode*>& nodes);
 Geom::Box getBundleBox(const QVector<ScaffNode*>& nodes);
 
-// masters
-QVector<PatchNode*> getAllMasters(Scaffold* scaffold);
-QVector<QString> getAllMasterIds(Scaffold* scaffold);
-int nbMasters(Scaffold* scaffold);
 QMap<QString, double> getTimeStampsNormalized(QVector<ScaffNode*> nodes, Vector3 v, double &tScale);
 QMap<QString, double> getTimeStampsNormalized(QVector<PatchNode*> pnodes, Vector3 v, double &tScale);
 
