@@ -69,42 +69,46 @@ ChainScaff::~ChainScaff()
 
 void ChainScaff::computeOrientations()
 {
-	// joints
+	// joints : the same direction
 	baseJoint = detectJointSegment(origSlave, baseMaster);
 	topJoint = detectJointSegment(origSlave, topMaster);
 	if (dot(topJoint.Direction, baseJoint.Direction) < 0) topJoint.flip();
 
-	// slaveSeg
+	// slaveSeg : bottom to up
 	Vector3 bJointP0 = baseJoint.P0;
 	Geom::Rectangle slave_rect = origSlave->mPatch;
 	slaveSeg = slave_rect.getSkeleton(slave_rect.getPerpAxis(baseJoint.Direction));
-	if (slaveSeg.getProjCoordinates(bJointP0) > 0) slaveSeg.flip();
+	if (slaveSeg.getProjCoordinates(bJointP0) > 0.5) slaveSeg.flip();
 
-	// rightSeg and direction
+	// rightSeg : from top center projection to base
 	Geom::Rectangle base_rect = baseMaster->mPatch;
 	Geom::Segment topJointProj = base_rect.getProjection(topJoint);
 	rightSeg = Geom::Segment(topJointProj.P0, baseJoint.P0);
-	if (rightSeg.length() / slaveSeg.length() < 0.01){
-		rightSegV = cross(baseJoint.Direction, slaveSeg.Direction);
-		rightSegV = base_rect.getProjectedVector(rightSegV);
-	}else{
-		rightSegV = rightSeg.Direction;
+
+	// rightDirect : baseJoint, slaveSeg and rightDirect form right-hand system
+	if (rightSeg.length() / slaveSeg.length() < 0.01)
+	{
+		rightDirect = cross(baseJoint.Direction, slaveSeg.Direction);
+		rightDirect = base_rect.getProjectedVector(rightDirect);
+		rightDirect.normalize();
 	}
-	rightSegV.normalize();
+	else
+	{
+		rightDirect = rightSeg.Direction;
+		Vector3 crossSlaveRight = cross(slaveSeg.Direction, rightDirect);
+		if (dot(crossSlaveRight, baseJoint.Direction) < 0)
+		{
+			baseJoint.flip(); topJoint.flip();
+		}
+	}
 
 	// flip slave patch so that its norm is to the right
-	if (dot(origSlave->mPatch.Normal, rightSegV) < 0)
+	if (dot(origSlave->mPatch.Normal, rightDirect) < 0)
 		origSlave->mPatch.flipNormal();
 
-	// upV x rightV = jointV
-	Vector3 crossUpRight = cross(slaveSeg.Direction, rightSegV);
-	if (dot(crossUpRight, baseJoint.Direction) < 0){
-		baseJoint.flip(); topJoint.flip();
-	}
-
-	// topTraj
+	// up right segment
 	Vector3 topCenterProj = base_rect.getProjection(topMaster->center());
-	topTraj = Geom::Segment(topCenterProj, topMaster->center());
+	upSeg = Geom::Segment(topCenterProj, topMaster->center());
 }
 
 Scaffold* ChainScaff::getKeyframe( double t, bool useThk )
@@ -130,34 +134,32 @@ void ChainScaff::setFoldDuration( double t0, double t1 )
 	duration.set(t0, t1);
 }
 
-QVector<FoldOption*> ChainScaff::genFoldOptionWithDiffPositions( int nSplits, int nChunks, int maxNbChunks )
+FoldOption* ChainScaff::genFoldOption(QString id, bool isRight, double width, double startPos, int nSplits)
 {
-	QVector<FoldOption*> options;
+	FoldOption* fn = new FoldOption(id, isRight, width, startPos, nSplits);
+	fn->region = getFoldRegion(fn);
+	fn->duration = duration;
 
+	return fn;
+}
+
+QVector<FoldOption*> ChainScaff::genRegularFoldOptions( int nSplits, int nChunks, int maxNbChunks )
+{
 	double chunkWidth = 1.0/double(maxNbChunks);
 	double usedWidth = chunkWidth * nChunks;
 
-	// start position
+	QVector<FoldOption*> options;
 	for (int i = 0; i <= maxNbChunks - nChunks; i++)
 	{
 		double startPos = chunkWidth * i;
 
-		// left
-		QString fnid1 = QString("%1:%2_%3_L_%4").arg(mID).arg(nSplits).arg(nChunks).arg(startPos);
-		FoldOption* fn1 = new FoldOption(fnid1, false, usedWidth, startPos, nSplits);
-		options.push_back(fn1);
-
 		// right
-		QString fnid2 = QString("%1:%2_%3_R_%4").arg(mID).arg(nSplits).arg(nChunks).arg(startPos);
-		FoldOption* fn2 = new FoldOption(fnid2, true, usedWidth, startPos, nSplits);
-		options.push_back(fn2);
-	}
+		QString fnid1 = QString("%1:%2_%3_L_%4").arg(mID).arg(nSplits).arg(nChunks).arg(startPos);
+		options << genFoldOption(fnid1, true, usedWidth, startPos, nSplits);
 
-	// fold region and duration
-	foreach(FoldOption* fn, options)
-	{
-		fn->region = getFoldRegion(fn);
-		fn->duration = duration;
+		// left
+		QString fnid2 = QString("%1:%2_%3_R_%4").arg(mID).arg(nSplits).arg(nChunks).arg(startPos);
+		options << genFoldOption(fnid2, false, usedWidth, startPos, nSplits);
 	}
 
 	return options;
@@ -230,20 +232,9 @@ void ChainScaff::resetHingeLinks(FoldOption* fn)
 	Vector3 upV = slaveSeg.Direction;
 	Vector3 jointV = bJoint.Direction;
 	if(chainParts.empty()) return;
-	Hinge* hingeR = new Hinge(chainParts[0], baseMaster, bJoint.P0, upV,  rightSegV, jointV, bJoint.length());
-
-
-	//std::cout << "\nCreating Hinges \nupV = ";
-	//print(upV);
-	//std::cout << "rightV = ";
-	//print(rightSegV);
-	//std::cout << "jointV = ";
-	//print(jointV);
-
-
+	Hinge* hingeR = new Hinge(chainParts[0], baseMaster, bJoint.P0, upV,  rightDirect, jointV, bJoint.length());
 	Hinge* hingeL = new Hinge(chainParts[0], baseMaster, 
-		bJoint.P1, upV, -rightSegV, -jointV, bJoint.length());
-
+		bJoint.P1, upV, -rightDirect, -jointV, bJoint.length());
 	ScaffLink* linkR = new ScaffLink(chainParts[0], baseMaster, hingeR);
 	ScaffLink* linkL = new ScaffLink(chainParts[0], baseMaster, hingeL);
 	Graph::addLink(linkR);	

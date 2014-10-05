@@ -14,9 +14,9 @@ ZUnitScaff::ZUnitScaff(QString id, QVector<PatchNode*>& ms, QVector<ScaffNode*>&
 
 	// two possible fold solution
 	// the right direction is the rightSegV of first chain
-	Vector3 rightV = chains.front()->rightSegV;
-	computeFoldSolution(rightV);
-	computeFoldSolution(-rightV);
+	computeTopTranslations();
+	computeFoldSolution(true);
+	computeFoldSolution(false);
 	computeFoldRegionProj(true);
 	computeFoldRegionProj(false);
 	fold2Left = false;
@@ -50,18 +50,56 @@ void ZUnitScaff::createChains(QVector<ScaffNode*>& ss, QVector< QVector<QString>
 	}
 }
 
-
-void ZUnitScaff::computeFoldSolution(Vector3 rV)
+void ZUnitScaff::computeTopTranslations()
 {
-	// 
+	ChainScaff* chain = chains.front();
+	Vector3 rightV = chain->slaveSeg.length() * chain->rightDirect;
+	Vector3 slaveV = chain->slaveSeg.length() * chain->slaveSeg.Direction;
+
+	topTranslLeft = rightV - slaveV;
+	topTranslRight = -rightV - slaveV;
 }
 
-
-void ZUnitScaff::computeFoldRegionProj(bool isRight)
+void ZUnitScaff::computeFoldSolution(bool toRight)
 {
-	// 
+	// the fold direction
+	Vector3 foldV = chains.front()->rightDirect;
+	if (!toRight) foldV *= -1;
+
+	// the solution
+	QVector<FoldOption*>& options = toRight ? optionsRight : optionsLeft;
+	options.clear();
+	Geom::Rectangle base_rect = baseMaster->mPatch;
+	for (ChainScaff* chain : chains)
+	{
+		QString id = toRight ? chain->mID + "_R" : chain->mID + "_L";
+		bool toChainRight = dot(foldV, chain->rightDirect) > 0;
+		FoldOption* fo = chain->genFoldOption(id, toChainRight, 1, 0, 0);
+		fo->regionProj = base_rect.get2DRectangle(fo->region);
+		options << fo;
+	}
 }
 
+void ZUnitScaff::computeFoldRegionProj(bool toRight)
+{
+	// folded slaves
+	Geom::Rectangle base_rect = baseMaster->mPatch;
+	QVector<Vector2> samples;	// samples on base_rect
+	QVector<FoldOption*>& options = toRight ? optionsRight : optionsLeft;
+	for (FoldOption* fo : options) 
+		samples << fo->regionProj.getConners();
+
+	// top master at both start and final positions
+	Geom::Rectangle top_rect = topMaster->mPatch;
+	samples << base_rect.get2DRectangle(top_rect).getConners();
+	top_rect.translate(toRight ? topTranslRight : topTranslLeft);
+	samples << base_rect.get2DRectangle(top_rect).getConners();
+
+	// compute 2D bounding box
+	Geom::Rectangle2& regionProj = toRight ? regionProjRight : regionProjLeft;
+	Vector2 jointV = chains.front()->baseJoint.Direction;
+	regionProj = Geom::Rectangle2::computeBoundingBox(samples, jointV);
+}
 
 void ZUnitScaff::setImportance(double imp)
 {
@@ -71,7 +109,6 @@ void ZUnitScaff::setImportance(double imp)
 	// h unit
 	hUnit->setImportance(imp);
 }
-
 
 QVector<Vector2> ZUnitScaff::computeObstacles(ShapeSuperKeyframe* ssKeyframe)
 {
@@ -92,28 +129,24 @@ QVector<Vector2> ZUnitScaff::computeObstacles(ShapeSuperKeyframe* ssKeyframe)
 	return obstacles;
 }
 
-
-
-
 bool ZUnitScaff::foldabilizeAsZ(ShapeSuperKeyframe* ssKeyframe)
 {
 	// obstacles
 	QVector<Vector2> obsPnts = computeObstacles(ssKeyframe);
 
 	// feasibility of left solution
-	bool isCollidingLeft = leftRegionProj.containsAny(obstacles, -0.01);
-	bool inAABBLeft = aabbConstraint.containsAll(leftRegionProj.getConners(), 0.01);
+	bool isCollidingLeft = regionProjLeft.containsAny(obstacles, -0.01);
+	bool inAABBLeft = aabbConstraint.containsAll(regionProjLeft.getConners(), 0.01);
 	fold2Left = !isCollidingLeft && inAABBLeft;
 
 	// feasibility of right solution
-	bool isCollidingRight = rightRegionProj.containsAny(obstacles, -0.01);
-	bool inAABBRight = aabbConstraint.containsAll(rightRegionProj.getConners(), 0.01);
+	bool isCollidingRight = regionProjRight.containsAny(obstacles, -0.01);
+	bool inAABBRight = aabbConstraint.containsAll(regionProjRight.getConners(), 0.01);
 	fold2Right = !isCollidingRight && inAABBRight;
 
 	// success if one side works
 	return fold2Left || fold2Right;
 }
-
 
 double ZUnitScaff::foldabilizeWrt(ShapeSuperKeyframe* ssKeyframe)
 {
@@ -166,7 +199,7 @@ void ZUnitScaff::applySolution()
 	if (fold2Left || fold2Right)
 	{
 		// apply Z solution : choose any
-		QVector<FoldOption*>& options = fold2Left ? leftOptions : rightOptions;
+		QVector<FoldOption*>& options = fold2Left ? optionsLeft : optionsRight;
 		for (int i = 0; i < chains.size(); i++)
 		{
 			chains[i]->applyFoldOption(options[i]);

@@ -49,7 +49,10 @@ namespace Geom{
 		void expandAlongSingleAxisToTouch(QVector<Vector2>& pnts, int aid, double thr = ZERO_TOLERANCE_LOW);
 
 		// crop
-		void		cropByAxisAlignedRectangle(Rectangle2& cropper);
+		void cropByAxisAlignedRectangle(Rectangle2& cropper);
+
+		// 2D bounding box
+		static Rectangle2 computeBoundingBox(QVector<Vector2>& pnts, Vector2 X);
 
 		// to string
 		QStringList toStrList(); 

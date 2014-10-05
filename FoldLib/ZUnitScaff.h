@@ -15,8 +15,9 @@ private:
 	void createChains(QVector<ScaffNode*>& ss, QVector< QVector<QString> >& mPairs);
 
 	// two possible fold solutions
-	void computeFoldSolution(Vector3 rV);
-	void computeFoldRegionProj(bool isRight);
+	void computeTopTranslations();
+	void computeFoldSolution(bool toRight);
+	void computeFoldRegionProj(bool toRight);
 
 	// key frame as Z
 	Scaffold* getKeyframeAsZ(double t, bool useThk);
@@ -46,10 +47,9 @@ private:
 	PatchNode* topMaster;
 
 	// two possible fold solutions
-	// the right direction is not necessarily the right direction of each chain
-	// it is only used to distinguish the two directions a ZUnit can be folded
-	bool fold2Right, fold2Left;
-	QVector<FoldOption*> leftOptions, rightOptions;
-	Geom::Rectangle2 leftRegionProj, rightRegionProj;
-
+	// right direction is defined as the rightDirect of the first chain
+	bool					fold2Left,		fold2Right;
+	Vector3					topTranslLeft,	topTranslRight;
+	QVector<FoldOption*>	optionsLeft,	optionsRight;
+	Geom::Rectangle2		regionProjLeft, regionProjRight;
 };

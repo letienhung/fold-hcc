@@ -16,21 +16,6 @@ Hinge::Hinge( ScaffNode* n1, ScaffNode* n2, Point o, Vec3d x, Vector3 y, Vector3
 	hZ = z.normalized();
 	zExtent = extent;
 
-	
-	//std::cout << "creating Hinge: \n";
-	//std::cout << "hX = ";
-	//print(hX);
-	//std::cout << "hY = ";
-	//print(hY);
-	//std::cout << "hZ = ";
-	//print(hZ);
-
-	//std::cout << "box1: \n";
-	//print(node1->mBox);
-	//std::cout << "box2: \n";
-	//print(node2->mBox);
-
-
 	// update dihedral frames and angle
 	state = UNFOLDED;
 	double dotProd = dot(hX, hY);

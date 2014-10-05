@@ -21,11 +21,11 @@ Geom::Rectangle HChainScaff::getFoldRegion(FoldOption* fn)
 	if (fn->rightSide)
 	{
 		leftSeg = topJointProj;
-		rightSeg = baseJoint.translated(offset * rightSegV);
+		rightSeg = baseJoint.translated(offset * rightDirect);
 	}
 	else
 	{
-		leftSeg = topJointProj.translated(-offset * rightSegV);
+		leftSeg = topJointProj.translated(-offset * rightDirect);
 		rightSeg = baseJoint;
 	}
 
@@ -60,7 +60,7 @@ QVector<Geom::Plane> HChainScaff::generateCutPlanes(FoldOption* fn)
 	// constants
 	double L = slaveSeg.length();
 	double d = rightSeg.length();
-	double h = topTraj.length();
+	double h = upSeg.length();
 	double a = (L - d) / (fn->nSplits + 1);
 	double sin_alpha = h / L;
 
@@ -74,7 +74,7 @@ QVector<Geom::Plane> HChainScaff::generateCutPlanes(FoldOption* fn)
 	}
 	if (!fn->rightSide)
 	{// left: cut at higher end
-		start_plane.translate(topTraj.P1 - topTraj.P0);
+		start_plane.translate(upSeg.P1 - upSeg.P0);
 		stepV *= -1;
 	}
 
@@ -92,7 +92,7 @@ QVector<Geom::Plane> HChainScaff::generateCutPlanes(FoldOption* fn)
 void HChainScaff::fold(double t)
 {
 	// free all nodes
-	foreach(Structure::Node* n, nodes)
+	for(Structure::Node* n : nodes)
 		n->removeTag(FIXED_NODE_TAG);
 
 	// fix base
@@ -173,7 +173,7 @@ void HChainScaff::foldUniformAngle(double t)
 	double ha = a * sin(beta);
 	double hb = b * sin(alpha);
 	double topH = (n - 1) * ha + hb;
-	Vector3 topPos = topTraj.P0 + topH * topTraj.Direction;
+	Vector3 topPos = upSeg.P0 + topH * upSeg.Direction;
 	topMaster->translate(topPos - topMaster->center());
 }
 
@@ -186,7 +186,7 @@ void HChainScaff::foldUniformHeight(double t)
 	double a = (L - d) / n;
 	double b = d + a;
 	double A = (n - 1) * a;
-	double H = topTraj.length();
+	double H = upSeg.length();
 	double h = (1 - t) * H;
 
 	// phase separator
@@ -292,7 +292,7 @@ void HChainScaff::foldUniformHeight(double t)
 	}
 
 	// adjust the position of top master
-	Vector3 topPos = topTraj.P0 + h * topTraj.Direction;
+	Vector3 topPos = upSeg.P0 + h * upSeg.Direction;
 	topMaster->translate(topPos - topMaster->center());
 }
 
@@ -316,13 +316,11 @@ void HChainScaff::computePhaseSeparator()
 
 QVector<FoldOption*> HChainScaff::genRegularFoldOptions(int maxNbSplits, int maxNbChunks)
 {
-	// nS: # splits; nC: # used chunks; nbChunks: total # of chunks
-	// enumerate all start positions and left/right side
-	// H-chain has min nS = 1 and are odd numbers, min nC = 1
+	// enumerate all possible combination of nS and nC
 	QVector<FoldOption*> options;
 	for (int nS = 1; nS <= maxNbSplits; nS += 2)
 	for (int nC = 1; nC <= maxNbChunks; nC++)
-		options << genFoldOptionWithDiffPositions(nS, nC, maxNbChunks);
+		options << ChainScaff::genRegularFoldOptions(nS, nC, maxNbChunks);
 
 	return options;
 }

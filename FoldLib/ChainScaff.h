@@ -24,9 +24,11 @@ public:
 
 public:
 	// fold options
-	FoldOption* genDeleteFoldOption(int nSplits);
-	QVector<FoldOption*> genFoldOptionWithDiffPositions(int nSplits, int nChunks, int maxNbChunks);
-	virtual QVector<FoldOption*> genRegularFoldOptions(int nSplits, int nChunks) = 0;
+	FoldOption* genFoldOption(QString id, bool isRight, double width, double startPos, int nSplits); // regular option
+	FoldOption* genDeleteFoldOption(int nSplits);	// deleting option
+	QVector<FoldOption*> genRegularFoldOptions(int nS, int nC, int maxNbChunks);	// regular options with nS and nC
+	virtual QVector<FoldOption*> genRegularFoldOptions(int maxNbSplits, int maxNbChunks) = 0; 
+													// regular options with no more than maxNbSplits and maxNbChunks
 
 	// fold region
 	virtual Geom::Rectangle getFoldRegion(FoldOption* fn) = 0;
@@ -54,18 +56,18 @@ public:
 		topJoint				topCenter
 			|\						^
 			: \						|
-			:  \ slaveSeg			| topTraj
+			:  \ slaveSeg			| upSeg
 			:   \					|
 			:    \					|
 			:-----> (x)baseJoint	|
-		    rightSeg			baseRect
+	   rightSeg/rightDirect		baseRect
 	*/
 	Geom::Segment		baseJoint;	// joint between slave and base
 	Geom::Segment		topJoint;	// joint between slave and top
 	Geom::Segment		slaveSeg;	// 2D abstraction, perp to joints (base to top)
 	Geom::Segment		rightSeg;	// right direction, perp to joints
-	Vector3				rightSegV;	// direction of rightSeg
-	Geom::Segment		topTraj;	// trajectory of top's center during folding (base to top)
+	Geom::Segment		upSeg;		// up right segment from topCenter's projection to topCenter
+	Vector3				rightDirect;// direction of rightSeg; or the cross product of baseJoint and slaveSeg
 
 	QVector<ScaffLink*>	rightLinks;	// right hinges 
 	QVector<ScaffLink*>	leftLinks;	// left hinges

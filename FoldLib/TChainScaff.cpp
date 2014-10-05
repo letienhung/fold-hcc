@@ -19,11 +19,11 @@ Geom::Rectangle TChainScaff::getFoldRegion(FoldOption* fn)
 	if (fn->rightSide)
 	{
 		leftSeg = topJointProj;
-		rightSeg = baseJoint.translated(offset * rightSegV);
+		rightSeg = baseJoint.translated(offset * rightDirect);
 	}
 	else
 	{
-		leftSeg = topJointProj.translated(-offset * rightSegV);
+		leftSeg = topJointProj.translated(-offset * rightDirect);
 		rightSeg = baseJoint;
 	}
 
@@ -56,7 +56,7 @@ Geom::Rectangle TChainScaff::getFoldRegion(FoldOption* fn)
 QVector<Geom::Plane> TChainScaff::generateCutPlanes(FoldOption* fn)
 {
 	// start plane and step
-	double h = topTraj.length();
+	double h = upSeg.length();
 	double step = h / (fn->nSplits + 1);
 	Geom::Plane start_plane = baseMaster->mPatch.getPlane();
 
@@ -84,7 +84,7 @@ void TChainScaff::fold(double t)
 	baseMaster->addTag(FIXED_NODE_TAG);
 
 	// root hinge angle
-	double dotP = dot(slaveSeg.Direction, rightSegV);
+	double dotP = dot(slaveSeg.Direction, rightDirect);
 	double root_angle = acos(RANGED(0, dotP, 1));
 	double alpha = root_angle * (1 - t);
 	double beta = M_PI * (1 - t);
@@ -98,16 +98,13 @@ void TChainScaff::fold(double t)
 	restoreConfiguration();
 }
 
-QVector<FoldOption*> TChainScaff::genRegularFoldOptions(int nSplits, int nChunks)
+QVector<FoldOption*> TChainScaff::genRegularFoldOptions(int maxNbSplits, int maxNbChunks)
 {
-	// nS: # splits; nC: # used chunks; nbChunks: total # of chunks
-	// enumerate all start positions and left/right side
-	// T-chain has min nS = 0, min nC = 1
+	// enumerate all possible combination of nS and nC
 	QVector<FoldOption*> options;
-	for (int nS = 0; nS <= nSplits; nS ++)
-	for (int nC = 1; nC <= nChunks; nC++)
-		options << genFoldOptionWithDiffPositions(nS, nC, nChunks);
+	for (int nS = 0; nS <= maxNbSplits; nS ++)
+	for (int nC = 1; nC <= maxNbChunks; nC++)
+		options << ChainScaff::genRegularFoldOptions(nS, nC, maxNbChunks);
 
 	return options;
 }
-

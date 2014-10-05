@@ -478,3 +478,8 @@ Geom::Rectangle2 Geom::Rectangle2::computeAABB(QVector<Vector2> &pnts)
 	conners << Vector2(minX, minY) << Vector2(maxX, minY) << Vector2(maxX, maxY) << Vector2(minX, maxY);
 	return Rectangle2(conners);
 }
+
+Geom::Rectangle2 Geom::Rectangle2::computeBoundingBox(QVector<Vector2>& pnts, Vector2 X)
+{
+	return Rectangle2();
+}
