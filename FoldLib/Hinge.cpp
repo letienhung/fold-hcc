@@ -43,10 +43,10 @@ Hinge::HingeRecordInBox Hinge::createHingeRecord( Geom::Box& node_box )
 	lr.c_box = node_box.getCoordinates(Origin);
 
 	Geom::Frame f = node_box.getFrame();
-	lr.c = f.getCoordinates(Origin);
-	lr.cpa = f.getCoordinates(Origin + hZ);
-	lr.cpv1 = f.getCoordinates(Origin + hX);
-	lr.cpv2 = f.getCoordinates(Origin + hY);
+	lr.c = f.getCoords(Origin);
+	lr.cpa = f.getCoords(Origin + hZ);
+	lr.cpv1 = f.getCoords(Origin + hX);
+	lr.cpv2 = f.getCoords(Origin + hY);
 
 	return lr;
 }

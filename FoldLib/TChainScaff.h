@@ -18,4 +18,7 @@ public:
 
 	// fold
 	virtual void fold(double t) override;
+
+public:
+	double rootAngle;	// the original root angle
 };

@@ -61,7 +61,7 @@ QVector<ScaffNode*> Scaffold::getScaffNodes()
 	return fdns;
 }
 
-ScaffNode* Scaffold::getFdNode(QString id)
+ScaffNode* Scaffold::getScaffNode(QString id)
 {
 	Structure::Node* n = getNode(id);
 	if (n != nullptr) 

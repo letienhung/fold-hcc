@@ -455,31 +455,5 @@ void Geom::Rectangle2::expandAlongSingleAxisToTouch(QVector<Vector2>& pnts, int 
 	Center = getPosition(center_coord);
 
 	double width = right - left;
-	Extent[aid_free] *= width / 2;}
-
-Geom::Rectangle2 Geom::Rectangle2::computeAABB(QVector<Vector2> &pnts)
-{
-	// compute extent along x and y
-	double minX = maxDouble();
-	double maxX = -maxDouble();
-	double minY = maxDouble();
-	double maxY = -maxDouble();
-	for (auto p : pnts)
-	{
-		if (p.x() < minX) minX = p.x();
-		if (p.x() > maxX) maxX = p.x();
-
-		if (p.y() < minY) minY = p.y();
-		if (p.y() > maxY) maxY = p.y();
-	}
-
-	// create rect
-	QVector<Vector2> conners;
-	conners << Vector2(minX, minY) << Vector2(maxX, minY) << Vector2(maxX, maxY) << Vector2(minX, maxY);
-	return Rectangle2(conners);
-}
-
-Geom::Rectangle2 Geom::Rectangle2::computeBoundingBox(QVector<Vector2>& pnts, Vector2 X)
-{
-	return Rectangle2();
+	Extent[aid_free] *= width / 2;
 }

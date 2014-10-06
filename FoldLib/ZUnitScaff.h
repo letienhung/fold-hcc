@@ -15,7 +15,6 @@ private:
 	void createChains(QVector<ScaffNode*>& ss, QVector< QVector<QString> >& mPairs);
 
 	// two possible fold solutions
-	void computeTopTranslations();
 	void computeFoldSolution(bool toRight);
 	void computeFoldRegionProj(bool toRight);
 
@@ -49,7 +48,6 @@ private:
 	// two possible fold solutions
 	// right direction is defined as the rightDirect of the first chain
 	bool					fold2Left,		fold2Right;
-	Vector3					topTranslLeft,	topTranslRight;
 	QVector<FoldOption*>	optionsLeft,	optionsRight;
 	Geom::Rectangle2		regionProjLeft, regionProjRight;
 };

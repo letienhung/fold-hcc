@@ -49,7 +49,9 @@ HEADERS += \
     SectorCylinder.h \
     Rectangle2.h \
     IntrRect2Rect2.h \
-    PCA.h
+    PCA.h \
+    GeomUtility.h \
+    Frame2.h
 
 SOURCES += \
     Segment.cpp \
@@ -80,4 +82,6 @@ SOURCES += \
     Rectangle2.cpp \
     IntrRect2Rect2.cpp \
     PCA.cpp \
-    PcaOBB.cpp
+    PcaOBB.cpp \
+    GeomUtility.cpp \
+    Frame2.cpp

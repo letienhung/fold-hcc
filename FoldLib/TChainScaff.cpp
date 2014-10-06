@@ -4,7 +4,9 @@
 TChainScaff::TChainScaff(ScaffNode* slave, PatchNode* base, PatchNode* top)
 :ChainScaff(slave, base, top)
 {
-	// do nothing
+	// the initial root angle
+	double dotP = dot(slaveSeg.Direction, rightDirect);
+	rootAngle = acos(RANGED(0, dotP, 1));
 }
 
 Geom::Rectangle TChainScaff::getFoldRegion(FoldOption* fn)
@@ -84,9 +86,7 @@ void TChainScaff::fold(double t)
 	baseMaster->addTag(FIXED_NODE_TAG);
 
 	// root hinge angle
-	double dotP = dot(slaveSeg.Direction, rightDirect);
-	double root_angle = acos(RANGED(0, dotP, 1));
-	double alpha = root_angle * (1 - t);
+	double alpha = rootAngle * (1 - t);
 	double beta = M_PI * (1 - t);
 
 	// set angle for active link

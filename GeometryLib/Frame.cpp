@@ -28,7 +28,7 @@ Geom::Frame::Frame( const Vec3d& C,  const Vec3d& R, const Vec3d& S, const Vec3d
 	if (dot(cross(r, s), t) < 0) t *= -1;
 }
 
-Vector3 Geom::Frame::getCoordinates( Vector3 p )
+Vector3 Geom::Frame::getCoords( Vector3 p )
 {
 	Vector3 v = p - c;
 	return Vector3(dot(v, r), dot(v, s), dot(v, t));
@@ -49,10 +49,10 @@ bool Geom::Frame::isAlignedWith( const Frame& other )
 Geom::Frame::RecordInFrame Geom::Frame::encodeFrame( Frame& other )
 {
 	RecordInFrame record;
-	record.c = getCoordinates(other.c);
-	record.cpr = getCoordinates(other.r + other.c);
-	record.cps = getCoordinates(other.s + other.c);
-	record.cpt = getCoordinates(other.t + other.c);
+	record.c = getCoords(other.c);
+	record.cpr = getCoords(other.r + other.c);
+	record.cps = getCoords(other.s + other.c);
+	record.cpt = getCoords(other.t + other.c);
 
 	return record;
 }

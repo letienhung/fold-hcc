@@ -51,9 +51,6 @@ namespace Geom{
 		// crop
 		void cropByAxisAlignedRectangle(Rectangle2& cropper);
 
-		// 2D bounding box
-		static Rectangle2 computeBoundingBox(QVector<Vector2>& pnts, Vector2 X);
-
 		// to string
 		QStringList toStrList(); 
 
@@ -61,9 +58,6 @@ namespace Geom{
 		Vector2 Center;
 		QVector<Vector2> Axis;
 		Vector2 Extent;
-
-	public:
-		static Rectangle2 computeAABB(QVector<Vector2> &pnts);
 
 	public:
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW

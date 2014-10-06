@@ -15,7 +15,7 @@ Geom::PcaOBB::PcaOBB( QVector<Vector3>& pnts)
 	PCA pca(pnts);
 	Geom::Frame frame(pca.mu, pca.eigenVectors[0], pca.eigenVectors[1], pca.eigenVectors[2]);
 	QVector<Vector3> coords;
-	foreach(Vector3 p, pnts) coords << frame.getCoordinates(p);
+	foreach(Vector3 p, pnts) coords << frame.getCoords(p);
 	Geom::AABB aabb(coords);
 	frame.c = frame.getPosition(aabb.center());
 	Vector3 extent = (aabb.bbmax - aabb.bbmin) * 0.5;

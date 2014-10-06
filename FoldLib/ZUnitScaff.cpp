@@ -1,5 +1,6 @@
 #include "ZUnitScaff.h"
 #include "TChainScaff.h"
+#include "GeomUtility.h"
 
 ZUnitScaff::ZUnitScaff(QString id, QVector<PatchNode*>& ms, QVector<ScaffNode*>& ss,
 	QVector< QVector<QString> >& mPairs) : UnitScaff(id, ms, ss, mPairs)
@@ -14,7 +15,6 @@ ZUnitScaff::ZUnitScaff(QString id, QVector<PatchNode*>& ms, QVector<ScaffNode*>&
 
 	// two possible fold solution
 	// the right direction is the rightSegV of first chain
-	computeTopTranslations();
 	computeFoldSolution(true);
 	computeFoldSolution(false);
 	computeFoldRegionProj(true);
@@ -50,16 +50,6 @@ void ZUnitScaff::createChains(QVector<ScaffNode*>& ss, QVector< QVector<QString>
 	}
 }
 
-void ZUnitScaff::computeTopTranslations()
-{
-	ChainScaff* chain = chains.front();
-	Vector3 rightV = chain->slaveSeg.length() * chain->rightDirect;
-	Vector3 slaveV = chain->slaveSeg.length() * chain->slaveSeg.Direction;
-
-	topTranslLeft = rightV - slaveV;
-	topTranslRight = -rightV - slaveV;
-}
-
 void ZUnitScaff::computeFoldSolution(bool toRight)
 {
 	// the fold direction
@@ -89,16 +79,23 @@ void ZUnitScaff::computeFoldRegionProj(bool toRight)
 	for (FoldOption* fo : options) 
 		samples << fo->regionProj.getConners();
 
-	// top master at both start and final positions
+	// top master 
 	Geom::Rectangle top_rect = topMaster->mPatch;
 	samples << base_rect.get2DRectangle(top_rect).getConners();
+
+	// top master at final position
+	ChainScaff* chain = chains.front();
+	Vector3 rightV = chain->slaveSeg.length() * chain->rightDirect;
+	Vector3 slaveV = chain->slaveSeg.length() * chain->slaveSeg.Direction;
+	Vector3 topTranslLeft = -rightV - slaveV;
+	Vector3 topTranslRight = rightV - slaveV;
 	top_rect.translate(toRight ? topTranslRight : topTranslLeft);
 	samples << base_rect.get2DRectangle(top_rect).getConners();
 
 	// compute 2D bounding box
 	Geom::Rectangle2& regionProj = toRight ? regionProjRight : regionProjLeft;
-	Vector2 jointV = chains.front()->baseJoint.Direction;
-	regionProj = Geom::Rectangle2::computeBoundingBox(samples, jointV);
+	Geom::Segment2 baseJoint2 = base_rect.get2DSegment(chains.front()->baseJoint);
+	regionProj = Geom::computeBoundingBox(samples, baseJoint2.Direction);
 }
 
 void ZUnitScaff::setImportance(double imp)
@@ -169,17 +166,34 @@ Scaffold* ZUnitScaff::getKeyframeAsZ(double t, bool useThk)
 	// the unit is not ready to fold
 	if (t <= 0)	return (Scaffold*)this->clone();
 
-	// masters
-	Scaffold* keyframe = nullptr;
+	// base master
+	Scaffold* keyframe = new Scaffold();
 	keyframe->Structure::Graph::addNode(baseMaster->clone());
+
+	// top master
+	ScaffNode* fTopMaster = (ScaffNode*)topMaster->clone();
+	TChainScaff* chain = (TChainScaff*)chains.front();
+	Vector3 upV = chain->upSeg.Direction;
+	Vector3 rightV = fold2Left ? -chain->rightDirect : chain->rightDirect;
+	double rootAngle = chain->rootAngle * (1 - t);
+	double slaveL = chain->slaveSeg.length();
+	Vector3 dRight = slaveL * cos(rootAngle) * rightV;
+	Vector3 dUp = slaveL * sin(rootAngle) * upV;
+	Point topInit = chain->topJoint.P0;
+	Point topCurr = chain->baseJoint.P0 + dRight + dUp;
+	fTopMaster->translate(topCurr - topInit);
+	keyframe->Structure::Graph::addNode(fTopMaster);
 
 	// slaves
 	for (int i = 0; i < chains.size(); i++)
 	{
-		double localT = chains[i]->duration.getLocalTime(t);
-		Scaffold* ck = chains[i]->getKeyframe(localT, useThk);
+		ChainScaff* chain = chains[i];
+		double localT = chain->duration.getLocalTime(t);
+		Scaffold* ck = chain->getKeyframe(localT, useThk);
+		ScaffNode* fSlave = ck->getScaffNode(chain->origSlave->mID);
+		if (fSlave)	keyframe->Structure::Graph::addNode(fSlave->clone());
+		delete ck;
 	}
-
 
 	// the key frame
 	return keyframe;

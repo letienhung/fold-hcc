@@ -3,6 +3,7 @@
 #include "Numeric.h"
 #include "ChainScaff.h"
 #include "TChainScaff.h"
+#include "GeomUtility.h"
 
 UnitScaff::UnitScaff(QString id, QVector<PatchNode*>& ms, QVector<ScaffNode*>& ss,
 	QVector< QVector<QString> >& mPairs) : Scaffold(id)
@@ -124,7 +125,7 @@ Scaffold* UnitScaff::getSuperKeyframe( double t )
 	}
 
 	// resize super patch
-	Geom::Rectangle2 aabb2 = Geom::Rectangle2::computeAABB(projPnts2);
+	Geom::Rectangle2 aabb2 = Geom::computeAABB(projPnts2);
 	superPatch->resize(aabb2);
 
 	// merged parts and masters

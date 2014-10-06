@@ -1,5 +1,6 @@
 #include "ShapeSuperKeyframe.h"
 #include "UnitScaff.h"
+#include "GeomUtility.h"
 
 ShapeSuperKeyframe::ShapeSuperKeyframe(Scaffold* superKeyframe, StringSetMap moc_g)
 {
@@ -43,7 +44,7 @@ ShapeSuperKeyframe::ShapeSuperKeyframe(Scaffold* superKeyframe, StringSetMap moc
 			// remove other
 			this->removeNode(superMasters[superIdx]->mID);
 		}
-		Geom::Rectangle2 aabb2 = Geom::Rectangle2::computeAABB(pnts2);
+		Geom::Rectangle2 aabb2 = Geom::computeAABB(pnts2);
 		superPatch_new->resize(aabb2);
 
 		// store master_super_map
