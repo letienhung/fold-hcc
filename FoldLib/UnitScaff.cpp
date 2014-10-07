@@ -97,11 +97,6 @@ Scaffold* UnitScaff::getSuperKeyframe( double t )
 {
 	// regular key frame w\o thickness
 	Scaffold* keyframe = getKeyframe(t, false);
-	if (!keyframe)
-	{
-		std::cout << "KEYFRAME is NULL!\n";
-		return keyframe;
-	}
 
 	// do nothing if the block is NOT fully folded
 	if (t < 1) return keyframe;
@@ -134,7 +129,7 @@ Scaffold* UnitScaff::getSuperKeyframe( double t )
 	superPatch->resize(aabb2);
 
 	// merged parts and masters
-	foreach (ScaffNode* n, keyframe->getScaffNodes())
+	for(Structure::Node* n : keyframe->nodes)
 	{
 		n->addTag(MERGED_PART_TAG); 
 		if (n->hasTag(MASTER_TAG))
@@ -195,35 +190,26 @@ void UnitScaff::genAllFoldOptions()
 	}
 }
 
-int UnitScaff::searchForExistedSolution(const QVector<int>& afo)
-{
-	for (int i = 0; i < testedAvailFoldOptions.size(); i++)
-		if (testedAvailFoldOptions[i] == afo) return i;
 
-	return -1;
-}
-
-double UnitScaff::foldabilizeWrt(ShapeSuperKeyframe* ssKeyframe)
+double UnitScaff::foldabilize(ShapeSuperKeyframe* ssKeyframe, TimeInterval ti)
 {
+	// time interval
+	mFoldDuration = ti;
+
+	// available fold options
 	QVector<int> afo = getAvailFoldOptions(ssKeyframe);
 	
 	// search for existed solutions
-	currSlnIdx = searchForExistedSolution(afo);
-	if (currSlnIdx >= 0 && currSlnIdx < testedAvailFoldOptions.size())
-		return foldCost[currSlnIdx];
+	currSlnIdx = -1;
+	for (int i = 0; i < testedAvailFoldOptions.size(); i++){
+		if (testedAvailFoldOptions[i] == afo){
+			currSlnIdx = i;
+			return foldCost[currSlnIdx];
+		}
+	}
 
 	// find the optimal solution
 	double cost = findOptimalSolution(afo);
-
-	// return the cost (\in [0, 1])
-	return cost;
-}
-
-void UnitScaff::applySolution()
-{
-	// assert idx
-	if (currSlnIdx < 0 || currSlnIdx >= foldSolutions.size())
-		return;
 
 	// apply selected fold option to each chain
 	for (int i = 0; i < chains.size(); i++)
@@ -231,6 +217,9 @@ void UnitScaff::applySolution()
 		FoldOption* fn = foldSolutions[currSlnIdx][i];
 		chains[i]->applyFoldOption(fn);
 	}
+
+	// return the cost (\in [0, 1])
+	return cost;
 }
 
 double UnitScaff::computeCost(FoldOption* fo)

@@ -19,21 +19,20 @@ private:
 	void computeFoldRegionProj(bool toRight);
 
 	// key frame as Z
-	Scaffold* getKeyframeAsZ(double t, bool useThk);
+	Scaffold* getZKeyframe(double t, bool useThk);
 
 	// obstacles
 	QVector<Vector2> computeObstacles(ShapeSuperKeyframe* ssKeyframe);
 
 	// foldabilize as Z and returns the true if success
-	bool foldabilizeAsZ(ShapeSuperKeyframe* ssKeyframe);
+	bool foldabilizeZ(ShapeSuperKeyframe* ssKeyframe, TimeInterval ti);
 
 public:
 	// key frame
 	virtual Scaffold* getKeyframe(double t, bool useThk) override;
 
 	// foldabilization
-	virtual double foldabilizeWrt(ShapeSuperKeyframe* ssKeyframe) override;
-	virtual void applySolution() override;
+	virtual double foldabilize(ShapeSuperKeyframe* ssKeyframe, TimeInterval ti) override;
 
 	// setter
 	virtual void setImportance(double imp) override;

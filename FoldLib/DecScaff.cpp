@@ -235,61 +235,72 @@ void DecScaff::selectUnit( QString id )
 Scaffold* DecScaff::getKeyframe( double t )
 {
 	// folded units
-	QVector<Scaffold*> foldedUnits;
+	QVector<Scaffold*> uKeyframes;
 	for (int i = 0; i < units.size(); i++)
 	{
-		double lt = units[i]->mFoldDuration.getLocalTime(t);
-		Scaffold* funit = units[i]->getKeyframe(lt, true);
-		foldedUnits << funit;
+		UnitScaff* unit = units[i];
 
-		// debug: active block
-		if (lt > 0 && lt < 1)
-		{
-			// active slaves
-			for (ScaffNode* n : funit->getScaffNodes())
-				n->addTag(ACTIVE_NODE_TAG);
+		Scaffold* uk = nullptr;
+		if (unit->mFoldDuration.start >= 1)
+		{// the unit has not been foldabilized
+			uk = (Scaffold*)unit->clone();
 		}
+		else
+		{// foldabilized unit
+			double lt = unit->mFoldDuration.getLocalTime(t);
+			uk = unit->getKeyframe(lt, true);
+
+			// active block
+			if (lt > 0 && lt < 1){
+				for (Structure::Node* n : uk->nodes)
+					n->addTag(ACTIVE_NODE_TAG);
+			}
+		}
+
+		uKeyframes << uk;
 	}
 
 	// shift units and add nodes into scaffold
-	Scaffold *key_graph = combineScaffolds(foldedUnits, baseMaster->mID, masterUnitMap);
+	Scaffold *keyframe = new Scaffold(uKeyframes, baseMaster->mID, masterUnitMap);
+	keyframe->path = path;
 
 	// delete folded blocks
-	foreach (Scaffold* b, foldedUnits) delete b;
+	for (Scaffold* unit : uKeyframes) delete unit;
 
-	// in case the combination fails
-	if (key_graph == nullptr) return nullptr;
-
-	// path
-	key_graph->path = path;
-
-	return key_graph;
+	return keyframe;
 }
 
 ShapeSuperKeyframe* DecScaff::getShapeSuperKeyframe( double t )
 {
 	// super key frame for each block
-	QVector<Scaffold*> foldedUnits;
-	QSet<QString> foldedParts;
+	QVector<Scaffold*> uSuperKf;
 	for (int i = 0; i < units.size(); i++)
 	{
-		double lt = units[i]->mFoldDuration.getLocalTime(t);
-		Scaffold* funit = units[i]->getSuperKeyframe(lt);
-		foldedUnits << funit;
+		UnitScaff* unit = units[i];
 
-		// nullptr means funit is unable to fold at time t
-		if (!funit) return nullptr;
+		Scaffold* uk_super;
+		if (unit->mFoldDuration.start >= 1)
+		{// the unit has not been foldabilized
+			uk_super = (Scaffold*)unit->clone();
+		}
+		else
+		{
+			double lt = unit->mFoldDuration.getLocalTime(t);
+			uk_super = unit->getSuperKeyframe(lt);
+		}
+
+		uSuperKf << uk_super;
 	}
 
 	// combine
-	Scaffold *keyframe = combineScaffolds(foldedUnits, baseMaster->mID, masterUnitMap);
+	Scaffold *keyframe = new Scaffold(uSuperKf, baseMaster->mID, masterUnitMap);
 
 	// create shape super key frame
 	ShapeSuperKeyframe* ssKeyframe = new ShapeSuperKeyframe(keyframe, masterOrderGreater);
 
 	// garbage collection
 	delete keyframe;
-	for (int i = 0; i < foldedUnits.size(); i++) delete foldedUnits[i];
+	for (int i = 0; i < uSuperKf.size(); i++) delete uSuperKf[i];
 
 	// return
 	return ssKeyframe;
@@ -315,14 +326,10 @@ void DecScaff::foldabilize()
 		std::cout << "**\nBest next = " << next_unit->mID.toStdString() << "\n"
 				  << "Foldabilizing unit: " << next_unit->mID.toStdString() << "\n";
 
-		// time interval
+		// foldabilize
 		double timeLength = next_unit->getNbTopMasters() * timeScale;
 		double nextTime = currTime + timeLength;
-
-		// foldabilize
-		next_unit->foldabilizeWrt(currKeyframe);
-		next_unit->applySolution();
-		next_unit->mFoldDuration.set(currTime, nextTime);
+		next_unit->foldabilize(currKeyframe, TimeInterval(currTime, nextTime));
 		std::cout << "\n-----------//-----------\n";
 
 		// get best next
@@ -352,9 +359,7 @@ void DecScaff::foldabilize()
 			sCluster += slaveClusters[uidx];
 		
 		UnitScaff* mergedBlock = createUnit(sCluster);
-		mergedBlock->foldabilizeWrt(currKeyframe);
-		mergedBlock->applySolution();
-		mergedBlock->mFoldDuration.set(currTime, 1.0);
+		mergedBlock->foldabilize(currKeyframe, TimeInterval(currTime, 1.0));
 	}
 
 	delete currKeyframe;
@@ -365,13 +370,11 @@ double DecScaff::foldabilizeUnit(UnitScaff* unit, double currTime, ShapeSuperKey
 										double& nextTime, ShapeSuperKeyframe*& nextKf)
 {
 	// foldabilize nextUnit wrt the current super key frame
-	double cost = unit->foldabilizeWrt(currKf);
-	unit->applySolution();
-
-	// get the next super key frame 
 	double timeLength = unit->getNbTopMasters() * timeScale;
 	nextTime = currTime + timeLength;
-	unit->mFoldDuration.set(currTime, nextTime);
+	double cost = unit->foldabilize(currKf, TimeInterval(currTime, nextTime));
+
+	// get the next super key frame 
 	nextKf = getShapeSuperKeyframe(nextTime);
 
 	// the normalized cost wrt. the importance

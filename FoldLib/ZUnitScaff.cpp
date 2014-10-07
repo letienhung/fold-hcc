@@ -126,8 +126,11 @@ QVector<Vector2> ZUnitScaff::computeObstacles(ShapeSuperKeyframe* ssKeyframe)
 	return obstacles;
 }
 
-bool ZUnitScaff::foldabilizeAsZ(ShapeSuperKeyframe* ssKeyframe)
+bool ZUnitScaff::foldabilizeZ(ShapeSuperKeyframe* ssKeyframe, TimeInterval ti)
 {
+	// time interval
+	mFoldDuration = ti;
+
 	// obstacles
 	QVector<Vector2> obsPnts = computeObstacles(ssKeyframe);
 
@@ -137,35 +140,34 @@ bool ZUnitScaff::foldabilizeAsZ(ShapeSuperKeyframe* ssKeyframe)
 	fold2Left = !isCollidingLeft && inAABBLeft;
 
 	// feasibility of right solution
-	bool isCollidingRight = regionProjRight.containsAny(obstacles, -0.01);
-	bool inAABBRight = aabbConstraint.containsAll(regionProjRight.getConners(), 0.01);
-	fold2Right = !isCollidingRight && inAABBRight;
-
-	// success if one side works
-	return fold2Left || fold2Right;
-}
-
-double ZUnitScaff::foldabilizeWrt(ShapeSuperKeyframe* ssKeyframe)
-{
-	// Z-folding
-	double cost = 0;
-	bool zSuccess = foldabilizeAsZ(ssKeyframe);
-
-	// fold as H
-	if (!zSuccess)
+	if (!fold2Left)
 	{
-		cost = hUnit->foldabilizeWrt(ssKeyframe);
+		bool isCollidingRight = regionProjRight.containsAny(obstacles, -0.01);
+		bool inAABBRight = aabbConstraint.containsAll(regionProjRight.getConners(), 0.01);
+		fold2Right = !isCollidingRight && inAABBRight;
 	}
 
-	return cost;
+	// apply Z solution : choose any
+	bool okay2Fold = fold2Left || fold2Right;
+	if (okay2Fold){
+		QVector<FoldOption*>& options = fold2Left ? optionsLeft : optionsRight;
+		for (int i = 0; i < chains.size(); i++)
+			chains[i]->applyFoldOption(options[i]);
+	}
+
+	return okay2Fold;
+}
+
+double ZUnitScaff::foldabilize(ShapeSuperKeyframe* ssKeyframe, TimeInterval ti)
+{
+	// fold as Z if possible, otherwise fold as H
+	if (foldabilizeZ(ssKeyframe, ti)) return 0;
+	else return hUnit->foldabilize(ssKeyframe, ti);
 }
 
 
-Scaffold* ZUnitScaff::getKeyframeAsZ(double t, bool useThk)
+Scaffold* ZUnitScaff::getZKeyframe(double t, bool useThk)
 {
-	// the unit is not ready to fold
-	if (t <= 0)	return (Scaffold*)this->clone();
-
 	// base master
 	Scaffold* keyframe = new Scaffold();
 	keyframe->Structure::Graph::addNode(baseMaster->clone());
@@ -203,25 +205,7 @@ Scaffold* ZUnitScaff::getKeyframeAsZ(double t, bool useThk)
 Scaffold* ZUnitScaff::getKeyframe(double t, bool useThk)
 {
 	if (fold2Left || fold2Right)
-		return getKeyframeAsZ(t, useThk);
+		return getZKeyframe(t, useThk);
 	else
 		return hUnit->getKeyframe(t, useThk);
-}
-
-void ZUnitScaff::applySolution()
-{
-	if (fold2Left || fold2Right)
-	{
-		// apply Z solution : choose any
-		QVector<FoldOption*>& options = fold2Left ? optionsLeft : optionsRight;
-		for (int i = 0; i < chains.size(); i++)
-		{
-			chains[i]->applyFoldOption(options[i]);
-		}
-	}
-	else
-	{
-		// apply H solution
-		hUnit->applySolution();
-	}
 }

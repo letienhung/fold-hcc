@@ -43,14 +43,7 @@ void TUnitScaff::createChains(QVector<ScaffNode*>& ss, QVector< QVector<QString>
 // the keyframe cannot be nullptr
 Scaffold* TUnitScaff::getKeyframe(double t, bool useThk)
 {
-	Scaffold* keyframe = nullptr;
-
-	if (t <= 0)
-		keyframe = (Scaffold*)this->clone();
-	else
-		keyframe = tChain->getKeyframe(t, useThk);
-
-	return keyframe;
+	return tChain->getKeyframe(t, useThk);
 }
 
 QVector<Vector2> TUnitScaff::computeObstacles(ShapeSuperKeyframe* ssKeyframe)

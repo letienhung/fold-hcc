@@ -52,14 +52,12 @@ public:
 	/* foldabilization : compute the best fold solution wrt the given super shape key frame
 	   the best solution is indicated by currSlnIdx
 	   all tested set of avail fold options with their fold solutions are also stored to avoid repeated computation	*/
-	virtual double			foldabilizeWrt(ShapeSuperKeyframe* ssKeyframe); // foldabilize a block wrt. the context and returns the cost 
+	virtual double			foldabilize(ShapeSuperKeyframe* ssKeyframe, TimeInterval ti); // foldabilize a block wrt. the context and returns the cost 
 	virtual QVector<int>	getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe); // prune fold options wrt. to obstacles
-	int						searchForExistedSolution(const QVector<int>& afo); // search for existed solution 
 	virtual double			findOptimalSolution(const QVector<int>& afo); // store the optimal solution and returns the cost
-	double					computeCost(FoldOption* fo);
 
-	// apply the current solution (currSlnIdx)
-	virtual void applySolution();
+	// the cost of fold options
+	double	computeCost(FoldOption* fo);
 
 public:
 	//*** ENTITIES

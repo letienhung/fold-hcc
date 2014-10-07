@@ -32,6 +32,69 @@ Scaffold::Scaffold( Scaffold& other )
 	showAABB = false;
 }
 
+Scaffold::Scaffold(QVector<Scaffold*> scaffs, QString baseMid,
+	QMap<QString, QSet<int> >& masterScaffMap)
+{
+	// combined tags
+	QVector<bool> scaffCombined(scaffs.size(), false);
+	QMap<QString, bool> masterCombined;
+	for(QString mid : masterScaffMap.keys())
+		masterCombined[mid] = false;
+
+	// copy the base master from any scaffold
+	int sid = masterScaffMap[baseMid].toList().front();
+	Structure::Graph::addNode(scaffs[sid]->getNode(baseMid)->clone());
+	masterCombined[baseMid] = true;
+
+	// prorogation
+	QQueue<QString> activeMids; activeMids.enqueue(baseMid);
+	while (!activeMids.isEmpty())
+	{
+		// set current to an active master
+		QString fixed_mid = activeMids.dequeue();
+		PatchNode* fixedMaster = (PatchNode*)this->getNode(fixed_mid);
+		Vector3 fixedMasterPos = fixedMaster->center();
+
+		// combine scaffs containing current master
+		for(int scaff_id : masterScaffMap[fixed_mid])
+		{
+			// skip combined scaff
+			if (scaffCombined[scaff_id]) continue;
+
+			// translate scaff to match the master
+			Scaffold* scaff = scaffs[scaff_id];
+			Vector3 scaffMastertPos = ((PatchNode*)scaff->getNode(fixed_mid))->center();
+			scaff->translate(fixedMasterPos - scaffMastertPos);
+
+			// combine parts from decomposition
+			for(Structure::Node* n : scaff->nodes)
+			{
+				// master nodes
+				if (n->hasTag(MASTER_TAG))
+				{
+					if (!masterCombined[n->mID])
+					{
+						// combine unvisited masters
+						Structure::Graph::addNode(n->clone());
+						masterCombined[n->mID] = true;
+
+						// store as active
+						activeMids.enqueue(n->mID);
+					}
+				}
+				// clone slave nodes
+				else
+				{
+					Structure::Graph::addNode(n->clone());
+				}
+			}
+
+			// update tag
+			scaffCombined[scaff_id] = true;
+		}
+	}
+}
+
 
 Scaffold::~Scaffold()
 {

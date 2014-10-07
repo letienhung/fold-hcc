@@ -74,46 +74,25 @@ HUnitScaff::~HUnitScaff()
 // the keyframe cannot be nullptr
 Scaffold* HUnitScaff::getKeyframe(double t, bool useThk)
 {
-	Scaffold* keyframe = nullptr;
-
-	// the unit is not ready to fold
-	if (t <= 0)
+	// keyframe of each chain
+	QVector<Scaffold*> chainKeyframes;
+	for (int i = 0; i < chains.size(); i++)
 	{
-		keyframe = (Scaffold*)this->clone();
-	}
-	// chains have been created and ready to fold
-	else
-	{
-		// keyframe of each chain
-		QVector<Scaffold*> chainKeyframes;
-		for (int i = 0; i < chains.size(); i++)
-		{
-			// skip deleted chain
-			if (chains[i]->isDeleted)
-				chainKeyframes << nullptr;
-			else{
-				ChainScaff* cs = chains[i];
-				double localT = cs->duration.getLocalTime(t);
-				chainKeyframes << chains[i]->getKeyframe(localT, useThk);
-			}
-		}
-
-		// combine 
-		keyframe = combineScaffolds(chainKeyframes, baseMaster->mID, masterChainsMap);
-
-		// thickness of masters
-		if (useThk){
-			for (Structure::Node* n : keyframe->getNodesWithTag(MASTER_TAG))
-				((ScaffNode*)n)->setThickness(thickness);
-		}
-
-		// local garbage collection
-		foreach(Scaffold* c, chainKeyframes)
-		if (c) delete c;
+		double localT = chains[i]->duration.getLocalTime(t);
+		chainKeyframes << chains[i]->getKeyframe(localT, useThk);
 	}
 
-	// keyframe == nullptr only if this block has not been foldabilized but t > 0
-	// should never happen
+	// combine 
+	Scaffold* keyframe = new Scaffold(chainKeyframes, baseMaster->mID, masterChainsMap);
+
+	// thickness of masters
+	if (useThk){
+		for (Structure::Node* n : keyframe->getNodesWithTag(MASTER_TAG))
+			((ScaffNode*)n)->setThickness(thickness);
+	}
+
+	// local garbage collection
+	for(Scaffold* c : chainKeyframes) delete c;
 
 	// the key frame
 	return keyframe;
