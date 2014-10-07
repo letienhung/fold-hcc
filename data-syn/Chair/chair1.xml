@@ -1,0 +1,93 @@
+<!--?xml Version = "1.0"?-->
+<document>
+    <cN>8</cN>
+    <node>
+        <type>2</type>
+        <ID>seat</ID>
+        <box>
+            <c>0 1 0</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>24 1 25</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>back</ID>
+        <box>
+            <c>0 26 -24</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>24 25 1</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>backLeftLeg</ID>
+        <box>
+            <c>-23 -24 -24</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>1 25 1</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>backRightLeg</ID>
+        <box>
+            <c>23 -24 -24</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>1 25 1</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>frontLeftLeg</ID>
+        <box>
+            <c>-23 -24 24</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>1 25 1</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>frontRightLeg</ID>
+        <box>
+            <c>23 -24 24</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>1 25 1</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>backBar</ID>
+        <box>
+            <c>0 -12.5 -24</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>24 2.5 1</e>
+        </box>
+    </node>
+    <node>
+        <type>1</type>
+        <ID>frontBar</ID>
+        <box>
+            <c>0 -12.5 24</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>24 2.5 1</e>
+        </box>
+    </node>
+    <cL>0</cL>
+</document>

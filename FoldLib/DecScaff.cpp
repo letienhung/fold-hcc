@@ -109,6 +109,7 @@ UnitScaff* DecScaff::createUnit(QSet<int> sCluster)
 	if (ms.size() == 2 && ss.size() == 1 &&
 		(ms[0]->hasTag(EDGE_ROD_TAG) || ms[1]->hasTag(EDGE_ROD_TAG)))
 		unit = new TUnitScaff("TB_" + id, ms, ss, mPairs);
+	//else if (false)
 	else if (areParallel(ss))
 		unit = new ZUnitScaff("ZB_" + id, ms, ss, mPairs);
 	else 
@@ -273,11 +274,11 @@ ShapeSuperKeyframe* DecScaff::getShapeSuperKeyframe( double t )
 	for (int i = 0; i < units.size(); i++)
 	{
 		double lt = units[i]->mFoldDuration.getLocalTime(t);
-		Scaffold* fblock = units[i]->getSuperKeyframe(lt);
-		foldedUnits << fblock;
+		Scaffold* funit = units[i]->getSuperKeyframe(lt);
+		foldedUnits << funit;
 
-		// nullptr means fblock is unable to fold at time t
-		if (!fblock) return nullptr;
+		// nullptr means funit is unable to fold at time t
+		if (!funit) return nullptr;
 	}
 
 	// combine

@@ -71,6 +71,7 @@ HUnitScaff::~HUnitScaff()
 
 // The keyframe is the configuration of the block at given time \p t
 // This is also called regular keyframe to distinguish from super keyframe
+// the keyframe cannot be nullptr
 Scaffold* HUnitScaff::getKeyframe(double t, bool useThk)
 {
 	Scaffold* keyframe = nullptr;
@@ -81,7 +82,6 @@ Scaffold* HUnitScaff::getKeyframe(double t, bool useThk)
 		keyframe = (Scaffold*)this->clone();
 	}
 	// chains have been created and ready to fold
-	// IOW, the block has been foldabilized
 	else
 	{
 		// keyframe of each chain

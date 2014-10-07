@@ -111,16 +111,28 @@ void ChainScaff::computeOrientations()
 	upSeg = Geom::Segment(topCenterProj, topMaster->center());
 }
 
+// the keyframe cannot be nullptr
 Scaffold* ChainScaff::getKeyframe( double t, bool useThk )
 {
-	// fold w\o thickness
-	fold(t);
+	Scaffold* keyframe = nullptr;
 
-	// key frame
-	Scaffold* keyframe = (Scaffold*)this->clone();
+	// deleted chain only has the base master
+	if (isDeleted)
+	{
+		keyframe = new Scaffold();
+		keyframe->Structure::Graph::addNode(baseMaster->clone());
+		return keyframe;
+	}
+	// otherwise fold the chain and clone
+	else
+	{
+		// fold w\o thickness
+		fold(t);
+		keyframe = (Scaffold*)this->clone();
 
-	// thickness
-	if (useThk) addThickness(keyframe, t);
+		// thickness
+		if (useThk) addThickness(keyframe, t);
+	}
 
 	return keyframe;
 }

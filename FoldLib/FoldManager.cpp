@@ -37,6 +37,9 @@ void FoldManager::setInputScaffold( Scaffold* input )
 {
 	inputScaffold = input;
 
+	delete shapeDec;
+	shapeDec = nullptr;
+
 	updateUnitList();
 	updateKeyframeSlider();
 }

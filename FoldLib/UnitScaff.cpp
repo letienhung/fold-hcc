@@ -6,7 +6,7 @@
 #include "GeomUtility.h"
 
 UnitScaff::UnitScaff(QString id, QVector<PatchNode*>& ms, QVector<ScaffNode*>& ss,
-	QVector< QVector<QString> >& mPairs) : Scaffold(id)
+	QVector< QVector<QString> >&) : Scaffold(id)
 {
 	// clone nodes
 	foreach(PatchNode* m, ms)	{
@@ -97,6 +97,11 @@ Scaffold* UnitScaff::getSuperKeyframe( double t )
 {
 	// regular key frame w\o thickness
 	Scaffold* keyframe = getKeyframe(t, false);
+	if (!keyframe)
+	{
+		std::cout << "KEYFRAME is NULL!\n";
+		return keyframe;
+	}
 
 	// do nothing if the block is NOT fully folded
 	if (t < 1) return keyframe;
@@ -304,7 +309,7 @@ QVector<int> UnitScaff::getAvailFoldOptions(ShapeSuperKeyframe*)
 	return QVector<int>();
 }
 
-double UnitScaff::findOptimalSolution(const QVector<int>& afo)
+double UnitScaff::findOptimalSolution(const QVector<int>&)
 {
 	return 0;
 }

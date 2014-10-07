@@ -1,0 +1,60 @@
+<!--?xml Version = "1.0"?-->
+<document>
+    <cN>5</cN>
+    <node>
+        <type>2</type>
+        <ID>Box001</ID>
+        <box>
+            <c>0 0 -1</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>50 50 1</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>Box002</ID>
+        <box>
+            <c>-40 6 12.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>1 44 12.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>Box003</ID>
+        <box>
+            <c>40 -6 12.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>1 44 12.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>Box004</ID>
+        <box>
+            <c>6 40 12.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>44 1 12.5</e>
+        </box>
+    </node>
+    <node>
+        <type>2</type>
+        <ID>Box005</ID>
+        <box>
+            <c>-6 -40 12.5</c>
+            <x>1 0 0</x>
+            <y>0 1 0</y>
+            <z>0 0 1</z>
+            <e>44 1 12.5</e>
+        </box>
+    </node>
+    <cL>0</cL>
+</document>

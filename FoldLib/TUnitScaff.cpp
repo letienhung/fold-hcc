@@ -40,7 +40,7 @@ void TUnitScaff::createChains(QVector<ScaffNode*>& ss, QVector< QVector<QString>
 }
 
 
-
+// the keyframe cannot be nullptr
 Scaffold* TUnitScaff::getKeyframe(double t, bool useThk)
 {
 	Scaffold* keyframe = nullptr;
