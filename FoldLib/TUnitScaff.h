@@ -15,14 +15,14 @@ private:
 	void createChains(QVector<ScaffNode*>& ss, QVector< QVector<QString> >& mPairs);
 
 	// obstacles
-	QVector<Vector2> computeObstacles(ShapeSuperKeyframe* ssKeyframe);
+	QVector<Vector2> computeObstacles(SuperShapeKf* ssKeyframe);
 
 public:
 	// key frame
 	virtual Scaffold* getKeyframe(double t, bool useThk) override;
 
 	// foldabilize
-	virtual QVector<int> getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe) override;
+	virtual QVector<int> getAvailFoldOptions(SuperShapeKf* ssKeyframe) override;
 	virtual double findOptimalSolution(const QVector<int>& afo) override;
 
 public:

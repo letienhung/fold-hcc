@@ -4,7 +4,7 @@
 #include "CliquerAdapter.h"
 #include "IntrRect2Rect2.h"
 #include "SuperUnitScaff.h"
-#include "FoldOptionGraph.h"
+#include "FoldOptGraph.h"
 
 HUnitScaff::HUnitScaff(QString id, QVector<PatchNode*>& ms, QVector<ScaffNode*>& ss,
 	QVector< QVector<QString> >& mPairs) : UnitScaff(id, ms, ss, mPairs)
@@ -98,7 +98,7 @@ Scaffold* HUnitScaff::getKeyframe(double t, bool useThk)
 	return keyframe;
 }
 
-void HUnitScaff::computeObstacles(ShapeSuperKeyframe* ssKeyframe)
+void HUnitScaff::computeObstacles(SuperShapeKf* ssKeyframe)
 {
 	// create super block
 	SuperUnitScaff *superBlock = new SuperUnitScaff(this, ssKeyframe);
@@ -110,7 +110,7 @@ void HUnitScaff::computeObstacles(ShapeSuperKeyframe* ssKeyframe)
 	delete superBlock;
 }
 
-QVector<int> HUnitScaff::getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe)
+QVector<int> HUnitScaff::getAvailFoldOptions(SuperShapeKf* ssKeyframe)
 {
 	// update obstacles
 	computeObstacles(ssKeyframe);
@@ -147,9 +147,9 @@ QVector<int> HUnitScaff::getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe)
 	return afo;
 }
 
-FoldOptionGraph* HUnitScaff::createCollisionGraph(const QVector<int>& afo)
+FoldOptGraph* HUnitScaff::createCollisionGraph(const QVector<int>& afo)
 {
-	FoldOptionGraph* collFog = new FoldOptionGraph();
+	FoldOptGraph* collFog = new FoldOptGraph();
 
 	// chain nodes
 	QVector<ChainNode*> chainNodes;
@@ -211,7 +211,7 @@ double HUnitScaff::findOptimalSolution(const QVector<int>& afo)
 	for (int i = 0; i < chains.size(); i++) solution << nullptr;
 
 	// optimal solution on each component
-	FoldOptionGraph* collFog = createCollisionGraph(afo);
+	FoldOptGraph* collFog = createCollisionGraph(afo);
 	for (auto component : collFog->getComponents()) {
 		for (auto fo: findOptimalSolution(collFog, component))
 		{
@@ -235,7 +235,7 @@ double HUnitScaff::findOptimalSolution(const QVector<int>& afo)
 	return totalCost;
 }
 
-QVector<FoldOption*> HUnitScaff::findOptimalSolution(FoldOptionGraph* collFog, const QVector<Structure::Node*>& component)
+QVector<FoldOption*> HUnitScaff::findOptimalSolution(FoldOptGraph* collFog, const QVector<Structure::Node*>& component)
 {
 	QVector<FoldOption*> partialSln;
 
@@ -284,7 +284,7 @@ QVector<FoldOption*> HUnitScaff::findOptimalSolution(FoldOptionGraph* collFog, c
 	return partialSln;
 }
 
-QVector< QVector<bool> > HUnitScaff::genDualAdjMatrix(FoldOptionGraph* collFog, const QVector<FoldOption*>& fns)
+QVector< QVector<bool> > HUnitScaff::genDualAdjMatrix(FoldOptGraph* collFog, const QVector<FoldOption*>& fns)
 {
 	QVector<bool> dumpy(fns.size(), true);
 	QVector< QVector<bool> > conn(fns.size(), dumpy);

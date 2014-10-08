@@ -191,7 +191,7 @@ void UnitScaff::genAllFoldOptions()
 }
 
 
-double UnitScaff::foldabilize(ShapeSuperKeyframe* ssKeyframe, TimeInterval ti)
+double UnitScaff::foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti)
 {
 	// time interval
 	mFoldDuration = ti;
@@ -293,7 +293,7 @@ void UnitScaff::computeChainImportances()
 		c->importance = c->getSlaveArea() / totalA;
 }
 
-QVector<int> UnitScaff::getAvailFoldOptions(ShapeSuperKeyframe*)
+QVector<int> UnitScaff::getAvailFoldOptions(SuperShapeKf*)
 {
 	return QVector<int>();
 }

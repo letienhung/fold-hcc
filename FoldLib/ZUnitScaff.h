@@ -22,17 +22,17 @@ private:
 	Scaffold* getZKeyframe(double t, bool useThk);
 
 	// obstacles
-	QVector<Vector2> computeObstacles(ShapeSuperKeyframe* ssKeyframe);
+	QVector<Vector2> computeObstacles(SuperShapeKf* ssKeyframe);
 
 	// foldabilize as Z and returns the true if success
-	bool foldabilizeZ(ShapeSuperKeyframe* ssKeyframe, TimeInterval ti);
+	bool foldabilizeZ(SuperShapeKf* ssKeyframe, TimeInterval ti);
 
 public:
 	// key frame
 	virtual Scaffold* getKeyframe(double t, bool useThk) override;
 
 	// foldabilization
-	virtual double foldabilize(ShapeSuperKeyframe* ssKeyframe, TimeInterval ti) override;
+	virtual double foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti) override;
 
 	// setter
 	virtual void setImportance(double imp) override;

@@ -46,7 +46,7 @@ Scaffold* TUnitScaff::getKeyframe(double t, bool useThk)
 	return tChain->getKeyframe(t, useThk);
 }
 
-QVector<Vector2> TUnitScaff::computeObstacles(ShapeSuperKeyframe* ssKeyframe)
+QVector<Vector2> TUnitScaff::computeObstacles(SuperShapeKf* ssKeyframe)
 {
 	// in-between external parts
 	Geom::Rectangle base_rect = baseMaster->mPatch;
@@ -66,7 +66,7 @@ QVector<Vector2> TUnitScaff::computeObstacles(ShapeSuperKeyframe* ssKeyframe)
 }
 
 
-QVector<int> TUnitScaff::getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe)
+QVector<int> TUnitScaff::getAvailFoldOptions(SuperShapeKf* ssKeyframe)
 {
 	QVector<Vector2> obstacles = computeObstacles(ssKeyframe);
 

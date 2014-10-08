@@ -51,12 +51,12 @@ public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
-class FoldOptionGraph : public Structure::Graph
+class FoldOptGraph : public Structure::Graph
 {
 public:
-	FoldOptionGraph(QString id = "");
-	FoldOptionGraph(FoldOptionGraph& other);
-	~FoldOptionGraph();
+	FoldOptGraph(QString id = "");
+	FoldOptGraph(FoldOptGraph& other);
+	~FoldOptGraph();
 	Graph* clone();
 
 	// modifier

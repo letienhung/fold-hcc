@@ -43,8 +43,6 @@ HEADERS += \
     FdUtility.h \
     Hinge.h \
     BundleNode.h \
-    FoldOptionGraph.h \
-    ShapeSuperKeyframe.h \
     Decomposer.h \
     Scaffold.h \
     ChainScaff.h \
@@ -58,7 +56,9 @@ HEADERS += \
     TChainScaff.h \
     TUnitScaff.h \
     UnitScaff.h \
-    ZUnitScaff.h
+    ZUnitScaff.h \
+    SuperShapeKf.h \
+    FoldOptGraph.h
 
 SOURCES += \
     PatchNode.cpp \
@@ -68,8 +68,6 @@ SOURCES += \
     FdUtility.cpp \
     Hinge.cpp \
     BundleNode.cpp \
-    FoldOptionGraph.cpp \
-    ShapeSuperKeyframe.cpp \
     Decomposer.cpp \
     ChainScaff.cpp \
     DecScaff.cpp \
@@ -82,5 +80,7 @@ SOURCES += \
     TChainScaff.cpp \
     TUnitScaff.cpp \
     UnitScaff.cpp \
-    ZUnitScaff.cpp
+    ZUnitScaff.cpp \
+    SuperShapeKf.cpp \
+    FoldOptGraph.cpp
 

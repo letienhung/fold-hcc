@@ -107,7 +107,7 @@ void ZUnitScaff::setImportance(double imp)
 	hUnit->setImportance(imp);
 }
 
-QVector<Vector2> ZUnitScaff::computeObstacles(ShapeSuperKeyframe* ssKeyframe)
+QVector<Vector2> ZUnitScaff::computeObstacles(SuperShapeKf* ssKeyframe)
 {
 	// in-between external parts
 	Geom::Rectangle base_rect = baseMaster->mPatch;
@@ -126,7 +126,7 @@ QVector<Vector2> ZUnitScaff::computeObstacles(ShapeSuperKeyframe* ssKeyframe)
 	return obstacles;
 }
 
-bool ZUnitScaff::foldabilizeZ(ShapeSuperKeyframe* ssKeyframe, TimeInterval ti)
+bool ZUnitScaff::foldabilizeZ(SuperShapeKf* ssKeyframe, TimeInterval ti)
 {
 	// time interval
 	mFoldDuration = ti;
@@ -158,7 +158,7 @@ bool ZUnitScaff::foldabilizeZ(ShapeSuperKeyframe* ssKeyframe, TimeInterval ti)
 	return okay2Fold;
 }
 
-double ZUnitScaff::foldabilize(ShapeSuperKeyframe* ssKeyframe, TimeInterval ti)
+double ZUnitScaff::foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti)
 {
 	// fold as Z if possible, otherwise fold as H
 	if (foldabilizeZ(ssKeyframe, ti)) return 0;

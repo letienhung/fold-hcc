@@ -25,7 +25,7 @@ FdNodeArray2D Decomposer::getPerpConnGroups()
 
 	// threshold
 	double perpThr = 0.1;
-	double connThr = scfd->getConnectivityThr();
+	double connThr = scfd->getConnectThr();
 
 	// ==STEP 1==: nodes perp to squeezing direction
 	QVector<ScaffNode*> perpNodes;
@@ -153,7 +153,7 @@ void Decomposer::updateSlaveMasterRelation()
 	scfd->slave2master.resize(scfd->slaves.size());
 
 	// find two masters attaching to a slave
-	double adjacentThr = scfd->getConnectivityThr();
+	double adjacentThr = scfd->getConnectThr();
 	for (int i = 0; i < scfd->slaves.size(); i++)
 	{
 		// find adjacent master(s)
@@ -188,7 +188,7 @@ void Decomposer::updateSlaveMasterRelation()
 void Decomposer::createSlaves()
 {
 	// split slave parts by master patches
-	double connThr = scfd->getConnectivityThr();
+	double connThr = scfd->getConnectThr();
 	for (PatchNode* master : scfd->masters) {
 		for (ScaffNode* n : scfd->getScaffNodes())
 		{

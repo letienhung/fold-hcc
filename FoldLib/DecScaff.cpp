@@ -270,7 +270,7 @@ Scaffold* DecScaff::getKeyframe( double t )
 	return keyframe;
 }
 
-ShapeSuperKeyframe* DecScaff::getShapeSuperKeyframe( double t )
+SuperShapeKf* DecScaff::getSuperShapeKf( double t )
 {
 	// super key frame for each block
 	QVector<Scaffold*> uSuperKf;
@@ -296,7 +296,7 @@ ShapeSuperKeyframe* DecScaff::getShapeSuperKeyframe( double t )
 	Scaffold *keyframe = new Scaffold(uSuperKf, baseMaster->mID, masterUnitMap);
 
 	// create shape super key frame
-	ShapeSuperKeyframe* ssKeyframe = new ShapeSuperKeyframe(keyframe, masterOrderGreater);
+	SuperShapeKf* ssKeyframe = new SuperShapeKf(keyframe, masterOrderGreater);
 
 	// garbage collection
 	delete keyframe;
@@ -316,7 +316,7 @@ void DecScaff::foldabilize()
 	std::cout << "\n============================="
 			  << "\n============START============\n";
 	double currTime = 0.0;
-	ShapeSuperKeyframe* currKeyframe = getShapeSuperKeyframe(currTime);
+	SuperShapeKf* currKeyframe = getSuperShapeKf(currTime);
 	UnitScaff* next_unit = getBestNextUnit(currTime, currKeyframe);
 
 	//return;
@@ -335,7 +335,7 @@ void DecScaff::foldabilize()
 		// get best next
 		currTime = nextTime;
 		delete currKeyframe;
-		currKeyframe = getShapeSuperKeyframe(currTime);
+		currKeyframe = getSuperShapeKf(currTime);
 		next_unit = getBestNextUnit(currTime, currKeyframe);
 	}
 
@@ -366,8 +366,8 @@ void DecScaff::foldabilize()
 	std::cout << "\n============FINISH============\n";
 }
 
-double DecScaff::foldabilizeUnit(UnitScaff* unit, double currTime, ShapeSuperKeyframe* currKf,
-										double& nextTime, ShapeSuperKeyframe*& nextKf)
+double DecScaff::foldabilizeUnit(UnitScaff* unit, double currTime, SuperShapeKf* currKf,
+										double& nextTime, SuperShapeKf*& nextKf)
 {
 	// foldabilize nextUnit wrt the current super key frame
 	double timeLength = unit->getNbTopMasters() * timeScale;
@@ -375,7 +375,7 @@ double DecScaff::foldabilizeUnit(UnitScaff* unit, double currTime, ShapeSuperKey
 	double cost = unit->foldabilize(currKf, TimeInterval(currTime, nextTime));
 
 	// get the next super key frame 
-	nextKf = getShapeSuperKeyframe(nextTime);
+	nextKf = getSuperShapeKf(nextTime);
 
 	// the normalized cost wrt. the importance
 	cost *= unit->importance;
@@ -387,7 +387,7 @@ double DecScaff::foldabilizeUnit(UnitScaff* unit, double currTime, ShapeSuperKey
    currKeyframe          nextKeyframe           next2Keyframe
 **/  
 // currKeyframe is a super keyframe providing context information
-UnitScaff* DecScaff::getBestNextUnit(double currTime, ShapeSuperKeyframe* currKeyframe)
+UnitScaff* DecScaff::getBestNextUnit(double currTime, SuperShapeKf* currKeyframe)
 {
 	// unfolded units
 	QVector<UnitScaff*> unfoldedUnits;
@@ -408,7 +408,7 @@ UnitScaff* DecScaff::getBestNextUnit(double currTime, ShapeSuperKeyframe* currKe
 		// foldabilize nextUnit
 		std::cout << "*\nEvaluating unit: " << nextUnit->mID.toStdString() << "\n";
 		double nextTime = -1.0;
-		ShapeSuperKeyframe* nextKeyframe = nullptr;
+		SuperShapeKf* nextKeyframe = nullptr;
 		TimeInterval origNextTi = nextUnit->mFoldDuration; // back up
 		double nextCost = foldabilizeUnit(nextUnit, currTime, currKeyframe, nextTime, nextKeyframe);
 
@@ -428,7 +428,7 @@ UnitScaff* DecScaff::getBestNextUnit(double currTime, ShapeSuperKeyframe* currKe
 				// foldabilize next2Unit
 				std::cout << "==> " << next2Unit->mID.toStdString() << "\n";
 				double next2Time;
-				ShapeSuperKeyframe* next2Keyframe;
+				SuperShapeKf* next2Keyframe;
 				TimeInterval origNext2Ti = next2Unit->mFoldDuration;
 				double next2Cost = foldabilizeUnit(next2Unit, nextTime, nextKeyframe, next2Time, next2Keyframe);
 
@@ -504,7 +504,7 @@ void DecScaff::selectKeyframe( int idx )
 		keyframeIdx = idx;
 }
 
-double DecScaff::getConnectivityThr()
+double DecScaff::getConnectThr()
 {
 	return connThrRatio * computeAABB().radius();
 }

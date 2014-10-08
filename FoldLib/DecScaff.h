@@ -4,8 +4,8 @@
 #include "PatchNode.h"
 #include "Numeric.h"
 #include "UnitScaff.h"
-#include "FoldOptionGraph.h"
-#include "ShapeSuperKeyframe.h"
+#include "FoldOptGraph.h"
+#include "SuperShapeKf.h"
 
 // DecGraph encodes the decomposition of the scaffold for input shape
 // including base patches and blocks
@@ -62,18 +62,18 @@ private:
 
 public:
 	// threshold for connectivity
-	double getConnectivityThr();
+	double getConnectThr();
 
 	// foldabilization
 	void foldabilize();
-	double foldabilizeUnit(UnitScaff* unit, double currTime, ShapeSuperKeyframe* currKf,
-												double& nextTime, ShapeSuperKeyframe*& nextKf);
-	UnitScaff* getBestNextUnit(double currT, ShapeSuperKeyframe* currKeyframe);
+	double foldabilizeUnit(UnitScaff* unit, double currTime, SuperShapeKf* currKf,
+												double& nextTime, SuperShapeKf*& nextKf);
+	UnitScaff* getBestNextUnit(double currT, SuperShapeKf* currKeyframe);
 
 	// key frame
 	void genKeyframes(int N);
 	Scaffold* getKeyframe(double t);
-	ShapeSuperKeyframe* getShapeSuperKeyframe(double t);
+	SuperShapeKf* getSuperShapeKf(double t);
 
 public:
 	Scaffold* activeScaffold();

@@ -10,10 +10,10 @@ class UnitScaff;
 // The master order constrains are also updated for super masters
 // These additional information helps compute various folding volumes
 
-class ShapeSuperKeyframe final : public Scaffold
+class SuperShapeKf final : public Scaffold
 {
 public:
-	ShapeSuperKeyframe(Scaffold* superKeyframe, StringSetMap moc_g);
+	SuperShapeKf(Scaffold* superKeyframe, StringSetMap moc_g);
 	// the map between master and super master
 	QMap<QString, QString> master2SuperMap;
 

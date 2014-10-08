@@ -2,7 +2,7 @@
 
 #include "Scaffold.h"
 #include "PatchNode.h"
-#include "FoldOptionGraph.h"
+#include "FoldOptGraph.h"
 
 class ChainScaff : public Scaffold
 {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Scaffold.h"
-#include "ShapeSuperKeyframe.h"
+#include "SuperShapeKf.h"
 #include "TimeInterval.h"
 
 class FoldOption;
@@ -52,8 +52,8 @@ public:
 	/* foldabilization : compute the best fold solution wrt the given super shape key frame
 	   the best solution is indicated by currSlnIdx
 	   all tested set of avail fold options with their fold solutions are also stored to avoid repeated computation	*/
-	virtual double			foldabilize(ShapeSuperKeyframe* ssKeyframe, TimeInterval ti); // foldabilize a block wrt. the context and returns the cost 
-	virtual QVector<int>	getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe); // prune fold options wrt. to obstacles
+	virtual double			foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti); // foldabilize a block wrt. the context and returns the cost 
+	virtual QVector<int>	getAvailFoldOptions(SuperShapeKf* ssKeyframe); // prune fold options wrt. to obstacles
 	virtual double			findOptimalSolution(const QVector<int>& afo); // store the optimal solution and returns the cost
 
 	// the cost of fold options

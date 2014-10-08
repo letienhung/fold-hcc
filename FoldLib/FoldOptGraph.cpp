@@ -1,4 +1,4 @@
-#include "FoldOptionGraph.h"
+#include "FoldOptGraph.h"
 #include <QFile>
 #include <QStringList>
 #include <QTextStream>
@@ -69,67 +69,67 @@ FoldOption::~FoldOption()
 
 //////////////////////////////////////////////////////////////////////////
 
-QString FoldOptionGraph::dotPath = "\"" + getcwd() + "/FoldLib/Graphviz/dot.exe" + "\"";
+QString FoldOptGraph::dotPath = "\"" + getcwd() + "/FoldLib/Graphviz/dot.exe" + "\"";
 
 
-FoldOptionGraph::FoldOptionGraph( QString id )
+FoldOptGraph::FoldOptGraph( QString id )
 	:Graph(id)
 {
 }
 
-FoldOptionGraph::FoldOptionGraph( FoldOptionGraph& other )
+FoldOptGraph::FoldOptGraph( FoldOptGraph& other )
 	:Graph(other)
 {
 }
 
-FoldOptionGraph::~FoldOptionGraph()
+FoldOptGraph::~FoldOptGraph()
 {
 }
 
-Structure::Graph* FoldOptionGraph::clone()
+Structure::Graph* FoldOptGraph::clone()
 {
-	return new FoldOptionGraph(*this);
+	return new FoldOptGraph(*this);
 }
 
 
-void FoldOptionGraph::addNode( ChainNode* cn )
+void FoldOptGraph::addNode( ChainNode* cn )
 {
 	Graph::addNode(cn);
 	cn->properties["type"] = "entity";
 }
 
-void FoldOptionGraph::addNode( FoldOption* fn )
+void FoldOptGraph::addNode( FoldOption* fn )
 {
 	Graph::addNode(fn);
 	fn->properties["type"] = "option";
 }
 
-void FoldOptionGraph::addFoldLink( Structure::Node* n1, Structure::Node* n2 )
+void FoldOptGraph::addFoldLink( Structure::Node* n1, Structure::Node* n2 )
 {
 	Structure::Link* link =  Graph::addLink(n1, n2);
 	link->properties["type"] = "option";
 }
 
-void FoldOptionGraph::addCollisionLink( Structure::Node* n1, Structure::Node* n2 )
+void FoldOptGraph::addCollisionLink( Structure::Node* n1, Structure::Node* n2 )
 {
 	Structure::Link* link =  Graph::addLink(n1, n2);
 	link->properties["type"] = "collision";
 }
 
 
-bool FoldOptionGraph::verifyNodeType( QString nid, QString type )
+bool FoldOptGraph::verifyNodeType( QString nid, QString type )
 {
 	Structure::Node* node = getNode(nid);
 	return (node && node->properties["type"] == type);
 }
 
-bool FoldOptionGraph::verifyLinkType( QString nid1, QString nid2, QString type )
+bool FoldOptGraph::verifyLinkType( QString nid1, QString nid2, QString type )
 {
 	Structure::Link* link = getLink(nid1, nid2);
 	return (link && link->properties["type"] == type);
 }
 
-bool FoldOptionGraph::areSiblings( QString nid1, QString nid2 )
+bool FoldOptGraph::areSiblings( QString nid1, QString nid2 )
 {
 	// both are folding nodes
 	if (!verifyNodeType(nid1, "option") || !verifyNodeType(nid2, "option"))
@@ -142,7 +142,7 @@ bool FoldOptionGraph::areSiblings( QString nid1, QString nid2 )
 }
 
 
-ChainNode* FoldOptionGraph::getChainNode( QString fnid )
+ChainNode* FoldOptGraph::getChainNode( QString fnid )
 {
 	if (!verifyNodeType(fnid, "option")) return nullptr;
 
@@ -150,7 +150,7 @@ ChainNode* FoldOptionGraph::getChainNode( QString fnid )
 	return (ChainNode*)l->getNodeOther(fnid);
 }
 
-QVector<FoldOption*> FoldOptionGraph::getFoldOptions( QString cnid )
+QVector<FoldOption*> FoldOptGraph::getFoldOptions( QString cnid )
 {
 	QVector<FoldOption*> fns;
 	if (!verifyNodeType(cnid, "entity")) return fns;
@@ -163,7 +163,7 @@ QVector<FoldOption*> FoldOptionGraph::getFoldOptions( QString cnid )
 	return fns;
 }
 
-QVector<FoldOption*> FoldOptionGraph::getSiblings( QString fnid )
+QVector<FoldOption*> FoldOptGraph::getSiblings( QString fnid )
 {
 	if (verifyNodeType(fnid, "entity")) 
 		return getFoldOptions(getChainNode(fnid)->mID);
@@ -171,7 +171,7 @@ QVector<FoldOption*> FoldOptionGraph::getSiblings( QString fnid )
 		return QVector<FoldOption*>();
 }
 
-QVector<FoldOption*> FoldOptionGraph::getAllFoldOptions()
+QVector<FoldOption*> FoldOptGraph::getAllFoldOptions()
 {
 	QVector<FoldOption*> fns;
 	foreach(Structure::Node* n, nodes)
@@ -183,7 +183,7 @@ QVector<FoldOption*> FoldOptionGraph::getAllFoldOptions()
 	return fns;
 }
 
-QVector<ChainNode*> FoldOptionGraph::getAllChainNodes()
+QVector<ChainNode*> FoldOptGraph::getAllChainNodes()
 {
 	QVector<ChainNode*> cns;
 	foreach(Structure::Node* n, nodes)
@@ -195,7 +195,7 @@ QVector<ChainNode*> FoldOptionGraph::getAllChainNodes()
 	return cns;
 }
 
-QVector<Structure::Link*> FoldOptionGraph::getFoldinglinks( QString nid )
+QVector<Structure::Link*> FoldOptGraph::getFoldinglinks( QString nid )
 {
 	QVector<Structure::Link*> flinks;
 	foreach (Structure::Link* l, getLinks(nid))
@@ -209,7 +209,7 @@ QVector<Structure::Link*> FoldOptionGraph::getFoldinglinks( QString nid )
 	return flinks;
 }
 
-QVector<Structure::Link*> FoldOptionGraph::getCollisionLinks( QString nid )
+QVector<Structure::Link*> FoldOptGraph::getCollisionLinks( QString nid )
 {
 	QVector<Structure::Link*> clinks;
 	foreach (Structure::Link* l, getLinks(nid))
@@ -223,7 +223,7 @@ QVector<Structure::Link*> FoldOptionGraph::getCollisionLinks( QString nid )
 	return clinks;
 }
 
-QVector<Structure::Node*> FoldOptionGraph::getFamilyNodes( QString nid )
+QVector<Structure::Node*> FoldOptGraph::getFamilyNodes( QString nid )
 {
 	QVector<Structure::Node*> family;
 
@@ -238,7 +238,7 @@ QVector<Structure::Node*> FoldOptionGraph::getFamilyNodes( QString nid )
 	return family;
 }
 
-QVector<Structure::Link*> FoldOptionGraph::getFamilyCollisionLinks( QString nid )
+QVector<Structure::Link*> FoldOptGraph::getFamilyCollisionLinks( QString nid )
 {
 	QVector<Structure::Link*> clinks;
 	foreach(Structure::Node* node, getFamilyNodes(nid))
@@ -249,7 +249,7 @@ QVector<Structure::Link*> FoldOptionGraph::getFamilyCollisionLinks( QString nid 
 	return clinks;
 }
 
-QString FoldOptionGraph::toGraphvizFormat( QString subcaption, QString caption )
+QString FoldOptGraph::toGraphvizFormat( QString subcaption, QString caption )
 {
 	QStringList out;
 	out << "graph G{\n";
@@ -322,7 +322,7 @@ QString FoldOptionGraph::toGraphvizFormat( QString subcaption, QString caption )
 	return out.join("");
 }
 
-void FoldOptionGraph::saveAsGraphviz( QString fname, QString subcaption /*= ""*/, QString caption /*= ""*/ )
+void FoldOptGraph::saveAsGraphviz( QString fname, QString subcaption /*= ""*/, QString caption /*= ""*/ )
 {
 	QFile file(fname + ".gv");
 	if (!file.open(QFile::WriteOnly | QFile::Text))	return;
@@ -334,7 +334,7 @@ void FoldOptionGraph::saveAsGraphviz( QString fname, QString subcaption /*= ""*/
 	file.close();
 }
 
-void FoldOptionGraph::saveAsImage( QString fname )
+void FoldOptGraph::saveAsImage( QString fname )
 {
 	// save graphvis
 	saveAsGraphviz(fname);
@@ -345,7 +345,7 @@ void FoldOptionGraph::saveAsImage( QString fname )
 	system(qPrintable(command));
 }
 
-void FoldOptionGraph::clearCollisionLinks()
+void FoldOptGraph::clearCollisionLinks()
 {
 	foreach (Structure::Link* link, links)
 	{
@@ -356,7 +356,7 @@ void FoldOptionGraph::clearCollisionLinks()
 	}
 }
 
-bool FoldOptionGraph::hasFreeFoldOptions( QString cnid )
+bool FoldOptGraph::hasFreeFoldOptions( QString cnid )
 {
 	bool isFree = false;
 	foreach (FoldOption* fn, getFoldOptions(cnid))

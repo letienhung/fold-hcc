@@ -1,8 +1,8 @@
-#include "ShapeSuperKeyframe.h"
+#include "SuperShapeKf.h"
 #include "UnitScaff.h"
 #include "GeomUtility.h"
 
-ShapeSuperKeyframe::ShapeSuperKeyframe(Scaffold* superKeyframe, StringSetMap moc_g)
+SuperShapeKf::SuperShapeKf(Scaffold* superKeyframe, StringSetMap moc_g)
 {
 	// clone all nodes
 	foreach(Structure::Node* n, superKeyframe->nodes)
@@ -89,7 +89,7 @@ ShapeSuperKeyframe::ShapeSuperKeyframe(Scaffold* superKeyframe, StringSetMap moc
 
 
 // A FdGraph is valid only if all order constraints are met
-bool ShapeSuperKeyframe::isValid(Vector3 sqzV)
+bool SuperShapeKf::isValid(Vector3 sqzV)
 {
 	// get all masters: un-merged and super
 	QVector<PatchNode*> ms;
@@ -109,7 +109,7 @@ bool ShapeSuperKeyframe::isValid(Vector3 sqzV)
 	return true;
 }
 
-QVector<ScaffNode*> ShapeSuperKeyframe::getInbetweenExternalParts(UnitScaff* unit, Vector3 p0, Vector3 p1)
+QVector<ScaffNode*> SuperShapeKf::getInbetweenExternalParts(UnitScaff* unit, Vector3 p0, Vector3 p1)
 {
 	// time line
 	Vector3 sqzV = unit->baseMaster->mPatch.Normal;
@@ -155,7 +155,7 @@ QVector<ScaffNode*> ShapeSuperKeyframe::getInbetweenExternalParts(UnitScaff* uni
 	return inbetweens;
 }
 
-QVector<ScaffNode*> ShapeSuperKeyframe::getUnrelatedExternalMasters(QString base_mid, QString top_mid)
+QVector<ScaffNode*> SuperShapeKf::getUnrelatedExternalMasters(QString base_mid, QString top_mid)
 {
 	QVector<ScaffNode*> urMasters;
 

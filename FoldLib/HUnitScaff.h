@@ -1,7 +1,7 @@
 #pragma once
 
 #include "UnitScaff.h"
-#include "FoldOptionGraph.h"
+#include "FoldOptGraph.h"
 
 class HUnitScaff final: public UnitScaff
 {
@@ -16,12 +16,12 @@ private:
 	void createChains(QVector<ScaffNode*>& ss, QVector< QVector<QString> >& mPairs);
 
 	// obstacles
-	void computeObstacles(ShapeSuperKeyframe* ssKeyframe);
+	void computeObstacles(SuperShapeKf* ssKeyframe);
 
 	// collision graph
-	FoldOptionGraph* createCollisionGraph(const QVector<int>& afo);
-	QVector<FoldOption*> findOptimalSolution(FoldOptionGraph* collFog, const QVector<Structure::Node*>& component);
-	QVector< QVector<bool> > genDualAdjMatrix(FoldOptionGraph* collFog, const QVector<FoldOption*>& fns);
+	FoldOptGraph* createCollisionGraph(const QVector<int>& afo);
+	QVector<FoldOption*> findOptimalSolution(FoldOptGraph* collFog, const QVector<Structure::Node*>& component);
+	QVector< QVector<bool> > genDualAdjMatrix(FoldOptGraph* collFog, const QVector<FoldOption*>& fns);
 	QVector<double> genReversedWeights(const QVector<FoldOption*>& fns);
 
 	// obstacles
@@ -32,7 +32,7 @@ public:
 	virtual Scaffold* getKeyframe(double t, bool useThk) override;
 
 	// foldabilization
-	virtual QVector<int> getAvailFoldOptions(ShapeSuperKeyframe* ssKeyframe) override;
+	virtual QVector<int> getAvailFoldOptions(SuperShapeKf* ssKeyframe) override;
 	virtual double findOptimalSolution(const QVector<int>& afo) override;
 
 public:

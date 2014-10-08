@@ -1,10 +1,10 @@
 #include "SuperUnitScaff.h"
 #include "HUnitScaff.h"
-#include "ShapeSuperKeyframe.h"
+#include "SuperShapeKf.h"
 #include "ChainScaff.h"
 #include "Numeric.h"
 
-SuperUnitScaff::SuperUnitScaff(HUnitScaff* block, ShapeSuperKeyframe* sskf)
+SuperUnitScaff::SuperUnitScaff(HUnitScaff* block, SuperShapeKf* sskf)
 : origUnit(block), ssKeyframe(sskf)
 {
 	// map from master to super master within this block
