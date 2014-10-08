@@ -5,7 +5,7 @@
 SuperShapeKf::SuperShapeKf(Scaffold* superKeyframe, StringSetMap moc_g)
 {
 	// clone all nodes
-	foreach(Structure::Node* n, superKeyframe->nodes)
+	for (Structure::Node* n : superKeyframe->nodes)
 		Structure::Graph::addNode(n->clone());
 
 	// super master and their corresponding masters
@@ -49,7 +49,7 @@ SuperShapeKf::SuperShapeKf(Scaffold* superKeyframe, StringSetMap moc_g)
 
 		// store master_super_map
 		superPatch_new->properties[MERGED_MASTERS].setValue(childMasters_new[i]);
-		foreach(QString mid, childMasters_new[i])
+		for (QString mid : childMasters_new[i])
 			master2SuperMap[mid] = superPatch_new->mID;
 	}
 
@@ -57,12 +57,12 @@ SuperShapeKf::SuperShapeKf(Scaffold* superKeyframe, StringSetMap moc_g)
 	mocGreater = moc_g;
 
 	// change name of keys
-	foreach(QSet<QString> child_mids, childMasters_new)
+	for (QSet<QString> child_mids : childMasters_new)
 	{
 		QString child = child_mids.toList().front();
 		QString key_new = master2SuperMap[child];
 		QSet<QString> values_union;
-		foreach(QString cmid, child_mids){
+		for (QString cmid : child_mids){
 			values_union += mocGreater[cmid];
 			mocGreater.remove(cmid);
 		}
@@ -70,10 +70,10 @@ SuperShapeKf::SuperShapeKf(Scaffold* superKeyframe, StringSetMap moc_g)
 	}
 
 	// change name of values
-	foreach(QString key, mocGreater.keys())
+	for (QString key : mocGreater.keys())
 	{
 		QSet<QString> values_new;
-		foreach(QString v, mocGreater[key]){
+		for (QString v : mocGreater[key]){
 			if (master2SuperMap.contains(v))
 				v = master2SuperMap[v]; // change name
 			values_new << v;
@@ -82,8 +82,8 @@ SuperShapeKf::SuperShapeKf(Scaffold* superKeyframe, StringSetMap moc_g)
 	}
 
 	// moc_less
-	foreach(QString key, mocGreater.keys())
-		foreach(QString value, mocGreater[key])
+	for (QString key : mocGreater.keys())
+	for (QString value : mocGreater[key])
 		mocLess[value] << key;
 }
 
@@ -101,8 +101,8 @@ bool SuperShapeKf::isValid(Vector3 sqzV)
 	QMap<QString, double> timeStamps = getTimeStampsNormalized(ms, sqzV, tScale);
 
 	// check validity
-	foreach(QString key, mocGreater.keys())
-		foreach(QString value, mocGreater[key])
+	for (QString key : mocGreater.keys())
+	for (QString value : mocGreater[key])
 	if (timeStamps[key] < timeStamps[value])
 		return false;
 

@@ -49,7 +49,7 @@ SurfaceMeshModel* SegMeshLoader::extractSegMesh( QString gid )
 
 	// vertex set from face
 	QSet<int> vertSet;
-	foreach(int fidx, part)
+	for (int fidx : part)
 	{
 		Surface_mesh::Vertex_around_face_circulator vit = entireMesh->vertices(Face(fidx)),vend=vit;
 		do{ vertSet.insert(Vertex(vit).idx()); } while(++vit != vend);
@@ -57,14 +57,14 @@ SurfaceMeshModel* SegMeshLoader::extractSegMesh( QString gid )
 
 	// entire vid => segment vid
 	QMap<Vertex,Vertex> vmap;
-	foreach(int vidx, vertSet)
+	for (int vidx : vertSet)
 	{
 		vmap[Vertex(vidx)] = Vertex(vmap.size());
 		subMesh->add_vertex( entirePoints[Vertex(vidx)] );
 	}
 
 	// copy vertices to subMesh
-	foreach(int fidx, part){
+	for (int fidx : part){
 		std::vector<Vertex> pnts; 
 		Surface_mesh::Vertex_around_face_circulator vit = entireMesh->vertices(Face(fidx)),vend=vit;
 		do{ pnts.push_back(vmap[vit]); } while(++vit != vend);
@@ -82,7 +82,7 @@ QVector<SurfaceMeshModel*> SegMeshLoader::getSegMeshes()
 	/*loadGroupsFromObj();
 
 	QVector<SurfaceMeshModel*> meshes;
-	foreach (QString gid, groupFaces.keys())
+	for (QString gid, groupFaces.keys())
 	meshes.push_back(extractSegMesh(gid));
 	return meshes;*/
 
@@ -117,8 +117,8 @@ QVector<SurfaceMeshModel*> SegMeshLoader::loadSegmentedOBJ(QString filename)
 			// Create the mesh we have right now
 			sub_meshes.push_back(new SurfaceMeshModel(groupName + ".obj", groupName));
 
-			foreach(Vector3 p, vertices) sub_meshes.back()->add_vertex(p);
-			foreach(VectorVertices f, faces) sub_meshes.back()->add_face(f);
+			for (Vector3 p : vertices) sub_meshes.back()->add_vertex(p);
+			for (VectorVertices f : faces) sub_meshes.back()->add_face(f);
 
 			voffset += vertices.size();
 
@@ -167,8 +167,8 @@ QVector<SurfaceMeshModel*> SegMeshLoader::loadSegmentedOBJ(QString filename)
 	if(vertices.size() && faces.size())
 	{
 		sub_meshes.push_back(new SurfaceMeshModel(groupName + ".obj", groupName));
-		foreach(Vector3 p, vertices) sub_meshes.back()->add_vertex(p);
-		foreach(VectorVertices f, faces) sub_meshes.back()->add_face(f);
+		for (Vector3 p : vertices) sub_meshes.back()->add_vertex(p);
+		for (VectorVertices f : faces) sub_meshes.back()->add_face(f);
 	}
 
 	return sub_meshes;

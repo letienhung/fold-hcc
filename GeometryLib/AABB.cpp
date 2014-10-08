@@ -37,7 +37,7 @@ Geom::Box Geom::AABB::box()
 
 void Geom::AABB::add( QVector<Vector3>& pnts )
 {
-	foreach(Point p, pnts) {
+	for (Point p : pnts) {
 		bbmin = minimize(bbmin, p);
 		bbmax = maximize(bbmax, p);
 	} 

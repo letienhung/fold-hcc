@@ -189,7 +189,7 @@ FoldOption* ChainScaff::genDeleteFoldOption( int nSplits )
 void ChainScaff::resetChainParts(FoldOption* fn)
 {
 	// clear
-	foreach (PatchNode* n, chainParts) removeNode(n->mID);
+	for (PatchNode* n : chainParts) removeNode(n->mID);
 	chainParts.clear();
 
 	if(!origSlave) return;
@@ -214,12 +214,12 @@ void ChainScaff::resetChainParts(FoldOption* fn)
 	// cut into pieces
 	QVector<Geom::Plane> cutPlanes = generateCutPlanes(fn);
 	QVector<ScaffNode*> splitNodes = Scaffold::split(origSlave->mID, cutPlanes);
-	foreach (ScaffNode* n, splitNodes) chainParts << (PatchNode*)n; 
+	for (ScaffNode* n : splitNodes) chainParts << (PatchNode*)n;
 
 	// sort them
 	QMap<double, PatchNode*> distPartMap;
 	Geom::Plane base_plane = baseMaster->mPatch.getPlane();
-	foreach(PatchNode* n, chainParts)
+	for (PatchNode* n : chainParts)
 	{
 		double dist = base_plane.signedDistanceTo(n->center());
 		distPartMap[fabs(dist)] = n;
@@ -236,7 +236,7 @@ void ChainScaff::resetHingeLinks(FoldOption* fn)
 {
 	// remove hinge links
 	rightLinks.clear(); leftLinks.clear();
-	foreach (Structure::Link* link, links)
+	for (Structure::Link* link : links)
 		Structure::Graph::removeLink(link);
 
 	// hinge links between base and slave
@@ -337,7 +337,7 @@ void ChainScaff::addThickness(Scaffold* keyframe, double t)
 	// get parts in key frame
 	QVector<PatchNode*> keyParts;
 	keyParts << (PatchNode*)keyframe->getNode(baseMaster->mID);
-	foreach(PatchNode* cpart, chainParts) keyParts << (PatchNode*)keyframe->getNode(cpart->mID);
+	for (PatchNode* cpart : chainParts) keyParts << (PatchNode*)keyframe->getNode(cpart->mID);
 	keyParts << (PatchNode*)keyframe->getNode(topMaster->mID);
 
 	// move parts up for thickness

@@ -5,18 +5,18 @@
 BundleNode::BundleNode( QString id, Geom::Box& b, QVector<ScaffNode*> nodes, Vector3 v )
 	:PatchNode(id, b, MeshPtr(nullptr),  v)
 {
-	foreach (ScaffNode* n, nodes)
+	for (ScaffNode* n : nodes)
 		mNodes << (ScaffNode*)n->clone();
 
 	// encode nodes
 	Geom::Frame frame = mBox.getFrame();
-	foreach (ScaffNode* n, mNodes)
+	for (ScaffNode* n : mNodes)
 		mNodeFrameRecords << frame.encodeFrame(n->mBox.getFrame());
 
 	// inherits color from largest child
 	double maxVol = -maxDouble();
 	QColor maxColor;
-	foreach (ScaffNode* n, mNodes)
+	for (ScaffNode* n : mNodes)
 	{
 		if (n->mBox.volume() > maxVol)
 		{
@@ -32,7 +32,7 @@ BundleNode::BundleNode( QString id, Geom::Box& b, QVector<ScaffNode*> nodes, Vec
 BundleNode::BundleNode(BundleNode& other)
 	:PatchNode(other)
 {
-	foreach(ScaffNode* n, other.mNodes)
+	for (ScaffNode* n : other.mNodes)
 		mNodes << (ScaffNode*)n->clone();
 
 	mNodeFrameRecords = other.mNodeFrameRecords;
@@ -41,7 +41,7 @@ BundleNode::BundleNode(BundleNode& other)
 
 BundleNode::~BundleNode()
 {
-	foreach(ScaffNode* n, mNodes)
+	for (ScaffNode* n : mNodes)
 		delete n;
 }
 
@@ -54,14 +54,14 @@ Structure::Node* BundleNode::clone()
 void BundleNode::drawMesh()
 {
 	deformMesh();
-	foreach(ScaffNode* n, mNodes)
+	for (ScaffNode* n : mNodes)
 		n->drawMesh();
 }
 
 QString BundleNode::getMeshName()
 {
 	QString name;
-	foreach (ScaffNode* n, mNodes)
+	for (ScaffNode* n : mNodes)
 		name += "+" + n->getMeshName();
 
 	return name;
@@ -70,7 +70,7 @@ QString BundleNode::getMeshName()
 QVector<ScaffNode*> BundleNode::getSubNodes()
 {
 	QVector<ScaffNode*> pnodes;
-	foreach (ScaffNode* n, mNodes)
+	for (ScaffNode* n : mNodes)
 		pnodes += n->getSubNodes();
 
 	return pnodes;
@@ -80,7 +80,7 @@ ScaffNode* BundleNode::cloneChopped( Geom::Plane& chopper )
 {
 	// clone plain nodes
 	QVector<ScaffNode*> plainNodes;
-	foreach (ScaffNode* n, mNodes)
+	for (ScaffNode* n : mNodes)
 	{
 		PLANE_RELATION relation = relationWithPlane(n, chopper, 0.1);
 		if (relation == POS_PLANE)
@@ -103,7 +103,7 @@ ScaffNode* BundleNode::cloneChopped( Geom::Plane& chopper )
 		return new BundleNode(bid, box, plainNodes);
 
 		// delete plain nodes
-		foreach(ScaffNode* n, plainNodes)
+		for (ScaffNode* n : plainNodes)
 			delete n;
 	}
 
@@ -118,7 +118,7 @@ ScaffNode* BundleNode::cloneChopped( Geom::Plane& chopper1, Geom::Plane& chopper
 	if (plane2.whichSide(plane1.Constant) < 0) plane2.flip();
 
 	QVector<ScaffNode*> plainNodes;
-	foreach (ScaffNode* n, mNodes)
+	for (ScaffNode* n : mNodes)
 	{
 		PLANE_RELATION relation1 = relationWithPlane(n, plane1, 0.1);
 		PLANE_RELATION relation2 = relationWithPlane(n, plane2, 0.1);
@@ -146,7 +146,7 @@ ScaffNode* BundleNode::cloneChopped( Geom::Plane& chopper1, Geom::Plane& chopper
 		return new BundleNode(bid, box, plainNodes);
 
 		// delete plain nodes
-		foreach(ScaffNode* n, plainNodes)
+		for (ScaffNode* n : plainNodes)
 			delete n;
 	}
 
@@ -167,7 +167,7 @@ void BundleNode::deformMesh()
 void BundleNode::cloneMesh()
 {
 	deformMesh();
-	foreach(ScaffNode* n, mNodes){
+	for (ScaffNode* n : mNodes){
 		n->cloneMesh();
 	}
 }
@@ -175,7 +175,7 @@ void BundleNode::cloneMesh()
 void BundleNode::exportMesh(QFile &file, int& v_offset)
 {
 	cloneMesh();
-	foreach(ScaffNode* n, mNodes){
+	for (ScaffNode* n : mNodes){
 		n->exportMesh(file, v_offset);
 	}
 }
@@ -184,41 +184,41 @@ void BundleNode::setThickness( double thk )
 {
 	PatchNode::setThickness(thk);
 
-	foreach (ScaffNode* n, mNodes)
+	for (ScaffNode* n : mNodes)
 		n->setThickness(thk);
 }
 
 void BundleNode::setShowCuboid( bool show )
 {
 	ScaffNode::setShowCuboid(show);
-	foreach (ScaffNode* n, mNodes)
+	for (ScaffNode* n : mNodes)
 		n->setShowCuboid(show);
 }
 
 void BundleNode::setShowScaffold( bool show )
 {
 	ScaffNode::setShowScaffold(show);
-	foreach (ScaffNode* n, mNodes)
+	for (ScaffNode* n : mNodes)
 		n->setShowScaffold(show);
 }
 
 void BundleNode::setShowMesh( bool show )
 {
 	ScaffNode::setShowMesh(show);
-	foreach (ScaffNode* n, mNodes)
+	for (ScaffNode* n : mNodes)
 		n->setShowMesh(show);
 }
 
 void BundleNode::translate( Vector3 v )
 {
 	ScaffNode::translate(v);
-	foreach (ScaffNode* n, mNodes)
+	for (ScaffNode* n : mNodes)
 		n->translate(v);
 }
 
 //void BundleNode::draw()
 //{
-//	foreach (ScaffNode* n, mNodes)
+//	for (ScaffNode* n : mNodes)
 //	{
 //		n->mColor = QColor::fromRgb(180, 180, 180);
 //		n->mColor.setAlphaF(0.78);

@@ -32,7 +32,7 @@ DecScaff::DecScaff(QString id, Scaffold* scaffold, Vector3 v, double connThr)
 
 	// time scale
 	double totalDuration = 0;
-	foreach (UnitScaff* b, units) totalDuration += b->getNbTopMasters();
+	for (UnitScaff* b : units) totalDuration += b->getNbTopMasters();
 	timeScale = 1.0 / totalDuration;
 
 	// selection
@@ -40,7 +40,7 @@ DecScaff::DecScaff(QString id, Scaffold* scaffold, Vector3 v, double connThr)
 	keyframeIdx = -1;
 	//////////////////////////////////////////////////////////////////////////
 	//QVector<Geom::Segment> normals;
-	//foreach (PatchNode* m, masters)
+	//for (PatchNode* m, masters)
 	//	normals << Geom::Segment(m->mPatch.Center, m->mPatch.Center + 10 * m->mPatch.Normal);
 	//addDebugSegments(normals);
 }
@@ -147,7 +147,7 @@ void DecScaff::computeMasterOrderConstraints()
 
 	// the base master is the bottom one that is not virtual
 	double minT = maxDouble();
-	foreach(PatchNode* m, masters){
+	for (PatchNode* m : masters){
 		if (!m->hasTag(EDGE_ROD_TAG) && masterTimeStamps[m->mID] < minT){
 			baseMaster = m;
 			minT = masterTimeStamps[m->mID];
@@ -157,7 +157,7 @@ void DecScaff::computeMasterOrderConstraints()
 	// projected masters on the base master
 	QMap<QString, Geom::Rectangle2> proj_rects;
 	Geom::Rectangle base_rect = baseMaster->mPatch;
-	foreach (PatchNode* m, masters)
+	for (PatchNode* m : masters)
 		proj_rects[m->mID] = base_rect.get2DRectangle(m->mPatch);
 
 	// check each pair of masters
@@ -207,7 +207,7 @@ Scaffold* DecScaff::activeScaffold()
 QStringList DecScaff::getUnitLabels()
 {
 	QStringList labels;
-	foreach(UnitScaff* l, units)
+	for (UnitScaff* l : units)
 		labels.append(l->mID);
 
 	// append string to select none
@@ -355,7 +355,7 @@ void DecScaff::foldabilize()
 	{
 		std::cout << "\n=====MERGE INTERLOCKING======\n";
 		QSet<int> sCluster;
-		foreach (int uidx, intlkUnitIdx)
+		for (int uidx : intlkUnitIdx)
 			sCluster += slaveClusters[uidx];
 		
 		UnitScaff* mergedBlock = createUnit(sCluster);
@@ -477,7 +477,7 @@ void DecScaff::genKeyframes( int N )
 		kf->hideEdgeRods();
 
 		// color
-		foreach (ScaffNode* n, kf->getScaffNodes())
+		for (ScaffNode* n : kf->getScaffNodes())
 		{
 			double grey = 240;
 			QColor c = (n->hasTag(ACTIVE_NODE_TAG) && !n->hasTag(MASTER_TAG)) ? 

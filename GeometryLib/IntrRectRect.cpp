@@ -61,7 +61,7 @@ void Geom::IntrRectRect::unilateralTest( Rectangle& rect0, Rectangle& rect1 )
 
 void Geom::IntrRectRect::addIntrPoint( Vector3 p )
 {
-	foreach(Vector3 v, intPnts)
+	for (Vector3 v : intPnts)
 		if ((v-p).norm() < ZERO_TOLERANCE_LOW)
 			return;
 

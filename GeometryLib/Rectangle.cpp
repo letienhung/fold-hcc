@@ -35,7 +35,7 @@ Geom::Rectangle::Rectangle()
 Geom::Rectangle::Rectangle( QVector<Vector3>& conners )
 {
 	Center = Vector3(0, 0, 0);
-	foreach (Vector3 p, conners) Center += p;
+	for (Vector3 p : conners) Center += p;
 	Center /= 4;
 
 	Vector3 e0 = conners[1] - conners[0];
@@ -87,7 +87,7 @@ bool Geom::Rectangle::isCoplanarWith( Vector3 p )
 
 bool Geom::Rectangle::isCoplanarWith( Rectangle& other )
 {
-	foreach (Vector3 p, other.getConners())
+	for (Vector3 p : other.getConners())
 		if (!this->isCoplanarWith(p)) return false;
 
 	return true;
@@ -111,7 +111,7 @@ bool Geom::Rectangle::contains( Segment s)
 
 bool Geom::Rectangle::contains( Rectangle& other )
 {
-	foreach (Vector3 p, other.getConners())
+	for (Vector3 p : other.getConners())
 		if (!this->contains(p)) return false;
 
 	return true;
@@ -119,7 +119,7 @@ bool Geom::Rectangle::contains( Rectangle& other )
 
 bool Geom::Rectangle::containsOneEdge( Rectangle& other )
 {
-	foreach (Segment e, other.getEdgeSegments())
+	for (Segment e : other.getEdgeSegments())
 		if (contains(e)) return true;
 
 	return false;
@@ -273,7 +273,7 @@ void Geom::Rectangle::drawFace( QColor color /*= Qt::red*/ )
 void Geom::Rectangle::drawEdges( double width /*= 2.0*/, QColor color /*= Qt::red*/ )
 {
 	LineSegments ls(width);
-	foreach (Segment e, getEdgeSegments())
+	for (Segment e : getEdgeSegments())
 		ls.addLine(e.P0, e.P1, color);
 	ls.draw(false);
 }
@@ -345,7 +345,7 @@ Vector3 Geom::Rectangle::getPerpAxis( Vector3 v )
 Geom::Rectangle Geom::Rectangle::get3DRectangle( Rectangle2 &rect2 )
 {
 	QVector<Vector3> conners;
-	foreach(Vector2 p2, rect2.getConners()) 
+	for (Vector2 p2 : rect2.getConners())
 		conners << getPosition(p2);
 
 	return Rectangle(conners);
@@ -355,7 +355,7 @@ Geom::Rectangle Geom::Rectangle::get3DRectangle( Rectangle2 &rect2 )
 Geom::Rectangle2 Geom::Rectangle::get2DRectangle( Rectangle& rect )
 {
 	QVector<Vector2> conners;
-	foreach (Vector3 p3, rect.getConners())
+	for (Vector3 p3 : rect.getConners())
 		conners << getProjCoordinates(p3);
 
 	return Rectangle2(conners);
@@ -370,7 +370,7 @@ double Geom::Rectangle::radius()
 QVector<Vector3> Geom::Rectangle::getEdgeSamples( int N )
 {
 	QVector<Vector3> samples;
-	foreach(Geom::Segment edge, getEdgeSegments())
+	for (Geom::Segment edge : getEdgeSegments())
 		samples += edge.getUniformSamples(N);
 
 	return samples;

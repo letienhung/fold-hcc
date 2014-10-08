@@ -155,7 +155,7 @@ QVector<FoldOption*> FoldOptGraph::getFoldOptions( QString cnid )
 	QVector<FoldOption*> fns;
 	if (!verifyNodeType(cnid, "entity")) return fns;
 
-	foreach(Structure::Link* l, getFoldinglinks(cnid))
+	for (Structure::Link* l : getFoldinglinks(cnid))
 	{
 		fns.push_back((FoldOption*) l->getNodeOther(cnid));
 	}
@@ -174,7 +174,7 @@ QVector<FoldOption*> FoldOptGraph::getSiblings( QString fnid )
 QVector<FoldOption*> FoldOptGraph::getAllFoldOptions()
 {
 	QVector<FoldOption*> fns;
-	foreach(Structure::Node* n, nodes)
+	for (Structure::Node* n : nodes)
 	{
 		if (n->properties["type"].toString() == "option")
 			fns << (FoldOption*)n;
@@ -186,7 +186,7 @@ QVector<FoldOption*> FoldOptGraph::getAllFoldOptions()
 QVector<ChainNode*> FoldOptGraph::getAllChainNodes()
 {
 	QVector<ChainNode*> cns;
-	foreach(Structure::Node* n, nodes)
+	for (Structure::Node* n : nodes)
 	{
 		if (n->properties["type"].toString() == "entity")
 			cns << (ChainNode*)n;
@@ -198,7 +198,7 @@ QVector<ChainNode*> FoldOptGraph::getAllChainNodes()
 QVector<Structure::Link*> FoldOptGraph::getFoldinglinks( QString nid )
 {
 	QVector<Structure::Link*> flinks;
-	foreach (Structure::Link* l, getLinks(nid))
+	for (Structure::Link* l : getLinks(nid))
 	{
 		if (l->properties["type"].toString() == "option")
 		{
@@ -212,7 +212,7 @@ QVector<Structure::Link*> FoldOptGraph::getFoldinglinks( QString nid )
 QVector<Structure::Link*> FoldOptGraph::getCollisionLinks( QString nid )
 {
 	QVector<Structure::Link*> clinks;
-	foreach (Structure::Link* l, getLinks(nid))
+	for (Structure::Link* l : getLinks(nid))
 	{
 		if (l->properties["type"].toString() == "collision")
 		{
@@ -232,7 +232,7 @@ QVector<Structure::Node*> FoldOptGraph::getFamilyNodes( QString nid )
 		(ChainNode*)node : getChainNode(nid);
 
 	family << cnode;
-	foreach(FoldOption* fn, getFoldOptions(cnode->mID))
+	for (FoldOption* fn : getFoldOptions(cnode->mID))
 		family << fn;
 
 	return family;
@@ -241,7 +241,7 @@ QVector<Structure::Node*> FoldOptGraph::getFamilyNodes( QString nid )
 QVector<Structure::Link*> FoldOptGraph::getFamilyCollisionLinks( QString nid )
 {
 	QVector<Structure::Link*> clinks;
-	foreach(Structure::Node* node, getFamilyNodes(nid))
+	for (Structure::Node* node : getFamilyNodes(nid))
 	{
 		clinks += getCollisionLinks(node->mID);
 	}
@@ -347,7 +347,7 @@ void FoldOptGraph::saveAsImage( QString fname )
 
 void FoldOptGraph::clearCollisionLinks()
 {
-	foreach (Structure::Link* link, links)
+	for (Structure::Link* link : links)
 	{
 		if (link->properties["type"] == "collision")
 		{
@@ -359,7 +359,7 @@ void FoldOptGraph::clearCollisionLinks()
 bool FoldOptGraph::hasFreeFoldOptions( QString cnid )
 {
 	bool isFree = false;
-	foreach (FoldOption* fn, getFoldOptions(cnid))
+	for (FoldOption* fn : getFoldOptions(cnid))
 	{
 		if (getCollisionLinks(fn->mID).isEmpty())
 		{

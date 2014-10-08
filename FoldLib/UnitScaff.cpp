@@ -9,11 +9,11 @@ UnitScaff::UnitScaff(QString id, QVector<PatchNode*>& ms, QVector<ScaffNode*>& s
 	QVector< QVector<QString> >&) : Scaffold(id)
 {
 	// clone nodes
-	foreach(PatchNode* m, ms)	{
+	for (PatchNode* m : ms)	{
 		masters << (PatchNode*)m->clone();
 		Structure::Graph::addNode(masters.last());
 	}
-	foreach(ScaffNode* s, ss)
+	for (ScaffNode* s : ss)
 		Structure::Graph::addNode(s->clone());
 
 	// selected chain index
@@ -37,7 +37,7 @@ UnitScaff::UnitScaff(QString id, QVector<PatchNode*>& ms, QVector<ScaffNode*>& s
 
 UnitScaff::~UnitScaff()
 {
-	foreach(ChainScaff* c, chains)
+	for (ChainScaff* c : chains)
 		delete c;
 }
 
@@ -82,7 +82,7 @@ void UnitScaff::selectChain( QString id )
 QStringList UnitScaff::getChainLabels()
 {
 	QStringList labels;
-	foreach(Scaffold* c, chains)
+	for (Scaffold* c : chains)
 		labels.push_back(c->mID);
 
 	// append string to select none
@@ -109,7 +109,7 @@ Scaffold* UnitScaff::getSuperKeyframe( double t )
 	// collect projections of all nodes (including baseMaster) on baseMaster
 	Geom::Rectangle base_rect = superPatch->mPatch;
 	QVector<Vector2> projPnts2 = base_rect.get2DConners();
-	foreach(ScaffNode* n, keyframe->getScaffNodes())
+	for (ScaffNode* n : keyframe->getScaffNodes())
 	{
 		if (n->mType == ScaffNode::PATCH)
 		{
@@ -150,7 +150,7 @@ double UnitScaff::getNbTopMasters()
 void UnitScaff::setThickness( double thk )
 {
 	thickness = thk;
-	foreach (ChainScaff* chain, chains)	
+	for (ChainScaff* chain : chains)
 	{
 		chain->halfThk = thickness / 2;
 		chain->baseOffset = thickness / 2;

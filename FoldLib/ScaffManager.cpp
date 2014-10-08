@@ -34,7 +34,7 @@ void ScaffManager::createScaffold()
 	scaffold->clear();
 
 	// create nodes from meshes
-	foreach (SurfaceMeshModel* m, subMeshes)
+	for (SurfaceMeshModel* m : subMeshes)
 	{
 		scaffold->addNode(MeshPtr(m), fitMethod);
 	}
@@ -73,7 +73,7 @@ void ScaffManager::setMesh( SurfaceMeshModel* mesh )
 
 void ScaffManager::changeNodeType()
 {
-	foreach(Structure::Node* n, scaffold->getSelectedNodes())
+	for (Structure::Node* n : scaffold->getSelectedNodes())
 	{
 		scaffold->changeNodeType((ScaffNode*)n);
 	}
@@ -83,7 +83,7 @@ void ScaffManager::changeNodeType()
 
 void ScaffManager::refitNodes()
 {
-	foreach(Structure::Node* n, scaffold->getSelectedNodes())
+	for (Structure::Node* n : scaffold->getSelectedNodes())
 	{
 		ScaffNode* fn = (ScaffNode*)n;
 		fn->refit(refitMethod); 

@@ -206,7 +206,7 @@ void HChainScaff::foldUniformHeight(double t)
 
 		double alpha = 0;
 		QVector<double> roots = findRoots(aa, bb, cc);
-		foreach(double r, roots){
+		for (double r : roots){
 			alpha = acos(RANGED(0, r, 1));
 			if (alpha_it.contains(alpha)) break;
 		}
@@ -245,7 +245,7 @@ void HChainScaff::foldUniformHeight(double t)
 
 		double alpha = 0, beta = 0;
 		QVector<double> roots = findRoots(B * B, K, E, F, G);
-		foreach(double r, roots)
+		for (double r : roots)
 		{
 			if (r < 0) continue;
 

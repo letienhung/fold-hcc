@@ -58,7 +58,7 @@ public:
 		glLineWidth(2.0f);
 		glColor4d(0,0,0,1);
 		glBegin(GL_LINES);
-		foreach(QVector<QVector3> poly, polys){
+		for (QVector<QVector3> poly : polys){
 			for(int i = 0; i < (int) poly.size(); i++){
 				glVertQt(poly[i]);
 				glVertQt(poly[(i+1) % poly.size()]);
@@ -68,7 +68,7 @@ public:
 
 		glPointSize(3.0f);
 		glBegin(GL_POINTS);
-		foreach(QVector<QVector3> poly, polys){
+		for (QVector<QVector3> poly : polys){
 			for(int i = 0; i < (int) poly.size(); i++)
 				glVertQt(poly[i]);
 		}
@@ -114,7 +114,7 @@ public:
 		glColorQt(c);
 
 		glBegin(GL_LINES);
-		foreach(QVector<QVector3> poly, polys){
+		for (QVector<QVector3> poly : polys){
 			for(int i = 0; i < (int) poly.size(); i++){
 				glVertQt(poly[i]);
 				glVertQt(poly[(i+1) % poly.size()]);
@@ -136,7 +136,7 @@ public:
 
 	void addPoly(const QVector<Vector3>& points, const QColor& c = Qt::red){
 		QVector<QVector3> q_points;
-		foreach(Vector3 p, points) q_points.push_back(QVector3(p));
+		for (Vector3 p : points) q_points.push_back(QVector3(p));
 		addPoly(q_points, c);
 	}
 };

@@ -82,7 +82,7 @@ QVector<QSet<int> > mergeIsctSets(QVector<QSet<T> > &sets, QVector<QSet<T> > &me
 		QSet<T> set = sets[sid];
 		QSet<int> setIdx;
 		setIdx << sid;
-		foreach (int key, merged_sets_map.keys())
+		for (int key : merged_sets_map.keys())
 		{
 			QSet<T> isct = merged_sets_map[key] & set;
 			if (!isct.isEmpty()) 

@@ -33,7 +33,7 @@ Geom::Rectangle2::Rectangle2( Vector2 &center, QVector<Vector2> &axis, Vector2 &
 Geom::Rectangle2::Rectangle2(QVector<Vector2> &conners)
 {
 	Center = Vector2(0,0);
-	foreach(Vector2 p, conners) Center += p;
+	for (Vector2 p : conners) Center += p;
 	Center /= 4;
 
 	Vector2 e0 = conners[0] - conners[1];
@@ -136,7 +136,7 @@ bool Geom::Rectangle2::contains( Vector2& p, double thr /*= ZERO_TOLERANCE_LOW*/
 bool Geom::Rectangle2::containsAll(QVector<Vector2>& pnts, double thr /*= ZERO_TOLERANCE_LOW*/ )
 {
 	bool ctn_all = true;
-	foreach(Vector2 p, pnts){
+	for (Vector2 p : pnts){
 		if (!contains(p, thr)){	ctn_all = false; break;}
 	}
 	return ctn_all;
@@ -220,7 +220,7 @@ void Geom::Rectangle2::shrinkFront( QVector<Vector2>& pnts, Segment2& base )
 	if (c[xId] > 0) xflip = true;
 
 	double xlow = -1, xhigh = 1;
-	foreach (Vector2 p, pnts)
+	for (Vector2 p : pnts)
 	{
 		Vector2 coord = getCoordinates(p);
 		double x = coord[xId];	if(xflip) x *= -1;
@@ -242,7 +242,7 @@ void Geom::Rectangle2::shrinkLeftRight( QVector<Vector2>& pnts, Segment2& base )
 	int yId = getAxisId(base.Direction);
 
 	double ylow = -1, yhigh = 1;
-	foreach (Vector2 p, pnts)
+	for (Vector2 p : pnts)
 	{
 		Vector2 coord = getCoordinates(p);
 		double y = coord[yId];
@@ -275,7 +275,7 @@ void Geom::Rectangle2::shrinkFrontLeftRight( QVector<Vector2>& pnts, Segment2& b
 
 	// compute new range along two directions
 	double xlow = -1, xhigh = 1, ylow = -1, yhigh = 1;
-	foreach (Vector2 p, pnts)
+	for (Vector2 p : pnts)
 	{
 		Vector2 coord = getCoordinates(p);
 		double x = coord[xId];	if(xflip) x *= -1;
@@ -366,7 +366,7 @@ void Geom::Rectangle2::cropByAxisAlignedRectangle( Rectangle2& cropper )
 QVector<Vector2> Geom::Rectangle2::getEdgeSamples(int N)
 {
 	QVector<Vector2> samples;
-	foreach(Segment2 edge, getEdgeSegments())
+	for(Segment2 edge : getEdgeSegments())
 		samples += edge.getUniformSamples(N);
 
 	return samples;

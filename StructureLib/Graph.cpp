@@ -12,8 +12,8 @@ Structure::Graph::Graph(QString id)
 
 Structure::Graph::~Graph()
 {
-	foreach (Link* l, links) delete l;
-	foreach (Node* n, nodes) delete n;
+	for (Link* l : links) delete l;
+	for (Node* n : nodes) delete n;
 }
 
 
@@ -21,10 +21,10 @@ Structure::Graph::Graph(Graph& other)
 {
 	this->mID = other.mID;
 
-	foreach (Node* n, other.nodes)
+	for (Node* n : other.nodes)
 		addNode(n->clone());
 
-	foreach (Link* l, other.links)	
+	for (Link* l : other.links)
 	{
 		Link* l_copy = l->clone();
 		addLink(l_copy);
@@ -122,7 +122,7 @@ void Structure::Graph::removeNode( QString nid )
 	if (idx == -1) return;
 
 	// remove incident links
-	foreach(Link* l, links)	{
+	for (Link* l : links)	{
 		if (l->hasNode(nid)) removeLink(l);
 	}
 
@@ -159,7 +159,7 @@ bool Structure::Graph::removeLink( QString nid1, QString nid2 )
 
 Structure::Node* Structure::Graph::getNode(QString nid)
 {
-	foreach(Node* n, nodes)
+	for (Node* n : nodes)
 		if(n->hasId(nid)) return n;
 
 	return nullptr;
@@ -175,7 +175,7 @@ Structure::Node* Structure::Graph::getNode( int idx )
 
 Structure::Link* Structure::Graph::getLink( QString nid1, QString nid2 )
 {
-	foreach(Link* l, links)	{
+	for (Link* l : links)	{
 		if (l->hasNode(nid1) && l->hasNode(nid2))
 			return l;
 	}
@@ -186,7 +186,7 @@ Structure::Link* Structure::Graph::getLink( QString nid1, QString nid2 )
 QVector<Structure::Link*> Structure::Graph::getLinks( QString nid )
 {
 	QVector<Link*> ls;
-	foreach(Link* l, links){
+	for (Link* l : links){
 		if (l->hasNode(nid)) ls.push_back(l);
 	}
 
@@ -210,9 +210,9 @@ bool Structure::Graph::isEmpty()
 
 void Structure::Graph::draw()
 {
-	foreach(Link *l, links) 
+	for (Link *l : links)
 		l->draw();
-	foreach(Node *n, nodes)
+	for (Node *n : nodes)
 		n->draw();
 }
 
@@ -238,14 +238,14 @@ bool Structure::Graph::selectNode( int nid )
 
 void Structure::Graph::deselectAllNodes()
 {
-	foreach (Node* n, nodes) n->isSelected = false;
+	for (Node* n : nodes) n->isSelected = false;
 }
 
 
 QVector<Structure::Node*> Structure::Graph::getSelectedNodes()
 {
 	QVector<Node*> sn;
-	foreach(Node* n, nodes)
+	for (Node* n : nodes)
 	{
 		if (n->isSelected)
 			sn.push_back(n);
@@ -261,14 +261,14 @@ void Structure::Graph::replaceNode( Node* old_node, Node* new_node )
 	removeNode(old_node->mID);
 	addNode(new_node);
 	
-	foreach(Node* n, neighbours)
+	for (Node* n : neighbours)
 		addLink(n, new_node);
 }
 
 QVector<Structure::Node*> Structure::Graph::getNeighbourNodes( Node* node )
 {
 	QVector<Node*> neighbours;
-	foreach (Link* l, getLinks(node->mID))
+	for (Link* l : getLinks(node->mID))
 		neighbours.push_back(l->getNodeOther(node->mID));
 
 	return neighbours;
@@ -280,10 +280,10 @@ QVector< QVector<Structure::Node*> > Structure::Graph::getComponents()
 
 	// set tag
 	QString visitedTag = "visitedtagforgraphcomponent";
-	foreach (Node* n, nodes) n->removeTag(visitedTag);
+	for (Node* n : nodes) n->removeTag(visitedTag);
 
 	// find all components
-	foreach(Node* n, nodes)
+	for (Node* n : nodes)
 	{
 		if (n->hasTag(visitedTag)) continue;
 
@@ -297,7 +297,7 @@ QVector< QVector<Structure::Node*> > Structure::Graph::getComponents()
 			component << curr;
 			curr->addTag(visitedTag);
 
-			foreach (Node* nei, getNeighbourNodes(curr))
+			for (Node* nei : getNeighbourNodes(curr))
 			{
 				if (!nei->hasTag(visitedTag))
 				{
@@ -312,7 +312,7 @@ QVector< QVector<Structure::Node*> > Structure::Graph::getComponents()
 	}
 
 	// clean up
-	foreach (Node* n, nodes) n->removeTag(visitedTag);
+	for (Node* n : nodes) n->removeTag(visitedTag);
 
 	return cs;
 }
@@ -334,7 +334,7 @@ QVector<QVector<QString> > Structure::Graph::findCycleBase()
 	QStack<QString> stack;
 	QVector<QVector<QString>> cycles;
 
-	foreach (Node* root_node, nodes) {
+	for (Node* root_node : nodes) {
 		QString root = root_node->mID;
 		// Loop over the connected
 		// components of the graph.
@@ -355,7 +355,7 @@ QVector<QVector<QString> > Structure::Graph::findCycleBase()
 		while (!stack.isEmpty()) {
 			QString current = stack.pop();
 			QSet<QString> currentUsed = used[current];
-			foreach (Link* e, getLinks(current)) {
+			for (Link* e : getLinks(current)) {
 				QString neighbor = e->getNodeOther(current)->mID;
 				if (!used.contains(neighbor)) {
 					// found a new node

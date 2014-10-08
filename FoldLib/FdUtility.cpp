@@ -139,7 +139,7 @@ double getDistance( ScaffNode* n1, ScaffNode* n2 )
 double getDistance( ScaffNode* n, QVector<ScaffNode*> nset )
 {
 	double minDist = maxDouble();
-	foreach (ScaffNode* to, nset)
+	for (ScaffNode* to : nset)
 	{
 		double dist = getDistance(n, to);
 		if (dist < minDist) minDist = dist;
@@ -151,14 +151,14 @@ double getDistance( ScaffNode* n, QVector<ScaffNode*> nset )
 StrArray2D getIds( FdNodeArray2D nodeArray )
 {
 	StrArray2D idArray2D;
-	foreach (QVector<ScaffNode*> ns, nodeArray) idArray2D << getIds(ns);
+	for (QVector<ScaffNode*> ns : nodeArray) idArray2D << getIds(ns);
 	return idArray2D;
 }
 
 QVector<QString> getIds( QVector<ScaffNode*> nodes )
 {
 	QVector<QString> ids;
-	foreach(ScaffNode* n, nodes)	ids.push_back(n->mID);
+	for (ScaffNode* n : nodes)	ids.push_back(n->mID);
 	return ids;
 }
 
@@ -202,7 +202,7 @@ PLANE_RELATION relationWithPlane( ScaffNode* n, Geom::Plane plane, double thr )
 {
 	double minDist = maxDouble();
 	double maxDist = minDouble();
-	foreach (Vector3 p, n->mBox.getConnerPoints())
+	for (Vector3 p : n->mBox.getConnerPoints())
 	{
 		double dist = plane.signedDistanceTo(p);
 		if (dist < minDist) minDist = dist;
@@ -237,7 +237,7 @@ bool onPlane( ScaffNode* n, Geom::Plane& plane )
 QString getBundleName( const QVector<ScaffNode*>& nodes )
 {
 	QString bname;
-	foreach (ScaffNode* n, nodes)
+	for (ScaffNode* n : nodes)
 	{
 		bname += "+" + n->mID;
 	}
@@ -248,7 +248,7 @@ QString getBundleName( const QVector<ScaffNode*>& nodes )
 Geom::Box getBundleBox( const QVector<ScaffNode*>& nodes )
 {
 	QVector<Vector3> points;
-	foreach (ScaffNode* n, nodes)
+	for (ScaffNode* n : nodes)
 	{
 		points += n->mBox.getConnerPoints();
 	}
@@ -263,7 +263,7 @@ bool hasIntersection( ScaffNode* slave, PatchNode* master, double thr )
 	// check whether slave locates on both sides of master
 	double leftEnd = maxDouble();
 	double rightEnd = -maxDouble();
-	foreach (Vector3 p, slave->mBox.getConnerPoints())
+	for (Vector3 p : slave->mBox.getConnerPoints())
 	{
 		double sd = master->mPatch.getPlane().signedDistanceTo(p);
 		if (sd < leftEnd) leftEnd = sd;
@@ -291,7 +291,7 @@ QMap<QString, double> getTimeStampsNormalized( QVector<ScaffNode*> nodes, Vector
 	double minT = maxDouble();
 	double maxT = -maxDouble();
 	Geom::AABB aabb;
-	foreach (ScaffNode* n, nodes)
+	for (ScaffNode* n : nodes)
 	{
 		double t = timeLine.getProjTime(n->center());
 		timeStamps[n->mID] = t;
@@ -311,7 +311,7 @@ QMap<QString, double> getTimeStampsNormalized( QVector<ScaffNode*> nodes, Vector
 		scaler = 1 / tScale;
 
 	// normalize time stamps
-	foreach (QString mid, timeStamps.keys())
+	for (QString mid : timeStamps.keys())
 	{
 		timeStamps[mid] = ( timeStamps[mid] - minT ) * scaler;
 	}
@@ -322,7 +322,7 @@ QMap<QString, double> getTimeStampsNormalized( QVector<ScaffNode*> nodes, Vector
 QMap<QString, double> getTimeStampsNormalized( QVector<PatchNode*> pnodes, Vector3 v, double &tScale )
 {
 	QVector<ScaffNode*> nodes;
-	foreach (PatchNode* pn, pnodes) nodes << pn;
+	for (PatchNode* pn : pnodes) nodes << pn;
 	return getTimeStampsNormalized(nodes, v, tScale);
 }
 

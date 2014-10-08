@@ -229,11 +229,13 @@ QVector<Vector3> Geom::IntrBoxBox::sampleIntr( Box &box0, Box &box1 )
 	}
 
 	int N = 10;
-	foreach(Vector3 p, box0.getGridSamples(N))
+	for (Vector3 p : box0.getGridSamples(N)){
 		if (box1.contains(p)) pnts.push_back(p);
+	}
 
-	foreach(Vector3 p, box1.getGridSamples(N))
+	for (Vector3 p : box1.getGridSamples(N)){
 		if (box0.contains(p)) pnts.push_back(p);
+	}
 
 	return pnts;
 }

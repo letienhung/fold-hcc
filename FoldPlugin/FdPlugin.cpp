@@ -188,7 +188,7 @@ QVector<ScaffNode*> FdPlugin::selectedSfNodes()
 	Scaffold* activeFd = activeScaffold();
 	if (activeFd)
 	{
-		foreach(Structure::Node* n, activeFd->getSelectedNodes())
+		for(Structure::Node* n : activeFd->getSelectedNodes())
 			selNodes << (ScaffNode*)n;
 	}
 
@@ -324,7 +324,7 @@ void FdPlugin::showColorDialog()
 
 void FdPlugin::updateSelNodesColor( QColor c )
 {
-	foreach(ScaffNode* n, selectedSfNodes())
+	for(ScaffNode* n : selectedSfNodes())
 	{
 		if (c.alpha() > 200) c.setAlpha(200);
 		n->mColor = c;
@@ -370,14 +370,14 @@ void FdPlugin::saveSnapshotAll()
 void FdPlugin::hideSelectedNodes()
 {
 	QVector<ScaffNode*> snodes = selectedSfNodes();
-	foreach(ScaffNode* n, snodes)
+	for(ScaffNode* n : snodes)
 	{
 		n->isHidden = true;
 
 		// hide this node on all key frames
 		if (showKeyframe)
 		{
-			foreach(Scaffold* kf, f_manager->shapeDec->keyframes)
+			for(Scaffold* kf : f_manager->shapeDec->keyframes)
 			{
 				ScaffNode* kn = (ScaffNode*)kf->getNode(n->mID);
 				kn->isHidden = true;
@@ -388,7 +388,7 @@ void FdPlugin::hideSelectedNodes()
 	if( snodes.isEmpty() ){
 		activeScaffold()->properties.clear();
 		if (showKeyframe && f_manager->shapeDec) 
-			foreach(Scaffold * scfd, f_manager->shapeDec->keyframes){
+			for(Scaffold * scfd : f_manager->shapeDec->keyframes){
 				scfd->properties.clear();
 		}
 	}
@@ -478,10 +478,10 @@ void FdPlugin::exportSVG()
 		// keyframes
 		QVector<Scaffold*> selGraphs; 
 		if (showKeyframe && f_manager->shapeDec) selGraphs = f_manager->shapeDec->keyframes;
-		foreach(Scaffold* g, selGraphs) activeFds << g;
+		for(Scaffold* g : selGraphs) activeFds << g;
 	}
 
-	foreach(Scaffold * afd, activeFds)
+	for(Scaffold * afd : activeFds)
 	{
 		// output file
 		if(filename.length() < 1) 
@@ -520,7 +520,7 @@ void FdPlugin::exportSVG()
 				std::reverse(fdnodes.begin(), fdnodes.end());
 			}
 
-			foreach (ScaffNode* n, fdnodes)
+			for (ScaffNode* n : fdnodes)
 			{
 				// skip hidden stuff for clean rendering
 				if (n->hasTag(EDGE_ROD_TAG)) continue;
@@ -530,7 +530,7 @@ void FdPlugin::exportSVG()
 					if (n->mType == ScaffNode::PATCH)
 					{
 						/*// Edges
-						foreach (Geom::Segment seg, ((PatchNode*)n)->mPatch.getEdgeSegments()){
+						for (Geom::Segment seg, ((PatchNode*)n)->mPatch.getEdgeSegments()){
 							qglviewer::Vec proj0 = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(seg.P0) );
 							qglviewer::Vec proj1 = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(seg.P1) );
 							out << QString("<line x1='%1' y1='%2' x2='%3' y2='%4' style='%5' />").arg(proj0.x).arg(proj0.y).arg(proj1.x).arg(proj1.y).arg(style);
@@ -538,7 +538,7 @@ void FdPlugin::exportSVG()
 
 						// Polygons
 						out << QString("\n<polygon points='");
-						foreach (Vector3 seg, ((PatchNode*)n)->mPatch.getConners()){
+						for (Vector3 seg : ((PatchNode*)n)->mPatch.getConners()){
 							qglviewer::Vec proj = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(seg) );
 							out << QString("%1,%2 ").arg(proj.x).arg(proj.y);
 						}
@@ -551,10 +551,10 @@ void FdPlugin::exportSVG()
 
 					QVector<Geom::Rectangle> rects = n->mBox.getFaceRectangles();
 					std::sort( rects.begin(), rects.end(), Geom::CompareRectangle() );
-					foreach(Geom::Rectangle r, rects)
+					for(Geom::Rectangle r : rects)
 					{
 						out << QString("\n<polygon points='");
-						foreach (Vector3 p, r.getConners())
+						for (Vector3 p : r.getConners())
 						{
 							qglviewer::Vec proj = drawArea()->camera()->projectedCoordinatesOf( qglviewer::Vec(p) );
 							out << QString("%1,%2 ").arg(proj.x).arg(proj.y);
@@ -607,16 +607,16 @@ bool FdPlugin::keyPressEvent(QKeyEvent* event)
 		selGraphs << scaffold;
 
 		QStringList selectedNodeNames;
-		foreach(ScaffNode * n, selectedSfNodes()) selectedNodeNames << n->mID;
+		for(ScaffNode * n : selectedSfNodes()) selectedNodeNames << n->mID;
 
 		// We are changing keyframes
 		if (showKeyframe && f_manager->shapeDec) selGraphs = f_manager->shapeDec->keyframes;
 		
-		foreach(Scaffold* g, selGraphs)
+		for(Scaffold* g : selGraphs)
 		{
 			drawNodeOrder = true;
 
-			foreach(QString nid, selectedNodeNames)
+			for(QString nid : selectedNodeNames)
 			{
 				Structure::Node * node = g->getNode(nid);
 				int idx = g->nodes.indexOf(node);

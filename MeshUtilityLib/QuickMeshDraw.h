@@ -92,7 +92,7 @@ struct QuickMeshDraw{
 		double threshold = cos( M_PI_4 );
 
 		glBegin(GL_LINES);
-		foreach(Edge e, mesh->edges())
+		for (Edge e : mesh->edges())
 		{
 			Vector3 n0 = fnormals[mesh->face(mesh->halfedge(e,0))];
 			Vector3 n1 = fnormals[mesh->face(mesh->halfedge(e,1))];

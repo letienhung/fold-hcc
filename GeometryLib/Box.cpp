@@ -184,7 +184,7 @@ bool Geom::Box::hasFaceCoplanarWith( Line line )
 	Vector3 p1 = line.getPoint(0);
 	Vector3 p2 = line.getPoint(1);
 
-	foreach(Plane plane, this->getFacePlanes())
+	for (Plane plane : this->getFacePlanes())
 	{
 		if (plane.contains(line)) return true;
 	}
@@ -285,7 +285,7 @@ QVector<Geom::Rectangle> Geom::Box::getFaceRectangles()
 {
 	QVector<Rectangle> rects;
 
-	foreach( QVector<Point> conners, this->getFacePoints() )
+	for (QVector<Point> conners : this->getFacePoints())
 		rects.push_back(Rectangle(conners));
 
 	return rects;
@@ -296,7 +296,7 @@ QVector<Geom::Segment> Geom::Box::getEdgeIncidentOnPoint(Point &p)
 {
 	QVector<Segment> edges;
 	
-	foreach(Segment s, this->getEdgeSegments()){
+	for (Segment s : this->getEdgeSegments()){
 		if(s.P0 == p || s.P1 == p)
 			edges.push_back(s);
 	}
@@ -308,8 +308,8 @@ QVector<Geom::Rectangle> Geom::Box::getFaceIncidentOnPoint(Point &p)
 {
 	QVector<Rectangle> rects;
 
-	foreach(Rectangle r, this->getFaceRectangles()){
-		foreach(Point cp, r.getConners()){
+	for (Rectangle r : this->getFaceRectangles()){
+		for (Point cp : r.getConners()){
 			if(p == cp)
 				rects.push_back(r);
 		}
@@ -472,7 +472,7 @@ int Geom::Box::getFaceId( int aid, bool positive )
 void Geom::Box::draw( QColor color)
 {
 	PolygonSoup ps;
-	foreach(QVector<Point> f, getFacePoints()) 
+	for (QVector<Point> f : getFacePoints())
 		ps.addPoly(f, color);
 
 	ps.drawQuads(true);
@@ -481,7 +481,7 @@ void Geom::Box::draw( QColor color)
 void Geom::Box::drawWireframe( double width /*= 2.0*/, QColor color /*= Qt::white*/ )
 {
 	PolygonSoup ps;
-	foreach(QVector<Point> f, getFacePoints()) 
+	for (QVector<Point> f : getFacePoints())
 		ps.addPoly(f, color);
 
 	ps.drawWireframes(width, color);
@@ -501,7 +501,7 @@ Geom::Segment Geom::Box::getSkeleton( int aid )
 Geom::Rectangle Geom::Box::getCrossSection( int aid, double c )
 {
 	QVector<Vector3> conners;
-	foreach(Geom::Segment edge, getEdgeSegments(aid))
+	for (Geom::Segment edge : getEdgeSegments(aid))
 	{
 		conners.push_back(edge.getPosition(c));
 	}
@@ -603,7 +603,7 @@ Geom::Plane Geom::Box::getFacePlane( int fid )
 bool Geom::Box::containsAll( QVector<Vector3>& pnts )
 {
 	bool cnt_all = true;
-	foreach (Vector3 p, pnts){
+	for (Vector3 p : pnts){
 		if (!contains(p)){
 			cnt_all = false;
 			break;
@@ -663,7 +663,7 @@ bool Geom::Box::cropByAxisAlignedBox( Box other )
 QVector<Vector3> Geom::Box::getEdgeSamples( int N )
 {
 	QVector<Vector3> samples;
-	foreach (Segment e, getEdgeSegments())
+	for (Segment e : getEdgeSegments())
 		samples << e.getUniformSamples(N);
 	return samples;
 }
@@ -671,7 +671,7 @@ QVector<Vector3> Geom::Box::getEdgeSamples( int N )
 bool Geom::Box::containsAny( QVector<Vector3>& pnts )
 {
 	bool cnt_any = false;
-	foreach (Vector3 p, pnts){
+	for (Vector3 p : pnts){
 		if (contains(p)){
 			cnt_any = true;
 			break;

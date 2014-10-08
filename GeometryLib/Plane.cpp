@@ -40,7 +40,7 @@ int Geom::Plane::whichSide(Vector3 p)
 bool Geom::Plane::onSameSide( QVector<Vector3>& pnts )
 {
 	QVector<int> sides;
-	foreach(Vector3 p, pnts) sides.push_back(whichSide(p));
+	for (Vector3 p : pnts) sides.push_back(whichSide(p));
 
 	bool areSame = true;
 	for (int i = 0; i < sides.size()-1; i++)

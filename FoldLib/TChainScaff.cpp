@@ -79,7 +79,7 @@ QVector<Geom::Plane> TChainScaff::generateCutPlanes(FoldOption* fn)
 void TChainScaff::fold(double t)
 {
 	// free all nodes
-	foreach(Structure::Node* n, nodes)
+	for (Structure::Node* n : nodes)
 		n->removeTag(FIXED_NODE_TAG);
 
 	// fix base

@@ -22,7 +22,7 @@ void HUnitScaff::sortMasters()
 {
 	masterTimeStamps = getTimeStampsNormalized(masters, masters.front()->mPatch.Normal, timeScale);
 	QMultiMap<double, QString> timeMasterMap;
-	foreach(PatchNode* m, masters)
+	for (PatchNode* m : masters)
 	{
 		// base master is the bottom one
 		if (masterTimeStamps[m->mID] < ZERO_TOLERANCE_LOW)
@@ -277,7 +277,7 @@ QVector<FoldOption*> HUnitScaff::findOptimalSolution(FoldOptGraph* collFog, cons
 		QVector<QVector<int> > qs = cliquer.getMaxWeightedCliques();
 
 		// there might be multiple solution, we simply use the first one
-		foreach(int idx, qs.front())
+		for (int idx : qs.front())
 			partialSln << fns[idx];
 	}
 
@@ -320,7 +320,7 @@ QVector<double> HUnitScaff::genReversedWeights(const QVector<FoldOption*>& fns)
 
 	double maxCost = 0;
 	QVector<double> costs;
-	foreach(FoldOption* fn, fns)
+	for (FoldOption* fn : fns)
 	{
 		double cost = computeCost(fn);
 		costs << cost;
@@ -328,7 +328,7 @@ QVector<double> HUnitScaff::genReversedWeights(const QVector<FoldOption*>& fns)
 	}
 	maxCost += 1;
 
-	foreach(double cost, costs) 
+	for (double cost : costs)
 		weights.push_back(maxCost - cost);
 
 	return weights;

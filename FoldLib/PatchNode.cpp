@@ -109,7 +109,7 @@ QVector<RodNode*> PatchNode::getEdgeRodNodes()
 	double r = 0.5 * getThickness();
 	int i = 0;
 	Geom::Box mBox_copy = mBox;
-	foreach (Geom::Segment edge, mPatch.getEdgeSegments())
+	for (Geom::Segment edge : mPatch.getEdgeSegments())
 	{
 		// box
 		Vector3 inwardV = (mPatch.Center - edge.Center).normalized();
@@ -131,7 +131,7 @@ QVector<RodNode*> PatchNode::getEdgeRodNodes()
 	}
 
 	// save the host id
-	foreach(RodNode* er, edgeRods)
+	for (RodNode* er : edgeRods)
 		er->properties[EDGE_ROD_ORIG] = mID;
 
 	return edgeRods;

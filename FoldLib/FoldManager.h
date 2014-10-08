@@ -29,7 +29,7 @@ public:
 	int nbChunks;
 	double thickness;
 	double connThrRatio;
-	Vector3 aabbScale;
+	Vector3 aabbCstrScale;
 	double costWeight;
 	bool useNewCost;
 

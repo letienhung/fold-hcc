@@ -10,7 +10,7 @@ Geom::PCA::PCA( QVector<Vector3> &pnts )
 
 	// loop over the points to find the mean point
 	// location
-	foreach( Vec3d p, pnts)	mu += p;
+	for (Vec3d p : pnts)	mu += p;
 	mu /= pnts.size();
 
 	// loop over the points again to build the 

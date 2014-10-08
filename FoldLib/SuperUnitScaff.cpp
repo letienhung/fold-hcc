@@ -12,7 +12,7 @@ SuperUnitScaff::SuperUnitScaff(HUnitScaff* block, SuperShapeKf* sskf)
 	QMap<QString, QString> master2Super;
 
 	// clone parts from block
-	foreach(Structure::Node* n, origUnit->nodes)
+	for (Structure::Node* n : origUnit->nodes)
 	{
 		Structure::Node* clone_n;
 
@@ -43,7 +43,7 @@ SuperUnitScaff::SuperUnitScaff(HUnitScaff* block, SuperShapeKf* sskf)
 	baseMaster = (PatchNode*)getNode(base_mid);
 
 	// other masters
-	foreach(PatchNode* m, origUnit->masters)
+	for (PatchNode* m : origUnit->masters)
 		masters << (PatchNode*)getNode(master2Super[m->mID]);
 }
 
@@ -63,7 +63,7 @@ QMap< QString, QVector<Vector2> > SuperUnitScaff::computeObstacles()
 	QString base_mid = baseMaster->mID;
 	Geom::Rectangle base_rect = origUnit->baseMaster->mPatch;// ***use original base rect
 	origUnit->properties.remove(DEBUG_POINTS); // clear debug points
-	foreach(PatchNode* top_master, masters)
+	for (PatchNode* top_master : masters)
 	{
 		// skip base master
 		QString top_mid = top_master->mID;

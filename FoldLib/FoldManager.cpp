@@ -21,7 +21,7 @@ FoldManager::FoldManager()
 	thickness = 0;
 
 	connThrRatio = 0.07;
-	aabbScale = Vector3(1, 1, 1);
+	aabbCstrScale = Vector3(1, 1, 1);
 
 	costWeight = 0.5;
 	useNewCost = false;
@@ -189,7 +189,7 @@ int fdTime = timer.elapsed();
 		stat.properties[SHRINKED_AREA] = shinkedArea/totalArea;
 
 		stat.properties[CONN_THR_RATIO] = connThrRatio;
-		stat.properties[CONSTRAIN_AABB_SCALE].setValue(aabbScale);
+		stat.properties[CONSTRAIN_AABB_SCALE].setValue(aabbCstrScale);
 
 		stat.properties[COST_WEIGHT] = costWeight;
 	}
@@ -269,7 +269,7 @@ void FoldManager::setThickness( double thk )
 void FoldManager::setParameters()
 {
 	Geom::Box aabb = inputScaffold->computeAABB().box();
-	aabb.scale(aabbScale);
+	aabb.scale(aabbCstrScale);
 
 	for(UnitScaff* unit : shapeDec->units)
 	{
@@ -292,17 +292,17 @@ void FoldManager::setConnThrRatio(double thr)
 
 void FoldManager::setAabbX( double x )
 {
-	aabbScale[0] = x;
+	aabbCstrScale[0] = x;
 }
 
 void FoldManager::setAabbY( double y )
 {
-	aabbScale[1] = y;
+	aabbCstrScale[1] = y;
 }
 
 void FoldManager::setAabbZ( double z )
 {
-	aabbScale[2] = z;
+	aabbCstrScale[2] = z;
 }
 
 void FoldManager::exportStat()

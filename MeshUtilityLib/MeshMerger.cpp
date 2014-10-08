@@ -22,7 +22,7 @@ void MeshMerger::addMesh( SurfaceMeshModel* subMesh )
 {
 	int offset = mergedMesh->n_vertices();
 	
-	foreach (Vector3 p, MeshHelper::getMeshVertices(subMesh))
+	for (Vector3 p : MeshHelper::getMeshVertices(subMesh))
 	{
 		mergedMesh->add_vertex(p);
 	}

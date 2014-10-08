@@ -53,13 +53,14 @@ bool Geom::IntrRect2Rect2::test( Rectangle2& rect1, Rectangle2& rect2 )
 
 }
 
-bool Geom::IntrRect2Rect2::test2( Rectangle2& rect1, Rectangle2& rect2 )
+bool Geom::IntrRect2Rect2::test2(Rectangle2& rect1, Rectangle2& rect2)
 {
-	foreach (Vector2 p1, rect1.getEdgeSamples(100))
+	for (Vector2 p1 : rect1.getEdgeSamples(100)){
 		if (rect2.contains(p1)) return true;
+	}
 
-	foreach (Vector2 p2, rect2.getEdgeSamples(100))
+	for (Vector2 p2 : rect2.getEdgeSamples(100)){
 		if (rect1.contains(p2)) return true;
-
+	}
 	return false;
 }

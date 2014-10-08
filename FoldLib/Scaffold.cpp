@@ -118,7 +118,7 @@ ScaffLink* Scaffold::addLink( ScaffNode* n1, ScaffNode* n2 )
 QVector<ScaffNode*> Scaffold::getScaffNodes()
 {
 	QVector<ScaffNode*> fdns;
-	foreach(Structure::Node* n, nodes)
+	for (Structure::Node* n : nodes)
 		fdns.push_back((ScaffNode*)n);
 	
 	return fdns;
@@ -143,7 +143,7 @@ void Scaffold::exportMesh(QString fname)
 	
 	int v_offset = 0;
 	QVector<ScaffNode*> nodes = getScaffNodes();
-	foreach(ScaffNode *n, nodes){
+	for (ScaffNode *n : nodes){
 		n->deformMesh();
 		n->exportMesh(file, v_offset);
 	}
@@ -163,7 +163,7 @@ void Scaffold::saveToFile(QString fname)
 	{
 		// nodes
 		xw.writeTaggedString("cN", QString::number(nbNodes()));
-		foreach(ScaffNode* node, getScaffNodes())
+		for (ScaffNode* node : getScaffNodes())
 		{
 			node->write(xw);
 		}
@@ -180,7 +180,7 @@ void Scaffold::saveToFile(QString fname)
 	QDir graphDir( fileInfo.absolutePath());
 	graphDir.mkdir(meshesFolder);
 	meshesFolder =  graphDir.path() + "/" + meshesFolder;
-	foreach(ScaffNode* node, getScaffNodes())
+	for (ScaffNode* node : getScaffNodes())
 	{
 		MeshHelper::saveOBJ(node->mMesh.data(), meshesFolder + '/' + node->mID + ".obj");
 	}
@@ -243,7 +243,7 @@ void Scaffold::loadFromFile(QString fname)
 Geom::AABB Scaffold::computeAABB()
 {
 	Geom::AABB aabb;
-	foreach (ScaffNode* n, getScaffNodes())
+	for (ScaffNode* n : getScaffNodes())
 	{
 		aabb.add(n->computeAABB());
 	}
@@ -268,7 +268,7 @@ void Scaffold::drawAABB()
 		patch2.drawEdges(2.0, Qt::yellow);
 
 		LineSegments ls(2.0);
-		foreach(Geom::Segment seg, box.getEdgeSegments(aid))
+		for (Geom::Segment seg : box.getEdgeSegments(aid))
 			ls.addLine(seg.P0, seg.P1, Qt::cyan);
 		ls.draw();
 	}
@@ -295,7 +295,7 @@ ScaffNode* Scaffold::wrapAsBundleNode( QVector<QString> nids, Vector3 v )
 {
 	// retrieve all nodes
 	QVector<ScaffNode*> ns;
-	foreach(QString nid, nids)
+	for (QString nid : nids)
 	{
 		Structure::Node* n = getNode(nid);
 		if (n) ns.push_back((ScaffNode*)n);
@@ -307,14 +307,14 @@ ScaffNode* Scaffold::wrapAsBundleNode( QVector<QString> nids, Vector3 v )
 
 	// merge into a bundle node
 	QVector<ScaffNode*> subNodes;
-	foreach (ScaffNode* n, ns)	subNodes += n->getSubNodes();
+	for (ScaffNode* n : ns)	subNodes += n->getSubNodes();
 	QString bid = getBundleName(subNodes);
 	Geom::Box box = getBundleBox(subNodes);
 	BundleNode* bundleNode = new BundleNode(bid, box, subNodes, v); 
 	Structure::Graph::addNode(bundleNode);
 
 	// remove original nodes
-	foreach (ScaffNode* n, ns)
+	for (ScaffNode* n : ns)
 		Structure::Graph::removeNode(n->mID);
 
 	return bundleNode;
@@ -370,7 +370,7 @@ QVector<ScaffNode*> Scaffold::split( QString nid, QVector<Geom::Plane>& planes )
 	int aid = fn->mBox.getAxisId(planes.front().Normal);
 	Geom::Segment sklt = fn->mBox.getSkeleton(aid);
 	QMap<double, Geom::Plane> distPlaneMap;
-	foreach (Geom::Plane plane, planes)
+	for (Geom::Plane plane : planes)
 	{
 		//// skip a plane if it doesn't intersect the node
 		//if (relationWithPlane(fn, plane, 0.1) != ISCT_PLANE) continue;
@@ -429,19 +429,19 @@ QVector<ScaffNode*> Scaffold::split( QString nid, QVector<Geom::Plane>& planes )
 
 void Scaffold::showCuboids( bool show )
 {
-	foreach(ScaffNode* n, getScaffNodes())
+	for (ScaffNode* n : getScaffNodes())
 		n->setShowCuboid(show);
 }
 
 void Scaffold::showScaffold( bool show )
 {
-	foreach(ScaffNode* n, getScaffNodes())
+	for (ScaffNode* n : getScaffNodes())
 		n->setShowScaffold(show);
 }
 
 void Scaffold::showMeshes( bool show )
 {
-	foreach(ScaffNode* n, getScaffNodes())
+	for (ScaffNode* n : getScaffNodes())
 		n->setShowMesh(show);
 }
 
@@ -467,19 +467,15 @@ PatchNode* Scaffold::changeRodToPatch( RodNode* rn, Vector3 v )
 
 void Scaffold::restoreConfiguration()
 { 
-	// tags
-
-
-
 	QQueue<ScaffNode*> activeNodes;
-	foreach(ScaffNode* fn, getScaffNodes())
+	for (ScaffNode* fn : getScaffNodes())
 		if (fn->hasTag(FIXED_NODE_TAG)) 
 			activeNodes.enqueue(fn);
 
 	while (!activeNodes.isEmpty())
 	{
 		ScaffNode* anode = activeNodes.dequeue();
-		foreach(Structure::Link* l, getLinks(anode->mID))
+		for (Structure::Link* l : getLinks(anode->mID))
 		{
 			ScaffLink* fl = (ScaffLink*)l;
 			if (!fl->hasTag(ACTIVE_LINK_TAG)) continue;
@@ -495,7 +491,7 @@ void Scaffold::restoreConfiguration()
 
 void Scaffold::translate(Vector3 v, bool withMesh)
 {
-	foreach(ScaffNode* n, getScaffNodes())
+	for (ScaffNode* n : getScaffNodes())
 	{
 		n->translate(v);
 
@@ -511,7 +507,7 @@ void Scaffold::drawDebug()
 	{
 		QVector<Vector3> debugPoints = properties[DEBUG_POINTS].value<QVector<Vector3> >();
 		PointSoup ps;
-		foreach (Vector3 p, debugPoints) ps.addPoint(p);
+		for (Vector3 p : debugPoints) ps.addPoint(p);
 		ps.draw();
 	}
 
@@ -519,7 +515,7 @@ void Scaffold::drawDebug()
 	if (properties.contains(DEBUG_SEGS))
 	{
 		QVector<Geom::Segment> debugSegs = properties[DEBUG_SEGS].value< QVector<Geom::Segment> >();
-		foreach (Geom::Segment seg, debugSegs)
+		for (Geom::Segment seg : debugSegs)
 		{
 			seg.draw();
 		}
@@ -530,7 +526,7 @@ void Scaffold::drawDebug()
 	{
 		QColor color = Qt::green; color.setAlphaF(1.0);
 		QVector<Geom::Box> debugBoxes = properties[DEBUG_BOXES].value<QVector<Geom::Box> >();
-		foreach (Geom::Box box, debugBoxes)
+		for (Geom::Box box : debugBoxes)
 		{
 			box.drawWireframe(2.0, color);
 		}
@@ -540,7 +536,7 @@ void Scaffold::drawDebug()
 	if (properties.contains(DEBUG_PLANES))
 	{
 		QVector<Geom::Plane> planes = properties[DEBUG_PLANES].value<QVector<Geom::Plane> >();
-		foreach(Geom::Plane p, planes)
+		for (Geom::Plane p : planes)
 		{
 			p.draw();
 		}
@@ -550,7 +546,7 @@ void Scaffold::drawDebug()
 	if (properties.contains(DEBUG_RECTS))
 	{
 		QVector<Geom::Rectangle> regions = properties[DEBUG_RECTS].value< QVector<Geom::Rectangle> >();
-		foreach(Geom::Rectangle rect, regions)
+		for (Geom::Rectangle rect : regions)
 		{
 			rect.drawEdges(2.0, Qt::blue);
 		}
@@ -560,7 +556,7 @@ void Scaffold::drawDebug()
 	if (properties.contains(DEBUG_SCAFFS))
 	{
 		QVector<Scaffold*> debugSs = properties[DEBUG_SCAFFS].value<QVector<Scaffold*> >();
-		foreach (Scaffold* ds, debugSs)
+		for (Scaffold* ds : debugSs)
 		{
 			if (ds) ds->draw();
 		}
@@ -569,12 +565,12 @@ void Scaffold::drawDebug()
 
 void Scaffold::unwrapBundleNodes()
 {
-	foreach (Structure::Node* n, nodes)
+	for (Structure::Node* n : nodes)
 	{
 		if (n->hasTag(BUNDLE_TAG))
 		{
 			BundleNode* bnode = (BundleNode*)n;
-			foreach (ScaffNode* cn, bnode->mNodes)
+			for (ScaffNode* cn : bnode->mNodes)
 			{
 				Structure::Node* cn_copy = cn->clone();
 				Structure::Graph::addNode(cn_copy);
@@ -589,7 +585,7 @@ void Scaffold::unwrapBundleNodes()
 
 void Scaffold::hideEdgeRods()
 {
-	foreach (ScaffNode* n, getScaffNodes())
+	for (ScaffNode* n : getScaffNodes())
 	{
 		if (n->hasTag(EDGE_ROD_TAG))
 		{

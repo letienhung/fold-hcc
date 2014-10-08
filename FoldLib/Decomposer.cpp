@@ -29,7 +29,7 @@ FdNodeArray2D Decomposer::getPerpConnGroups()
 
 	// ==STEP 1==: nodes perp to squeezing direction
 	QVector<ScaffNode*> perpNodes;
-	foreach(ScaffNode* n, scfd->getScaffNodes())
+	for (ScaffNode* n : scfd->getScaffNodes())
 	{
 		// perp node
 		if (n->isPerpTo(scfd->sqzV, perpThr))
@@ -40,7 +40,7 @@ FdNodeArray2D Decomposer::getPerpConnGroups()
 		else if (n->mType == ScaffNode::PATCH)
 		{
 			PatchNode* pn = (PatchNode*)n;
-			foreach(RodNode* rn, pn->getEdgeRodNodes())
+			for (RodNode* rn : pn->getEdgeRodNodes())
 			{
 				// add virtual rod nodes 
 				if (rn->isPerpTo(scfd->sqzV, perpThr))
@@ -64,7 +64,7 @@ FdNodeArray2D Decomposer::getPerpConnGroups()
 	Geom::Segment skeleton = shapeBox.getSkeleton(sqzAId);
 	double perpGroupThr = connThr / skeleton.length();
 	QMultiMap<double, ScaffNode*> posNodeMap;
-	foreach(ScaffNode* n, perpNodes){
+	for (ScaffNode* n : perpNodes){
 		posNodeMap.insert(skeleton.getProjCoordinates(n->mBox.Center), n);
 	}
 	FdNodeArray2D perpGroups;
@@ -83,7 +83,7 @@ FdNodeArray2D Decomposer::getPerpConnGroups()
 	FdNodeArray2D perpConnGroups;
 	perpConnGroups << perpGroups.front(); // ground
 	for (int i = 1; i < perpGroups.size(); i++){
-		foreach(QVector<ScaffNode*> connGroup, getConnectedGroups(perpGroups[i], connThr))
+		for (QVector<ScaffNode*> connGroup : getConnectedGroups(perpGroups[i], connThr))
 			perpConnGroups << connGroup;
 	}
 
@@ -250,7 +250,7 @@ void Decomposer::clusterSlaves()
 
 	// collect slaves along each cycle
 	QVector<QSet<int> > cycle_slaves;
-	foreach(QVector<QString> cycle, cycle_base)
+	for (QVector<QString> cycle : cycle_base)
 	{
 		QSet<int> cs;
 		for (int i = 0; i < cycle.size(); i++)

@@ -20,7 +20,7 @@ inline int discreteDistr(const QVector<double>& posibility)
 {
 	QVector<double> accPosibility;
 	accPosibility.push_back(0);
-	foreach (double p, posibility)	
+	for (double p : posibility)
 		accPosibility.push_back(accPosibility.last() + p);
 
 	double r = uniformDistrReal();

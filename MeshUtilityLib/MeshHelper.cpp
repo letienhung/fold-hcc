@@ -32,9 +32,9 @@ void MeshHelper::saveOBJ( SurfaceMeshModel* mesh, QString filename )
 	QTextStream out(&file);
 	out << "# NV = " << mesh->n_vertices() << " NF = " << mesh->n_faces() << "\n";
 	SurfaceMesh::Vector3VertexProperty points = mesh->vertex_property<Vector3>("v:point");
-	foreach( SurfaceMesh::Vertex v, mesh->vertices() )
+	for (SurfaceMesh::Vertex v : mesh->vertices())
 		out << "v " << points[v][0] << " " << points[v][1] << " " << points[v][2] << "\n";
-	foreach( SurfaceMesh::Face f, mesh->faces() ){
+	for (SurfaceMesh::Face f : mesh->faces()){
 		out << "f ";
 		Surface_mesh::Vertex_around_face_circulator fvit=mesh->vertices(f), fvend=fvit;
 		do{	out << (((Surface_mesh::Vertex)fvit).idx()+1) << " ";} while (++fvit != fvend);
@@ -47,7 +47,7 @@ QVector<Vector3> MeshHelper::encodeMeshInBox( SurfaceMeshModel* mesh, Geom::Box&
 {
 	QVector<Vector3> coords;
 
-	foreach(Vector3 p, getMeshVertices(mesh))
+	for (Vector3 p : getMeshVertices(mesh))
 		coords.push_back(box.getCoordinates(p));
 
 	return coords;
