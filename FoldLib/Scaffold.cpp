@@ -257,10 +257,11 @@ Geom::AABB Scaffold::computeAABB()
 
 void Scaffold::drawAABB()
 {
+	Geom::Box box = computeAABB().box();
+
 	if (properties.contains("pushAId"))
 	{
 		int aid = properties["pushAId"].toInt();
-		Geom::Box box = computeAABB().box();
 		Geom::Rectangle patch1 = box.getCrossSection(aid, 1);
 		Geom::Rectangle patch2 = box.getCrossSection(aid, -1);
 
@@ -274,8 +275,7 @@ void Scaffold::drawAABB()
 	}
 	else
 	{
-		Geom::AABB aabb = computeAABB();
-		aabb.box().drawWireframe(2.0, Qt::cyan);
+		box.drawWireframe(2.0, Qt::cyan);
 	}
 }
 
@@ -314,8 +314,7 @@ ScaffNode* Scaffold::wrapAsBundleNode( QVector<QString> nids, Vector3 v )
 	Structure::Graph::addNode(bundleNode);
 
 	// remove original nodes
-	for (ScaffNode* n : ns)
-		Structure::Graph::removeNode(n->mID);
+	for (ScaffNode* n : ns) removeNode(n->mID);
 
 	return bundleNode;
 }
@@ -565,7 +564,7 @@ void Scaffold::drawDebug()
 
 void Scaffold::unwrapBundleNodes()
 {
-	for (Structure::Node* n : nodes)
+	foreach(Structure::Node* n, nodes)
 	{
 		if (n->hasTag(BUNDLE_TAG))
 		{

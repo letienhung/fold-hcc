@@ -235,9 +235,8 @@ void ChainScaff::resetChainParts(FoldOption* fn)
 void ChainScaff::resetHingeLinks(FoldOption* fn)
 {
 	// remove hinge links
+	qDeleteAll(links);	links.clear();
 	rightLinks.clear(); leftLinks.clear();
-	for (Structure::Link* link : links)
-		Structure::Graph::removeLink(link);
 
 	// hinge links between base and slave
 	Geom::Segment bJoint = baseJoint;

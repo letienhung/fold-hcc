@@ -42,7 +42,7 @@ SuperShapeKf::SuperShapeKf(Scaffold* superKeyframe, StringSetMap moc_g)
 			pnts2 << rect2.getConners();
 
 			// remove other
-			this->removeNode(superMasters[superIdx]->mID);
+			removeNode(superMasters[superIdx]->mID);
 		}
 		Geom::Rectangle2 aabb2 = Geom::computeAABB(pnts2);
 		superPatch_new->resize(aabb2);
