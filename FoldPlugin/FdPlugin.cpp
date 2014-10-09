@@ -58,11 +58,31 @@ void FdPlugin::create()
 		dockwidget->setWidget(widget);
 		mainWindow()->addDockWidget(Qt::RightDockWidgetArea, dockwidget);
 
-		// perspective
-		drawArea()->setPerspectiveProjection();
+		// update default settings
+		widget->ui->showCuboid->setCheckState(showCuboid ? Qt::Checked : Qt::Unchecked);
+		widget->ui->showScaffold->setCheckState(showScaffold ? Qt::Checked : Qt::Unchecked);
+		widget->ui->showMesh->setCheckState(showMesh ? Qt::Checked : Qt::Unchecked);
+		widget->ui->showAABB->setCheckState(showAABB ? Qt::Checked : Qt::Unchecked);
+		widget->ui->showDecomp->setCheckState(showDecomp ? Qt::Checked : Qt::Unchecked);
+		widget->ui->showKeyframe->setCheckState(showKeyframe ? Qt::Checked : Qt::Unchecked);
+
+		widget->ui->costWeight->setValue(f_manager->costWeight);
+		widget->ui->nbSplits->setValue(f_manager->nbSplits);
+		widget->ui->nbChunks->setValue(f_manager->nbChunks);
+		widget->ui->connThrRatio->setValue(f_manager->connThrRatio);
+		widget->ui->aabbX->setValue(f_manager->aabbCstrScale[0]);
+		widget->ui->aabbY->setValue(f_manager->aabbCstrScale[1]);
+		widget->ui->aabbZ->setValue(f_manager->aabbCstrScale[2]);
+
+		widget->ui->nbKeyframes->setValue(f_manager->nbKeyframes);
+		widget->ui->thickness->setValue(f_manager->thickness);
 	}
 
-	resetMesh();
+	// perspective
+	drawArea()->setPerspectiveProjection();
+
+	// connect to scaffold manager
+	s_manager->connect(document(), SIGNAL(selectionChanged(Model*)), SLOT(setMesh(Model*)));
 }
 
 void FdPlugin::destroy()
@@ -108,6 +128,13 @@ void FdPlugin::updateScene()
 
 void FdPlugin::resetScene()
 {
+	// show options
+	showDecomp = false;
+	showKeyframe = false;
+	widget->ui->showDecomp->setCheckState(Qt::Unchecked);
+	widget->ui->showKeyframe->setCheckState(Qt::Unchecked);
+	
+	// show the entire object
 	if (activeScaffold())
 	{
 		// adjust scene to show entire shape
@@ -119,7 +146,6 @@ void FdPlugin::resetScene()
 		drawArea()->camera()->setSceneBoundingBox(bbmin, bbmax);
 		drawArea()->camera()->showEntireScene();
 	}
-	
 	// update visual options
 	updateScene();
 }
@@ -132,11 +158,6 @@ Scaffold* FdPlugin::activeScaffold()
 		return f_manager->activeScaffold();
 	else
 		return s_manager->scaffold;
-}
-
-void FdPlugin::resetMesh()
-{
-	s_manager->setMesh(mesh());
 }
 
 void FdPlugin::showStatus( QString msg )

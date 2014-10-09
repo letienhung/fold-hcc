@@ -9,7 +9,6 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin = fp;
 
 	// structural abstraction
-	plugin->connect(ui->createScaffold, SIGNAL(clicked()), SLOT(resetMesh()));
 	plugin->s_manager->connect(ui->fitMethod, SIGNAL(currentIndexChanged(int)), SLOT(setFitMethod(int)));
 	plugin->s_manager->connect(ui->createScaffold, SIGNAL(clicked()), SLOT(createScaffold()));
 	plugin->s_manager->connect(ui->refitMethod, SIGNAL(currentIndexChanged(int)), SLOT(setRefitMethod(int)));
@@ -71,7 +70,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->connect(ui->hideEdgeRods, SIGNAL(clicked()), SLOT(hideEdgeRods()));
 
 	// parameters
-	plugin->f_manager->connect(ui->connThrRation, SIGNAL(valueChanged(double)), SLOT(setConnThrRatio(double)));
+	plugin->f_manager->connect(ui->connThrRatio, SIGNAL(valueChanged(double)), SLOT(setConnThrRatio(double)));
 	plugin->f_manager->connect(ui->aabbX, SIGNAL(valueChanged(double)), SLOT(setAabbX(double)));
 	plugin->f_manager->connect(ui->aabbY, SIGNAL(valueChanged(double)), SLOT(setAabbY(double)));
 	plugin->f_manager->connect(ui->aabbZ, SIGNAL(valueChanged(double)), SLOT(setAabbZ(double)));

@@ -25,13 +25,14 @@ public:
 
 	// parameters
 	Vector3 sqzV;
+	Vector3 aabbCstrScale;
+
 	int nbSplits;
 	int nbChunks;
-	double thickness;
-	double connThrRatio;
-	Vector3 aabbCstrScale;
 	double costWeight;
-	bool useNewCost;
+
+	double connThrRatio;
+	double thickness;
 
 	// statistics
 	Structure::PropertyMap stat;

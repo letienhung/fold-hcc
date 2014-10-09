@@ -65,9 +65,9 @@ void ScaffManager::loadScaffold()
 	emit(message("Loaded."));
 }
 
-void ScaffManager::setMesh( SurfaceMeshModel* mesh )
+void ScaffManager::setMesh( Model* mesh )
 {
-	this->entireMesh = mesh;
+	this->entireMesh = (SurfaceMeshModel*)mesh;
 	qDebug() << "Set active mesh as " << entireMesh->path;
 }
 

@@ -13,18 +13,16 @@ FoldManager::FoldManager()
 	shapeDec = nullptr;
 
 	sqzV = Vector3(0, 0, 1);
-
-	nbKeyframes = 25;
+	aabbCstrScale = Vector3(1, 1, 1);
 
 	nbSplits = 1; 
 	nbChunks = 2;
-	thickness = 0;
+	costWeight = 0.5;
 
 	connThrRatio = 0.07;
-	aabbCstrScale = Vector3(1, 1, 1);
+	thickness = 0;
 
-	costWeight = 0.5;
-	useNewCost = false;
+	nbKeyframes = 50;
 }
 
 FoldManager::~FoldManager()

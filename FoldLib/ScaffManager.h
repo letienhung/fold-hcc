@@ -23,7 +23,7 @@ public:
 
 public slots:
 	// creation
-	void setMesh(SurfaceMeshModel* mesh);
+	void setMesh(Model* mesh);
 	void setFitMethod(int method);
 	void setRefitMethod(int method);
 	void createScaffold();

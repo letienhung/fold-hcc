@@ -51,9 +51,6 @@ public:
 	QVector<ScaffNode*> selectedSfNodes();
 
 public slots:
-	// to graph manager
-	void resetMesh();
-
 	// show options
 	void setShowDecomp(int state);
 	void setShowKeyframe(int state);
