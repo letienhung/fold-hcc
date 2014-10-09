@@ -42,6 +42,7 @@ void FoldManager::setInputScaffold( Scaffold* input )
 	updateKeyframeSlider();
 }
 
+// parameters
 void FoldManager::setSqzV( QString sqzV_str )
 {
 	sqzV = Vector3(0, 0, 0);
@@ -50,6 +51,135 @@ void FoldManager::setSqzV( QString sqzV_str )
 	if (sqzV_str == "Z") sqzV[2] = 1;
 }
 
+void FoldManager::setNbKeyframes(int N)
+{
+	nbKeyframes = N;
+}
+
+void FoldManager::setNbSplits(int N)
+{
+	nbSplits = N;
+	if (shapeDec)
+	{
+		for (UnitScaff* unit : shapeDec->units)
+		{
+			unit->maxNbSplits = nbSplits;
+			unit->resetAllFoldOptions();
+		}
+	}
+}
+
+void FoldManager::setNbChunks(int N)
+{
+	nbChunks = N;
+	if (shapeDec)
+	{
+		for (UnitScaff* unit : shapeDec->units)
+		{
+			unit->maxNbChunks = nbChunks;
+			unit->resetAllFoldOptions();
+		}
+	}
+}
+
+void FoldManager::setThickness(double thk)
+{
+	thickness = thk;
+	if (shapeDec)
+	{
+		for (UnitScaff* unit : shapeDec->units)
+		{
+			unit->setThickness(thickness);
+		}
+	}
+}
+
+void FoldManager::setConnThrRatio(double thr)
+{
+	connThrRatio = thr;
+	shapeDec->connThrRatio = connThrRatio;
+}
+
+void FoldManager::setAabbX(double x)
+{
+	aabbCstrScale[0] = x;
+	if (shapeDec)
+	{
+		Geom::Box cstrBox = getAabbCstr();
+		for (UnitScaff* unit : shapeDec->units)
+		{
+			unit->setAabbConstraint(cstrBox);
+			unit->resetAllFoldOptions();
+		}
+	}
+}
+
+void FoldManager::setAabbY(double y)
+{
+	aabbCstrScale[1] = y;
+	if (shapeDec)
+	{
+		Geom::Box cstrBox = getAabbCstr();
+		for (UnitScaff* unit : shapeDec->units)
+		{
+			unit->setAabbConstraint(cstrBox);
+			unit->resetAllFoldOptions();
+		}
+	}
+}
+
+void FoldManager::setAabbZ(double z)
+{
+	aabbCstrScale[2] = z;
+	if (shapeDec)
+	{
+		Geom::Box cstrBox = getAabbCstr();
+		for (UnitScaff* unit : shapeDec->units)
+		{
+			unit->setAabbConstraint(cstrBox);
+			unit->resetAllFoldOptions();
+		}
+	}
+}
+
+void FoldManager::setCostWeight(double w)
+{
+	costWeight = w;
+	if (shapeDec)
+	{
+		for (UnitScaff* unit : shapeDec->units)
+		{
+			unit->weight = costWeight;
+		}
+	}
+}
+
+Geom::Box FoldManager::getAabbCstr()
+{
+	Geom::Box box = inputScaffold->computeAABB().box();
+	box.scale(aabbCstrScale);
+	return box;
+}
+
+void FoldManager::setAllParameters()
+{
+	Geom::Box cstrBox = getAabbCstr();
+
+	for (UnitScaff* unit : shapeDec->units)
+	{
+		unit->setAabbConstraint(cstrBox);
+		unit->maxNbSplits = nbSplits;
+		unit->maxNbChunks = nbChunks;
+		unit->setThickness(thickness);
+		unit->weight = costWeight;
+
+		unit->resetAllFoldOptions();
+	}
+
+	shapeDec->connThrRatio = connThrRatio;
+}
+
+// selection
 void FoldManager::selectUnit( QString id )
 {
 	if (shapeDec)
@@ -76,21 +206,6 @@ UnitScaff* FoldManager::getSelUnit()
 		return nullptr;
 }
 
-void FoldManager::generateKeyframes()
-{
-	// thickness
-	setParameters();
-
-	// selected dec scaffold
-	if (!shapeDec) return;
-
-	// forward message
-	shapeDec->genKeyframes(nbKeyframes);
-
-	// emit signals
-	updateKeyframeSlider();
-}
-
 void FoldManager::selectKeyframe( int idx )
 {
 	if (!shapeDec) return;
@@ -106,97 +221,10 @@ Scaffold* FoldManager::getSelKeyframe()
 	return shapeDec->getSelKeyframe();
 }
 
-Scaffold* FoldManager::activeScaffold()
-{
-	DecScaff* as = shapeDec;
-	if (as)	return as->activeScaffold();
-	else	return inputScaffold;
-}
-
-void FoldManager::decompose()
-{
-	if (shapeDec) delete shapeDec;
-
-	shapeDec = new DecScaff("", inputScaffold, sqzV, connThrRatio);
-
-	updateUnitList();
-	updateKeyframeSlider();
-}
-
-void FoldManager::foldabilize()
-{
-	if (inputScaffold == nullptr)
-		return;
-
-// start
-QElapsedTimer timer;
-timer.start();
-
-	// decompose
-	decompose();
-	
-	// parameters
-	setParameters();
-
-	// foldabilize
-	shapeDec->foldabilize(); 
-	
-// timer
-int fdTime = timer.elapsed();
-
-	// forward message
-	shapeDec->genKeyframes(nbKeyframes);
-
-	if (shapeDec->keyframes.isEmpty()) return;
-
-	// emit signals
-	updateKeyframeSlider();
-
-	// save statistics in initial scaffold
-	{
-		stat.properties[NB_SPLIT] = nbSplits;
-		stat.properties[NB_CHUNKS] = nbChunks;
-		stat.properties[SQZ_DIRECTION].setValue(sqzV);
-
-		stat.properties[NB_MASTER] = shapeDec->masters.size();
-		stat.properties[NB_SLAVE] = shapeDec->slaves.size();
-		stat.properties[NB_BLOCK] = shapeDec->units.size();
-
-		Scaffold* lastKeyframe = shapeDec->keyframes.last();
-		double origVol = inputScaffold->computeAABB().box().volume();
-		double fdVol = lastKeyframe->computeAABB().box().volume();
-		stat.properties[SPACE_SAVING] = 1 - fdVol / origVol;
-
-		stat.properties[FD_TIME] = fdTime;
-
-		int nbHinges = 0;
-		double shinkedArea = 0, totalArea = 0;
-		//for(UnitScaff* unit : shapeDec->units)
-		//{
-		//	for (ChainScaff* chain : unit->chains)
-		//	{
-		//		nbHinges += chain->nbHinges;
-		//		shinkedArea += chain->shrinkedArea;
-		//		totalArea += chain->patchArea;
-		//	}
-		//}
-		for (PatchNode* m : shapeDec->masters)
-			totalArea += m->mPatch.area();
-
-		stat.properties[NB_HINGES] = nbHinges;
-		stat.properties[SHRINKED_AREA] = shinkedArea/totalArea;
-
-		stat.properties[CONN_THR_RATIO] = connThrRatio;
-		stat.properties[CONSTRAIN_AABB_SCALE].setValue(aabbCstrScale);
-
-		stat.properties[COST_WEIGHT] = costWeight;
-	}
-}
-
 void FoldManager::updateUnitList()
 {
 	QStringList unitLabels;
-	if (shapeDec) 
+	if (shapeDec)
 		unitLabels = shapeDec->getUnitLabels();
 
 	emit(unitsChanged(unitLabels));
@@ -217,7 +245,66 @@ void FoldManager::updateKeyframeSlider()
 {
 	if (!shapeDec) return;
 
-	emit(keyframesChanged(shapeDec->keyframes.size()-1));
+	emit(keyframesChanged(shapeDec->keyframes.size() - 1));
+}
+
+Scaffold* FoldManager::activeScaffold()
+{
+	if (shapeDec)
+		return shapeDec->activeScaffold();
+	else	
+		return inputScaffold;
+}
+
+// foldabilization
+void FoldManager::decompose()
+{
+	if (shapeDec) delete shapeDec;
+
+	shapeDec = new DecScaff("", inputScaffold, sqzV, connThrRatio);
+
+	updateUnitList();
+	updateKeyframeSlider();
+}
+
+void FoldManager::generateKeyframes()
+{
+	// thickness
+	setAllParameters();
+
+	// selected dec scaffold
+	if (!shapeDec) return;
+
+	// forward message
+	shapeDec->genKeyframes(nbKeyframes);
+
+	// emit signals
+	updateKeyframeSlider();
+}
+
+void FoldManager::foldabilize()
+{
+	// assert input
+	if (!inputScaffold)	return;
+
+	// start timer
+	QElapsedTimer timer;
+	timer.start();
+
+	// foldabilize
+	decompose();
+	setAllParameters();
+	shapeDec->foldabilize(); 
+	
+	// end timer
+	elapsedTime = timer.elapsed();
+
+	// generate key frames
+	shapeDec->genKeyframes(nbKeyframes);
+	updateKeyframeSlider();
+
+	// statistics
+	exportStat();
 }
 
 void FoldManager::exportResultMesh()
@@ -241,102 +328,52 @@ void FoldManager::exportResultMesh()
 	//}
 }
 
-void FoldManager::setNbKeyframes(int N)
-{
-	nbKeyframes = N;
-}
-
-void FoldManager::setNbSplits( int N )
-{
-	nbSplits = N;
-	if (shapeDec) setParameters();
-}
-
-void FoldManager::setNbChunks( int N )
-{
-	nbChunks = N;
-	if (shapeDec) setParameters();
-}
-
-void FoldManager::setThickness( double thk )
-{
-	thickness = thk;
-	if (shapeDec) setParameters();
-}
-
-void FoldManager::setParameters()
-{
-	Geom::Box aabb = inputScaffold->computeAABB().box();
-	aabb.scale(aabbCstrScale);
-
-	for(UnitScaff* unit : shapeDec->units)
-	{
-		unit->setAabbConstraint(aabb);
-		unit->maxNbSplits = nbSplits;
-		unit->maxNbChunks = nbChunks;
-		unit->setThickness(thickness);
-		unit->weight = costWeight;
-
-		unit->resetAllFoldOptions();
-	}
-
-	shapeDec->connThrRatio = connThrRatio;
-}
-
-void FoldManager::setConnThrRatio(double thr)
-{
-	connThrRatio = thr;
-}
-
-void FoldManager::setAabbX( double x )
-{
-	aabbCstrScale[0] = x;
-}
-
-void FoldManager::setAabbY( double y )
-{
-	aabbCstrScale[1] = y;
-}
-
-void FoldManager::setAabbZ( double z )
-{
-	aabbCstrScale[2] = z;
-}
-
 void FoldManager::exportStat()
 {
-	if (stat.hasTag(FD_TIME))
-	{
-		QString filename = QFileDialog::getSaveFileName(0, tr("Save Statistics"), nullptr, tr("Txt file (*.txt)"));
+	QString filename = QFileDialog::getSaveFileName(0, tr("Save Statistics"), nullptr, tr("Txt file (*.txt)"));
 
-		QFile file( filename );
-		if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) return;
-		QTextStream out(&file);
+	QFile file(filename);
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) return;
+	QTextStream out(&file);
 
-		Vector3 sqzV = stat.properties[SQZ_DIRECTION].value<Vector3>();
-		out << QString("%1 = %2, %3, %4\n").arg(SQZ_DIRECTION).arg(sqzV[0]).arg(sqzV[1]).arg(sqzV[2]);
-		out << QString("%1 = %2\n").arg(NB_SPLIT).arg(stat.properties[NB_SPLIT].value<int>());
-		out << QString("%1 = %2\n\n").arg(NB_CHUNKS).arg(stat.properties[NB_CHUNKS].value<int>());
+	// input
+	out << QString("%1 = %2, %3, %4\n").arg("sqzDirct").arg(sqzV[0]).arg(sqzV[1]).arg(sqzV[2]);
+	out << QString("%1 = %2, %3, %4\n").arg("aabbCstrScale").arg(aabbCstrScale[0]).arg(aabbCstrScale[1]).arg(aabbCstrScale[2]);
+	out << QString("%1 = %2\n\n").arg("connThrRatio").arg(connThrRatio);
 
-		out << QString("%1 = %2\n").arg(NB_MASTER).arg(stat.properties[NB_MASTER].value<int>());
-		out << QString("%1 = %2\n").arg(NB_SLAVE).arg(stat.properties[NB_SLAVE].value<int>());
-		out << QString("%1 = %2\n\n").arg(NB_BLOCK).arg(stat.properties[NB_BLOCK].value<int>());
+	// fold parameters
+	out << QString("%1 = %2\n").arg("nbSplits").arg(nbSplits);
+	out << QString("%1 = %2\n\n").arg("nbChunks").arg(nbChunks);
+	out << QString("%1 = %2\n").arg("costWeight").arg(costWeight);
 
-		out << QString("%1 = %2\n").arg(FD_TIME).arg(stat.properties[FD_TIME].value<int>());
-		out << QString("%1 = %2\n\n").arg(SPACE_SAVING).arg(stat.properties[SPACE_SAVING].value<double>());
+	// timing
+	out << QString("%1 = %2\n").arg("elapsedTime").arg(elapsedTime);
 
-		out << QString("%1 = %2\n").arg(NB_HINGES).arg(stat.properties[NB_HINGES].value<int>());
-		out << QString("%1 = %2\n\n").arg(SHRINKED_AREA).arg(stat.properties[SHRINKED_AREA].value<double>());
 
-		Vector3 scale = stat.properties[CONSTRAIN_AABB_SCALE].value<Vector3>();
-		out << QString("%1 = %2, %3, %4\n").arg(CONSTRAIN_AABB_SCALE).arg(scale[0]).arg(scale[1]).arg(scale[2]);
-		out << QString("%1 = %2\n\n").arg(CONN_THR_RATIO).arg(stat.properties[CONN_THR_RATIO].value<double>());
+	// space saving
+	Scaffold* lastKeyframe = shapeDec->keyframes.last();
+	double origVol = inputScaffold->computeAABB().box().volume();
+	double fdVol = lastKeyframe->computeAABB().box().volume();
+	double spaceSaving = 1 - fdVol / origVol;
+	out << QString("%1 = %2\n\n").arg("spaceSaving").arg(spaceSaving);
 
-		out << QString("%1 = %2\n").arg(COST_WEIGHT).arg(stat.properties[COST_WEIGHT].value<double>());
+	// resulted scaffold
+	out << QString("%1 = %2\n").arg("nbMasters").arg(shapeDec->masters.size());
+	out << QString("%1 = %2\n").arg("nbSlaves").arg(shapeDec->slaves.size());
+	out << QString("%1 = %2\n\n").arg("nbUnits").arg(shapeDec->units.size());
+
+	int nbHinges = 0;
+	double shrinkedArea = 0, totalArea = 0;
+	for (UnitScaff* unit : shapeDec->units){
+		for (ChainScaff* chain : unit->chains)
+		{
+			//nbHinges += chain->nbHinges;
+			//shinkedArea += chain->shrinkedArea;
+			//totalArea += chain->patchArea;
+		}
 	}
-}
-
-void FoldManager::setCostWeight( double w )
-{
-	costWeight = w;
+	for (PatchNode* m : shapeDec->masters)
+		totalArea += m->mPatch.area();
+	out << QString("%1 = %2\n").arg("nbHinges").arg(nbHinges);
+	out << QString("%1 = %2\n\n").arg("shrinkedArea").arg(shrinkedArea);
 }

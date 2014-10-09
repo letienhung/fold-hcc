@@ -106,14 +106,24 @@ UnitScaff* DecScaff::createUnit(QSet<int> sCluster)
 	// create
 	int unitIdx = units.size();
 	QString id = QString::number(unitIdx);
-	if (ms.size() == 2 && ss.size() == 1 &&
-		(ms[0]->hasTag(EDGE_ROD_TAG) || ms[1]->hasTag(EDGE_ROD_TAG)))
+	if (ms.size() == 2					// two masters
+		&& ss.size() == 1				// one slave
+		&& (ms[0]->hasTag(EDGE_ROD_TAG)
+		|| ms[1]->hasTag(EDGE_ROD_TAG)))// one master is edge rod
+	{
 		unit = new TUnitScaff("TB_" + id, ms, ss, mPairs);
-	//else if (false)
-	else if (areParallel(ss))
+	}
+	else if (ms.size() == 2				// two masters
+		&& !ms[0]->hasTag(EDGE_ROD_TAG)
+		&& !ms[1]->hasTag(EDGE_ROD_TAG) // both masters are real
+		&& areParallel(ss))				// slaves are in parallel
+	{
 		unit = new ZUnitScaff("ZB_" + id, ms, ss, mPairs);
-	else 
+	}
+	else
+	{
 		unit = new HUnitScaff("HB_" + id, ms, ss, mPairs);
+	}
 
 	// parameters
 	unit->setAabbConstraint(computeAABB().box());
@@ -199,8 +209,8 @@ UnitScaff* DecScaff::getSelUnit()
 
 Scaffold* DecScaff::activeScaffold()
 {
-	UnitScaff* selLayer = getSelUnit();
-	if (selLayer) return selLayer->activeScaffold();
+	UnitScaff* selUnit = getSelUnit();
+	if (selUnit) return selUnit->activeScaffold();
 	else		  return this;
 }
 

@@ -34,8 +34,8 @@ public:
 	double connThrRatio;
 	double thickness;
 
-	// statistics
-	Structure::PropertyMap stat;
+	// timing
+	double elapsedTime;
 
 public:
 	// update Ui
@@ -47,6 +47,14 @@ public:
 	Scaffold* activeScaffold();
 	UnitScaff* getSelUnit();
 	Scaffold* getSelKeyframe();
+
+	// statistics
+	void genStat();
+	void exportStat();
+
+private:
+	// aabb constraint 
+	Geom::Box getAabbCstr();
 
 public slots:
 	/// Main pipeline	
@@ -63,7 +71,7 @@ public slots:
 	void setAabbY(double y);
 	void setAabbZ(double z);
 	void setCostWeight(double w);
-	void setParameters();
+	void setAllParameters();
 
 	// decompose
 	void decompose();
@@ -77,7 +85,6 @@ public slots:
 
 	// output
 	void exportResultMesh();
-	void exportStat();
 
 	// selection signal from Ui
 	void selectUnit(QString id);
@@ -92,19 +99,3 @@ signals:
 	void keyframesChanged(int N);
 	void message(QString msg);
 };
-
-// statistics
-#define NB_SPLIT "nbSplits"
-#define NB_CHUNKS "nbChunks"
-#define SQZ_DIRECTION "sqzDirection"
-#define NB_MASTER "nbMasters"
-#define NB_SLAVE "nbSlaves"
-#define NB_BLOCK "nbBlocks"
-#define NB_HINGES "nbHinges"
-#define SHRINKED_AREA "shrinkedArea"
-#define FD_TIME "fdTime"
-#define SPACE_SAVING "spaceSaving"
-
-#define CONN_THR_RATIO "connThrRatio"
-#define CONSTRAIN_AABB_SCALE "constrainAabbScale"
-#define COST_WEIGHT "costWeight"
