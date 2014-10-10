@@ -152,13 +152,6 @@
             </property>
            </widget>
           </item>
-          <item row="7" column="0">
-           <widget class="QPushButton" name="exportStat">
-            <property name="text">
-             <string>Export Stat</string>
-            </property>
-           </widget>
-          </item>
           <item row="7" column="3">
            <widget class="QPushButton" name="exportVector">
             <property name="text">

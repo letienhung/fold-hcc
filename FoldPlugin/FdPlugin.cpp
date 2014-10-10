@@ -58,7 +58,7 @@ void FdPlugin::create()
 		dockwidget->setWidget(widget);
 		mainWindow()->addDockWidget(Qt::RightDockWidgetArea, dockwidget);
 
-		// update default settings
+		// default settings
 		widget->ui->showCuboid->setCheckState(showCuboid ? Qt::Checked : Qt::Unchecked);
 		widget->ui->showScaffold->setCheckState(showScaffold ? Qt::Checked : Qt::Unchecked);
 		widget->ui->showMesh->setCheckState(showMesh ? Qt::Checked : Qt::Unchecked);
@@ -94,8 +94,10 @@ void FdPlugin::decorate()
 {
 	if (activeScaffold())
 	{
+		// draw the active scaffold
 		activeScaffold()->draw();
 
+		// draw the order/depth of parts
 		if( drawNodeOrder ){
 			for(ScaffNode * n : activeScaffold()->getScaffNodes()){
 				qglviewer::Vec center = drawArea()->camera()->projectedCoordinatesOf(qglviewer::Vec(n->center()));
