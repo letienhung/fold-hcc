@@ -228,6 +228,10 @@ double UnitScaff::foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti)
 	for (int i = 0; i < chains.size(); i++)
 		chains[i]->applyFoldOption(testedSlns[currSlnIdx]->solution[i]);
 
+	// debug
+	appendToVectorProperty(DEBUG_POINTS, fdSln->obstacles);
+	appendToVectorProperty(DEBUG_SEGS, )
+
 	// return the cost (\in [0, 1])
 	return fdSln->cost;
 }
@@ -303,5 +307,15 @@ QVector<Vector3> UnitScaff::getObstacles()
 		obs = testedSlns[currSlnIdx]->obstacles;
 
 	return obs;
+}
+
+QVector<Geom::Rectangle> UnitScaff::getAFRs()
+{
+	QVector<Geom::Rectangle> afr;
+	if (currSlnIdx >= 0 && currSlnIdx < testedSlns.size())
+		for (int foi : testedSlns[currSlnIdx]->afo)
+			afr << allFoldOptions[foi]->region;
+
+		return afr;
 }
 

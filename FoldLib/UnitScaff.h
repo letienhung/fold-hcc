@@ -42,6 +42,7 @@ public:
 
 	// current available fold regions 
 	virtual QVector<Vector3> getObstacles();
+	virtual QVector<Geom::Rectangle> getAFRs();
 
 public:
 	//*** CORE

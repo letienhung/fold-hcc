@@ -39,6 +39,7 @@ public:
 
 	// get obstacles
 	virtual QVector<Vector3> getObstacles() override;
+	virtual QVector<Geom::Rectangle> getAFRs() override;
 
 private:
 	// the back up HUnit

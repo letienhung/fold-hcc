@@ -394,8 +394,10 @@ void DecScaff::foldabilize()
 	SuperShapeKf* currKeyframe = getSuperShapeKf(currTime);
 	UnitScaff* next_unit = getBestNextUnit(currTime, currKeyframe);
 
-	//return;
-	
+
+	return;
+
+
 	while (next_unit)
 	{
 		std::cout << "**\nBest next = " << next_unit->mID.toStdString() << "\n"
@@ -405,6 +407,7 @@ void DecScaff::foldabilize()
 		double timeLength = next_unit->getNbTopMasters() * timeScale;
 		double nextTime = currTime + timeLength;
 		next_unit->foldabilize(currKeyframe, TimeInterval(currTime, nextTime));
+
 		std::cout << "\n-----------//-----------\n";
 
 		// get best next
@@ -480,6 +483,8 @@ UnitScaff* DecScaff::getBestNextUnit(double currTime, SuperShapeKf* currKeyframe
 	double min_cost = maxDouble();
 	for (UnitScaff* nextUnit : unfoldedUnits)
 	{
+		if (nextUnit->mID != "ZB_1") continue;
+
 		// foldabilize nextUnit
 		std::cout << "*\nEvaluating unit: " << nextUnit->mID.toStdString() << "\n";
 		double nextTime = -1.0;
@@ -487,8 +492,7 @@ UnitScaff* DecScaff::getBestNextUnit(double currTime, SuperShapeKf* currKeyframe
 		TimeInterval origNextTi = nextUnit->mFoldDuration; // back up
 		double nextCost = foldabilizeUnit(nextUnit, currTime, currKeyframe, nextTime, nextKeyframe);
 
-		//nextBlock->showObstaclesAndFoldOptions();
-		//return -1;
+		return nullptr;
 		
 		// the folding of nextUnit must be valid, otherwise skip further evaluation
 		if (nextKeyframe->isValid(sqzV))

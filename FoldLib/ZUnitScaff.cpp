@@ -218,3 +218,16 @@ QVector<Vector3> ZUnitScaff::getObstacles()
 	else
 		return hUnit->getObstacles();
 }
+
+QVector<Geom::Rectangle> ZUnitScaff::getAFRs()
+{
+	if (fold2Left || fold2Right)
+	{
+		QVector<Geom::Rectangle> afr;
+		Geom::Rectangle2 regionProj = fold2Left ? regionProjLeft : regionProjRight;
+		afr << baseMaster->mPatch.get3DRectangle(regionProj);
+		return afr;
+	}
+	else
+		return hUnit->getAFRs();
+}
