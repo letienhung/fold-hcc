@@ -76,7 +76,7 @@ QMap< QString, QVector<Vector2> > SuperUnitScaff::computeObstacles(UnitSolution*
 		obstParts << ssKeyframe->getInbetweenExternalParts(origUnit, baseMaster->center(), top_master->center());
 		// ***chains under the top master should not stick into other blocks: introducing new order constraints
 		// unrelated masters must be external because all masters have relation with the base master
-		obstParts << ssKeyframe->getUnrelatedExternalMasters(base_mid, top_mid);
+		obstParts << ssKeyframe->getUnrelatedExternalMasters(origUnit, base_mid, top_mid);
 
 		// sample obstacle parts
 		QVector<Vector3> obstPnts;

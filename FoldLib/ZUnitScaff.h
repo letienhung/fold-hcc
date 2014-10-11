@@ -35,7 +35,12 @@ public:
 	virtual double foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti) override;
 
 	// setter
+	virtual void setNbSplits(int n) override;
+	virtual void setNbChunks(int n) override;
+	virtual void setAabbCstr(Geom::Box aabb) override;
+	virtual void setCostWeight(double w) override;
 	virtual void setImportance(double imp) override;
+	virtual void setThickness(double thk) override;
 
 	// get obstacles
 	virtual QVector<Vector3> getObstacles() override;

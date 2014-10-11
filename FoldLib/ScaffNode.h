@@ -90,11 +90,11 @@ public:
 #define EDGE_ROD_ORIG "edgeRodOriginNode"
 
 #define	MASTER_TAG "isMasterPatch"
-#define MERGED_PART_TAG "isMergedNode"
-#define SUPER_MASTER_TAG "isSuperMaster"
 
 #define FIXED_NODE_TAG "hasFixed"
 
 #define ACTIVE_NODE_TAG "isActiveNode"
 
+#define MERGED_PART_TAG "isMergedNode"
 #define MERGED_MASTERS "mergedMastersSet"
+#define SUPER_MASTER_TAG "isSuperMaster"

@@ -54,6 +54,31 @@ void UnitScaff::setAabbCstr(Geom::Box aabb)
 	aabbCstrProj = base_rect.get2DRectangle(cs_rect);
 }
 
+void UnitScaff::setNbSplits(int n)
+{
+	maxNbSplits = n;
+}
+
+void UnitScaff::setNbChunks(int n)
+{
+	maxNbChunks = n;
+}
+
+void UnitScaff::setCostWeight(double w)
+{
+	weight = w;
+}
+
+void UnitScaff::setThickness(double thk)
+{
+	thickness = thk;
+	for (ChainScaff* chain : chains)
+	{
+		chain->halfThk = thickness / 2;
+		chain->baseOffset = thickness / 2;
+	}
+}
+
 
 Scaffold* UnitScaff::activeScaffold()
 {
@@ -151,16 +176,6 @@ double UnitScaff::getNbTopMasters()
 	return getNodesWithTag(MASTER_TAG).size() - 1;
 }
 
-void UnitScaff::setThickness( double thk )
-{
-	thickness = thk;
-	for (ChainScaff* chain : chains)
-	{
-		chain->halfThk = thickness / 2;
-		chain->baseOffset = thickness / 2;
-	}
-}
-
 void UnitScaff::genAllFoldOptions()
 {
 	// clear
@@ -227,10 +242,6 @@ double UnitScaff::foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti)
 	// apply the solution
 	for (int i = 0; i < chains.size(); i++)
 		chains[i]->applyFoldOption(testedSlns[currSlnIdx]->solution[i]);
-
-	// debug
-	appendToVectorProperty(DEBUG_POINTS, fdSln->obstacles);
-	appendToVectorProperty(DEBUG_SEGS, )
 
 	// return the cost (\in [0, 1])
 	return fdSln->cost;
@@ -313,9 +324,29 @@ QVector<Geom::Rectangle> UnitScaff::getAFRs()
 {
 	QVector<Geom::Rectangle> afr;
 	if (currSlnIdx >= 0 && currSlnIdx < testedSlns.size())
+	{
 		for (int foi : testedSlns[currSlnIdx]->afo)
 			afr << allFoldOptions[foi]->region;
+	}
 
-		return afr;
+	return afr;
+}
+
+void UnitScaff::genDebugInfo()
+{
+	properties.clear();
+
+	// obstacles
+	appendToVectorProperty(DEBUG_POINTS, getObstacles());
+	
+	// available fold options/regions
+	for (Geom::Rectangle rect : getAFRs())
+	{
+		appendToVectorProperty(DEBUG_SEGS, rect.getEdgeSegments());
+		//appendToVectorProperty(DEBUG_POINTS, rect.getConners());
+	}
+
+	// aabb constraint
+	appendToVectorProperty(DEBUG_SEGS, baseMaster->mPatch.get3DRectangle(aabbCstrProj).getEdgeSegments());
 }
 

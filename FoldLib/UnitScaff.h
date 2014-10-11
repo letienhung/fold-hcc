@@ -36,13 +36,17 @@ public:
 	double getTotalSlaveArea(); // the total area of slave patches
 
 	// setters
-	void setAabbCstr(Geom::Box aabb);
-	void setThickness(double thk);
+	virtual void setNbSplits(int n);
+	virtual void setNbChunks(int n);
+	virtual void setAabbCstr(Geom::Box aabb);
+	virtual void setCostWeight(double w);
 	virtual void setImportance(double imp);
+	virtual void setThickness(double thk);
 
 	// current available fold regions 
 	virtual QVector<Vector3> getObstacles();
 	virtual QVector<Geom::Rectangle> getAFRs();
+	void genDebugInfo();
 
 public:
 	//*** CORE

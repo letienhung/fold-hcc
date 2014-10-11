@@ -395,7 +395,7 @@ void DecScaff::foldabilize()
 	UnitScaff* next_unit = getBestNextUnit(currTime, currKeyframe);
 
 
-	return;
+	//return;
 
 
 	while (next_unit)
@@ -483,7 +483,7 @@ UnitScaff* DecScaff::getBestNextUnit(double currTime, SuperShapeKf* currKeyframe
 	double min_cost = maxDouble();
 	for (UnitScaff* nextUnit : unfoldedUnits)
 	{
-		if (nextUnit->mID != "ZB_1") continue;
+		//if (nextUnit->mID != "ZB_1") continue;
 
 		// foldabilize nextUnit
 		std::cout << "*\nEvaluating unit: " << nextUnit->mID.toStdString() << "\n";
@@ -492,7 +492,8 @@ UnitScaff* DecScaff::getBestNextUnit(double currTime, SuperShapeKf* currKeyframe
 		TimeInterval origNextTi = nextUnit->mFoldDuration; // back up
 		double nextCost = foldabilizeUnit(nextUnit, currTime, currKeyframe, nextTime, nextKeyframe);
 
-		return nullptr;
+		//nextUnit->genDebugInfo();
+		//return nullptr;
 		
 		// the folding of nextUnit must be valid, otherwise skip further evaluation
 		if (nextKeyframe->isValid(sqzV))

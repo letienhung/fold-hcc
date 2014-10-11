@@ -136,8 +136,13 @@ bool Geom::Rectangle2::contains( Vector2& p, double thr /*= ZERO_TOLERANCE_LOW*/
 bool Geom::Rectangle2::containsAll(QVector<Vector2>& pnts, double thr /*= ZERO_TOLERANCE_LOW*/ )
 {
 	bool ctn_all = true;
-	for (Vector2 p : pnts){
-		if (!contains(p, thr)){	ctn_all = false; break;}
+	for (Vector2 p : pnts)
+	{
+		if (!contains(p, thr))
+		{	
+			ctn_all = false; 
+			break;
+		}
 	}
 	return ctn_all;
 }

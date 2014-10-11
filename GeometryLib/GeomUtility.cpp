@@ -34,10 +34,10 @@ Geom::Rectangle2 Geom::computeBoundingBox(QVector<Vector2>& pnts, Vector2& X)
 	for (Vector2 p : pnts) pntsB << frameB.getCoords(p);
 	Rectangle2 aabbB = computeAABB(pntsB);
 
-	// get back to frame A : where pnts lay and 
+	// get back to frame A : where pnts lay 
 	QVector<Vector2> connersA;
 	for (Vector2 pB : aabbB.getConners()) 
-		connersA << aabbB.getPosition(pB);
+		connersA << frameB.getPosition(pB);
 
 	// result
 	return Rectangle2(connersA);

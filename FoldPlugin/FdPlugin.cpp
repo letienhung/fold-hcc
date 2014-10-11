@@ -37,7 +37,7 @@ FdPlugin::FdPlugin()
 	showKeyframe = false;
 	showDecomp = false;
 	showAABB = false;
-	showCuboid = true;
+	showCuboid = false;
 	showScaffold = true;
 	showMesh = false;
 	drawNodeOrder = false;

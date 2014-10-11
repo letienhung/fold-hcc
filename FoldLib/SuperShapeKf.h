@@ -27,6 +27,9 @@ public:
 	QVector<ScaffNode*> getInbetweenExternalParts(UnitScaff* unit, Vector3 p0, Vector3 p1);
 
 	// unrelated masters
-	QVector<ScaffNode*> getUnrelatedExternalMasters(QString base_mid, QString top_mid);
+	QVector<ScaffNode*> getUnrelatedExternalMasters(UnitScaff* unit, QString base_mid, QString top_mid);
+
+	// super patch in unit
+	bool isSuperPatchInUnit(PatchNode* superPatch, UnitScaff* unit);
 };
 

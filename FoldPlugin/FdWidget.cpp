@@ -108,7 +108,7 @@ void FdWidget::setKeyframeSlider( int N )
 	ui->keyframeSlider->setMaximum(N);
 	ui->nbKeyframeSlider->setText(QString::number(N));
 
-	if(N > 1) forceShowKeyFrame();
+	//if(N > 1) forceShowKeyFrame();
 }
 
 void FdWidget::selectUnit()

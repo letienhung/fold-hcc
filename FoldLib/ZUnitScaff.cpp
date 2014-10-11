@@ -96,16 +96,55 @@ void ZUnitScaff::computeFoldRegionProj(bool toRight)
 	Geom::Rectangle2& regionProj = toRight ? regionProjRight : regionProjLeft;
 	Geom::Segment2 baseJoint2 = base_rect.get2DSegment(chains.front()->baseJoint);
 	regionProj = Geom::computeBoundingBox(samples, baseJoint2.Direction);
+
+	// debug
+	//if (toRight)
+	{
+		//QVector<Vector3> samples3d;
+		//for (Vector2 s : samples) samples3d << base_rect.getPosition(s);
+		//appendToVectorProperty(DEBUG_POINTS, samples3d);
+
+		appendToVectorProperty(DEBUG_SEGS, base_rect.get3DRectangle(regionProj).getEdgeSegments());
+	}
+}
+
+
+void ZUnitScaff::setNbSplits(int n)
+{
+	UnitScaff::setNbSplits(n);
+	hUnit->setNbSplits(n);
+}
+
+void ZUnitScaff::setNbChunks(int n)
+{
+	UnitScaff::setNbChunks(n);
+	hUnit->setNbChunks(n);
+}
+
+void ZUnitScaff::setAabbCstr(Geom::Box aabb)
+{
+	UnitScaff::setAabbCstr(aabb);
+	hUnit->setAabbCstr(aabb);
 }
 
 void ZUnitScaff::setImportance(double imp)
 {
-	// z unit
 	UnitScaff::setImportance(imp);
-
-	// h unit
 	hUnit->setImportance(imp);
 }
+
+void ZUnitScaff::setCostWeight(double w)
+{
+	UnitScaff::setCostWeight(w);
+	hUnit->setCostWeight(w);
+}
+
+void ZUnitScaff::setThickness(double thk)
+{
+	UnitScaff::setThickness(thk);
+	hUnit->setThickness(thk);
+}
+
 
 QVector<Vector2> ZUnitScaff::computeObstacles(SuperShapeKf* ssKeyframe)
 {
@@ -124,6 +163,8 @@ QVector<Vector2> ZUnitScaff::computeObstacles(SuperShapeKf* ssKeyframe)
 		obstPntsProj << base_rect.getProjCoordinates(s);
 		obstPntsProj3 << base_rect.getProjection(s);
 	}
+	//appendToVectorProperty(DEBUG_POINTS, obstPntsProj3);
+	//appendToVectorProperty(DEBUG_POINTS, obstPnts);
 
 	return obstPntsProj;
 }
@@ -150,14 +191,13 @@ bool ZUnitScaff::foldabilizeZ(SuperShapeKf* ssKeyframe, TimeInterval ti)
 	}
 
 	// apply Z solution : choose any
-	bool okay2Fold = fold2Left || fold2Right;
-	if (okay2Fold){
+	if (fold2Left || fold2Right){
 		QVector<FoldOption*>& options = fold2Left ? optionsLeft : optionsRight;
 		for (int i = 0; i < chains.size(); i++)
 			chains[i]->applyFoldOption(options[i]);
+		return true;
 	}
-
-	return okay2Fold;
+	else return false;
 }
 
 double ZUnitScaff::foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti)

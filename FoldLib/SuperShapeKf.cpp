@@ -129,7 +129,7 @@ QVector<ScaffNode*> SuperShapeKf::getInbetweenExternalParts(UnitScaff* unit, Vec
 		if (sn->hasTag(MERGED_PART_TAG)) continue;
 
 		// skip parts in unit
-		if (unit->containsNode(sn->mID)) continue;
+		if (isSuperPatchInUnit((PatchNode*)sn, unit)) continue;
 
 		// master
 		if (sn->hasTag(MASTER_TAG))
@@ -155,7 +155,7 @@ QVector<ScaffNode*> SuperShapeKf::getInbetweenExternalParts(UnitScaff* unit, Vec
 	return inbetweens;
 }
 
-QVector<ScaffNode*> SuperShapeKf::getUnrelatedExternalMasters(QString base_mid, QString top_mid)
+QVector<ScaffNode*> SuperShapeKf::getUnrelatedExternalMasters(UnitScaff* unit, QString base_mid, QString top_mid)
 {
 	QVector<ScaffNode*> urMasters;
 
@@ -169,10 +169,28 @@ QVector<ScaffNode*> SuperShapeKf::getUnrelatedExternalMasters(QString base_mid, 
 		// skip folded or virtual masters
 		if (n->hasTag(MERGED_PART_TAG) || n->hasTag(EDGE_ROD_TAG)) continue;
 
+		// skip parts in unit
+		if (isSuperPatchInUnit((PatchNode*)n, unit)) continue;
+
 		// accept if not related to any
 		if (!base_moc.contains(n->mID) && !top_moc.contains(n->mID))
 			urMasters << (ScaffNode*)n;
 	}
 
 	return urMasters;
+}
+
+bool SuperShapeKf::isSuperPatchInUnit(PatchNode* superPatch, UnitScaff* unit)
+{
+	QVector<QString> mergedMasters;
+	if (superPatch->hasTag(MERGED_MASTERS))
+		mergedMasters = superPatch->properties[MERGED_MASTERS].value<QSet<QString> >().toList().toVector();
+	else
+		mergedMasters << superPatch->mID;
+
+	for (QString mm : mergedMasters)
+		if (unit->containsNode(mm))
+			return true;
+
+	return false;
 }
