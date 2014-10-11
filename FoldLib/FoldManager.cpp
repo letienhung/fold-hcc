@@ -97,7 +97,10 @@ void FoldManager::setThickness(double thk)
 void FoldManager::setConnThrRatio(double thr)
 {
 	connThrRatio = thr;
-	shapeDec->connThrRatio = connThrRatio;
+	if (shapeDec)
+	{
+		shapeDec->connThrRatio = connThrRatio;
+	}
 }
 
 void FoldManager::setAabbX(double x)
@@ -105,10 +108,11 @@ void FoldManager::setAabbX(double x)
 	aabbCstrScale[0] = x;
 	if (shapeDec)
 	{
-		Geom::Box cstrBox = getAabbCstr();
+		Geom::Box box = shapeDec->computeAABB().box();
+		box.scale(aabbCstrScale);
 		for (UnitScaff* unit : shapeDec->units)
 		{
-			unit->setAabbConstraint(cstrBox);
+			unit->setAabbCstr(box);
 			unit->resetAllFoldOptions();
 		}
 	}
@@ -119,10 +123,11 @@ void FoldManager::setAabbY(double y)
 	aabbCstrScale[1] = y;
 	if (shapeDec)
 	{
-		Geom::Box cstrBox = getAabbCstr();
+		Geom::Box box = shapeDec->computeAABB().box();
+		box.scale(aabbCstrScale);
 		for (UnitScaff* unit : shapeDec->units)
 		{
-			unit->setAabbConstraint(cstrBox);
+			unit->setAabbCstr(box);
 			unit->resetAllFoldOptions();
 		}
 	}
@@ -133,10 +138,11 @@ void FoldManager::setAabbZ(double z)
 	aabbCstrScale[2] = z;
 	if (shapeDec)
 	{
-		Geom::Box cstrBox = getAabbCstr();
+		Geom::Box box = shapeDec->computeAABB().box();
+		box.scale(aabbCstrScale);
 		for (UnitScaff* unit : shapeDec->units)
 		{
-			unit->setAabbConstraint(cstrBox);
+			unit->setAabbCstr(box);
 			unit->resetAllFoldOptions();
 		}
 	}
@@ -154,20 +160,14 @@ void FoldManager::setCostWeight(double w)
 	}
 }
 
-Geom::Box FoldManager::getAabbCstr()
-{
-	Geom::Box box = inputScaffold->computeAABB().box();
-	box.scale(aabbCstrScale);
-	return box;
-}
-
 void FoldManager::setAllParameters()
 {
-	Geom::Box cstrBox = getAabbCstr();
+	Geom::Box box = shapeDec->computeAABB().box();
+	box.scale(aabbCstrScale);
 
 	for (UnitScaff* unit : shapeDec->units)
 	{
-		unit->setAabbConstraint(cstrBox);
+		unit->setAabbCstr(box);
 		unit->maxNbSplits = nbSplits;
 		unit->maxNbChunks = nbChunks;
 		unit->setThickness(thickness);
@@ -269,16 +269,14 @@ void FoldManager::decompose()
 
 void FoldManager::generateKeyframes()
 {
-	// thickness
-	setAllParameters();
+	// generate
+	if (shapeDec)
+	{
+		setThickness(thickness);
+		shapeDec->genKeyframes(nbKeyframes);
+	}
 
-	// selected dec scaffold
-	if (!shapeDec) return;
-
-	// forward message
-	shapeDec->genKeyframes(nbKeyframes);
-
-	// emit signals
+	// update slider on UI
 	updateKeyframeSlider();
 }
 
@@ -304,7 +302,7 @@ void FoldManager::foldabilize()
 	updateKeyframeSlider();
 
 	// statistics
-	exportStat();
+	//exportStat();
 }
 
 void FoldManager::exportResultMesh()

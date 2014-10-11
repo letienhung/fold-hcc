@@ -16,7 +16,7 @@ private:
 	void createChains(QVector<ScaffNode*>& ss, QVector< QVector<QString> >& mPairs);
 
 	// obstacles
-	void computeObstacles(SuperShapeKf* ssKeyframe);
+	void computeObstacles(SuperShapeKf* ssKeyframe, UnitSolution* sln);
 
 	// collision graph
 	FoldOptGraph* createCollisionGraph(const QVector<int>& afo);
@@ -32,8 +32,8 @@ public:
 	virtual Scaffold* getKeyframe(double t, bool useThk) override;
 
 	// foldabilization
-	virtual QVector<int> getAvailFoldOptions(SuperShapeKf* ssKeyframe) override;
-	virtual double findOptimalSolution(const QVector<int>& afo) override;
+	virtual void computeAvailFoldOptions(SuperShapeKf* ssKeyframe, UnitSolution* sln) override;
+	virtual void findOptimalSolution(UnitSolution* sln) override;
 
 public:
 	// master-chain relation

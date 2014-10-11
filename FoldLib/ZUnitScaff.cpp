@@ -114,16 +114,18 @@ QVector<Vector2> ZUnitScaff::computeObstacles(SuperShapeKf* ssKeyframe)
 	QVector<ScaffNode*> obstacleParts = ssKeyframe->getInbetweenExternalParts(this, baseMaster->center(), topMaster->center());
 
 	// sample obstacle parts
-	QVector<Vector3> samples;
+	obstPnts.clear();
 	for (ScaffNode* obsPart : obstacleParts)
-		samples << obsPart->sampleBoundabyOfScaffold(100);
+		obstPnts << obsPart->sampleBoundabyOfScaffold(100);
 
 	// projection
-	obstacles.clear();
-	for (Vector3 s : samples)
-		obstacles << base_rect.getProjCoordinates(s);
+	QVector<Vector2> obstPntsProj;
+	for (Vector3 s : obstPnts){
+		obstPntsProj << base_rect.getProjCoordinates(s);
+		obstPntsProj3 << base_rect.getProjection(s);
+	}
 
-	return obstacles;
+	return obstPntsProj;
 }
 
 bool ZUnitScaff::foldabilizeZ(SuperShapeKf* ssKeyframe, TimeInterval ti)
@@ -135,15 +137,15 @@ bool ZUnitScaff::foldabilizeZ(SuperShapeKf* ssKeyframe, TimeInterval ti)
 	QVector<Vector2> obsPnts = computeObstacles(ssKeyframe);
 
 	// feasibility of left solution
-	bool isCollidingLeft = regionProjLeft.containsAny(obstacles, -0.01);
-	bool inAABBLeft = aabbConstraint.containsAll(regionProjLeft.getConners(), 0.01);
+	bool isCollidingLeft = regionProjLeft.containsAny(obsPnts, -0.01);
+	bool inAABBLeft = aabbCstrProj.containsAll(regionProjLeft.getConners(), 0.01);
 	fold2Left = !isCollidingLeft && inAABBLeft;
 
 	// feasibility of right solution
 	if (!fold2Left)
 	{
-		bool isCollidingRight = regionProjRight.containsAny(obstacles, -0.01);
-		bool inAABBRight = aabbConstraint.containsAll(regionProjRight.getConners(), 0.01);
+		bool isCollidingRight = regionProjRight.containsAny(obsPnts, -0.01);
+		bool inAABBRight = aabbCstrProj.containsAll(regionProjRight.getConners(), 0.01);
 		fold2Right = !isCollidingRight && inAABBRight;
 	}
 
@@ -201,11 +203,18 @@ Scaffold* ZUnitScaff::getZKeyframe(double t, bool useThk)
 	return keyframe;
 }
 
-
 Scaffold* ZUnitScaff::getKeyframe(double t, bool useThk)
 {
 	if (fold2Left || fold2Right)
 		return getZKeyframe(t, useThk);
 	else
 		return hUnit->getKeyframe(t, useThk);
+}
+
+QVector<Vector3> ZUnitScaff::getObstacles()
+{
+	if (fold2Left || fold2Right)
+		return obstPnts;
+	else
+		return hUnit->getObstacles();
 }

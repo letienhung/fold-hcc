@@ -5,6 +5,7 @@
 
 class HUnitScaff;
 class SuperShapeKf;
+class UnitSolution;
 
 // superBlock is a regular block with masters replaced by their corresponding super masters
 // super block is used for computing folding volumes
@@ -15,7 +16,7 @@ public:
 	SuperUnitScaff(HUnitScaff* block, SuperShapeKf* ssKeyframe);
 
 	// obstacles for each top master
-	QMap< QString, QVector<Vector2> > computeObstacles();
+	QMap< QString, QVector<Vector2> > computeObstacles(UnitSolution* sln);
 
 private:
 	// the original block

@@ -98,26 +98,25 @@ Scaffold* HUnitScaff::getKeyframe(double t, bool useThk)
 	return keyframe;
 }
 
-void HUnitScaff::computeObstacles(SuperShapeKf* ssKeyframe)
+void HUnitScaff::computeObstacles(SuperShapeKf* ssKeyframe, UnitSolution* sln)
 {
 	// create super block
-	SuperUnitScaff *superBlock = new SuperUnitScaff(this, ssKeyframe);
+	SuperUnitScaff *superUnit = new SuperUnitScaff(this, ssKeyframe);
 
 	// request from super block
-	obstacles = superBlock->computeObstacles();
+	obstacles = superUnit->computeObstacles(sln);
 
 	// garbage collection
-	delete superBlock;
+	delete superUnit;
 }
 
-QVector<int> HUnitScaff::getAvailFoldOptions(SuperShapeKf* ssKeyframe)
+void HUnitScaff::computeAvailFoldOptions(SuperShapeKf* ssKeyframe, UnitSolution* sln)
 {
 	// update obstacles
-	computeObstacles(ssKeyframe);
-	obstaclePnts << getObstaclePoints(); // store obstacles
+	computeObstacles(ssKeyframe, sln);
 
 	// prune fold options
-	QVector<int> afo;
+	sln->afo.clear();
 	
 	for (int i = 0; i < allFoldOptions.size(); i++)
 	{
@@ -135,16 +134,13 @@ QVector<int> HUnitScaff::getAvailFoldOptions(SuperShapeKf* ssKeyframe)
 
 			// prune
 			bool isColliding = fo->regionProj.containsAny(obs, -0.01);
-			bool inAABB = aabbConstraint.containsAll(fo->regionProj.getConners(), 0.01);
+			bool inAABB = aabbCstrProj.containsAll(fo->regionProj.getConners(), 0.01);
 			accepted = !isColliding && inAABB;
 		}
 
 		// store
-		if (accepted) afo << i;
+		if (accepted) sln->afo << i;
 	}
-
-	// result
-	return afo;
 }
 
 FoldOptGraph* HUnitScaff::createCollisionGraph(const QVector<int>& afo)
@@ -201,38 +197,25 @@ FoldOptGraph* HUnitScaff::createCollisionGraph(const QVector<int>& afo)
 	return collFog;
 }
 
-double HUnitScaff::findOptimalSolution(const QVector<int>& afo)
+void HUnitScaff::findOptimalSolution(UnitSolution* sln)
 {
-	// total cost
-	double totalCost = 0;
-
-	// solution
-	QVector<FoldOption*> solution;
-	for (int i = 0; i < chains.size(); i++) solution << nullptr;
+	// initial
+	sln->cost = 0;
+	sln->solution.clear();
+	for (int i = 0; i < chains.size(); i++) sln->solution << nullptr;
 
 	// optimal solution on each component
-	FoldOptGraph* collFog = createCollisionGraph(afo);
+	FoldOptGraph* collFog = createCollisionGraph(sln->afo);
 	for (auto component : collFog->getComponents()) {
 		for (auto fo: findOptimalSolution(collFog, component))
 		{
-			solution[fo->chainIdx] = fo;
-			totalCost += computeCost(fo);
+			sln->solution[fo->chainIdx] = fo;
+			sln->cost += computeCost(fo);
 		}
 	}
 
-	// store the solution
-	testedAvailFoldOptions << afo;
-	foldSolutions << solution;
-	foldCost << totalCost;
-
-	// update the current solution
-	currSlnIdx = foldSolutions.size() - 1;
-
 	// garbage collection
 	delete collFog;
-
-	// returns the cost
-	return totalCost;
 }
 
 QVector<FoldOption*> HUnitScaff::findOptimalSolution(FoldOptGraph* collFog, const QVector<Structure::Node*>& component)
@@ -332,15 +315,4 @@ QVector<double> HUnitScaff::genReversedWeights(const QVector<FoldOption*>& fns)
 		weights.push_back(maxCost - cost);
 
 	return weights;
-}
-
-QVector<Vector3> HUnitScaff::getObstaclePoints()
-{
-	QVector<Vector3> pnts;
-	Geom::Rectangle base_rect = baseMaster->mPatch;
-	for (QString mid : obstacles.keys())
-	for (Vector2 p : obstacles[mid])
-		pnts << base_rect.getPosition(p);
-
-	return pnts;
 }

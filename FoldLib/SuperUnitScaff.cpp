@@ -47,14 +47,14 @@ SuperUnitScaff::SuperUnitScaff(HUnitScaff* block, SuperShapeKf* sskf)
 		masters << (PatchNode*)getNode(master2Super[m->mID]);
 }
 
-QMap< QString, QVector<Vector2> > SuperUnitScaff::computeObstacles()
+QMap< QString, QVector<Vector2> > SuperUnitScaff::computeObstacles(UnitSolution* sln)
 {
-	QMap< QString, QVector<Vector2> > obstacles;
+	QMap< QString, QVector<Vector2> > masterObst;
 
 	// align super shape key frame with this super block
 	Vector3 pos_block = baseMaster->center();
 	ScaffNode* fnode = (ScaffNode*)ssKeyframe->getNode(baseMaster->mID);
-	if (!fnode) return obstacles;
+	if (!fnode) return masterObst;
 	Vector3 pos_keyframe = fnode->center();
 	Vector3 offset = pos_block - pos_keyframe;
 	ssKeyframe->translate(offset, false);
@@ -62,7 +62,7 @@ QMap< QString, QVector<Vector2> > SuperUnitScaff::computeObstacles()
 	// obstacles for each top master
 	QString base_mid = baseMaster->mID;
 	Geom::Rectangle base_rect = origUnit->baseMaster->mPatch;// ***use original base rect
-	origUnit->properties.remove(DEBUG_POINTS); // clear debug points
+	sln->obstacles.clear();  sln->obstaclesProj.clear();
 	for (PatchNode* top_master : masters)
 	{
 		// skip base master
@@ -70,31 +70,34 @@ QMap< QString, QVector<Vector2> > SuperUnitScaff::computeObstacles()
 		if (top_mid == base_mid) continue;
 
 		// obstacle parts: in-between and unordered
-		QVector<ScaffNode*> obstacleParts;
+		QVector<ScaffNode*> obstParts;
 		// ***no external parts stick in between
 		// internal master is allowed to stay in between, because they will be collapsed in order
-		obstacleParts << ssKeyframe->getInbetweenExternalParts(origUnit, baseMaster->center(), top_master->center());
+		obstParts << ssKeyframe->getInbetweenExternalParts(origUnit, baseMaster->center(), top_master->center());
 		// ***chains under the top master should not stick into other blocks: introducing new order constraints
 		// unrelated masters must be external because all masters have relation with the base master
-		obstacleParts << ssKeyframe->getUnrelatedExternalMasters(base_mid, top_mid);
+		obstParts << ssKeyframe->getUnrelatedExternalMasters(base_mid, top_mid);
 
 		// sample obstacle parts
-		QVector<Vector3> samples;
-		for (ScaffNode* obsPart : obstacleParts)
-			samples << obsPart->sampleBoundabyOfScaffold(100);
+		QVector<Vector3> obstPnts;
+		for (ScaffNode* obsPart : obstParts)
+			obstPnts << obsPart->sampleBoundabyOfScaffold(100);
 
 		// project to the base rect to get obstacles
-		QVector<Vector2> obs;
-		for (auto s : samples) obs << base_rect.getProjCoordinates(s);
-		obstacles[top_mid] = obs;
+		QVector<Vector2> obstPntsProj;
+		for (Vector3 s : obstPnts)	
+			obstPntsProj << base_rect.getProjCoordinates(s);
+		masterObst[top_mid] = obstPntsProj;
 
-		// debug
-		origUnit->appendToVectorProperty(DEBUG_POINTS, samples);
+		// store obstacles in solution
+		sln->obstacles << obstPnts;
+		for (Vector3 s : obstPnts)
+			sln->obstaclesProj << base_rect.getProjection(s);
 	}
 
 	// restore the position of super shape key frame since it is shared
 	ssKeyframe->translate(-offset, false);
 
 	// obstacles
-	return obstacles;
+	return masterObst;
 }

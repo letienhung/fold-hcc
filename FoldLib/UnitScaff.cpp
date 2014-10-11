@@ -39,15 +39,19 @@ UnitScaff::~UnitScaff()
 {
 	for (ChainScaff* c : chains)
 		delete c;
+
+	for (UnitSolution* sln : testedSlns)
+		delete sln;
 }
 
-void UnitScaff::setAabbConstraint(Geom::Box aabb)
+void UnitScaff::setAabbCstr(Geom::Box aabb)
 {
-	Geom::Rectangle base_rect = baseMaster->mPatch;
-	int aid = aabb.getAxisId(base_rect.Normal);
-	Geom::Rectangle cs_rect = aabb.getCrossSection(aid, 0);
+	aabbCstr = aabb;
 
-	aabbConstraint = base_rect.get2DRectangle(cs_rect);
+	Geom::Rectangle base_rect = baseMaster->mPatch;
+	int aid = aabbCstr.getAxisId(base_rect.Normal);
+	Geom::Rectangle cs_rect = aabbCstr.getCrossSection(aid, 0);
+	aabbCstrProj = base_rect.get2DRectangle(cs_rect);
 }
 
 
@@ -196,30 +200,36 @@ double UnitScaff::foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti)
 	// time interval
 	mFoldDuration = ti;
 
+	// create a new solution
+	UnitSolution* fdSln = new UnitSolution();
+
 	// available fold options
-	QVector<int> afo = getAvailFoldOptions(ssKeyframe);
+	computeAvailFoldOptions(ssKeyframe, fdSln);
 	
 	// search for existed solutions
 	currSlnIdx = -1;
-	for (int i = 0; i < testedAvailFoldOptions.size(); i++){
-		if (testedAvailFoldOptions[i] == afo){
+	for (int i = 0; i < testedSlns.size(); i++){
+		if (testedSlns[i]->afo == fdSln->afo)
+		{
+			delete fdSln;
 			currSlnIdx = i;
-			return foldCost[currSlnIdx];
+			return testedSlns[currSlnIdx]->cost;
 		}
 	}
 
-	// find the optimal solution
-	double cost = findOptimalSolution(afo);
+	// find new solution
+	findOptimalSolution(fdSln);
 
-	// apply selected fold option to each chain
+	// store the solution
+	currSlnIdx = testedSlns.size();
+	testedSlns << fdSln;
+
+	// apply the solution
 	for (int i = 0; i < chains.size(); i++)
-	{
-		FoldOption* fn = foldSolutions[currSlnIdx][i];
-		chains[i]->applyFoldOption(fn);
-	}
+		chains[i]->applyFoldOption(testedSlns[currSlnIdx]->solution[i]);
 
 	// return the cost (\in [0, 1])
-	return cost;
+	return fdSln->cost;
 }
 
 double UnitScaff::computeCost(FoldOption* fo)
@@ -247,26 +257,6 @@ double UnitScaff::getTotalSlaveArea()
 	return a;
 }
 
-void UnitScaff::showObstaclesAndFoldOptions()
-{
-	// clear
-	properties.remove(DEBUG_POINTS);
-	properties.remove(DEBUG_RECTS);
-
-	// assert idx
-	if (currSlnIdx < 0 || currSlnIdx >= foldSolutions.size())
-		return;
-
-	// obstacles
-	appendToVectorProperty(DEBUG_POINTS, obstaclePnts[currSlnIdx]);
-
-	// available fold options
-	QVector<Geom::Rectangle> rects;
-	Geom::Rectangle base_rect = baseMaster->mPatch;
-	for (int foi : testedAvailFoldOptions[currSlnIdx])
-		rects << base_rect.get3DRectangle(allFoldOptions[foi]->regionProj);
-	appendToVectorProperty(DEBUG_RECTS, rects);
-}
 
 void UnitScaff::resetAllFoldOptions()
 {
@@ -274,10 +264,10 @@ void UnitScaff::resetAllFoldOptions()
 	genAllFoldOptions();
 
 	// clear saved solutions
-	testedAvailFoldOptions.clear();
-	foldSolutions.clear();
-	foldCost.clear();
-	obstaclePnts.clear();
+	for (UnitSolution* sln : testedSlns) 
+		delete sln;
+	testedSlns.clear();
+	currSlnIdx = -1;
 }
 
 void UnitScaff::computeChainImportances()
@@ -293,18 +283,25 @@ void UnitScaff::computeChainImportances()
 		c->importance = c->getSlaveArea() / totalA;
 }
 
-QVector<int> UnitScaff::getAvailFoldOptions(SuperShapeKf*)
+void UnitScaff::computeAvailFoldOptions(SuperShapeKf*, UnitSolution*)
 {
-	return QVector<int>();
 }
 
-double UnitScaff::findOptimalSolution(const QVector<int>&)
+void UnitScaff::findOptimalSolution(UnitSolution*)
 {
-	return 0;
 }
 
 void UnitScaff::setImportance(double imp)
 {
 	importance = imp;
+}
+
+QVector<Vector3> UnitScaff::getObstacles()
+{
+	QVector<Vector3> obs;
+	if (currSlnIdx >= 0 && currSlnIdx < testedSlns.size())
+		obs = testedSlns[currSlnIdx]->obstacles;
+
+	return obs;
 }
 

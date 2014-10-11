@@ -46,32 +46,39 @@ Scaffold* TUnitScaff::getKeyframe(double t, bool useThk)
 	return tChain->getKeyframe(t, useThk);
 }
 
-QVector<Vector2> TUnitScaff::computeObstacles(SuperShapeKf* ssKeyframe)
+QVector<Vector2> TUnitScaff::computeObstacles(SuperShapeKf* ssKeyframe, UnitSolution* sln)
 {
 	// in-between external parts
-	Geom::Rectangle base_rect = baseMaster->mPatch;
-	QVector<ScaffNode*> obstacleParts = ssKeyframe->getInbetweenExternalParts(this, baseMaster->center(), topMaster->center());
+	QVector<ScaffNode*> obstParts = ssKeyframe->getInbetweenExternalParts(this, baseMaster->center(), topMaster->center());
 
 	// sample obstacle parts
-	QVector<Vector3> samples;
-	for (ScaffNode* obsPart : obstacleParts)
-		samples << obsPart->sampleBoundabyOfScaffold(100);
+	QVector<Vector3> obstPnts;
+	for (ScaffNode* p : obstParts)
+		obstPnts << p->sampleBoundabyOfScaffold(100);
 
 	// projection
-	obstacles.clear();
-	for (Vector3 s : samples)
-		obstacles << base_rect.getProjCoordinates(s);
+	QVector<Vector2> obstPntsProj;
+	Geom::Rectangle base_rect = baseMaster->mPatch;
+	for (Vector3 s : obstPnts)
+		obstPntsProj << base_rect.getProjCoordinates(s);
 
-	return obstacles;
+	// store obstacles in solution
+	sln->obstacles = obstPnts;
+	sln->obstaclesProj.clear();
+	for (Vector3 s : obstPnts)
+		sln->obstaclesProj << base_rect.getProjection(s);
+
+	// return 2D projection
+	return obstPntsProj;
 }
 
 
-QVector<int> TUnitScaff::getAvailFoldOptions(SuperShapeKf* ssKeyframe)
+void TUnitScaff::computeAvailFoldOptions(SuperShapeKf* ssKeyframe, UnitSolution* sln)
 {
-	QVector<Vector2> obstacles = computeObstacles(ssKeyframe);
+	QVector<Vector2> obstProj = computeObstacles(ssKeyframe, sln);
 
 	// prune fold options
-	QVector<int> afo;
+	sln->afo.clear();
 	for (int i = 0; i < allFoldOptions.size(); i++)
 	{
 		// the fold option
@@ -83,42 +90,31 @@ QVector<int> TUnitScaff::getAvailFoldOptions(SuperShapeKf* ssKeyframe)
 		if (fo->scale != 0)
 		{
 			// prune
-			bool isColliding = fo->regionProj.containsAny(obstacles, -0.01);
-			bool inAABB = aabbConstraint.containsAll(fo->regionProj.getConners(), 0.01);
+			bool isColliding = fo->regionProj.containsAny(obstProj, -0.01);
+			bool inAABB = aabbCstrProj.containsAll(fo->regionProj.getConners(), 0.01);
 			accepted = !isColliding && inAABB;
 		}
 		
 		// store
-		if (accepted) afo << i;
+		if (accepted) sln->afo << i;
 	}
-
-	// result
-	return afo;
 }
 
-double TUnitScaff::findOptimalSolution(const QVector<int>& afo)
+void TUnitScaff::findOptimalSolution(UnitSolution* sln)
 {
 	// choose the one with the lowest cost
 	FoldOption* best_fo = nullptr;
-	double minCost = maxDouble();
-	for(auto fi : afo){
+	sln->cost = maxDouble();
+	for(auto fi : sln->afo){
 		FoldOption* fo = allFoldOptions[fi];
 		double cost = computeCost(fo);
-		if (cost < minCost)
+		if (cost < sln->cost)
 		{
 			best_fo = fo;
-			minCost = cost;
+			sln->cost = cost;
 		}
 	}
 
-	// store the solution
-	testedAvailFoldOptions << afo;
-	foldSolutions << (QVector<FoldOption*>() << best_fo);
-	foldCost << minCost;
-
-	// update the current solution
-	currSlnIdx = foldSolutions.size() - 1;
-
-	// return the cost
-	return minCost;
+	sln->solution.clear();
+	sln->solution << best_fo;
 }

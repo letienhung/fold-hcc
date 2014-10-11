@@ -52,10 +52,6 @@ public:
 	void genStat();
 	void exportStat();
 
-private:
-	// aabb constraint 
-	Geom::Box getAabbCstr();
-
 public slots:
 	/// Main pipeline	
 	// input

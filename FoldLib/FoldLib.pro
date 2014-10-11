@@ -58,7 +58,8 @@ HEADERS += \
     UnitScaff.h \
     ZUnitScaff.h \
     SuperShapeKf.h \
-    FoldOptGraph.h
+    FoldOptGraph.h \
+    UnitSolution.h
 
 SOURCES += \
     PatchNode.cpp \
@@ -82,5 +83,6 @@ SOURCES += \
     UnitScaff.cpp \
     ZUnitScaff.cpp \
     SuperShapeKf.cpp \
-    FoldOptGraph.cpp
+    FoldOptGraph.cpp \
+    UnitSolution.cpp
 

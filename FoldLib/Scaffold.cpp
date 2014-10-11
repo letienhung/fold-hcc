@@ -516,7 +516,7 @@ void Scaffold::drawDebug()
 		QVector<Geom::Segment> debugSegs = properties[DEBUG_SEGS].value< QVector<Geom::Segment> >();
 		for (Geom::Segment seg : debugSegs)
 		{
-			seg.draw();
+			seg.draw(3.0, Qt::red);
 		}
 	}
 
@@ -538,16 +538,6 @@ void Scaffold::drawDebug()
 		for (Geom::Plane p : planes)
 		{
 			p.draw();
-		}
-	}
-
-	// debug rects
-	if (properties.contains(DEBUG_RECTS))
-	{
-		QVector<Geom::Rectangle> regions = properties[DEBUG_RECTS].value< QVector<Geom::Rectangle> >();
-		for (Geom::Rectangle rect : regions)
-		{
-			rect.drawEdges(2.0, Qt::blue);
 		}
 	}
 

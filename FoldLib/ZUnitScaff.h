@@ -37,6 +37,9 @@ public:
 	// setter
 	virtual void setImportance(double imp) override;
 
+	// get obstacles
+	virtual QVector<Vector3> getObstacles() override;
+
 private:
 	// the back up HUnit
 	HUnitScaff* hUnit;
@@ -49,4 +52,7 @@ private:
 	bool					fold2Left,		fold2Right;
 	QVector<FoldOption*>	optionsLeft,	optionsRight;
 	Geom::Rectangle2		regionProjLeft, regionProjRight;
+
+	// obstacles
+	QVector<Vector3> obstPnts, obstPntsProj3;
 };

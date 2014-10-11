@@ -60,6 +60,9 @@ private:
 	UnitScaff* createUnit(QSet<int> sCluster);
 	void createUnits();
 
+	// store debug info in keyframe
+	void storeDebugInfo(Scaffold* kf, int uidx);
+
 public:
 	// threshold for connectivity
 	double getConnectThr();
@@ -72,7 +75,7 @@ public:
 
 	// key frame
 	void genKeyframes(int N);
-	Scaffold* getKeyframe(double t);
+	Scaffold* genKeyframe(double t);
 	SuperShapeKf* getSuperShapeKf(double t);
 
 public:

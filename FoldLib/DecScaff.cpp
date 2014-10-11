@@ -81,14 +81,10 @@ bool DecScaff::areParallel(QVector<ScaffNode*>& ns)
 
 UnitScaff* DecScaff::createUnit(QSet<int> sCluster)
 {
-	UnitScaff* unit;
-
-	// masters, slaves and master pairs
-	QVector<PatchNode*> ms;
+	// slaves and master pairs
 	QVector<ScaffNode*> ss;
 	QVector< QVector<QString> > mPairs;
-
-	QSet<int> mids; // master indices
+	QSet<int> mids; // unique master indices
 	for(int sidx : sCluster)
 	{
 		ss << slaves[sidx]; // slaves
@@ -101,10 +97,17 @@ UnitScaff* DecScaff::createUnit(QSet<int> sCluster)
 
 		mPairs << mp; // master pairs
 	}
-	for(int mid : mids)	ms << masters[mid]; // masters
+
+	// masters
+	QVector<PatchNode*> ms;
+	for(int mid : mids)	ms << masters[mid];
+
+	// map from master to unit
+	int unitIdx = units.size();
+	for (PatchNode* m : ms) masterUnitMap[m->mID] << unitIdx;
 
 	// create
-	int unitIdx = units.size();
+	UnitScaff* unit;
 	QString id = QString::number(unitIdx);
 	if (ms.size() == 2					// two masters
 		&& ss.size() == 1				// one slave
@@ -124,11 +127,6 @@ UnitScaff* DecScaff::createUnit(QSet<int> sCluster)
 	{
 		unit = new HUnitScaff("HB_" + id, ms, ss, mPairs);
 	}
-
-	// parameters
-	unit->setAabbConstraint(computeAABB().box());
-	unit->path = path;
-	for (PatchNode* m : ms) masterUnitMap[m->mID] << unitIdx;
 
 	return unit;
 }
@@ -242,42 +240,109 @@ void DecScaff::selectUnit( QString id )
 		getSelUnit()->selectChain("");
 }
 
-Scaffold* DecScaff::getKeyframe( double t )
+void DecScaff::storeDebugInfo(Scaffold* kf, int uidx)
+{
+	// assert
+	if (!kf || uidx < 0 || uidx >= units.size()) return;
+
+	// the active unit
+	UnitScaff* unit = units[uidx];
+
+	// highlight active parts
+	for (Structure::Node* n : unit->nodes)
+	{
+		Structure::Node* an = kf->getNode(n->mID);
+		if (an)	an->addTag(ACTIVE_NODE_TAG);
+	}
+
+	// the offset of active unit in the scaffold
+	PatchNode* newUnitBase = (PatchNode*)kf->getNode(unit->baseMaster->mID);
+	Vector3 oldPos = unit->baseMaster->center();
+	Vector3 newPos = newUnitBase->center();
+	Vector3 offset = newPos - oldPos;
+
+	// aabb constraint
+	kf->appendToVectorProperty(DEBUG_BOXES, unit->aabbCstr);
+
+	// aabb constraint projection
+	kf->appendToVectorProperty(DEBUG_SEGS, newUnitBase->mPatch.get3DRectangle(unit->aabbCstrProj).getEdgeSegments());
+
+	// obstacles
+	QVector<Vector3> obs = unit->getObstacles();
+	for (Vector3 p : obs) p += offset;
+	kf->appendToVectorProperty(DEBUG_POINTS, obs);
+
+	// fold options
+}
+
+Scaffold* DecScaff::genKeyframe( double t )
 {
 	// folded units
 	QVector<Scaffold*> uKeyframes;
+	int activeUnitIdx = -1;
 	for (int i = 0; i < units.size(); i++)
 	{
 		UnitScaff* unit = units[i];
 
 		Scaffold* uk = nullptr;
 		if (unit->mFoldDuration.start >= 1)
-		{// the unit has not been foldabilized
+		{
+			// the unit has not been foldabilized
 			uk = (Scaffold*)unit->clone();
 		}
 		else
-		{// foldabilized unit
+		{
+			// foldabilized unit
 			double lt = unit->mFoldDuration.getLocalTime(t);
 			uk = unit->getKeyframe(lt, true);
 
-			// active block
-			if (lt > 0 && lt < 1){
-				for (Structure::Node* n : uk->nodes)
-					n->addTag(ACTIVE_NODE_TAG);
-			}
+			// active unit
+			if (lt > 0 && lt < 1) activeUnitIdx = i;
 		}
 
 		uKeyframes << uk;
 	}
 
-	// shift units and add nodes into scaffold
+	// keyframe via combination
 	Scaffold *keyframe = new Scaffold(uKeyframes, baseMaster->mID, masterUnitMap);
-	keyframe->path = path;
 
 	// delete folded blocks
 	for (Scaffold* unit : uKeyframes) delete unit;
 
+	// debug
+	storeDebugInfo(keyframe, activeUnitIdx);
+
 	return keyframe;
+}
+
+void DecScaff::genKeyframes( int N )
+{
+	keyframes.clear();
+
+	double step = 1.0 / (N-1);
+	for (int i = 0; i < N; i++)
+	{
+		Scaffold* kf = genKeyframe(i * step);
+		if(!kf) return;
+
+		keyframes << kf;
+
+		kf->unwrapBundleNodes();
+		kf->hideEdgeRods();
+
+		// color
+		for (ScaffNode* n : kf->getScaffNodes())
+		{
+			double grey = 240;
+			QColor c = (n->hasTag(ACTIVE_NODE_TAG) && !n->hasTag(MASTER_TAG)) ? 
+				QColor::fromRgb(255, 110, 80) : QColor::fromRgb(grey, grey, grey);
+			c.setAlphaF(0.78);
+			n->mColor = c;
+		}
+	}
+
+	// debug
+	appendToVectorProperty(DEBUG_SCAFFS, keyframes[10]);
 }
 
 SuperShapeKf* DecScaff::getSuperShapeKf( double t )
@@ -471,35 +536,6 @@ UnitScaff* DecScaff::getBestNextUnit(double currTime, SuperShapeKf* currKeyframe
 	return nextBest;
 }
 
-void DecScaff::genKeyframes( int N )
-{
-	keyframes.clear();
-
-	double step = 1.0 / (N-1);
-	for (int i = 0; i < N; i++)
-	{
-		Scaffold* kf = getKeyframe(i * step);
-		if(!kf) return;
-
-		keyframes << kf;
-
-		kf->unwrapBundleNodes();
-		kf->hideEdgeRods();
-
-		// color
-		for (ScaffNode* n : kf->getScaffNodes())
-		{
-			double grey = 240;
-			QColor c = (n->hasTag(ACTIVE_NODE_TAG) && !n->hasTag(MASTER_TAG)) ? 
-				QColor::fromRgb(255, 110, 80) : QColor::fromRgb(grey, grey, grey);
-			c.setAlphaF(0.78);
-			n->mColor = c;
-		}
-	}
-
-	// debug
-	appendToVectorProperty(DEBUG_SCAFFS, keyframes[10]);
-}
 
 Scaffold* DecScaff::getSelKeyframe()
 {
