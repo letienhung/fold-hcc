@@ -334,7 +334,7 @@ QVector<Geom::Rectangle> UnitScaff::getAFRs()
 
 void UnitScaff::genDebugInfo()
 {
-	clearDebugs();
+	VisualDebugger::clearDebug();
 
 	// obstacles
 	debugPntsB = getObstacles();

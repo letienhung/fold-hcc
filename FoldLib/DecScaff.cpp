@@ -265,7 +265,7 @@ void DecScaff::storeDebugInfo(Scaffold* kf, int uidx)
 	kf->debugBoxes << unit->aabbCstr;
 
 	// aabb constraint projection
-	//kf->appendToVectorProperty(DEBUG_SEGS, newUnitBase->mPatch.get3DRectangle(unit->aabbCstrProj).getEdgeSegments());
+	kf->debugRectsR << newUnitBase->mPatch.get3DRectangle(unit->aabbCstrProj);
 
 	// obstacles
 	QVector<Vector3> obs = unit->getObstacles();

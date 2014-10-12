@@ -6,10 +6,11 @@
 #include "AABB.h"
 #include <QSharedPointer>
 #include "FdUtility.h"
+#include "VisualDebugger.h"
 
 // FdGraph represents all segments of the input shape
 
-class Scaffold : public Structure::Graph
+class Scaffold : public Structure::Graph, public VisualDebugger
 {
 public:
 	Scaffold(QString id = "");
@@ -57,16 +58,6 @@ public:
 
 	// rendering
 	void hideEdgeRods();
-
-public:
-	// debug
-	QVector<Vector3> debugPntsR, debugPntsG, debugPntsB;
-	QVector<Geom::Segment> debugSegsR, debugSegsG, debugSegsB;
-	QVector<Geom::Box> debugBoxes;
-	QVector<Geom::Plane> debugPlanes;
-	QVector<Scaffold*> debugScaffs;
-	void clearDebugs();
-	void drawDebug();
 
 public:
 	QString path;

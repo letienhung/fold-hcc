@@ -218,20 +218,12 @@ Scaffold* ZUnitScaff::getZKeyframe(double t, bool useThk)
 	TChainScaff* chain = (TChainScaff*)chains.front();
 	Vector3 uV = chain->upSeg.Direction;
 	Vector3 rV = chain->rightDirect; if (fold2Left) rV *= -1;
+
 	double L = chain->slaveSeg.length();
 	double angle = chain->getRootAngle() * (1 - t);
 	Vector3 R = L * cos(angle) * rV;
 	Vector3 U = L * sin(angle) * uV;
 	Vector3 S = chain->slaveSeg.P1 - chain->slaveSeg.P0;
-
-	//// debug
-	//Vector3 p0 = chain->slaveSeg.P0;
-	//kf->debugSegsG << Geom::Segment(p0, p0 + R);
-	//kf->debugSegsB << Geom::Segment(p0, p0 + U);
-	//kf->debugSegsR << Geom::Segment(p0, p0 + rV * 5);
-
-	//Vector3 p1 = chain->baseJoint.P0;
-	//kf->debugSegsR << Geom::Segment(p1, p1 + chain->rightDirect * 5);
 
 	ScaffNode* tm = (ScaffNode*)topMaster->clone();
 	tm->translate(R + U - S);
