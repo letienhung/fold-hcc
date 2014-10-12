@@ -262,15 +262,15 @@ void DecScaff::storeDebugInfo(Scaffold* kf, int uidx)
 	Vector3 offset = newPos - oldPos;
 
 	// aabb constraint
-	kf->appendToVectorProperty(DEBUG_BOXES, unit->aabbCstr);
+	kf->debugBoxes << unit->aabbCstr;
 
 	// aabb constraint projection
-	kf->appendToVectorProperty(DEBUG_SEGS, newUnitBase->mPatch.get3DRectangle(unit->aabbCstrProj).getEdgeSegments());
+	//kf->appendToVectorProperty(DEBUG_SEGS, newUnitBase->mPatch.get3DRectangle(unit->aabbCstrProj).getEdgeSegments());
 
 	// obstacles
 	QVector<Vector3> obs = unit->getObstacles();
 	for (Vector3 p : obs) p += offset;
-	kf->appendToVectorProperty(DEBUG_POINTS, obs);
+	kf->debugPntsB << obs;
 
 	// fold options
 }
@@ -340,9 +340,6 @@ void DecScaff::genKeyframes( int N )
 			n->mColor = c;
 		}
 	}
-
-	// debug
-	appendToVectorProperty(DEBUG_SCAFFS, keyframes[10]);
 }
 
 SuperShapeKf* DecScaff::getSuperShapeKf( double t )

@@ -499,62 +499,45 @@ void Scaffold::translate(Vector3 v, bool withMesh)
 	}
 }
 
+
+
+void Scaffold::clearDebugs()
+{
+	debugPntsR.clear();	debugPntsG.clear();	debugPntsB.clear();
+	debugSegsR.clear();	debugSegsG.clear();	debugSegsB.clear();
+	debugBoxes.clear();
+	debugPlanes.clear();
+	debugScaffs.clear();
+}
+
+
 void Scaffold::drawDebug()
 {
 	// debug points
-	if (properties.contains(DEBUG_POINTS))
-	{
-		QVector<Vector3> debugPoints = properties[DEBUG_POINTS].value<QVector<Vector3> >();
-		PointSoup ps;
-		for (Vector3 p : debugPoints) ps.addPoint(p);
-		ps.draw();
-	}
+	PointSoup psR, psG, psB;
+	for (Vector3 p : debugPntsR) psR.addPoint(p, Qt::red); psR.draw();
+	for (Vector3 p : debugPntsG) psG.addPoint(p, Qt::green); psG.draw();
+	for (Vector3 p : debugPntsB) psB.addPoint(p, Qt::blue); psB.draw();
 
 	// debug segments
-	if (properties.contains(DEBUG_SEGS))
-	{
-		QVector<Geom::Segment> debugSegs = properties[DEBUG_SEGS].value< QVector<Geom::Segment> >();
-		QVector<QColor> debugSegColors = properties[DEBUG_SEG_COLORS].value< QVector<QColor> >();
-		for (int i = 0; i < debugSegs.size(); i++)
-		{
-			debugSegs[i].draw(3.0, debugSegColors[i]);
-		}
-	}
+	for (Geom::Segment seg : debugSegsR) seg.draw(3.0, Qt::red);
+	for (Geom::Segment seg : debugSegsG) seg.draw(3.0, Qt::green);
+	for (Geom::Segment seg : debugSegsB) seg.draw(3.0, Qt::blue);
 
 	// debug boxes
-	if (properties.contains(DEBUG_BOXES))
-	{
-		QColor color = Qt::green; color.setAlphaF(1.0);
-		QVector<Geom::Box> debugBoxes = properties[DEBUG_BOXES].value<QVector<Geom::Box> >();
-		for (Geom::Box box : debugBoxes)
-		{
-			box.drawWireframe(2.0, color);
-		}
-	}
+	QColor color = Qt::green; color.setAlphaF(1.0);
+	for (Geom::Box box : debugBoxes) box.drawWireframe(2.0, color);
 
 	// debug planes
-	if (properties.contains(DEBUG_PLANES))
-	{
-		QVector<Geom::Plane> planes = properties[DEBUG_PLANES].value<QVector<Geom::Plane> >();
-		for (Geom::Plane p : planes)
-		{
-			p.draw();
-		}
-	}
+	for (Geom::Plane p : debugPlanes) p.draw();
 
 	// scaffold
-	if (properties.contains(DEBUG_SCAFFS))
-	{
-		QVector<Scaffold*> debugSs = properties[DEBUG_SCAFFS].value<QVector<Scaffold*> >();
-		for (Scaffold* ds : debugSs)
-		{
-			if (ds)
-			{
-				ds->showCuboids(false);
-				ds->showScaffold(true);
-				ds->showMeshes(false);
-				ds->draw();
-			}
+	for (Scaffold* ds : debugScaffs){
+		if (ds)	{
+			ds->showCuboids(false);
+			ds->showScaffold(true);
+			ds->showMeshes(false);
+			ds->draw();
 		}
 	}
 }

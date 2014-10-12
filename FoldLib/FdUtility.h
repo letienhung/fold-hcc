@@ -14,11 +14,6 @@ typedef QVector< QVector<ScaffNode*> > FdNodeArray2D;
 
 // Qt meta type
 Q_DECLARE_METATYPE(Vector3)
-Q_DECLARE_METATYPE(QVector<Vector3>)
-Q_DECLARE_METATYPE(Geom::SectorCylinder)
-Q_DECLARE_METATYPE(QVector<Geom::SectorCylinder>)
-Q_DECLARE_METATYPE(Geom::Rectangle)
-Q_DECLARE_METATYPE(QVector<Geom::Rectangle>)
 Q_DECLARE_METATYPE(QVector<Geom::Segment>)
 Q_DECLARE_METATYPE(QVector<Geom::Box>)
 typedef QMap<QString, QString> StringStringMap;
@@ -26,8 +21,6 @@ Q_DECLARE_METATYPE(StringStringMap)
 typedef QMap<QString, QSet<QString> > StringSetMap;
 Q_DECLARE_METATYPE(StringSetMap)
 Q_DECLARE_METATYPE(QSet<QString>)
-Q_DECLARE_METATYPE(QVector<Geom::Plane>)
-Q_DECLARE_METATYPE(QVector<QColor>)
 
 // distance between fd nodes
 Geom::Segment getDistSegment( ScaffNode* n1, ScaffNode* n2 );

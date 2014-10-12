@@ -58,7 +58,14 @@ public:
 	// rendering
 	void hideEdgeRods();
 
+public:
 	// debug
+	QVector<Vector3> debugPntsR, debugPntsG, debugPntsB;
+	QVector<Geom::Segment> debugSegsR, debugSegsG, debugSegsB;
+	QVector<Geom::Box> debugBoxes;
+	QVector<Geom::Plane> debugPlanes;
+	QVector<Scaffold*> debugScaffs;
+	void clearDebugs();
 	void drawDebug();
 
 public:
@@ -66,12 +73,4 @@ public:
 	bool showAABB;
 };
 
-typedef QSharedPointer<Scaffold> ScaffoldPtr;
 Q_DECLARE_METATYPE(QVector<Scaffold*>)
-
-#define DEBUG_POINTS "debugPoints"
-#define DEBUG_SEGS "debugSegments"
-#define DEBUG_SEG_COLORS "debugSegmentColors"
-#define DEBUG_PLANES "debugPlanes"
-#define DEBUG_BOXES "debugBoxes"
-#define DEBUG_SCAFFS "debugScaffolds"

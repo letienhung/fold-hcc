@@ -229,7 +229,7 @@ void ChainScaff::resetChainParts(FoldOption* fn)
 	// debug
 	//addDebugSegment(getShrunkTopTraj());
 	//addDebugSegment(getShrunkSlaveSeg());
-	properties[DEBUG_PLANES].setValue(cutPlanes);
+	debugPlanes = cutPlanes;
 }
 
 void ChainScaff::resetHingeLinks(FoldOption* fn)

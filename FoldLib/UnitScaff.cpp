@@ -334,19 +334,16 @@ QVector<Geom::Rectangle> UnitScaff::getAFRs()
 
 void UnitScaff::genDebugInfo()
 {
-	properties.clear();
+	clearDebugs();
 
 	// obstacles
-	appendToVectorProperty(DEBUG_POINTS, getObstacles());
+	debugPntsB = getObstacles();
 	
 	// available fold options/regions
 	for (Geom::Rectangle rect : getAFRs())
-	{
-		appendToVectorProperty(DEBUG_SEGS, rect.getEdgeSegments());
-		//appendToVectorProperty(DEBUG_POINTS, rect.getConners());
-	}
+		debugSegsR << rect.getEdgeSegments();
 
 	// aabb constraint
-	appendToVectorProperty(DEBUG_SEGS, baseMaster->mPatch.get3DRectangle(aabbCstrProj).getEdgeSegments());
+	debugSegsG << baseMaster->mPatch.get3DRectangle(aabbCstrProj).getEdgeSegments();
 }
 

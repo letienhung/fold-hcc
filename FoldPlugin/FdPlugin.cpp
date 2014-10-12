@@ -295,7 +295,7 @@ void FdPlugin::test1()
 		selUnit->chains[i]->applyFoldOption(options[i]);
 
 	Scaffold* kf = selUnit->getKeyframe(0.5, 0);
-	selUnit->appendToVectorProperty(DEBUG_SCAFFS, kf);
+	selUnit->debugScaffs << kf;
 }
 
 void FdPlugin::test2()
@@ -653,7 +653,7 @@ bool FdPlugin::keyPressEvent(QKeyEvent* event)
 	if (event->modifiers().testFlag(Qt::ControlModifier) &&
 		event->key() == Qt::Key_C)
 	{
-		for each (auto n in scaffold->getScaffNodes())
+		for (ScaffNode* n : scaffold->getScaffNodes())
 		{
 			n->setRandomColor();
 		}
