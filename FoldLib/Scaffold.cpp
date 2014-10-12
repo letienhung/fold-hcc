@@ -514,9 +514,10 @@ void Scaffold::drawDebug()
 	if (properties.contains(DEBUG_SEGS))
 	{
 		QVector<Geom::Segment> debugSegs = properties[DEBUG_SEGS].value< QVector<Geom::Segment> >();
-		for (Geom::Segment seg : debugSegs)
+		QVector<QColor> debugSegColors = properties[DEBUG_SEG_COLORS].value< QVector<QColor> >();
+		for (int i = 0; i < debugSegs.size(); i++)
 		{
-			seg.draw(3.0, Qt::red);
+			debugSegs[i].draw(3.0, debugSegColors[i]);
 		}
 	}
 
@@ -547,7 +548,13 @@ void Scaffold::drawDebug()
 		QVector<Scaffold*> debugSs = properties[DEBUG_SCAFFS].value<QVector<Scaffold*> >();
 		for (Scaffold* ds : debugSs)
 		{
-			if (ds) ds->draw();
+			if (ds)
+			{
+				ds->showCuboids(false);
+				ds->showScaffold(true);
+				ds->showMeshes(false);
+				ds->draw();
+			}
 		}
 	}
 }

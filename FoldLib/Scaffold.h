@@ -71,6 +71,7 @@ Q_DECLARE_METATYPE(QVector<Scaffold*>)
 
 #define DEBUG_POINTS "debugPoints"
 #define DEBUG_SEGS "debugSegments"
+#define DEBUG_SEG_COLORS "debugSegmentColors"
 #define DEBUG_PLANES "debugPlanes"
 #define DEBUG_BOXES "debugBoxes"
 #define DEBUG_SCAFFS "debugScaffolds"

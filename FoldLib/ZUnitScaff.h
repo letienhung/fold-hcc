@@ -46,7 +46,7 @@ public:
 	virtual QVector<Vector3> getObstacles() override;
 	virtual QVector<Geom::Rectangle> getAFRs() override;
 
-private:
+public:
 	// the back up HUnit
 	HUnitScaff* hUnit;
 

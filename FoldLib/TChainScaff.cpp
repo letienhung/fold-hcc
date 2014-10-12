@@ -4,9 +4,6 @@
 TChainScaff::TChainScaff(ScaffNode* slave, PatchNode* base, PatchNode* top)
 :ChainScaff(slave, base, top)
 {
-	// the initial root angle
-	double dotP = dot(slaveSeg.Direction, rightDirect);
-	rootAngle = acos(RANGED(0, dotP, 1));
 }
 
 Geom::Rectangle TChainScaff::getFoldRegion(FoldOption* fn)
@@ -85,14 +82,10 @@ void TChainScaff::fold(double t)
 	// fix base
 	baseMaster->addTag(FIXED_NODE_TAG);
 
-	// root hinge angle
-	double alpha = rootAngle * (1 - t);
-	double beta = M_PI * (1 - t);
-
 	// set angle for active link
-	activeLinks[0]->hinge->angle = alpha;
+	activeLinks[0]->hinge->angle = getRootAngle() * (1 - t);
 	for (int i = 1; i < activeLinks.size(); i++)
-		activeLinks[i]->hinge->angle = beta;
+		activeLinks[i]->hinge->angle = M_PI * (1 - t);
 
 	// restore configuration
 	restoreConfiguration();
@@ -107,4 +100,11 @@ QVector<FoldOption*> TChainScaff::genRegularFoldOptions(int maxNbSplits, int max
 		options << ChainScaff::genRegularFoldOptions(nS, nC, maxNbChunks);
 
 	return options;
+}
+
+double TChainScaff::getRootAngle()
+{
+	Vector3 initV = slaveSeg.Direction;
+	Vector3 finalV = foldToRight ? rightDirect : -rightDirect;
+	return acos(RANGED(0, dot(initV, finalV), 1));
 }

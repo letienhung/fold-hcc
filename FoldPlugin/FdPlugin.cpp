@@ -280,30 +280,22 @@ void FdPlugin::exportAllObj()
 	}
 }
 
+#include "ZUnitScaff.h"
 #include "ChainScaff.h"
 void FdPlugin::test1()
 {
-	UnitScaff* selUnit = f_manager->getSelUnit();
-	if (selUnit)
-	{
-		FoldOption fn("hhh", true, 1, 0, 5);
-		for(int i = 0; i < selUnit->chains.size(); i++)
-		{
+	ZUnitScaff* selUnit = (ZUnitScaff*)f_manager->getSelUnit();
+	if (!selUnit) return;
 
-			ChainScaff* chain = selUnit->chains[i];
-			chain->applyFoldOption(&fn);
-			//chain->fold(0.5);
-			continue;
+	// fold to left
+	selUnit->fold2Left = false;
+	selUnit->fold2Right = true;
+	QVector<FoldOption*>& options = selUnit->optionsRight;
+	for (int i = 0; i < selUnit->chains.size(); i++)
+		selUnit->chains[i]->applyFoldOption(options[i]);
 
-			double thickness = 2;
-			chain->halfThk = thickness * 0.5;
-			chain->baseOffset = thickness * 0.5;
-			chain->topMaster->setThickness(thickness);
-			chain->baseMaster->setThickness(thickness);
-			chain->getKeyframe(0.5, true);
-
-		}
-	}
+	Scaffold* kf = selUnit->getKeyframe(0.5, 0);
+	selUnit->appendToVectorProperty(DEBUG_SCAFFS, kf);
 }
 
 void FdPlugin::test2()

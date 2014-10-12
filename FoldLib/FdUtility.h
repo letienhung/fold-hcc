@@ -27,6 +27,7 @@ typedef QMap<QString, QSet<QString> > StringSetMap;
 Q_DECLARE_METATYPE(StringSetMap)
 Q_DECLARE_METATYPE(QSet<QString>)
 Q_DECLARE_METATYPE(QVector<Geom::Plane>)
+Q_DECLARE_METATYPE(QVector<QColor>)
 
 // distance between fd nodes
 Geom::Segment getDistSegment( ScaffNode* n1, ScaffNode* n2 );

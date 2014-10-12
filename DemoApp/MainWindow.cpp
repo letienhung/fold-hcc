@@ -91,7 +91,6 @@ void MainWindow::loadShape( QString shapeName )
 
 		fmanager->nbSplits = shapeParamters[ shapeName ]["nSplits"].toInt();
 		fmanager->nbChunks = shapeParamters[ shapeName ]["nChunks"].toInt();
-		fmanager->useNewCost = shapeParamters[ shapeName ]["newCost"].toInt();
 		fmanager->setThickness( 0.5 );
 		fmanager->setNbKeyframes( 100 );
 	}

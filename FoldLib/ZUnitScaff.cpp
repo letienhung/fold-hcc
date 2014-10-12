@@ -211,22 +211,35 @@ double ZUnitScaff::foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti)
 Scaffold* ZUnitScaff::getZKeyframe(double t, bool useThk)
 {
 	// base master
-	Scaffold* keyframe = new Scaffold();
-	keyframe->Structure::Graph::addNode(baseMaster->clone());
+	Scaffold* kf = new Scaffold();
+	kf->Structure::Graph::addNode(baseMaster->clone());
 
 	// top master
-	ScaffNode* fTopMaster = (ScaffNode*)topMaster->clone();
 	TChainScaff* chain = (TChainScaff*)chains.front();
-	Vector3 upV = chain->upSeg.Direction;
-	Vector3 rightV = fold2Left ? -chain->rightDirect : chain->rightDirect;
-	double rootAngle = chain->rootAngle * (1 - t);
-	double slaveL = chain->slaveSeg.length();
-	Vector3 dRight = slaveL * cos(rootAngle) * rightV;
-	Vector3 dUp = slaveL * sin(rootAngle) * upV;
-	Point topInit = chain->topJoint.P0;
-	Point topCurr = chain->baseJoint.P0 + dRight + dUp;
-	fTopMaster->translate(topCurr - topInit);
-	keyframe->Structure::Graph::addNode(fTopMaster);
+	Vector3 uV = chain->upSeg.Direction;
+	Vector3 rV = fold2Left ? -chain->rightDirect : chain->rightDirect;
+	double L = chain->slaveSeg.length();
+	double angle = chain->getRootAngle() * (1 - t);
+	Vector3 R = L * cos(angle) * rV;
+	Vector3 U = L * sin(angle) * uV;
+	Vector3 S = chain->slaveSeg.P1 - chain->slaveSeg.P0;
+
+	// debug
+	Vector3 p0 = chain->slaveSeg.P0;
+	kf->appendToVectorProperty(DEBUG_SEGS, Geom::Segment(p0, p0 + rV));
+	kf->appendToVectorProperty(DEBUG_SEG_COLORS, QColor(Qt::black));
+	kf->appendToVectorProperty(DEBUG_SEGS, Geom::Segment(p0, p0 + uV));
+	kf->appendToVectorProperty(DEBUG_SEG_COLORS, QColor(Qt::black));
+	kf->appendToVectorProperty(DEBUG_SEGS, Geom::Segment(p0, p0 + R));
+	kf->appendToVectorProperty(DEBUG_SEG_COLORS, QColor(Qt::red));
+	kf->appendToVectorProperty(DEBUG_SEGS, Geom::Segment(p0, p0 + U));
+	kf->appendToVectorProperty(DEBUG_SEG_COLORS, QColor(Qt::green));
+
+
+
+	ScaffNode* tm = (ScaffNode*)topMaster->clone();
+	tm->translate(R + U - S);
+	kf->Structure::Graph::addNode(tm);
 
 	// slaves
 	for (int i = 0; i < chains.size(); i++)
@@ -235,12 +248,12 @@ Scaffold* ZUnitScaff::getZKeyframe(double t, bool useThk)
 		double localT = chain->duration.getLocalTime(t);
 		Scaffold* ck = chain->getKeyframe(localT, useThk);
 		ScaffNode* fSlave = ck->getScaffNode(chain->origSlave->mID);
-		if (fSlave)	keyframe->Structure::Graph::addNode(fSlave->clone());
+		if (fSlave)	kf->Structure::Graph::addNode(fSlave->clone());
 		delete ck;
 	}
 
 	// the key frame
-	return keyframe;
+	return kf;
 }
 
 Scaffold* ZUnitScaff::getKeyframe(double t, bool useThk)
