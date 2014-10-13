@@ -3,10 +3,19 @@
 #include "Scaffold.h"
 #include "SuperShapeKf.h"
 #include "TimeInterval.h"
-#include "UnitSolution.h"
 
 class FoldOption;
 class ChainScaff;
+
+struct UnitSolution
+{
+	QVector<int> afo;
+	QVector<FoldOption*> solution;
+	double cost;
+
+	QVector<Vector3> obstacles;
+	QVector<Vector3> obstaclesProj;
+};
 
 class UnitScaff : public Scaffold
 {
@@ -76,9 +85,8 @@ public:
 
 public:
 	//*** PARAMETERS
-	// aabb constraint and projection on the base master
+	// aabb constraint
 	Geom::Box aabbCstr;
-	Geom::Rectangle2 aabbCstrProj;
 
 	// time
 	double timeScale; 

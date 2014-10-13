@@ -47,11 +47,6 @@ UnitScaff::~UnitScaff()
 void UnitScaff::setAabbCstr(Geom::Box aabb)
 {
 	aabbCstr = aabb;
-
-	Geom::Rectangle base_rect = baseMaster->mPatch;
-	int aid = aabbCstr.getAxisId(base_rect.Normal);
-	Geom::Rectangle cs_rect = aabbCstr.getCrossSection(aid, 0);
-	aabbCstrProj = base_rect.get2DRectangle(cs_rect);
 }
 
 void UnitScaff::setNbSplits(int n)
@@ -131,9 +126,8 @@ Scaffold* UnitScaff::getSuperKeyframe( double t )
 	if (t < 1) return keyframe;
 
 	// create super patch
-	PatchNode* superPatch = (PatchNode*)baseMaster->clone();
-	superPatch->mID = mID + "_super";
-	superPatch->addTag(SUPER_MASTER_TAG); 
+	SuperPatchNode* superPatch = new SuperPatchNode(mID + "_super", baseMaster);
+	superPatch->addTag(SUPER_PATCH_TAG); 
 
 	// collect projections of all nodes (including baseMaster) on baseMaster
 	Geom::Rectangle base_rect = superPatch->mPatch;
@@ -161,8 +155,7 @@ Scaffold* UnitScaff::getSuperKeyframe( double t )
 	for(Structure::Node* n : keyframe->nodes)
 	{
 		n->addTag(MERGED_PART_TAG); 
-		if (n->hasTag(MASTER_TAG))
-			superPatch->appendToSetProperty<QString>(MERGED_MASTERS, n->mID);
+		if (n->hasTag(MASTER_TAG))	superPatch->enclosedPatches << n->mID;
 	}
 
 	// add super patch to keyframe

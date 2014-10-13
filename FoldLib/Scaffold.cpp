@@ -32,6 +32,8 @@ Scaffold::Scaffold( Scaffold& other )
 	showAABB = false;
 }
 
+// construct from combination using regular masters shared between scaffs
+// scaff nodes besides regular masters will all be cloned into the final combination
 Scaffold::Scaffold(QVector<Scaffold*> scaffs, QString baseMid,
 	QMap<QString, QSet<int> >& masterScaffMap)
 {
@@ -66,23 +68,21 @@ Scaffold::Scaffold(QVector<Scaffold*> scaffs, QString baseMid,
 			Vector3 scaffMastertPos = ((PatchNode*)scaff->getNode(fixed_mid))->center();
 			scaff->translate(fixedMasterPos - scaffMastertPos);
 
-			// combine parts from decomposition
+			// combine parts from scaff
 			for(Structure::Node* n : scaff->nodes)
 			{
-				// master nodes
-				if (n->hasTag(MASTER_TAG))
+				// regular masters
+				if (masterCombined.contains(n->mID) 
+					&& !masterCombined[n->mID])
 				{
-					if (!masterCombined[n->mID])
-					{
-						// combine unvisited masters
-						Structure::Graph::addNode(n->clone());
-						masterCombined[n->mID] = true;
+					// combine unvisited masters
+					Structure::Graph::addNode(n->clone());
+					masterCombined[n->mID] = true;
 
-						// store as active
-						activeMids.enqueue(n->mID);
-					}
+					// store as active
+					activeMids.enqueue(n->mID);
 				}
-				// clone slave nodes
+				// clone all other nodes
 				else
 				{
 					Structure::Graph::addNode(n->clone());

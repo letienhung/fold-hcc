@@ -95,6 +95,5 @@ public:
 
 #define ACTIVE_NODE_TAG "isActiveNode"
 
-#define MERGED_PART_TAG "isMergedNode"
-#define MERGED_MASTERS "mergedMastersSet"
-#define SUPER_MASTER_TAG "isSuperMaster"
+#define SUPER_PATCH_TAG "isSuperPatchNode"
+#define MERGED_PART_TAG "isMergedPart"

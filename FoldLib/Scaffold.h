@@ -16,7 +16,6 @@ public:
 	Scaffold(QString id = "");
 	virtual ~Scaffold();
 	Scaffold(Scaffold& other);
-	// construct from combination
 	Scaffold(QVector<Scaffold*> scaffs, QString baseMid, QMap<QString, QSet<int> >& masterScaffMap); 
 		
 	virtual Graph* clone() override;

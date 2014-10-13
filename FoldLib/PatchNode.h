@@ -40,3 +40,22 @@ public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
+class SuperPatchNode : public PatchNode
+{
+public:
+	SuperPatchNode(QString id, PatchNode* other)
+		: PatchNode(*other){	
+		mID = id; 
+	}
+	SuperPatchNode(SuperPatchNode& other) 
+		: PatchNode(other){
+		enclosedPatches = other.enclosedPatches;
+	}
+	virtual ~SuperPatchNode(){}
+	Node* clone() {	
+		return new SuperPatchNode(*this); 
+	}
+
+public:
+	QSet<QString> enclosedPatches;
+};

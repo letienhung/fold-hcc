@@ -364,18 +364,20 @@ SuperShapeKf* DecScaff::getSuperShapeKf( double t )
 		uSuperKf << uk_super;
 	}
 
-	// combine
-	Scaffold *keyframe = new Scaffold(uSuperKf, baseMaster->mID, masterUnitMap);
+	// combine using regular masters shared between units
+	// whilst all super masters and slaves will be cloned into the superKf
+	Scaffold *superKf = new Scaffold(uSuperKf, baseMaster->mID, masterUnitMap);
 
-	// create shape super key frame
-	SuperShapeKf* ssKeyframe = new SuperShapeKf(keyframe, masterOrderGreater);
+	// create super shape key frame
+	// super masters sharing common regular masters will be grouped
+	SuperShapeKf* superShapeKf = new SuperShapeKf(superKf, masterOrderGreater);
 
 	// garbage collection
-	delete keyframe;
+	delete superKf;
 	for (int i = 0; i < uSuperKf.size(); i++) delete uSuperKf[i];
 
 	// return
-	return ssKeyframe;
+	return superShapeKf;
 }
 
 void DecScaff::foldabilize()

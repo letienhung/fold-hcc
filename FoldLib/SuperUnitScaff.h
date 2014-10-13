@@ -7,8 +7,7 @@ class HUnitScaff;
 class SuperShapeKf;
 class UnitSolution;
 
-// superBlock is a regular block with masters replaced by their corresponding super masters
-// super block is used for computing folding volumes
+// superUnit is a modified regular unit with masters replaced by their corresponding super masters
 
 class SuperUnitScaff final : public Scaffold
 {

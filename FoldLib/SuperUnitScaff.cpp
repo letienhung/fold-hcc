@@ -4,14 +4,14 @@
 #include "ChainScaff.h"
 #include "Numeric.h"
 
-SuperUnitScaff::SuperUnitScaff(HUnitScaff* block, SuperShapeKf* sskf)
-: origUnit(block), ssKeyframe(sskf)
+SuperUnitScaff::SuperUnitScaff(HUnitScaff* unit, SuperShapeKf* sskf)
+: origUnit(unit), ssKeyframe(sskf)
 {
 	// map from master to super master within this block
 	// self mapping if no corresponding super master
 	QMap<QString, QString> master2Super;
 
-	// clone parts from block
+	// clone parts from original unit
 	for (Structure::Node* n : origUnit->nodes)
 	{
 		Structure::Node* clone_n;
@@ -34,7 +34,7 @@ SuperUnitScaff::SuperUnitScaff(HUnitScaff* block, SuperShapeKf* sskf)
 			master2Super[n->mID] = n->mID;
 		}
 
-		// add to super block
+		// add to super unit
 		Structure::Graph::addNode(clone_n);
 	}
 
@@ -42,7 +42,7 @@ SuperUnitScaff::SuperUnitScaff(HUnitScaff* block, SuperShapeKf* sskf)
 	QString base_mid = master2Super[origUnit->baseMaster->mID];
 	baseMaster = (PatchNode*)getNode(base_mid);
 
-	// other masters
+	// all masters
 	for (PatchNode* m : origUnit->masters)
 		masters << (PatchNode*)getNode(master2Super[m->mID]);
 }
@@ -51,12 +51,12 @@ QMap< QString, QVector<Vector2> > SuperUnitScaff::computeObstacles(UnitSolution*
 {
 	QMap< QString, QVector<Vector2> > masterObst;
 
-	// align super shape key frame with this super block
-	Vector3 pos_block = baseMaster->center();
+	// align super shape key frame with this super unit
+	Vector3 pos_unit = baseMaster->center();
 	ScaffNode* fnode = (ScaffNode*)ssKeyframe->getNode(baseMaster->mID);
 	if (!fnode) return masterObst;
 	Vector3 pos_keyframe = fnode->center();
-	Vector3 offset = pos_block - pos_keyframe;
+	Vector3 offset = pos_unit - pos_keyframe;
 	ssKeyframe->translate(offset, false);
 
 	// obstacles for each top master

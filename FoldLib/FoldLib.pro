@@ -59,7 +59,6 @@ HEADERS += \
     ZUnitScaff.h \
     SuperShapeKf.h \
     FoldOptGraph.h \
-    UnitSolution.h \
     VisualDebugger.h
 
 SOURCES += \
@@ -85,6 +84,5 @@ SOURCES += \
     ZUnitScaff.cpp \
     SuperShapeKf.cpp \
     FoldOptGraph.cpp \
-    UnitSolution.cpp \
     VisualDebugger.cpp
 
