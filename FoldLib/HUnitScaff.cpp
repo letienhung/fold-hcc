@@ -98,17 +98,47 @@ Scaffold* HUnitScaff::getKeyframe(double t, bool useThk)
 	return keyframe;
 }
 
+// obstacles are projected onto the unit's baseMaster in the ssKeyframe
 void HUnitScaff::computeObstacles(SuperShapeKf* ssKeyframe, UnitSolution* sln)
 {
-	// create super block
-	SuperUnitScaff *superUnit = new SuperUnitScaff(this, ssKeyframe);
+	// obstacles for each top master
+	QString baseMid = baseMaster->mID;
+	PatchNode* baseMasterKf = (PatchNode*)ssKeyframe->getNode(baseMid);
+	Geom::Rectangle baseRect = baseMasterKf->mPatch;
+	sln->obstacles.clear();  sln->obstaclesProj.clear();
+	for (PatchNode* topMaster : masters)
+	{
+		// skip base master
+		QString topMid = topMaster->mID;
+		if (topMid == baseMid) continue;
 
-	// request from super block
-	obstacles = superUnit->computeObstacles(sln);
+		// obstacle parts: in-between and unordered
+		QVector<ScaffNode*> obstParts;
+		// ***no external parts stick in between
+		// internal master is allowed to stay in between, because they will be collapsed in order
+		obstParts << ssKeyframe->getInbetweenExternalParts(this, baseMid, topMid);
+		// ***chains under the top master should not stick into other blocks: introducing new order constraints
+		// unrelated masters must be external because all masters have relation with the base master
+		obstParts << ssKeyframe->getUnrelatedExternalMasters(this, base_mid, topMid);
 
-	// garbage collection
-	delete superUnit;
+		// sample obstacle parts
+		QVector<Vector3> obstPnts;
+		for (ScaffNode* obsPart : obstParts)
+			obstPnts << obsPart->sampleBoundabyOfScaffold(100);
+
+		// project to the base rect to get obstacles
+		QVector<Vector2> obstPntsProj;
+		for (Vector3 s : obstPnts)
+			obstPntsProj << baseRect.getProjCoordinates(s);
+		masterObst[topMid] = obstPntsProj;
+
+		// store obstacles in solution
+		sln->obstacles << obstPnts;
+		for (Vector3 s : obstPnts)
+			sln->obstaclesProj << baseRect.getProjection(s);
+	}
 }
+
 
 void HUnitScaff::computeAvailFoldOptions(SuperShapeKf* ssKeyframe, UnitSolution* sln)
 {

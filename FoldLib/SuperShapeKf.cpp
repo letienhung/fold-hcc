@@ -108,17 +108,19 @@ bool SuperShapeKf::isValid(Vector3 sqzV)
 	return true;
 }
 
-QVector<ScaffNode*> SuperShapeKf::getInbetweenExternalParts(UnitScaff* unit, Vector3 p0, Vector3 p1)
+QVector<ScaffNode*> SuperShapeKf::getInbetweenExternalParts(UnitScaff* unit, QString base_mid, QString top_mid)
 {
 	// time line
 	Vector3 sqzV = unit->baseMaster->mPatch.Normal;
 	Geom::Line timeLine(Vector3(0, 0, 0), sqzV);
 
 	// position on time line
+	Vector3 p0 = ((ScaffNode*)getNode(base_mid))->center();
+	Vector3 p1 = ((ScaffNode*)getNode(top_mid))->center();
 	double t0 = timeLine.getProjTime(p0);
 	double t1 = timeLine.getProjTime(p1);
 	double epsilon = 0.05 * (t1 - t0);
-	TimeInterval m1m2(t0 + epsilon, t1 - epsilon);
+	TimeInterval ti(t0 + epsilon, t1 - epsilon);
 
 	// find parts in between m1 and m2
 	QVector<ScaffNode*> inbetweens;
@@ -128,14 +130,14 @@ QVector<ScaffNode*> SuperShapeKf::getInbetweenExternalParts(UnitScaff* unit, Vec
 		if (sn->hasTag(MERGED_PART_TAG)) continue;
 
 		// skip parts in unit
-		if (isSuperPatchInUnit((PatchNode*)sn, unit)) continue;
+		if (unitContainsNode(unit, sn)) continue;
 
 		// master
 		if (sn->hasTag(MASTER_TAG))
 		{
 			double t = timeLine.getProjTime(sn->center());
 
-			if (m1m2.contains(t)) 	inbetweens << sn;
+			if (ti.contains(t)) 	inbetweens << sn;
 		}
 		else
 		// slave		
@@ -145,9 +147,9 @@ QVector<ScaffNode*> SuperShapeKf::getInbetweenExternalParts(UnitScaff* unit, Vec
 			double t0 = timeLine.getProjTime(sklt.P0);
 			double t1 = timeLine.getProjTime(sklt.P1);
 			if (t0 > t1) std::swap(t0, t1);
-			TimeInterval ti(t0, t1);
+			TimeInterval sTi(t0, t1);
 
-			if (ti.overlaps(m1m2))	inbetweens << sn;
+			if (ti.overlaps(sTi))	inbetweens << sn;
 		}
 	}
 
@@ -163,33 +165,56 @@ QVector<ScaffNode*> SuperShapeKf::getUnrelatedExternalMasters(UnitScaff* unit, Q
 	QSet<QString> top_moc = mocGreater[top_mid] + mocLess[top_mid];
 
 	// masters unrelated with both
-	for(Structure::Node* n : getNodesWithTag(MASTER_TAG))
+	for(Structure::Node* node : getNodesWithTag(MASTER_TAG))
 	{
 		// skip folded or virtual masters
-		if (n->hasTag(MERGED_PART_TAG) || n->hasTag(EDGE_ROD_TAG)) continue;
+		if (node->hasTag(MERGED_PART_TAG) || node->hasTag(EDGE_ROD_TAG)) continue;
 
 		// skip parts in unit
-		if (isSuperPatchInUnit((PatchNode*)n, unit)) continue;
+		if (unitContainsNode(unit, node)) continue;
 
 		// accept if not related to any
-		if (!base_moc.contains(n->mID) && !top_moc.contains(n->mID))
-			urMasters << (ScaffNode*)n;
+		if (!base_moc.contains(node->mID) && !top_moc.contains(node->mID))
+			urMasters << (ScaffNode*)node;
 	}
 
 	return urMasters;
 }
 
-bool SuperShapeKf::isSuperPatchInUnit(PatchNode* superPatch, UnitScaff* unit)
+bool SuperShapeKf::unitContainsNode(UnitScaff* unit, Structure::Node* node)
 {
-	QVector<QString> mergedMasters;
-	if (superPatch->hasTag(SUPER_PATCH_TAG))
-		mergedMasters = ((SuperPatchNode*)superPatch)->enclosedPatches.toList().toVector();
+	QVector<QString> enclosedMasters;
+	if (node->hasTag(SUPER_PATCH_TAG))
+		enclosedMasters = ((SuperPatchNode*)node)->enclosedPatches.toList().toVector();
 	else
-		mergedMasters << superPatch->mID;
+		enclosedMasters << node->mID;
 
-	for (QString mm : mergedMasters)
+	for (QString mm : enclosedMasters)
 		if (unit->containsNode(mm))
 			return true;
 
 	return false;
+}
+
+void SuperShapeKf::computeObstacles(UnitScaff* unit, QString base_mid, QString top_mid,
+								QVector<Vector3>& obstPnts, QVector<Vector2>& obstPntsProj)
+{
+	QVector<ScaffNode*> obstParts;
+	// ***no external parts stick in between
+	// internal master is allowed to stay in between, because they will be collapsed in order
+	obstParts << getInbetweenExternalParts(unit, base_mid, top_mid);
+	// ***chains under the top master should not stick into other blocks: introducing new order constraints
+	// unrelated masters must be external because all masters have relation with the base master
+	obstParts << getUnrelatedExternalMasters(unit, base_mid, top_mid);
+
+	// sample obstacle parts
+	obstPnts.clear();
+	for (ScaffNode* obsPart : obstParts)
+		obstPnts << obsPart->sampleBoundabyOfScaffold(100);
+
+	// project to the base rect to get obstacles
+	Geom::Rectangle baseRect = ((PatchNode*)getNode(base_mid))->mPatch;
+	obstPntsProj.clear();
+	for (Vector3 s : obstPnts)
+		obstPntsProj << baseRect.getProjCoordinates(s);
 }

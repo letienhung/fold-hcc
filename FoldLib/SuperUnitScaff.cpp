@@ -1,10 +1,10 @@
 #include "SuperUnitScaff.h"
-#include "HUnitScaff.h"
+#include "UnitScaff.h"
 #include "SuperShapeKf.h"
 #include "ChainScaff.h"
 #include "Numeric.h"
 
-SuperUnitScaff::SuperUnitScaff(HUnitScaff* unit, SuperShapeKf* sskf)
+SuperUnitScaff::SuperUnitScaff(UnitScaff* unit, SuperShapeKf* sskf)
 : origUnit(unit), ssKeyframe(sskf)
 {
 	// map from master to super master within this block
@@ -12,30 +12,30 @@ SuperUnitScaff::SuperUnitScaff(HUnitScaff* unit, SuperShapeKf* sskf)
 	QMap<QString, QString> master2Super;
 
 	// clone parts from original unit
-	for (Structure::Node* n : origUnit->nodes)
+	for (Structure::Node* node : origUnit->nodes)
 	{
-		Structure::Node* clone_n;
+		Structure::Node* cloneNode;
 
 		// super patch (master)
-		if (ssKeyframe->master2SuperMap.contains(n->mID))
+		if (ssKeyframe->master2SuperMap.contains(node->mID))
 		{
-			Structure::Node* super_n = ssKeyframe->getNode(ssKeyframe->master2SuperMap[n->mID]);
-			clone_n = super_n->clone();
+			Structure::Node* superNode = ssKeyframe->getNode(ssKeyframe->master2SuperMap[node->mID]);
+			cloneNode = superNode->clone();
 
 			// copy mapping
-			master2Super[n->mID] = ssKeyframe->master2SuperMap[n->mID];
+			master2Super[node->mID] = ssKeyframe->master2SuperMap[node->mID];
 		}
 		// regular node
 		else
 		{
-			clone_n = n->clone();
+			cloneNode = node->clone();
 
 			// self mapping
-			master2Super[n->mID] = n->mID;
+			master2Super[node->mID] = node->mID;
 		}
 
 		// add to super unit
-		Structure::Graph::addNode(clone_n);
+		Structure::Graph::addNode(cloneNode);
 	}
 
 	// the base master
@@ -45,59 +45,4 @@ SuperUnitScaff::SuperUnitScaff(HUnitScaff* unit, SuperShapeKf* sskf)
 	// all masters
 	for (PatchNode* m : origUnit->masters)
 		masters << (PatchNode*)getNode(master2Super[m->mID]);
-}
-
-QMap< QString, QVector<Vector2> > SuperUnitScaff::computeObstacles(UnitSolution* sln)
-{
-	QMap< QString, QVector<Vector2> > masterObst;
-
-	// align super shape key frame with this super unit
-	Vector3 pos_unit = baseMaster->center();
-	ScaffNode* fnode = (ScaffNode*)ssKeyframe->getNode(baseMaster->mID);
-	if (!fnode) return masterObst;
-	Vector3 pos_keyframe = fnode->center();
-	Vector3 offset = pos_unit - pos_keyframe;
-	ssKeyframe->translate(offset, false);
-
-	// obstacles for each top master
-	QString base_mid = baseMaster->mID;
-	Geom::Rectangle base_rect = origUnit->baseMaster->mPatch;// ***use original base rect
-	sln->obstacles.clear();  sln->obstaclesProj.clear();
-	for (PatchNode* top_master : masters)
-	{
-		// skip base master
-		QString top_mid = top_master->mID;
-		if (top_mid == base_mid) continue;
-
-		// obstacle parts: in-between and unordered
-		QVector<ScaffNode*> obstParts;
-		// ***no external parts stick in between
-		// internal master is allowed to stay in between, because they will be collapsed in order
-		obstParts << ssKeyframe->getInbetweenExternalParts(origUnit, baseMaster->center(), top_master->center());
-		// ***chains under the top master should not stick into other blocks: introducing new order constraints
-		// unrelated masters must be external because all masters have relation with the base master
-		obstParts << ssKeyframe->getUnrelatedExternalMasters(origUnit, base_mid, top_mid);
-
-		// sample obstacle parts
-		QVector<Vector3> obstPnts;
-		for (ScaffNode* obsPart : obstParts)
-			obstPnts << obsPart->sampleBoundabyOfScaffold(100);
-
-		// project to the base rect to get obstacles
-		QVector<Vector2> obstPntsProj;
-		for (Vector3 s : obstPnts)	
-			obstPntsProj << base_rect.getProjCoordinates(s);
-		masterObst[top_mid] = obstPntsProj;
-
-		// store obstacles in solution
-		sln->obstacles << obstPnts;
-		for (Vector3 s : obstPnts)
-			sln->obstaclesProj << base_rect.getProjection(s);
-	}
-
-	// restore the position of super shape key frame since it is shared
-	ssKeyframe->translate(-offset, false);
-
-	// obstacles
-	return masterObst;
 }

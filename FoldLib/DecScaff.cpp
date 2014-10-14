@@ -303,7 +303,7 @@ Scaffold* DecScaff::genKeyframe( double t )
 		uKeyframes << uk;
 	}
 
-	// keyframe via combination
+	// keyframe via combination: aligned on base master
 	Scaffold *keyframe = new Scaffold(uKeyframes, baseMaster->mID, masterUnitMap);
 
 	// delete folded blocks
@@ -366,6 +366,7 @@ SuperShapeKf* DecScaff::getSuperShapeKf( double t )
 
 	// combine using regular masters shared between units
 	// whilst all super masters and slaves will be cloned into the superKf
+	// based on the base master
 	Scaffold *superKf = new Scaffold(uSuperKf, baseMaster->mID, masterUnitMap);
 
 	// create super shape key frame

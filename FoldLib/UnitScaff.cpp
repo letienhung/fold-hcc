@@ -184,7 +184,7 @@ void UnitScaff::genAllFoldOptions()
 			// chain index
 			fo->chainIdx = i;
 
-			// region projection
+			// region projection on the unit base
 			fo->regionProj = base_rect.get2DRectangle(fo->region);
 
 			// store

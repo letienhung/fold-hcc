@@ -3,7 +3,7 @@
 #include "Scaffold.h"
 #include "PatchNode.h"
 
-class HUnitScaff;
+class UnitScaff;
 class SuperShapeKf;
 class UnitSolution;
 
@@ -12,19 +12,19 @@ class UnitSolution;
 class SuperUnitScaff final : public Scaffold
 {
 public:
-	SuperUnitScaff(HUnitScaff* block, SuperShapeKf* ssKeyframe);
+	SuperUnitScaff(UnitScaff* unit, SuperShapeKf* ssKeyframe);
 
 	// obstacles for each top master
 	QMap< QString, QVector<Vector2> > computeObstacles(UnitSolution* sln);
 
 private:
 	// the original block
-	HUnitScaff* origUnit;
+	UnitScaff* origUnit;
 
 	// the super shape key frame
 	SuperShapeKf* ssKeyframe;
 
-	// super masters
+	// super masters: super or regular
 	PatchNode* baseMaster;
 	QVector<PatchNode*> masters;
 };
