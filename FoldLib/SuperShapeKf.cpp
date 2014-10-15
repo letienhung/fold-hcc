@@ -31,27 +31,31 @@ SuperShapeKf::SuperShapeKf(Scaffold* superKeyframe, StringSetMap moc_g, Vector3 
 		QList<int> superIndices = superIdxClusters[i].toList();
 
 		// pick up the first
-		SuperPatchNode* superPatchNew = superMasters[superIndices[0]];
-		superPatchNew->mID = QString("MP_%1").arg(i);
-		Geom::Rectangle base_rect = superPatchNew->mPatch;
+		SuperPatchNode* firstSP = superMasters[superIndices[0]];
+		firstSP->mID = QString("MP_%1").arg(i);
+		Geom::Rectangle base_rect = firstSP->mPatch;
 
-		// merge with others
-		QVector<Vector2> pnts2 = base_rect.get2DConners();
-		for (int superIdx : superIndices)
+		// replace others with the first
+		if (superIndices.size() > 1)
 		{
-			Geom::Rectangle2 rect2 = base_rect.get2DRectangle(superMasters[superIdx]->mPatch);
-			pnts2 << rect2.getConners();
+			QVector<Vector2> pnts2 = base_rect.get2DConners();
+			for (int otherIdxIdx = 1; otherIdxIdx < superIndices.size(); otherIdxIdx++)
+			{
+				SuperPatchNode* otherSP = superMasters[superIndices[otherIdxIdx]];
+				Geom::Rectangle2 rect2 = base_rect.get2DRectangle(otherSP->mPatch);
+				pnts2 << rect2.getConners();
 
-			// remove other
-			removeNode(superMasters[superIdx]->mID);
+				// remove other
+				removeNode(otherSP->mID);
+			}
+			Geom::Rectangle2 aabb2 = Geom::computeAABB(pnts2);
+			firstSP->resize(aabb2);
 		}
-		Geom::Rectangle2 aabb2 = Geom::computeAABB(pnts2);
-		superPatchNew->resize(aabb2);
 
 		// update master_super_map
-		superPatchNew->enclosedPatches = enclosedMastersNew[i];
+		firstSP->enclosedPatches = enclosedMastersNew[i];
 		for (QString mid : enclosedMastersNew[i])
-			master2SuperMap[mid] = superPatchNew->mID;
+			master2SuperMap[mid] = firstSP->mID;
 	}
 
 	// ***update moc_greater

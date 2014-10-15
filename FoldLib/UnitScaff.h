@@ -7,8 +7,9 @@
 class FoldOption;
 class ChainScaff;
 
-struct UnitSolution
+class UnitSolution
 {
+public:
 	Geom::Rectangle baseRect;		// the up-to-date position of the baseMaster
 	Geom::Rectangle2 aabbCstrProj;	// the projection of aabb constraint on the base master
 	QVector<int> afoIndices;		// indices of available fold options 
@@ -18,6 +19,9 @@ struct UnitSolution
 	// debug
 	QVector<Vector3> obstacles;		// obstacles sampled from obstacle parts
 	QVector<Vector3> obstaclesProj;	// obstacles projected on to the base rect
+
+public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 class UnitScaff : public Scaffold
