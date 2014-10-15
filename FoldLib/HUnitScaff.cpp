@@ -101,41 +101,30 @@ Scaffold* HUnitScaff::getKeyframe(double t, bool useThk)
 // obstacles are projected onto the unit's baseMaster in the ssKeyframe
 void HUnitScaff::computeObstacles(SuperShapeKf* ssKeyframe, UnitSolution* sln)
 {
+	// debug
+	sln->obstacles.clear();  sln->obstaclesProj.clear();
+
 	// obstacles for each top master
 	QString baseMid = baseMaster->mID;
-	PatchNode* baseMasterKf = (PatchNode*)ssKeyframe->getNode(baseMid);
-	Geom::Rectangle baseRect = baseMasterKf->mPatch;
-	sln->obstacles.clear();  sln->obstaclesProj.clear();
 	for (PatchNode* topMaster : masters)
 	{
 		// skip base master
 		QString topMid = topMaster->mID;
 		if (topMid == baseMid) continue;
 
-		// obstacle parts: in-between and unordered
-		QVector<ScaffNode*> obstParts;
-		// ***no external parts stick in between
-		// internal master is allowed to stay in between, because they will be collapsed in order
-		obstParts << ssKeyframe->getInbetweenExternalParts(this, baseMid, topMid);
-		// ***chains under the top master should not stick into other blocks: introducing new order constraints
-		// unrelated masters must be external because all masters have relation with the base master
-		obstParts << ssKeyframe->getUnrelatedExternalMasters(this, base_mid, topMid);
+		// obstacle points
+		QVector<Vector3> obstPnts = computeObstaclePnts(ssKeyframe, baseMid, topMid);
 
-		// sample obstacle parts
-		QVector<Vector3> obstPnts;
-		for (ScaffNode* obsPart : obstParts)
-			obstPnts << obsPart->sampleBoundabyOfScaffold(100);
-
-		// project to the base rect to get obstacles
+		// projected coordinates onto the base rect
 		QVector<Vector2> obstPntsProj;
 		for (Vector3 s : obstPnts)
-			obstPntsProj << baseRect.getProjCoordinates(s);
-		masterObst[topMid] = obstPntsProj;
+			obstPntsProj << sln->baseRect.getProjCoordinates(s);
+		obstacles[topMid] = obstPntsProj;
 
-		// store obstacles in solution
+		// debug
 		sln->obstacles << obstPnts;
 		for (Vector3 s : obstPnts)
-			sln->obstaclesProj << baseRect.getProjection(s);
+			sln->obstaclesProj << sln->baseRect.getProjection(s);
 	}
 }
 
@@ -146,8 +135,7 @@ void HUnitScaff::computeAvailFoldOptions(SuperShapeKf* ssKeyframe, UnitSolution*
 	computeObstacles(ssKeyframe, sln);
 
 	// prune fold options
-	sln->afo.clear();
-	
+	sln->afoIndices.clear();
 	for (int i = 0; i < allFoldOptions.size(); i++)
 	{
 		// the fold option
@@ -164,12 +152,12 @@ void HUnitScaff::computeAvailFoldOptions(SuperShapeKf* ssKeyframe, UnitSolution*
 
 			// prune
 			bool isColliding = fo->regionProj.containsAny(obs, -0.01);
-			bool inAABB = aabbCstrProj.containsAll(fo->regionProj.getConners(), 0.01);
+			bool inAABB = sln->aabbCstrProj.containsAll(fo->regionProj.getConners(), 0.01);
 			accepted = !isColliding && inAABB;
 		}
 
 		// store
-		if (accepted) sln->afo << i;
+		if (accepted) sln->afoIndices << i;
 	}
 }
 
@@ -231,15 +219,15 @@ void HUnitScaff::findOptimalSolution(UnitSolution* sln)
 {
 	// initial
 	sln->cost = 0;
-	sln->solution.clear();
-	for (int i = 0; i < chains.size(); i++) sln->solution << nullptr;
+	sln->chainSln.clear();
+	for (int i = 0; i < chains.size(); i++) sln->chainSln << -1;
 
 	// optimal solution on each component
-	FoldOptGraph* collFog = createCollisionGraph(sln->afo);
+	FoldOptGraph* collFog = createCollisionGraph(sln->afoIndices);
 	for (auto component : collFog->getComponents()) {
 		for (auto fo: findOptimalSolution(collFog, component))
 		{
-			sln->solution[fo->chainIdx] = fo;
+			sln->chainSln[fo->chainIdx] = fo->index;
 			sln->cost += computeCost(fo);
 		}
 	}

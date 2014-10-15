@@ -145,47 +145,32 @@ void ZUnitScaff::setThickness(double thk)
 	hUnit->setThickness(thk);
 }
 
-
-QVector<Vector2> ZUnitScaff::computeObstacles(SuperShapeKf* ssKeyframe)
-{
-	// in-between external parts
-	Geom::Rectangle base_rect = baseMaster->mPatch;
-	QVector<ScaffNode*> obstacleParts = ssKeyframe->getInbetweenExternalParts(this, baseMaster->center(), topMaster->center());
-
-	// sample obstacle parts
-	obstPnts.clear();
-	for (ScaffNode* obsPart : obstacleParts)
-		obstPnts << obsPart->sampleBoundabyOfScaffold(100);
-
-	// projection
-	QVector<Vector2> obstPntsProj;
-	for (Vector3 s : obstPnts){
-		obstPntsProj << base_rect.getProjCoordinates(s);
-		obstPntsProj3 << base_rect.getProjection(s);
-	}
-	//appendToVectorProperty(DEBUG_POINTS, obstPntsProj3);
-	//appendToVectorProperty(DEBUG_POINTS, obstPnts);
-
-	return obstPntsProj;
-}
-
 bool ZUnitScaff::foldabilizeZ(SuperShapeKf* ssKeyframe, TimeInterval ti)
 {
 	// time interval
 	mFoldDuration = ti;
 
 	// obstacles
-	QVector<Vector2> obsPnts = computeObstacles(ssKeyframe);
+	obstPnts = computeObstaclePnts(ssKeyframe, baseMaster->mID, topMaster->mID);
+
+	// projected coordinates on the base rect
+	baseRect = getBaseRect(ssKeyframe);
+	QVector<Vector2> obstPntsProj;
+	for (Vector3 s : obstPnts)
+		obstPntsProj << baseRect.getProjCoordinates(s);
+
+	// projected aabb constraint on the base rect
+	Geom::Rectangle2 aabbCstrProj = getAabbCstrProj(ssKeyframe);
 
 	// feasibility of left solution
-	bool isCollidingLeft = regionProjLeft.containsAny(obsPnts, -0.01);
+	bool isCollidingLeft = regionProjLeft.containsAny(obstPntsProj, -0.01);
 	bool inAABBLeft = aabbCstrProj.containsAll(regionProjLeft.getConners(), 0.01);
 	fold2Left = !isCollidingLeft && inAABBLeft;
 
 	// feasibility of right solution
 	if (!fold2Left)
 	{
-		bool isCollidingRight = regionProjRight.containsAny(obsPnts, -0.01);
+		bool isCollidingRight = regionProjRight.containsAny(obstPntsProj, -0.01);
 		bool inAABBRight = aabbCstrProj.containsAll(regionProjRight.getConners(), 0.01);
 		fold2Right = !isCollidingRight && inAABBRight;
 	}
@@ -252,23 +237,23 @@ Scaffold* ZUnitScaff::getKeyframe(double t, bool useThk)
 		return hUnit->getKeyframe(t, useThk);
 }
 
-QVector<Vector3> ZUnitScaff::getObstacles()
+QVector<Vector3> ZUnitScaff::getCurrObstacles()
 {
 	if (fold2Left || fold2Right)
 		return obstPnts;
 	else
-		return hUnit->getObstacles();
+		return hUnit->getCurrObstacles();
 }
 
-QVector<Geom::Rectangle> ZUnitScaff::getAFRs()
+QVector<Geom::Rectangle> ZUnitScaff::getCurrAFRs()
 {
 	if (fold2Left || fold2Right)
 	{
 		QVector<Geom::Rectangle> afr;
 		Geom::Rectangle2 regionProj = fold2Left ? regionProjLeft : regionProjRight;
-		afr << baseMaster->mPatch.get3DRectangle(regionProj);
+		afr << baseRect.get3DRectangle(regionProj);
 		return afr;
 	}
 	else
-		return hUnit->getAFRs();
+		return hUnit->getCurrAFRs();
 }

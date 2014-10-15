@@ -9,12 +9,15 @@ class ChainScaff;
 
 struct UnitSolution
 {
-	QVector<int> afo;
-	QVector<FoldOption*> solution;
-	double cost;
+	Geom::Rectangle baseRect;		// the up-to-date position of the baseMaster
+	Geom::Rectangle2 aabbCstrProj;	// the projection of aabb constraint on the base master
+	QVector<int> afoIndices;		// indices of available fold options 
+	QVector<int> chainSln;			// the solution (fold option index) for each chain
+	double cost;					// the cost
 
-	QVector<Vector3> obstacles;
-	QVector<Vector3> obstaclesProj;
+	// debug
+	QVector<Vector3> obstacles;		// obstacles sampled from obstacle parts
+	QVector<Vector3> obstaclesProj;	// obstacles projected on to the base rect
 };
 
 class UnitScaff : public Scaffold
@@ -35,16 +38,12 @@ public:
 	Scaffold* activeScaffold();
 	void selectChain(QString id);
 	QStringList getChainLabels();
-
-	// all fold options
-	void genAllFoldOptions();
-	void resetAllFoldOptions();
 	 
 	// getters
 	double getNbTopMasters();	// #top masters: decides the folding duration
 	double getTotalSlaveArea(); // the total area of slave patches
 
-	// setters
+	// parameter setters
 	virtual void setNbSplits(int n);
 	virtual void setNbChunks(int n);
 	virtual void setAabbCstr(Geom::Box aabb);
@@ -52,9 +51,9 @@ public:
 	virtual void setImportance(double imp);
 	virtual void setThickness(double thk);
 
-	// current available fold regions 
-	virtual QVector<Vector3> getObstacles();
-	virtual QVector<Geom::Rectangle> getAFRs();
+	// debug info from the current solution
+	virtual QVector<Vector3> getCurrObstacles();
+	virtual QVector<Geom::Rectangle> getCurrAFRs();
 	void genDebugInfo();
 
 public:
@@ -62,6 +61,18 @@ public:
 	// key frame
 	virtual Scaffold*	getKeyframe(double t, bool useThk) = 0; // intermediate config. at local time t
 	Scaffold*			getSuperKeyframe(double t);	// key frame with super master that merges all collapsed masters
+
+	// all fold options
+	void genAllFoldOptions();
+	void resetAllFoldOptions();
+
+	// compute obstacles for a pair of masters
+	bool isExternalPart(ScaffNode* snode);
+	QVector<Vector3> computeObstaclePnts(SuperShapeKf* ssKeyframe, QString base_mid, QString top_mid);
+
+	// the base rect
+	Geom::Rectangle getBaseRect(SuperShapeKf* ssKeyframe);
+	Geom::Rectangle2 getAabbCstrProj(SuperShapeKf* ssKeyframe);
 
 	/* foldabilization : compute the best fold solution wrt the given super shape key frame
 	   the best solution is indicated by currSlnIdx

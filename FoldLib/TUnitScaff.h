@@ -15,7 +15,7 @@ private:
 	void createChains(QVector<ScaffNode*>& ss, QVector< QVector<QString> >& mPairs);
 
 	// obstacles
-	QVector<Vector2> computeObstacles(SuperShapeKf* ssKeyframe, UnitSolution* sln);
+	void computeObstacles(SuperShapeKf* ssKeyframe, UnitSolution* sln);
 
 public:
 	// key frame
@@ -29,6 +29,9 @@ public:
 	// pointer
 	TChainScaff* tChain;
 	PatchNode* topMaster;
+
+	// obstacles
+	QVector<Vector2> obstacles;
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW

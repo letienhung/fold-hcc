@@ -10,30 +10,25 @@ class UnitScaff;
 class SuperShapeKf final : public Scaffold
 {
 public:
-	SuperShapeKf(Scaffold* superKeyframe, StringSetMap moc_g);
+	SuperShapeKf(Scaffold* superKeyframe, StringSetMap moc_g, Vector3 sqzV);
 
 	// valid only if all order constraints are met
-	bool isValid(Vector3 sqzV);
+	bool isValid();
 
-	// obstacles
-	void computeObstacles(UnitScaff* unit, QString base_mid, QString top_mid,
-						QVector<Vector3>& obstPnts, QVector<Vector2>& obstPntsProj);
+	// parts in between two regular masters
+	QVector<ScaffNode*> getInbetweenParts(QString base_mid, QString top_mid);
 
-private:
-	// in between parts
-	QVector<ScaffNode*> getInbetweenExternalParts(UnitScaff* unit, QString base_mid, QString top_mid);
-
-	// unrelated masters
-	QVector<ScaffNode*> getUnrelatedExternalMasters(UnitScaff* unit, QString base_mid, QString top_mid);
-
-	// super patch in unit
-	bool unitContainsNode(UnitScaff* unit, Structure::Node* node);
+	// unrelated masters with the super master of the regular master
+	QVector<ScaffNode*> getUnrelatedMasters(QString regular_mid);
 
 public:
 	// the map between master and super master
 	QMap<QString, QString> master2SuperMap;
 
-	// the oder constrains of super masters
+	// the oder constrains using super masters
 	StringSetMap mocGreater, mocLess;
+
+	// the squeezing direction
+	Vector3 sqzV;
 };
 

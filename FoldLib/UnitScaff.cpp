@@ -35,6 +35,19 @@ UnitScaff::UnitScaff(QString id, QVector<PatchNode*>& ms, QVector<ScaffNode*>& s
 	useThickness = false;
 }
 
+void UnitScaff::computeChainImportances()
+{
+	double totalA = 0;
+	for (ChainScaff* c : chains)
+	{
+		double area = c->getSlaveArea();
+		totalA += area;
+	}
+
+	for (ChainScaff* c : chains)
+		c->importance = c->getSlaveArea() / totalA;
+}
+
 UnitScaff::~UnitScaff()
 {
 	for (ChainScaff* c : chains)
@@ -43,6 +56,7 @@ UnitScaff::~UnitScaff()
 	for (UnitSolution* sln : testedSlns)
 		delete sln;
 }
+
 
 void UnitScaff::setAabbCstr(Geom::Box aabb)
 {
@@ -72,6 +86,11 @@ void UnitScaff::setThickness(double thk)
 		chain->halfThk = thickness / 2;
 		chain->baseOffset = thickness / 2;
 	}
+}
+
+void UnitScaff::setImportance(double imp)
+{
+	importance = imp;
 }
 
 
@@ -115,9 +134,60 @@ QStringList UnitScaff::getChainLabels()
 	return labels;
 }
 
+
+double UnitScaff::getNbTopMasters()
+{
+	return getNodesWithTag(MASTER_TAG).size() - 1;
+}
+
+double UnitScaff::getTotalSlaveArea()
+{
+	double a = 0;
+	for (ChainScaff* c : chains)a += c->getSlaveArea();
+	return a;
+}
+
+
+QVector<Vector3> UnitScaff::getCurrObstacles()
+{
+	QVector<Vector3> obs;
+	if (currSlnIdx >= 0 && currSlnIdx < testedSlns.size())
+		obs = testedSlns[currSlnIdx]->obstacles;
+
+	return obs;
+}
+
+QVector<Geom::Rectangle> UnitScaff::getCurrAFRs()
+{
+	QVector<Geom::Rectangle> afr;
+	if (currSlnIdx >= 0 && currSlnIdx < testedSlns.size())
+	{
+		for (int foi : testedSlns[currSlnIdx]->afoIndices)
+		{
+			Geom::Rectangle baseRect = testedSlns[currSlnIdx]->baseRect;
+			Geom::Rectangle2 regionProj = allFoldOptions[foi]->regionProj;
+			afr << baseRect.get3DRectangle(regionProj);
+		}
+	}
+
+	return afr;
+}
+
+void UnitScaff::genDebugInfo()
+{
+	VisualDebugger::clearDebug();
+
+	// obstacles
+	debugPntsB = getCurrObstacles();
+
+	// available fold options/regions
+	debugRectsG = getCurrAFRs();
+}
+
+
 // The super keyframe is the keyframe + superPatch
 // which is an additional patch representing the folded block
-Scaffold* UnitScaff::getSuperKeyframe( double t )
+Scaffold* UnitScaff::getSuperKeyframe(double t)
 {
 	// regular key frame w\o thickness
 	Scaffold* keyframe = getKeyframe(t, false);
@@ -127,7 +197,7 @@ Scaffold* UnitScaff::getSuperKeyframe( double t )
 
 	// create super patch
 	SuperPatchNode* superPatch = new SuperPatchNode(mID + "_super", baseMaster);
-	superPatch->addTag(SUPER_PATCH_TAG); 
+	superPatch->addTag(SUPER_PATCH_TAG);
 
 	// collect projections of all nodes (including baseMaster) on baseMaster
 	Geom::Rectangle base_rect = superPatch->mPatch;
@@ -152,9 +222,9 @@ Scaffold* UnitScaff::getSuperKeyframe( double t )
 	superPatch->resize(aabb2);
 
 	// merged parts and masters
-	for(Structure::Node* n : keyframe->nodes)
+	for (Structure::Node* n : keyframe->nodes)
 	{
-		n->addTag(MERGED_PART_TAG); 
+		n->addTag(MERGED_PART_TAG);
 		if (n->hasTag(MASTER_TAG))	superPatch->enclosedPatches << n->mID;
 	}
 
@@ -164,10 +234,6 @@ Scaffold* UnitScaff::getSuperKeyframe( double t )
 	return keyframe;
 }
 
-double UnitScaff::getNbTopMasters()
-{
-	return getNodesWithTag(MASTER_TAG).size() - 1;
-}
 
 void UnitScaff::genAllFoldOptions()
 {
@@ -202,6 +268,58 @@ void UnitScaff::genAllFoldOptions()
 	}
 }
 
+void UnitScaff::resetAllFoldOptions()
+{
+	// regenerate all fold options
+	genAllFoldOptions();
+
+	// clear saved solutions
+	for (UnitSolution* sln : testedSlns)
+		delete sln;
+	testedSlns.clear();
+	currSlnIdx = -1;
+}
+
+
+bool UnitScaff::isExternalPart(ScaffNode* snode)
+{
+	bool isInternal;
+	if (snode->hasTag(SUPER_PATCH_TAG))
+	{
+		isInternal = false;
+		for (QString mm : ((SuperPatchNode*)snode)->enclosedPatches){
+			if (containsNode(mm))
+			{
+				isInternal = true;
+				break;
+			}
+		}
+	}
+	// regular part
+	else
+	{
+		isInternal = containsNode(snode->mID);
+	}
+
+	return !isInternal;
+}
+
+QVector<Vector3> UnitScaff::computeObstaclePnts(SuperShapeKf* ssKeyframe, QString base_mid, QString top_mid)
+{
+	// obstacle parts
+	QVector<ScaffNode*> candidateParts, obstParts;
+	candidateParts << ssKeyframe->getInbetweenParts(base_mid, top_mid);
+	candidateParts << ssKeyframe->getUnrelatedMasters(base_mid);
+	candidateParts << ssKeyframe->getUnrelatedMasters(top_mid);
+	for (ScaffNode* sn : candidateParts) if (isExternalPart(sn)) obstParts << sn;
+
+	// sample obstacle parts
+	QVector<Vector3> obstPnts;
+	for (ScaffNode* obsPart : obstParts)
+		obstPnts << obsPart->sampleBoundabyOfScaffold(100);
+
+	return obstPnts;
+}
 
 double UnitScaff::foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti)
 {
@@ -210,18 +328,31 @@ double UnitScaff::foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti)
 
 	// create a new solution
 	UnitSolution* fdSln = new UnitSolution();
+	fdSln->baseRect = getBaseRect(ssKeyframe);
+	fdSln->aabbCstrProj = getAabbCstrProj(ssKeyframe);
 
 	// available fold options
 	computeAvailFoldOptions(ssKeyframe, fdSln);
 	
 	// search for existed solutions
 	currSlnIdx = -1;
-	for (int i = 0; i < testedSlns.size(); i++){
-		if (testedSlns[i]->afo == fdSln->afo)
+	for (int i = 0; i < testedSlns.size(); i++)
+	{
+		UnitSolution* tSln = testedSlns[i];
+		if (tSln->afoIndices == fdSln->afoIndices)
 		{
+			// update the obstacles for debug
+			tSln->obstacles = fdSln->obstacles;
+			tSln->obstaclesProj = fdSln->obstaclesProj;
+
+			// garbage collection
 			delete fdSln;
+
+			// set the current
 			currSlnIdx = i;
-			return testedSlns[currSlnIdx]->cost;
+
+			// return the cost
+			return tSln->cost;
 		}
 	}
 
@@ -234,11 +365,26 @@ double UnitScaff::foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti)
 
 	// apply the solution
 	for (int i = 0; i < chains.size(); i++)
-		chains[i]->applyFoldOption(testedSlns[currSlnIdx]->solution[i]);
+	{
+		int foIdx = testedSlns[currSlnIdx]->chainSln[i];
+		if (foIdx >= 0 && foIdx < allFoldOptions.size())
+			chains[i]->applyFoldOption(allFoldOptions[foIdx]);
+		else
+			std::cout << "**** no solution for chain = " << chains[i]->mID.toStdString() << "!!!\n";
+	}
 
 	// return the cost (\in [0, 1])
 	return fdSln->cost;
 }
+
+void UnitScaff::computeAvailFoldOptions(SuperShapeKf*, UnitSolution*)
+{
+}
+
+void UnitScaff::findOptimalSolution(UnitSolution*)
+{
+}
+
 
 double UnitScaff::computeCost(FoldOption* fo)
 {
@@ -258,85 +404,16 @@ double UnitScaff::computeCost(FoldOption* fo)
 	return cost;
 }
 
-double UnitScaff::getTotalSlaveArea()
+Geom::Rectangle2 UnitScaff::getAabbCstrProj(SuperShapeKf* ssKeyframe)
 {
-	double a = 0;
-	for (ChainScaff* c : chains)a += c->getSlaveArea();
-	return a;
+	Geom::Rectangle baseRect = getBaseRect(ssKeyframe);
+	int aid = aabbCstr.getAxisId(baseRect.Normal);
+	Geom::Rectangle aabbCrossSect = aabbCstr.getCrossSection(aid, 0);
+
+	return baseRect.get2DRectangle(aabbCrossSect);
 }
 
-
-void UnitScaff::resetAllFoldOptions()
+Geom::Rectangle UnitScaff::getBaseRect(SuperShapeKf* ssKeyframe)
 {
-	// regenerate all fold options
-	genAllFoldOptions();
-
-	// clear saved solutions
-	for (UnitSolution* sln : testedSlns) 
-		delete sln;
-	testedSlns.clear();
-	currSlnIdx = -1;
+	return ((PatchNode*)ssKeyframe->getNode(baseMaster->mID))->mPatch;
 }
-
-void UnitScaff::computeChainImportances()
-{
-	double totalA = 0;
-	for (ChainScaff* c : chains)
-	{
-		double area = c->getSlaveArea();
-		totalA += area;
-	}
-
-	for (ChainScaff* c : chains)
-		c->importance = c->getSlaveArea() / totalA;
-}
-
-void UnitScaff::computeAvailFoldOptions(SuperShapeKf*, UnitSolution*)
-{
-}
-
-void UnitScaff::findOptimalSolution(UnitSolution*)
-{
-}
-
-void UnitScaff::setImportance(double imp)
-{
-	importance = imp;
-}
-
-QVector<Vector3> UnitScaff::getObstacles()
-{
-	QVector<Vector3> obs;
-	if (currSlnIdx >= 0 && currSlnIdx < testedSlns.size())
-		obs = testedSlns[currSlnIdx]->obstacles;
-
-	return obs;
-}
-
-QVector<Geom::Rectangle> UnitScaff::getAFRs()
-{
-	QVector<Geom::Rectangle> afr;
-	if (currSlnIdx >= 0 && currSlnIdx < testedSlns.size())
-	{
-		for (int foi : testedSlns[currSlnIdx]->afo)
-			afr << allFoldOptions[foi]->region;
-	}
-
-	return afr;
-}
-
-void UnitScaff::genDebugInfo()
-{
-	VisualDebugger::clearDebug();
-
-	// obstacles
-	debugPntsB = getObstacles();
-	
-	// available fold options/regions
-	for (Geom::Rectangle rect : getAFRs())
-		debugSegsR << rect.getEdgeSegments();
-
-	// aabb constraint
-	debugSegsG << baseMaster->mPatch.get3DRectangle(aabbCstrProj).getEdgeSegments();
-}
-

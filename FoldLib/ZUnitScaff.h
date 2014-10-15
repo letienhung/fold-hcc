@@ -21,9 +21,6 @@ private:
 	// key frame as Z
 	Scaffold* getZKeyframe(double t, bool useThk);
 
-	// obstacles
-	QVector<Vector2> computeObstacles(SuperShapeKf* ssKeyframe);
-
 	// foldabilize as Z and returns the true if success
 	bool foldabilizeZ(SuperShapeKf* ssKeyframe, TimeInterval ti);
 
@@ -42,9 +39,9 @@ public:
 	virtual void setImportance(double imp) override;
 	virtual void setThickness(double thk) override;
 
-	// get obstacles
-	virtual QVector<Vector3> getObstacles() override;
-	virtual QVector<Geom::Rectangle> getAFRs() override;
+	// debug
+	virtual QVector<Vector3> getCurrObstacles() override;
+	virtual QVector<Geom::Rectangle> getCurrAFRs() override;
 
 public:
 	// the back up HUnit
@@ -59,6 +56,7 @@ public:
 	QVector<FoldOption*>	optionsLeft,	optionsRight;
 	Geom::Rectangle2		regionProjLeft, regionProjRight;
 
-	// obstacles
-	QVector<Vector3> obstPnts, obstPntsProj3;
+	// debug
+	Geom::Rectangle baseRect;
+	QVector<Vector3> obstPnts;
 };

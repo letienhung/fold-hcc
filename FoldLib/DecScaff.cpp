@@ -255,24 +255,14 @@ void DecScaff::storeDebugInfo(Scaffold* kf, int uidx)
 		if (an)	an->addTag(ACTIVE_NODE_TAG);
 	}
 
-	// the offset of active unit in the scaffold
-	PatchNode* newUnitBase = (PatchNode*)kf->getNode(unit->baseMaster->mID);
-	Vector3 oldPos = unit->baseMaster->center();
-	Vector3 newPos = newUnitBase->center();
-	Vector3 offset = newPos - oldPos;
-
 	// aabb constraint
 	kf->debugBoxes << unit->aabbCstr;
 
-	// aabb constraint projection
-	kf->debugRectsR << newUnitBase->mPatch.get3DRectangle(unit->aabbCstrProj);
-
 	// obstacles
-	QVector<Vector3> obs = unit->getObstacles();
-	for (Vector3 p : obs) p += offset;
-	kf->debugPntsB << obs;
+	kf->debugPntsB = unit->getCurrObstacles();
 
 	// fold options
+	kf->debugRectsB = unit->getCurrAFRs();
 }
 
 Scaffold* DecScaff::genKeyframe( double t )
@@ -371,7 +361,7 @@ SuperShapeKf* DecScaff::getSuperShapeKf( double t )
 
 	// create super shape key frame
 	// super masters sharing common regular masters will be grouped
-	SuperShapeKf* superShapeKf = new SuperShapeKf(superKf, masterOrderGreater);
+	SuperShapeKf* superShapeKf = new SuperShapeKf(superKf, masterOrderGreater, sqzV);
 
 	// garbage collection
 	delete superKf;
@@ -496,7 +486,7 @@ UnitScaff* DecScaff::getBestNextUnit(double currTime, SuperShapeKf* currKeyframe
 		//return nullptr;
 		
 		// the folding of nextUnit must be valid, otherwise skip further evaluation
-		if (nextKeyframe->isValid(sqzV))
+		if (nextKeyframe->isValid())
 		{
 			std::cout << "Look forward...\n";
 			// cost of folding remaining unfolded units
@@ -513,7 +503,7 @@ UnitScaff* DecScaff::getBestNextUnit(double currTime, SuperShapeKf* currKeyframe
 				double next2Cost = foldabilizeUnit(next2Unit, nextTime, nextKeyframe, next2Time, next2Keyframe);
 
 				// invalid block folding generates large cost as being deleted
-				if (!next2Keyframe->isValid(sqzV)) next2Cost = next2Unit->importance; // deletion cost = 1.0
+				if (!next2Keyframe->isValid()) next2Cost = next2Unit->importance; // deletion cost = 1.0
 
 				delete next2Keyframe; // garbage collection
 				next2Unit->mFoldDuration = origNext2Ti; // restore time interval
