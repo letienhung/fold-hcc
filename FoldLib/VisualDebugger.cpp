@@ -6,43 +6,57 @@ VisualDebugger::VisualDebugger()
 {
 }
 
-void VisualDebugger::clearDebug()
+void VisualDebugger::clearAll()
 {
-	debugPntsR.clear();	debugPntsG.clear();	debugPntsB.clear();
-	debugSegsR.clear();	debugSegsG.clear();	debugSegsB.clear();
-	debugRectsR.clear();debugRectsG.clear();debugRectsB.clear();
-	debugBoxes.clear();
-	debugPlanes.clear();
-	debugScaffs.clear();
+	colorPoints.clear();
+	colorSegments.clear();
+	colorRectangles.clear();
+	colorBoxes.clear();
+	colorPlanes.clear();
+
+	for (Scaffold* scaff : scaffolds) delete scaff;
+	scaffolds.clear();
 }
 
 void VisualDebugger::draw()
 {
-	// debug points
-	PointSoup psR, psG, psB;
-	for (Vector3 p : debugPntsR) psR.addPoint(p, Qt::red); psR.draw();
-	for (Vector3 p : debugPntsG) psG.addPoint(p, Qt::green); psG.draw();
-	for (Vector3 p : debugPntsB) psB.addPoint(p, Qt::blue); psB.draw();
+	// color points
+	for (Qt::GlobalColor color : colorPoints.keys()){
+		PointSoup ps;
+		for (Vector3 p : colorPoints[color])
+			ps.addPoint(p, color);
+		ps.draw();
+	}
 
-	// debug segments
-	for (Geom::Segment seg : debugSegsR) seg.draw(3.0, Qt::red);
-	for (Geom::Segment seg : debugSegsG) seg.draw(3.0, Qt::green);
-	for (Geom::Segment seg : debugSegsB) seg.draw(3.0, Qt::blue);
+	// color segments
+	for (Qt::GlobalColor color : colorSegments.keys()){
+		for (Geom::Segment sg : colorSegments[color])
+			sg.draw(3.0, color);
+	}
 
-	// debug rectangles
-	for (Geom::Rectangle rect : debugRectsR) rect.drawEdges(2.0, Qt::red);
-	for (Geom::Rectangle rect : debugRectsG) rect.drawEdges(2.0, Qt::green);
-	for (Geom::Rectangle rect : debugRectsB) rect.drawEdges(2.0, Qt::blue);
+	// color rectangles
+	for (Qt::GlobalColor color : colorRectangles.keys()){
+		for (Geom::Rectangle rect : colorRectangles[color])
+			rect.drawEdges(2.0, color);
+	}
 
-	// debug boxes
-	QColor color = Qt::green; color.setAlphaF(1.0);
-	for (Geom::Box box : debugBoxes) box.drawWireframe(2.0, color);
+	// color boxes
+	for (Qt::GlobalColor color : colorBoxes.keys()){
+		for (Geom::Box box : colorBoxes[color])
+			box.drawWireframe(2.0, color);
+	}
 
-	// debug planes
-	for (Geom::Plane p : debugPlanes) p.draw();
+	// color planes
+	for (Qt::GlobalColor color : colorPlanes.keys()){
+		for (Geom::Plane plane : colorPlanes[color]){
+			PlaneSoup ps(2.0, color);
+			ps.addPlane(plane.Constant, plane.Normal);
+			ps.draw();
+		}
+	}
 
 	// scaffold
-	for (Scaffold* ds : debugScaffs){
+	for (Scaffold* ds : scaffolds){
 		if (ds)	{
 			ds->showCuboids(false);
 			ds->showScaffold(true);
@@ -50,4 +64,59 @@ void VisualDebugger::draw()
 			ds->draw();
 		}
 	}
+}
+
+void VisualDebugger::addPoint(Vector3& pnt, Qt::GlobalColor color /*= Qt::black*/)
+{
+	colorPoints[color] << pnt;
+}
+
+void VisualDebugger::addPoints(QVector<Vector3>& pnts, Qt::GlobalColor color /*= Qt::black*/)
+{
+	colorPoints[color] << pnts;
+}
+
+void VisualDebugger::addSegment(Geom::Segment& seg, Qt::GlobalColor color /*= Qt::black*/)
+{
+	colorSegments[color] << seg;
+}
+
+void VisualDebugger::addSegments(QVector<Geom::Segment>& segs, Qt::GlobalColor color /*= Qt::black*/)
+{
+	colorSegments[color] << segs;
+}
+
+void VisualDebugger::addRectangle(Geom::Rectangle& rect, Qt::GlobalColor color /*= Qt::black*/)
+{
+	colorRectangles[color] << rect;
+}
+
+void VisualDebugger::addRectangles(QVector<Geom::Rectangle>& rects, Qt::GlobalColor color /*= Qt::black*/)
+{
+	colorRectangles[color] << rects;
+}
+
+void VisualDebugger::addBox(Geom::Box& box, Qt::GlobalColor color /*= Qt::black*/)
+{
+	colorBoxes[color] << box;
+}
+
+void VisualDebugger::addBoxes(QVector<Geom::Box>& boxes, Qt::GlobalColor color /*= Qt::black*/)
+{
+	colorBoxes[color] << boxes;
+}
+
+void VisualDebugger::addPlane(Geom::Plane& plane, Qt::GlobalColor color /*= Qt::black*/)
+{
+	colorPlanes[color] << plane;
+}
+
+void VisualDebugger::addPlanes(QVector<Geom::Plane>& planes, Qt::GlobalColor color /*= Qt::black*/)
+{
+	colorPlanes[color] << planes;
+}
+
+void VisualDebugger::addScaffold(Scaffold* scaff)
+{
+	scaffolds << (Scaffold*)scaff->clone();
 }

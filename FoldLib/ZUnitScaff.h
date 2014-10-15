@@ -42,6 +42,8 @@ public:
 	// debug
 	virtual QVector<Vector3> getCurrObstacles() override;
 	virtual QVector<Geom::Rectangle> getCurrAFRs() override;
+	virtual QVector<Geom::Rectangle> getCurrSlnFRs() override;
+	virtual QVector<QString> getSlnSlaveParts() override;
 
 public:
 	// the back up HUnit

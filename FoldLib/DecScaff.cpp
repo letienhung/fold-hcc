@@ -249,20 +249,23 @@ void DecScaff::storeDebugInfo(Scaffold* kf, int uidx)
 	UnitScaff* unit = units[uidx];
 
 	// highlight active parts
-	for (Structure::Node* n : unit->nodes)
+	for (QString nid : unit->getSlnSlaveParts())
 	{
-		Structure::Node* an = kf->getNode(n->mID);
-		if (an)	an->addTag(ACTIVE_NODE_TAG);
+		Structure::Node* node = kf->getNode(nid);
+		if (node) node->addTag(ACTIVE_NODE_TAG);
 	}
 
 	// aabb constraint
-	kf->debugBoxes << unit->aabbCstr;
+	kf->visDebug.addBox(unit->aabbCstr, Qt::cyan);
 
 	// obstacles
-	kf->debugPntsB = unit->getCurrObstacles();
+	kf->visDebug.addPoints(unit->getCurrObstacles(), Qt::blue);
 
 	// fold options
-	kf->debugRectsB = unit->getCurrAFRs();
+	//kf->visDebug.addRectangles(unit->getCurrAFRs(), Qt::green);
+
+	// solution
+	kf->visDebug.addRectangles(unit->getCurrSlnFRs(), Qt::green);
 }
 
 Scaffold* DecScaff::genKeyframe( double t )
@@ -397,6 +400,10 @@ void DecScaff::foldabilize()
 		double timeLength = next_unit->getNbTopMasters() * timeScale;
 		double nextTime = currTime + timeLength;
 		next_unit->foldabilize(currKeyframe, TimeInterval(currTime, nextTime));
+
+
+		return;
+
 
 		std::cout << "\n-----------//-----------\n";
 

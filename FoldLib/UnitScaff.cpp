@@ -173,15 +173,31 @@ QVector<Geom::Rectangle> UnitScaff::getCurrAFRs()
 	return afr;
 }
 
+QVector<Geom::Rectangle> UnitScaff::getCurrSlnFRs()
+{
+	QVector<Geom::Rectangle> slnFr;
+	if (currSlnIdx >= 0 && currSlnIdx < testedSlns.size())
+	{
+		for (int idx : testedSlns[currSlnIdx]->chainSln)
+		{
+			Geom::Rectangle baseRect = testedSlns[currSlnIdx]->baseRect;
+			Geom::Rectangle2 regionProj = allFoldOptions[idx]->regionProj;
+			slnFr << baseRect.get3DRectangle(regionProj);
+		}
+	}
+
+	return slnFr;
+}
+
 void UnitScaff::genDebugInfo()
 {
-	VisualDebugger::clearDebug();
+	visDebug.clearAll();
 
 	// obstacles
-	debugPntsB = getCurrObstacles();
+	visDebug.addPoints(getCurrObstacles(), Qt::blue);
 
 	// available fold options/regions
-	debugRectsG = getCurrAFRs();
+	visDebug.addRectangles(getCurrAFRs(), Qt::green);
 }
 
 
@@ -416,4 +432,18 @@ Geom::Rectangle2 UnitScaff::getAabbCstrProj(SuperShapeKf* ssKeyframe)
 Geom::Rectangle UnitScaff::getBaseRect(SuperShapeKf* ssKeyframe)
 {
 	return ((PatchNode*)ssKeyframe->getNode(baseMaster->mID))->mPatch;
+}
+
+QVector<QString> UnitScaff::getSlnSlaveParts()
+{
+	QVector<QString> sParts;
+	for (ChainScaff* chain : chains)
+	{
+		for (PatchNode* cs : chain->chainParts)
+		{
+			sParts << cs->mID;
+		}
+	}
+
+	return sParts;
 }

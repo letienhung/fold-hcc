@@ -295,7 +295,7 @@ void FdPlugin::test1()
 		selUnit->chains[i]->applyFoldOption(options[i]);
 
 	Scaffold* kf = selUnit->getKeyframe(0.5, 0);
-	selUnit->debugScaffs << kf;
+	selUnit->visDebug.addScaffold(kf);
 }
 
 void FdPlugin::test2()

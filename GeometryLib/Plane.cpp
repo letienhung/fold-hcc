@@ -104,9 +104,9 @@ Geom::Plane Geom::Plane::translated( Vector3 t )
 	return Plane(Constant + t, Normal);
 }
 
-void Geom::Plane::draw()
+void Geom::Plane::draw(QColor c)
 {
-	PlaneSoup ps;
+	PlaneSoup ps(2.0, c);
 	ps.addPlane(Constant, Normal);
 	ps.draw();
 }

@@ -257,3 +257,20 @@ QVector<Geom::Rectangle> ZUnitScaff::getCurrAFRs()
 	else
 		return hUnit->getCurrAFRs();
 }
+
+QVector<Geom::Rectangle> ZUnitScaff::getCurrSlnFRs()
+{
+	if (fold2Left || fold2Right)
+		return getCurrAFRs();
+	else
+		return hUnit->getCurrSlnFRs();
+}
+
+QVector<QString> ZUnitScaff::getSlnSlaveParts()
+{
+	if (fold2Left || fold2Right)
+		return UnitScaff::getSlnSlaveParts();
+	else
+		return hUnit->getSlnSlaveParts();
+
+}

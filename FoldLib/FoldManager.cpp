@@ -290,16 +290,21 @@ void FoldManager::foldabilize()
 	timer.start();
 
 	// foldabilize
+	message("Decomposing...");
 	decompose();
 	setAllParameters();
+	message("Foldabilizing...");
 	shapeDec->foldabilize(); 
 	
 	// end timer
 	elapsedTime = timer.elapsed();
+	message(QString("Foldabilizing...Done : %1s").arg(elapsedTime / 1000));
 
 	// generate key frames
+	message("Generating keyframes...");
 	shapeDec->genKeyframes(nbKeyframes);
 	updateKeyframeSlider();
+	message("Generating keyframes...Done!");
 
 	// statistics
 	//exportStat();

@@ -288,7 +288,7 @@ void Scaffold::draw()
 	if (showAABB) drawAABB();
 
 	// debug
-	VisualDebugger::draw();
+	visDebug.draw();
 }
 
 ScaffNode* Scaffold::wrapAsBundleNode( QVector<QString> nids, Vector3 v )

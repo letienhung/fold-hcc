@@ -58,6 +58,8 @@ public:
 	// debug info from the current solution
 	virtual QVector<Vector3> getCurrObstacles();
 	virtual QVector<Geom::Rectangle> getCurrAFRs();
+	virtual QVector<Geom::Rectangle> getCurrSlnFRs();
+	virtual QVector<QString> getSlnSlaveParts();
 	void genDebugInfo();
 
 public:

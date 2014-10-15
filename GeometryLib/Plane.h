@@ -32,7 +32,7 @@ public:
 	void translate(Vector3 t);
 	Plane translated(Vector3 t);
 
-	void draw();
+	void draw(QColor c = Qt::green);
 
 public:
 	Vector3 Constant, Normal;

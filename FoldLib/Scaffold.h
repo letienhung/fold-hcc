@@ -10,7 +10,7 @@
 
 // FdGraph represents all segments of the input shape
 
-class Scaffold : public Structure::Graph, public VisualDebugger
+class Scaffold : public Structure::Graph
 {
 public:
 	Scaffold(QString id = "");
@@ -58,9 +58,13 @@ public:
 	// rendering
 	void hideEdgeRods();
 
+
 public:
 	QString path;
 	bool showAABB;
+
+	// visual debugger
+	VisualDebugger visDebug;
 };
 
 Q_DECLARE_METATYPE(QVector<Scaffold*>)
