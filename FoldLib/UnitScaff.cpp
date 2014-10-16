@@ -27,9 +27,6 @@ UnitScaff::UnitScaff(QString id, QVector<PatchNode*>& ms, QVector<ScaffNode*>& s
 	weight = 0.05;
 	importance = 0;  // importance 
 	
-	// current fold solution
-	currSlnIdx = -1;
-
 	// thickness
 	thickness = 2;
 	useThickness = false;
@@ -52,9 +49,6 @@ UnitScaff::~UnitScaff()
 {
 	for (ChainScaff* c : chains)
 		delete c;
-
-	for (UnitSolution* sln : testedSlns)
-		delete sln;
 }
 
 
@@ -148,47 +142,6 @@ double UnitScaff::getTotalSlaveArea()
 }
 
 
-QVector<Vector3> UnitScaff::getCurrObstacles()
-{
-	QVector<Vector3> obs;
-	if (currSlnIdx >= 0 && currSlnIdx < testedSlns.size())
-		obs = testedSlns[currSlnIdx]->obstacles;
-
-	return obs;
-}
-
-QVector<Geom::Rectangle> UnitScaff::getCurrAFRs()
-{
-	QVector<Geom::Rectangle> afr;
-	if (currSlnIdx >= 0 && currSlnIdx < testedSlns.size())
-	{
-		for (int foi : testedSlns[currSlnIdx]->afoIndices)
-		{
-			Geom::Rectangle baseRect = testedSlns[currSlnIdx]->baseRect;
-			Geom::Rectangle2 regionProj = allFoldOptions[foi]->regionProj;
-			afr << baseRect.get3DRectangle(regionProj);
-		}
-	}
-
-	return afr;
-}
-
-QVector<Geom::Rectangle> UnitScaff::getCurrSlnFRs()
-{
-	QVector<Geom::Rectangle> slnFr;
-	if (currSlnIdx >= 0 && currSlnIdx < testedSlns.size())
-	{
-		for (int idx : testedSlns[currSlnIdx]->chainSln)
-		{
-			Geom::Rectangle baseRect = testedSlns[currSlnIdx]->baseRect;
-			Geom::Rectangle2 regionProj = allFoldOptions[idx]->regionProj;
-			slnFr << baseRect.get3DRectangle(regionProj);
-		}
-	}
-
-	return slnFr;
-}
-
 void UnitScaff::genDebugInfo()
 {
 	visDebug.clearAll();
@@ -251,52 +204,6 @@ Scaffold* UnitScaff::getSuperKeyframe(double t)
 }
 
 
-void UnitScaff::genAllFoldOptions()
-{
-	// clear
-	allFoldOptions.clear();
-
-	// collect all
-	Geom::Rectangle base_rect = baseMaster->mPatch;
-	for (int i = 0; i < chains.size(); i++)
-	{
-		// regular option
-		for (FoldOption* fo : chains[i]->genRegularFoldOptions(maxNbSplits, maxNbChunks))
-		{
-			// chain index
-			fo->chainIdx = i;
-
-			// region projection on the unit base
-			fo->regionProj = base_rect.get2DRectangle(fo->region);
-
-			// store
-			allFoldOptions << fo;
-
-			// index
-			fo->index = allFoldOptions.size() - 1;
-		}
-
-		// delete option
-		FoldOption* dfo = chains[i]->genDeleteFoldOption(maxNbSplits);
-		dfo->chainIdx = i;
-		allFoldOptions << dfo;
-		dfo->index = allFoldOptions.size() - 1;
-	}
-}
-
-void UnitScaff::resetAllFoldOptions()
-{
-	// regenerate all fold options
-	genAllFoldOptions();
-
-	// clear saved solutions
-	for (UnitSolution* sln : testedSlns)
-		delete sln;
-	testedSlns.clear();
-	currSlnIdx = -1;
-}
-
-
 bool UnitScaff::isExternalPart(ScaffNode* snode)
 {
 	bool isInternal;
@@ -337,96 +244,12 @@ QVector<Vector3> UnitScaff::computeObstaclePnts(SuperShapeKf* ssKeyframe, QStrin
 	return obstPnts;
 }
 
-double UnitScaff::foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti)
+Geom::Rectangle2 UnitScaff::getAabbCstrProj(Geom::Rectangle& base_rect)
 {
-	// time interval
-	mFoldDuration = ti;
-
-	// create a new solution
-	UnitSolution* fdSln = new UnitSolution();
-	fdSln->baseRect = getBaseRect(ssKeyframe);
-	fdSln->aabbCstrProj = getAabbCstrProj(ssKeyframe);
-
-	// available fold options
-	computeAvailFoldOptions(ssKeyframe, fdSln);
-	
-	// search for existed solutions
-	currSlnIdx = -1;
-	for (int i = 0; i < testedSlns.size(); i++)
-	{
-		UnitSolution* tSln = testedSlns[i];
-		if (tSln->afoIndices == fdSln->afoIndices)
-		{
-			// update the obstacles for debug
-			tSln->obstacles = fdSln->obstacles;
-			tSln->obstaclesProj = fdSln->obstaclesProj;
-
-			// garbage collection
-			delete fdSln;
-
-			// set the current
-			currSlnIdx = i;
-
-			// return the cost
-			return tSln->cost;
-		}
-	}
-
-	// find new solution
-	findOptimalSolution(fdSln);
-
-	// store the solution
-	currSlnIdx = testedSlns.size();
-	testedSlns << fdSln;
-
-	// apply the solution
-	for (int i = 0; i < chains.size(); i++)
-	{
-		int foIdx = testedSlns[currSlnIdx]->chainSln[i];
-		if (foIdx >= 0 && foIdx < allFoldOptions.size())
-			chains[i]->applyFoldOption(allFoldOptions[foIdx]);
-		else
-			std::cout << "**** no solution for chain = " << chains[i]->mID.toStdString() << "!!!\n";
-	}
-
-	// return the cost (\in [0, 1])
-	return fdSln->cost;
-}
-
-void UnitScaff::computeAvailFoldOptions(SuperShapeKf*, UnitSolution*)
-{
-}
-
-void UnitScaff::findOptimalSolution(UnitSolution*)
-{
-}
-
-
-double UnitScaff::computeCost(FoldOption* fo)
-{
-	// split
-	double a = fo->nSplits / (double)maxNbSplits;
-
-	// shrinking
-	double b = 1 - fo->scale;
-
-	// blended cost : c \in [0, 1]
-	double c = weight * a + (1 - weight) * b;
-
-	// normalized
-	double cost = chains[fo->chainIdx]->importance * c;
-
-	// return
-	return cost;
-}
-
-Geom::Rectangle2 UnitScaff::getAabbCstrProj(SuperShapeKf* ssKeyframe)
-{
-	Geom::Rectangle baseRect = getBaseRect(ssKeyframe);
-	int aid = aabbCstr.getAxisId(baseRect.Normal);
+	int aid = aabbCstr.getAxisId(base_rect.Normal);
 	Geom::Rectangle aabbCrossSect = aabbCstr.getCrossSection(aid, 0);
 
-	return baseRect.get2DRectangle(aabbCrossSect);
+	return base_rect.get2DRectangle(aabbCrossSect);
 }
 
 Geom::Rectangle UnitScaff::getBaseRect(SuperShapeKf* ssKeyframe)

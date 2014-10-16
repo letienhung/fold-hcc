@@ -9,9 +9,6 @@ TUnitScaff::TUnitScaff(QString id, QVector<PatchNode*>& ms, QVector<ScaffNode*>&
 	sortMasters();
 	createChains(ss, mPairs);
 	computeChainImportances();
-
-	// generate all fold options
-	genAllFoldOptions();
 }
 
 
@@ -40,73 +37,95 @@ void TUnitScaff::createChains(QVector<ScaffNode*>& ss, QVector< QVector<QString>
 }
 
 
-// the keyframe cannot be nullptr
+// the key frame cannot be nullptr
 Scaffold* TUnitScaff::getKeyframe(double t, bool useThk)
 {
 	return tChain->getKeyframe(t, useThk);
 }
 
-void TUnitScaff::computeObstacles(SuperShapeKf* ssKeyframe, UnitSolution* sln)
+double TUnitScaff::foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti)
 {
-	// obstacle points
-	QVector<Vector3> obstPnts = computeObstaclePnts(ssKeyframe, baseMaster->mID, topMaster->mID);
+	// time interval
+	mFoldDuration = ti;
 
-	// projection
-	obstacles.clear();
-	for (Vector3 s : obstPnts)
-		obstacles << sln->baseRect.getProjCoordinates(s);
+	// obstacles
+	obstacles = computeObstaclePnts(ssKeyframe, baseMaster->mID, topMaster->mID);
 
-	// store obstacles in solution
-	sln->obstacles = obstPnts;
-	sln->obstaclesProj.clear();
-	for (Vector3 s : obstPnts)
-		sln->obstaclesProj << sln->baseRect.getProjection(s);
-}
+	// projected coordinates on the base rect
+	baseRect = getBaseRect(ssKeyframe);
+	QVector<Vector2> obstacleProj;
+	for (Vector3 s : obstacles)
+		obstacleProj << baseRect.getProjCoordinates(s);
 
+	// projected aabb constraint on the base rect
+	Geom::Rectangle2 aabbCstrProj = getAabbCstrProj(baseRect);
 
-void TUnitScaff::computeAvailFoldOptions(SuperShapeKf* ssKeyframe, UnitSolution* sln)
-{
-	computeObstacles(ssKeyframe, sln);
-
-	// prune fold options
-	sln->afoIndices.clear();
-	for (int i = 0; i < allFoldOptions.size(); i++)
+	// search for the best available fold option
+	for (FoldOption* fo : sortedFoldOptions)
 	{
-		// the fold option
-		FoldOption* fo = allFoldOptions[i];
-
 		// always accept the delete fold option
 		// check acceptance for regular fold option
 		bool accepted = true;
 		if (fo->scale != 0)
 		{
 			// prune
-			bool isColliding = fo->regionProj.containsAny(obstacles, -0.01);
-			bool inAABB = sln->aabbCstrProj.containsAll(fo->regionProj.getConners(), 0.01);
+			bool isColliding = fo->regionProj.containsAny(obstacleProj, -0.01);
+			bool inAABB = aabbCstrProj.containsAll(fo->regionProj.getConners(), 0.01);
 			accepted = !isColliding && inAABB;
 		}
-		
-		// store
-		if (accepted) sln->afoIndices << i;
-	}
-}
 
-void TUnitScaff::findOptimalSolution(UnitSolution* sln)
-{
-	// choose the one with the lowest cost
-	int bestIdx = -1;
-	sln->cost = maxDouble();
-	for(int fi : sln->afoIndices)
-	{
-		FoldOption* fo = allFoldOptions[fi];
-		double cost = computeCost(fo);
-		if (cost < sln->cost)
+		// store
+		if (accepted)
 		{
-			bestIdx = fi;
-			sln->cost = cost;
+			solution = fo;
+			break;
 		}
 	}
 
-	sln->chainSln.clear();
-	sln->chainSln << bestIdx;
+	// apply the solution
+	tChain->applyFoldOption(solution);
+
+	// return the cost
+	return solution->cost;
+}
+
+void TUnitScaff::initFoldSolution()
+{
+	// generate all fold options
+	sortedFoldOptions.clear();
+	Geom::Rectangle base_rect = baseMaster->mPatch;
+	for (FoldOption* fo : tChain->genRegularFoldOptions(maxNbSplits, maxNbChunks))
+	{
+		fo->regionProj = base_rect.get2DRectangle(fo->region);
+		fo->computeCost(weight, maxNbSplits);
+		fo->index = sortedFoldOptions.size();
+		sortedFoldOptions << fo;
+	}
+	FoldOption* dfo = tChain->genDeleteFoldOption(maxNbSplits);
+	dfo->computeCost(weight, maxNbSplits);
+	dfo->index = sortedFoldOptions.size();
+	sortedFoldOptions << dfo;
+
+	// sort
+	qSort(sortedFoldOptions.begin(), sortedFoldOptions.end(),
+		[](FoldOption* fo1, FoldOption* fo2){return fo1->cost < fo2->cost; });
+
+	// solution
+	solution = nullptr;
+}
+
+QVector<Vector3> TUnitScaff::getCurrObstacles()
+{
+	return obstacles;
+}
+
+QVector<Geom::Rectangle> TUnitScaff::getCurrAFRs()
+{
+	return getCurrSlnFRs();
+}
+
+QVector<Geom::Rectangle> TUnitScaff::getCurrSlnFRs()
+{
+	Geom::Rectangle rect = baseRect.get3DRectangle(solution->regionProj);
+	return QVector<Geom::Rectangle>() << rect;
 }

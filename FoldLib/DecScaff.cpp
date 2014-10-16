@@ -378,7 +378,10 @@ void DecScaff::foldabilize()
 {
 	// initialization
 	for (UnitScaff* u : units)
+	{
+		u->initFoldSolution();
 		u->mFoldDuration.set(1.0, 2.0); // t > 1.0 means not be folded
+	}
 
 	// choose best free block
 	std::cout << "\n============================="
@@ -402,7 +405,7 @@ void DecScaff::foldabilize()
 		next_unit->foldabilize(currKeyframe, TimeInterval(currTime, nextTime));
 
 
-		return;
+		//return;
 
 
 		std::cout << "\n-----------//-----------\n";

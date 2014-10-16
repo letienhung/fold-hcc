@@ -5,7 +5,7 @@
 
 class UnitScaff;
 class SuperShapeKf;
-class UnitSolution;
+class HUnitSolution;
 
 // superUnit is a modified regular unit with masters replaced by their corresponding super masters
 
@@ -15,7 +15,7 @@ public:
 	SuperUnitScaff(UnitScaff* unit, SuperShapeKf* ssKeyframe);
 
 	// obstacles for each top master
-	QMap< QString, QVector<Vector2> > computeObstacles(UnitSolution* sln);
+	QMap< QString, QVector<Vector2> > computeObstacles(HUnitSolution* sln);
 
 private:
 	// the original block

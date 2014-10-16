@@ -67,6 +67,21 @@ FoldOption::~FoldOption()
 
 }
 
+double FoldOption::computeCost(double w, int maxNbSplits)
+{
+	// split
+	double a = nSplits / (double)maxNbSplits;
+
+	// shrinking
+	double b = 1 - scale;
+
+	// blended cost \in [0, 1]
+	cost = w * a + (1 - w) * b;
+
+	// return
+	return cost;
+}
+
 //////////////////////////////////////////////////////////////////////////
 
 QString FoldOptGraph::dotPath = "\"" + getcwd() + "/FoldLib/Graphviz/dot.exe" + "\"";

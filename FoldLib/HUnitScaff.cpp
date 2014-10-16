@@ -13,9 +13,6 @@ HUnitScaff::HUnitScaff(QString id, QVector<PatchNode*>& ms, QVector<ScaffNode*>&
 	sortMasters();
 	createChains(ss, mPairs);
 	computeChainImportances();
-
-	// generate all fold options
-	genAllFoldOptions();
 }
 
 void HUnitScaff::sortMasters()
@@ -33,7 +30,6 @@ void HUnitScaff::sortMasters()
 	}
 	sortedMasters = timeMasterMap.values().toVector();
 }
-
 
 void HUnitScaff::createChains(QVector<ScaffNode*>& ss, QVector< QVector<QString> >& mPairs)
 {
@@ -67,6 +63,42 @@ void HUnitScaff::createChains(QVector<ScaffNode*>& ss, QVector< QVector<QString>
 
 HUnitScaff::~HUnitScaff()
 {
+	for (HUnitSolution* sln : testedSlns)
+		delete sln;
+}
+
+void HUnitScaff::initFoldSolution()
+{
+	// clear
+	allFoldOptions.clear();
+
+	// generate all fold options
+	Geom::Rectangle base_rect = baseMaster->mPatch;
+	for (int i = 0; i < chains.size(); i++)
+	{
+		// regular option
+		for (FoldOption* fo : chains[i]->genRegularFoldOptions(maxNbSplits, maxNbChunks))
+		{
+			fo->chainIdx = i;
+			fo->regionProj = base_rect.get2DRectangle(fo->region);
+			fo->computeCost(weight, maxNbSplits);
+			fo->index = allFoldOptions.size();
+			allFoldOptions << fo;
+		}
+
+		// delete option
+		FoldOption* dfo = chains[i]->genDeleteFoldOption(maxNbSplits);
+		dfo->chainIdx = i;
+		dfo->computeCost(weight, maxNbSplits);
+		dfo->index = allFoldOptions.size();
+		allFoldOptions << dfo;
+	}
+
+	// clear solutions
+	for (HUnitSolution* sln : testedSlns)
+		delete sln;
+	testedSlns.clear();
+	currSlnIdx = -1;
 }
 
 // The keyframe is the configuration of the block at given time \p t
@@ -99,10 +131,10 @@ Scaffold* HUnitScaff::getKeyframe(double t, bool useThk)
 }
 
 // obstacles are projected onto the unit's baseMaster in the ssKeyframe
-void HUnitScaff::computeObstacles(SuperShapeKf* ssKeyframe, UnitSolution* sln)
+void HUnitScaff::computeObstacles(SuperShapeKf* ssKeyframe, HUnitSolution* sln)
 {
 	// debug
-	sln->obstacles.clear();  sln->obstaclesProj.clear();
+	sln->obstacles.clear(); 
 
 	// obstacles for each top master
 	QString baseMid = baseMaster->mID;
@@ -119,17 +151,14 @@ void HUnitScaff::computeObstacles(SuperShapeKf* ssKeyframe, UnitSolution* sln)
 		QVector<Vector2> obstPntsProj;
 		for (Vector3 s : obstPnts)
 			obstPntsProj << sln->baseRect.getProjCoordinates(s);
-		obstacles[topMid] = obstPntsProj;
+		tmObstaclesProj[topMid] = obstPntsProj;
 
 		// debug
 		sln->obstacles << obstPnts;
-		for (Vector3 s : obstPnts)
-			sln->obstaclesProj << sln->baseRect.getProjection(s);
 	}
 }
 
-
-void HUnitScaff::computeAvailFoldOptions(SuperShapeKf* ssKeyframe, UnitSolution* sln)
+void HUnitScaff::computeAvailFoldOptions(SuperShapeKf* ssKeyframe, HUnitSolution* sln)
 {
 	// update obstacles
 	computeObstacles(ssKeyframe, sln);
@@ -148,7 +177,7 @@ void HUnitScaff::computeAvailFoldOptions(SuperShapeKf* ssKeyframe, UnitSolution*
 		{
 			// the obstacles
 			QString top_mid = chainTopMasterMap[fo->chainIdx];
-			QVector<Vector2> &obs = obstacles[top_mid];
+			QVector<Vector2> &obs = tmObstaclesProj[top_mid];
 
 			// prune
 			bool isColliding = fo->regionProj.containsAny(obs, -0.01);
@@ -215,7 +244,7 @@ FoldOptGraph* HUnitScaff::createCollisionGraph(const QVector<int>& afo)
 	return collFog;
 }
 
-void HUnitScaff::findOptimalSolution(UnitSolution* sln)
+void HUnitScaff::findOptimalSolution(HUnitSolution* sln)
 {
 	// initial
 	sln->cost = 0;
@@ -227,8 +256,12 @@ void HUnitScaff::findOptimalSolution(UnitSolution* sln)
 	for (auto component : collFog->getComponents()) {
 		for (auto fo: findOptimalSolution(collFog, component))
 		{
+			// chain solution (the index of fold option)
 			sln->chainSln[fo->chainIdx] = fo->index;
-			sln->cost += computeCost(fo);
+
+			// normalize the cost
+			double imp = chains[fo->chainIdx]->importance;
+			sln->cost += imp * fo->cost;
 		}
 	}
 
@@ -260,9 +293,8 @@ QVector<FoldOption*> HUnitScaff::findOptimalSolution(FoldOptGraph* collFog, cons
 		FoldOption* best_fo = nullptr;
 		double minCost = maxDouble();
 		for (auto fo : fns)	{
-			double cost = computeCost(fo);
-			if (cost < minCost){
-				minCost = cost;	best_fo = fo;
+			if (fo->cost < minCost){
+				minCost = fo->cost;	best_fo = fo;
 			}
 		}
 		partialSln << best_fo;
@@ -315,22 +347,116 @@ QVector< QVector<bool> > HUnitScaff::genDualAdjMatrix(FoldOptGraph* collFog, con
 }
 
 // max weights means lowest cost: weights = maxCost - cost
-QVector<double> HUnitScaff::genReversedWeights(const QVector<FoldOption*>& fns)
+QVector<double> HUnitScaff::genReversedWeights(const QVector<FoldOption*>& fos)
 {
-	QVector<double> weights;
-
+	// the max cost
 	double maxCost = 0;
-	QVector<double> costs;
-	for (FoldOption* fn : fns)
-	{
-		double cost = computeCost(fn);
-		costs << cost;
-		if (cost > maxCost) maxCost = cost;
-	}
+	for (FoldOption* fo : fos)
+		if (fo->cost > maxCost) maxCost = fo->cost;
 	maxCost += 1;
 
-	for (double cost : costs)
-		weights.push_back(maxCost - cost);
+	// reversed weights
+	QVector<double> weights;
+	for (FoldOption* fo : fos)
+		weights.push_back(maxCost - fo->cost);
 
 	return weights;
+}
+
+
+double HUnitScaff::foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti)
+{
+	// set time interval
+	mFoldDuration = ti;
+
+	// create a new solution
+	HUnitSolution* fdSln = new HUnitSolution();
+	fdSln->baseRect = getBaseRect(ssKeyframe);
+	fdSln->aabbCstrProj = getAabbCstrProj(fdSln->baseRect);
+
+	// available fold options
+	computeAvailFoldOptions(ssKeyframe, fdSln);
+
+	// search for existed solutions
+	currSlnIdx = -1;
+	for (int i = 0; i < testedSlns.size(); i++)
+	{
+		HUnitSolution* tSln = testedSlns[i];
+		if (tSln->afoIndices == fdSln->afoIndices)
+		{
+			// update the obstacles for debug
+			tSln->obstacles = fdSln->obstacles;
+
+			// garbage collection
+			delete fdSln;
+
+			// set the current
+			currSlnIdx = i;
+
+			// return the cost
+			return tSln->cost;
+		}
+	}
+
+	// find new solution
+	findOptimalSolution(fdSln);
+
+	// store the solution
+	currSlnIdx = testedSlns.size();
+	testedSlns << fdSln;
+
+	// apply the solution
+	for (int i = 0; i < chains.size(); i++)
+	{
+		int foIdx = testedSlns[currSlnIdx]->chainSln[i];
+		if (foIdx >= 0 && foIdx < allFoldOptions.size())
+			chains[i]->applyFoldOption(allFoldOptions[foIdx]);
+		else
+			std::cout << "**** no solution for chain = " << chains[i]->mID.toStdString() << "!!!\n";
+	}
+
+	// return the cost (\in [0, 1])
+	return fdSln->cost;
+}
+
+
+QVector<Vector3> HUnitScaff::getCurrObstacles()
+{
+	QVector<Vector3> obs;
+	if (currSlnIdx >= 0 && currSlnIdx < testedSlns.size())
+		obs = testedSlns[currSlnIdx]->obstacles;
+
+	return obs;
+}
+
+QVector<Geom::Rectangle> HUnitScaff::getCurrAFRs()
+{
+	QVector<Geom::Rectangle> afr;
+	if (currSlnIdx >= 0 && currSlnIdx < testedSlns.size())
+	{
+		for (int foi : testedSlns[currSlnIdx]->afoIndices)
+		{
+			Geom::Rectangle baseRect = testedSlns[currSlnIdx]->baseRect;
+			Geom::Rectangle2 regionProj = allFoldOptions[foi]->regionProj;
+			afr << baseRect.get3DRectangle(regionProj);
+		}
+	}
+
+	return afr;
+}
+
+QVector<Geom::Rectangle> HUnitScaff::getCurrSlnFRs()
+{
+	QVector<Geom::Rectangle> slnFr;
+	if (currSlnIdx >= 0 && currSlnIdx < testedSlns.size())
+	{
+		for (int idx : testedSlns[currSlnIdx]->chainSln)
+		{
+			Geom::Rectangle baseRect = testedSlns[currSlnIdx]->baseRect;
+			Geom::Rectangle2 regionProj = allFoldOptions[idx]->regionProj;
+			slnFr << baseRect.get3DRectangle(regionProj);
+		}
+	}
+
+	return slnFr;
 }

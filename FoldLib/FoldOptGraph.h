@@ -22,6 +22,7 @@ public:
 	FoldOption(FoldOption &other);
 	~FoldOption();
 	Node* clone();
+	double computeCost(double w, int maxNbSplits);
 
 public:
 	// to which side to fold
@@ -46,6 +47,9 @@ public:
 	// fold region and its projection on the base of the block
 	Geom::Rectangle region;
 	Geom::Rectangle2 regionProj;
+
+	// cost
+	double cost;
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW

@@ -15,7 +15,7 @@ private:
 	void createChains(QVector<ScaffNode*>& ss, QVector< QVector<QString> >& mPairs);
 
 	// two possible fold solutions
-	void computeFoldSolution(bool toRight);
+	void prepareFoldSolution(bool toRight);
 	void computeFoldRegionProj(bool toRight);
 
 	// key frame as Z
@@ -25,12 +25,6 @@ private:
 	bool foldabilizeZ(SuperShapeKf* ssKeyframe, TimeInterval ti);
 
 public:
-	// key frame
-	virtual Scaffold* getKeyframe(double t, bool useThk) override;
-
-	// foldabilization
-	virtual double foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti) override;
-
 	// setter
 	virtual void setNbSplits(int n) override;
 	virtual void setNbChunks(int n) override;
@@ -38,6 +32,16 @@ public:
 	virtual void setCostWeight(double w) override;
 	virtual void setImportance(double imp) override;
 	virtual void setThickness(double thk) override;
+
+public:
+	// key frame
+	virtual Scaffold* getKeyframe(double t, bool useThk) override;
+
+	// reset all fold options
+	virtual void initFoldSolution() override;
+
+	// foldabilization
+	virtual double foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti) override;
 
 	// debug
 	virtual QVector<Vector3> getCurrObstacles() override;
@@ -58,7 +62,7 @@ public:
 	QVector<FoldOption*>	optionsLeft,	optionsRight;
 	Geom::Rectangle2		regionProjLeft, regionProjRight;
 
-	// debug
+	// the up-to-date base rect and obstacles
 	Geom::Rectangle baseRect;
-	QVector<Vector3> obstPnts;
+	QVector<Vector3> obstacles;
 };

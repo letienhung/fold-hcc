@@ -7,23 +7,6 @@
 class FoldOption;
 class ChainScaff;
 
-class UnitSolution
-{
-public:
-	Geom::Rectangle baseRect;		// the up-to-date position of the baseMaster
-	Geom::Rectangle2 aabbCstrProj;	// the projection of aabb constraint on the base master
-	QVector<int> afoIndices;		// indices of available fold options 
-	QVector<int> chainSln;			// the solution (fold option index) for each chain
-	double cost;					// the cost
-
-	// debug
-	QVector<Vector3> obstacles;		// obstacles sampled from obstacle parts
-	QVector<Vector3> obstaclesProj;	// obstacles projected on to the base rect
-
-public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-};
-
 class UnitScaff : public Scaffold
 {
 public:
@@ -56,9 +39,9 @@ public:
 	virtual void setThickness(double thk);
 
 	// debug info from the current solution
-	virtual QVector<Vector3> getCurrObstacles();
-	virtual QVector<Geom::Rectangle> getCurrAFRs();
-	virtual QVector<Geom::Rectangle> getCurrSlnFRs();
+	virtual QVector<Vector3> getCurrObstacles() = 0;
+	virtual QVector<Geom::Rectangle> getCurrAFRs() = 0;
+	virtual QVector<Geom::Rectangle> getCurrSlnFRs() = 0;
 	virtual QVector<QString> getSlnSlaveParts();
 	void genDebugInfo();
 
@@ -68,9 +51,8 @@ public:
 	virtual Scaffold*	getKeyframe(double t, bool useThk) = 0; // intermediate config. at local time t
 	Scaffold*			getSuperKeyframe(double t);	// key frame with super master that merges all collapsed masters
 
-	// all fold options
-	void genAllFoldOptions();
-	void resetAllFoldOptions();
+	// initialize fold solution: generate all fold options and clear solutions
+	virtual void initFoldSolution() = 0;
 
 	// compute obstacles for a pair of masters
 	bool isExternalPart(ScaffNode* snode);
@@ -78,17 +60,10 @@ public:
 
 	// the base rect
 	Geom::Rectangle getBaseRect(SuperShapeKf* ssKeyframe);
-	Geom::Rectangle2 getAabbCstrProj(SuperShapeKf* ssKeyframe);
+	Geom::Rectangle2 getAabbCstrProj(Geom::Rectangle& base_rect);
 
-	/* foldabilization : compute the best fold solution wrt the given super shape key frame
-	   the best solution is indicated by currSlnIdx
-	   all tested set of avail fold options with their fold solutions are also stored to avoid repeated computation	*/
-	virtual double	foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti); // foldabilize a block wrt. the context and returns the cost 
-	virtual void	computeAvailFoldOptions(SuperShapeKf* ssKeyframe, UnitSolution* sln); // prune fold options wrt. to obstacles
-	virtual void	findOptimalSolution(UnitSolution* sln); // store the optimal solution and returns the cost
-
-	// the cost of fold options
-	double	computeCost(FoldOption* fo);
+	// foldabilization : search for the best fold solution wrt the given super shape key frame and return the cost
+	virtual double	foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti) = 0;
 
 public:
 	//*** ENTITIES
@@ -122,15 +97,6 @@ public:
 	// thickness
 	bool useThickness;
 	double thickness;
-
-public:
-	//*** SOLUTIONS
-	// all fold options
-	QVector<FoldOption*> allFoldOptions;
-
-	// tested solutions
-	int currSlnIdx;
-	QVector<UnitSolution*> testedSlns;
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW

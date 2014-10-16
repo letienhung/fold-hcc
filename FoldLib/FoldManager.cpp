@@ -64,7 +64,6 @@ void FoldManager::setNbSplits(int N)
 		for (UnitScaff* unit : shapeDec->units)
 		{
 			unit->maxNbSplits = nbSplits;
-			unit->resetAllFoldOptions();
 		}
 	}
 }
@@ -77,7 +76,6 @@ void FoldManager::setNbChunks(int N)
 		for (UnitScaff* unit : shapeDec->units)
 		{
 			unit->maxNbChunks = nbChunks;
-			unit->resetAllFoldOptions();
 		}
 	}
 }
@@ -113,7 +111,6 @@ void FoldManager::setAabbX(double x)
 		for (UnitScaff* unit : shapeDec->units)
 		{
 			unit->setAabbCstr(box);
-			unit->resetAllFoldOptions();
 		}
 	}
 }
@@ -128,7 +125,6 @@ void FoldManager::setAabbY(double y)
 		for (UnitScaff* unit : shapeDec->units)
 		{
 			unit->setAabbCstr(box);
-			unit->resetAllFoldOptions();
 		}
 	}
 }
@@ -143,7 +139,6 @@ void FoldManager::setAabbZ(double z)
 		for (UnitScaff* unit : shapeDec->units)
 		{
 			unit->setAabbCstr(box);
-			unit->resetAllFoldOptions();
 		}
 	}
 }
@@ -172,8 +167,6 @@ void FoldManager::setAllParameters()
 		unit->maxNbChunks = nbChunks;
 		unit->setThickness(thickness);
 		unit->weight = costWeight;
-
-		unit->resetAllFoldOptions();
 	}
 
 	shapeDec->connThrRatio = connThrRatio;

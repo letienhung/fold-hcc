@@ -5,22 +5,13 @@
 ZUnitScaff::ZUnitScaff(QString id, QVector<PatchNode*>& ms, QVector<ScaffNode*>& ss,
 	QVector< QVector<QString> >& mPairs) : UnitScaff(id, ms, ss, mPairs)
 {
-	// create the back up HUnit
-	hUnit = new HUnitScaff("H_"+id, ms, ss, mPairs);
-
 	// decompose
 	sortMasters();
 	createChains(ss, mPairs);
 	computeChainImportances();
 
-	// two possible fold solution
-	// the right direction is the rightSegV of first chain
-	computeFoldSolution(true);
-	computeFoldSolution(false);
-	computeFoldRegionProj(true);
-	computeFoldRegionProj(false);
-	fold2Left = false;
-	fold2Right = false;
+	// create the back up HUnit
+	hUnit = new HUnitScaff("H_"+id, ms, ss, mPairs);
 }
 
 void ZUnitScaff::sortMasters()
@@ -50,7 +41,22 @@ void ZUnitScaff::createChains(QVector<ScaffNode*>& ss, QVector< QVector<QString>
 	}
 }
 
-void ZUnitScaff::computeFoldSolution(bool toRight)
+void ZUnitScaff::initFoldSolution()
+{
+	// two possible fold solution
+	prepareFoldSolution(true);
+	prepareFoldSolution(false);
+	computeFoldRegionProj(true);
+	computeFoldRegionProj(false);
+	fold2Left = false;
+	fold2Right = false;
+
+	// initialize the backup H-Unit
+	hUnit->initFoldSolution();
+}
+
+
+void ZUnitScaff::prepareFoldSolution(bool toRight)
 {
 	// the fold direction
 	Vector3 foldV = chains.front()->rightDirect;
@@ -96,16 +102,6 @@ void ZUnitScaff::computeFoldRegionProj(bool toRight)
 	Geom::Rectangle2& regionProj = toRight ? regionProjRight : regionProjLeft;
 	Geom::Segment2 baseJoint2 = base_rect.get2DSegment(chains.front()->baseJoint);
 	regionProj = Geom::computeBoundingBox(samples, baseJoint2.Direction);
-
-	// debug
-	//if (toRight)
-	{
-		//QVector<Vector3> samples3d;
-		//for (Vector2 s : samples) samples3d << base_rect.getPosition(s);
-		//appendToVectorProperty(DEBUG_POINTS, samples3d);
-
-		//appendToVectorProperty(DEBUG_SEGS, base_rect.get3DRectangle(regionProj).getEdgeSegments());
-	}
 }
 
 
@@ -151,16 +147,16 @@ bool ZUnitScaff::foldabilizeZ(SuperShapeKf* ssKeyframe, TimeInterval ti)
 	mFoldDuration = ti;
 
 	// obstacles
-	obstPnts = computeObstaclePnts(ssKeyframe, baseMaster->mID, topMaster->mID);
+	obstacles = computeObstaclePnts(ssKeyframe, baseMaster->mID, topMaster->mID);
 
 	// projected coordinates on the base rect
 	baseRect = getBaseRect(ssKeyframe);
 	QVector<Vector2> obstPntsProj;
-	for (Vector3 s : obstPnts)
+	for (Vector3 s : obstacles)
 		obstPntsProj << baseRect.getProjCoordinates(s);
 
 	// projected aabb constraint on the base rect
-	Geom::Rectangle2 aabbCstrProj = getAabbCstrProj(ssKeyframe);
+	Geom::Rectangle2 aabbCstrProj = getAabbCstrProj(baseRect);
 
 	// feasibility of left solution
 	bool isCollidingLeft = regionProjLeft.containsAny(obstPntsProj, -0.01);
@@ -240,7 +236,7 @@ Scaffold* ZUnitScaff::getKeyframe(double t, bool useThk)
 QVector<Vector3> ZUnitScaff::getCurrObstacles()
 {
 	if (fold2Left || fold2Right)
-		return obstPnts;
+		return obstacles;
 	else
 		return hUnit->getCurrObstacles();
 }
@@ -272,5 +268,4 @@ QVector<QString> ZUnitScaff::getSlnSlaveParts()
 		return UnitScaff::getSlnSlaveParts();
 	else
 		return hUnit->getSlnSlaveParts();
-
 }
