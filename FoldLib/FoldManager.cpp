@@ -49,6 +49,9 @@ void FoldManager::setSqzV( QString sqzV_str )
 	if (sqzV_str == "X") sqzV[0] = 1;
 	if (sqzV_str == "Y") sqzV[1] = 1;
 	if (sqzV_str == "Z") sqzV[2] = 1;
+	if (sqzV_str == "-X") sqzV[0] = -1;
+	if (sqzV_str == "-Y") sqzV[1] = -1;
+	if (sqzV_str == "-Z") sqzV[2] = -1;
 }
 
 void FoldManager::setNbKeyframes(int N)

@@ -103,17 +103,32 @@
            <widget class="QComboBox" name="sqzV">
             <item>
              <property name="text">
-              <string>Z</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
               <string>X</string>
              </property>
             </item>
             <item>
              <property name="text">
+              <string>-X</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
               <string>Y</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>-Y</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Z</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>-Z</string>
              </property>
             </item>
            </widget>
