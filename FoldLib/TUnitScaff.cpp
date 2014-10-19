@@ -97,12 +97,12 @@ void TUnitScaff::initFoldSolution()
 	for (FoldOption* fo : tChain->genRegularFoldOptions(maxNbSplits, maxNbChunks))
 	{
 		fo->regionProj = base_rect.get2DRectangle(fo->region);
-		fo->computeCost(weight, maxNbSplits);
+		fo->computeCost(weight, maxNbSplits, 1);
 		fo->index = sortedFoldOptions.size();
 		sortedFoldOptions << fo;
 	}
 	FoldOption* dfo = tChain->genDeleteFoldOption(maxNbSplits);
-	dfo->computeCost(weight, maxNbSplits);
+	dfo->computeCost(weight, maxNbSplits, 1);
 	dfo->index = sortedFoldOptions.size();
 	sortedFoldOptions << dfo;
 

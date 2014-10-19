@@ -81,7 +81,7 @@ void HUnitScaff::initFoldSolution()
 		{
 			fo->chainIdx = i;
 			fo->regionProj = base_rect.get2DRectangle(fo->region);
-			fo->computeCost(weight, maxNbSplits);
+			fo->computeCost(weight, maxNbSplits, chains[i]->importance);
 			fo->index = allFoldOptions.size();
 			allFoldOptions << fo;
 		}
@@ -89,7 +89,7 @@ void HUnitScaff::initFoldSolution()
 		// delete option
 		FoldOption* dfo = chains[i]->genDeleteFoldOption(maxNbSplits);
 		dfo->chainIdx = i;
-		dfo->computeCost(weight, maxNbSplits);
+		dfo->computeCost(weight, maxNbSplits, chains[i]->importance);
 		dfo->index = allFoldOptions.size();
 		allFoldOptions << dfo;
 	}
@@ -258,10 +258,7 @@ void HUnitScaff::findOptimalSolution(HUnitSolution* sln)
 		{
 			// chain solution (the index of fold option)
 			sln->chainSln[fo->chainIdx] = fo->index;
-
-			// normalize the cost
-			double imp = chains[fo->chainIdx]->importance;
-			sln->cost += imp * fo->cost;
+			sln->cost += fo->cost;
 		}
 	}
 

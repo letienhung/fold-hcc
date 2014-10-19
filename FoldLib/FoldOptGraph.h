@@ -22,7 +22,7 @@ public:
 	FoldOption(FoldOption &other);
 	~FoldOption();
 	Node* clone();
-	double computeCost(double w, int maxNbSplits);
+	double computeCost(double w, int maxNbSplits, double impt);
 
 public:
 	// to which side to fold

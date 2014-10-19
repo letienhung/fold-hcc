@@ -67,7 +67,7 @@ FoldOption::~FoldOption()
 
 }
 
-double FoldOption::computeCost(double w, int maxNbSplits)
+double FoldOption::computeCost(double w, int maxNbSplits, double impt)
 {
 	// split
 	double a = nSplits / (double)maxNbSplits;
@@ -76,7 +76,10 @@ double FoldOption::computeCost(double w, int maxNbSplits)
 	double b = 1 - scale;
 
 	// blended cost \in [0, 1]
-	cost = w * a + (1 - w) * b;
+	double c = w * a + (1 - w) * b;
+
+	// normalized cost by chain importance
+	cost = c * impt;
 
 	// return
 	return cost;
