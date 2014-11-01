@@ -10,7 +10,7 @@
 
 ScaffManager::ScaffManager()
 {
-	entireMesh = nullptr;
+	wholeMesh = nullptr;
 	scaffold = new Scaffold();
 
 	fitMethod = FIT_AABB;
@@ -26,11 +26,11 @@ ScaffManager::~ScaffManager()
 
 void ScaffManager::createScaffold()
 {
-	SegMeshLoader sml(entireMesh);
+	SegMeshLoader sml(wholeMesh);
 	QVector<SurfaceMeshModel*> subMeshes = sml.getSegMeshes();
 
 	// reset scaffold
-	scaffold->path = entireMesh->path;
+	scaffold->path = wholeMesh->path;
 	scaffold->clear();
 
 	// create nodes from meshes
@@ -67,8 +67,8 @@ void ScaffManager::loadScaffold()
 
 void ScaffManager::setMesh( Model* mesh )
 {
-	this->entireMesh = (SurfaceMeshModel*)mesh;
-	qDebug() << "Set active mesh as " << entireMesh->path;
+	this->wholeMesh = (SurfaceMeshModel*)mesh;
+	qDebug() << "Set active mesh as " << wholeMesh->path;
 }
 
 void ScaffManager::changeNodeType()

@@ -14,7 +14,7 @@ public:
 	~ScaffManager();
 
 public:
-	SurfaceMeshModel* entireMesh;
+	SurfaceMeshModel* wholeMesh;
 	Scaffold* scaffold;
 
 	// ui 
