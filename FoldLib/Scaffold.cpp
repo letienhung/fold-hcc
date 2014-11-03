@@ -307,7 +307,7 @@ ScaffNode* Scaffold::wrapAsBundleNode( QVector<QString> nids, Vector3 v )
 
 	// merge into a bundle node
 	QVector<ScaffNode*> subNodes;
-	for (ScaffNode* n : ns)	subNodes += n->getSubNodes();
+	for (ScaffNode* n : ns)	subNodes << n->getSubNodes();
 	QString bid = getBundleName(subNodes);
 	Geom::Box box = getBundleBox(subNodes);
 	BundleNode* bundleNode = new BundleNode(bid, box, subNodes, v); 

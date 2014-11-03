@@ -613,13 +613,11 @@ bool FdPlugin::keyPressEvent(QKeyEvent* event)
 	}
 
 	// Rearranging nodes
-	Scaffold* scaffold = activeScaffold();
-
 	if( event->modifiers().testFlag(Qt::ControlModifier) && 
 		(event->key() == Qt::Key_F || event->key() == Qt::Key_B) )
 	{
 		QVector<Scaffold*> selGraphs;
-		selGraphs << scaffold;
+		selGraphs << activeScaffold();
 
 		QStringList selectedNodeNames;
 		for(ScaffNode * n : selectedSfNodes()) selectedNodeNames << n->mID;
@@ -653,7 +651,7 @@ bool FdPlugin::keyPressEvent(QKeyEvent* event)
 	if (event->modifiers().testFlag(Qt::ControlModifier) &&
 		event->key() == Qt::Key_C)
 	{
-		for (ScaffNode* n : scaffold->getScaffNodes())
+		for (ScaffNode* n : activeScaffold()->getScaffNodes())
 		{
 			n->setRandomColor();
 		}
@@ -661,6 +659,14 @@ bool FdPlugin::keyPressEvent(QKeyEvent* event)
 		updateScene();
 
 		return true;
+	}
+
+	// merge selected nodes into bundle node
+	// or un-group the single bundle node
+	if (event->modifiers().testFlag(Qt::ControlModifier) &&
+		event->key() == Qt::Key_G)
+	{
+
 	}
 
 	return false;

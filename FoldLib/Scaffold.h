@@ -14,9 +14,9 @@ class Scaffold : public Structure::Graph
 {
 public:
 	Scaffold(QString id = "");
-	virtual ~Scaffold();
 	Scaffold(Scaffold& other);
 	Scaffold(QVector<Scaffold*> scaffs, QString baseMid, QMap<QString, QSet<int> >& masterScaffMap); 
+	virtual ~Scaffold();
 		
 	virtual Graph* clone() override;
 	ScaffLink* addLink(ScaffNode* n1, ScaffNode* n2);
