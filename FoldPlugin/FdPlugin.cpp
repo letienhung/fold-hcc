@@ -298,8 +298,14 @@ void FdPlugin::test1()
 	selUnit->visDebug.addScaffold(kf);
 }
 
+#include "TUnitScaff.h"
 void FdPlugin::test2()
 {
+	TUnitScaff* selUnit = (TUnitScaff*)f_manager->getSelUnit();
+	if (!selUnit) return;
+
+	// fold
+	
 }
 
 void FdPlugin::showColorDialog()

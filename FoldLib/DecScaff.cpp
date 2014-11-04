@@ -391,7 +391,7 @@ void DecScaff::foldabilize()
 	UnitScaff* next_unit = getBestNextUnit(currTime, currKeyframe);
 
 
-	//return;
+	return;
 
 
 	while (next_unit)
@@ -493,7 +493,7 @@ UnitScaff* DecScaff::getBestNextUnit(double currTime, SuperShapeKf* currKeyframe
 		double nextCost = foldabilizeUnit(nextUnit, currTime, currKeyframe, nextTime, nextKeyframe);
 
 		//nextUnit->genDebugInfo();
-		//return nullptr;
+		return nullptr;
 		
 		// the folding of nextUnit must be valid, otherwise skip further evaluation
 		if (nextKeyframe->isValid())
