@@ -9,7 +9,6 @@ TChainScaff::TChainScaff(ScaffNode* slave, PatchNode* base, PatchNode* top)
 Geom::Rectangle TChainScaff::getFoldRegion(FoldOption* fn)
 {
 	Geom::Rectangle base_rect = baseMaster->mPatch;
-	Geom::Segment topJointProj = base_rect.getProjection(topJoint);
 
 	double l = slaveSeg.length();
 	double offset = l / (fn->nSplits + 1);
@@ -17,12 +16,12 @@ Geom::Rectangle TChainScaff::getFoldRegion(FoldOption* fn)
 	Geom::Segment rightSeg, leftSeg;
 	if (fn->rightSide)
 	{
-		leftSeg = topJointProj;
+		leftSeg = baseJoint;
 		rightSeg = baseJoint.translated(offset * rightDirect);
 	}
 	else
 	{
-		leftSeg = topJointProj.translated(-offset * rightDirect);
+		leftSeg = baseJoint.translated(-offset * rightDirect);
 		rightSeg = baseJoint;
 	}
 
@@ -106,5 +105,5 @@ double TChainScaff::getRootAngle()
 {
 	Vector3 initV = slaveSeg.Direction;
 	Vector3 finalV = foldToRight ? rightDirect : -rightDirect;
-	return acos(RANGED(0, dot(initV, finalV), 1));
+	return acos(RANGED(-1, dot(initV, finalV), 1));
 }

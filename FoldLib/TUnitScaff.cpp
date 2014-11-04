@@ -37,7 +37,6 @@ void TUnitScaff::createChains(QVector<ScaffNode*>& ss, QVector< QVector<QString>
 }
 
 
-// the key frame cannot be nullptr
 Scaffold* TUnitScaff::getKeyframe(double t, bool useThk)
 {
 	return tChain->getKeyframe(t, useThk);
@@ -60,6 +59,14 @@ double TUnitScaff::foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti)
 	// projected aabb constraint on the base rect
 	Geom::Rectangle2 aabbCstrProj = getAabbCstrProj(baseRect);
 
+	// debug
+	//visDebug.clearAll();
+	//FoldOption* dfo = sortedFoldOptions.front();
+	//Geom::Rectangle tmRect = baseRect.get3DRectangle(dfo->regionProj);
+	//visDebug.addRectangle(tmRect, Qt::blue);
+	//Geom::Rectangle tmRect = baseRect.get3DRectangle(aabbCstrProj);
+	//visDebug.addRectangle(tmRect, Qt::blue);
+
 	// search for the best available fold option
 	for (FoldOption* fo : sortedFoldOptions)
 	{
@@ -72,6 +79,13 @@ double TUnitScaff::foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti)
 			bool isColliding = fo->regionProj.containsAny(obstacleProj, -0.01);
 			bool inAABB = aabbCstrProj.containsAll(fo->regionProj.getConners(), 0.01);
 			accepted = !isColliding && inAABB;
+
+			// debug
+			//Geom::Rectangle tmRect = baseRect.get3DRectangle(fo->regionProj);
+			//if (accepted)
+			//	visDebug.addRectangle(tmRect, Qt::green);
+			//else
+			//	visDebug.addRectangle(tmRect, Qt::red);
 		}
 
 		// store
