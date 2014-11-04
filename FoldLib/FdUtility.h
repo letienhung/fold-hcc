@@ -10,7 +10,7 @@ class PatchNode;
 class Scaffold;
 
 // typedef
-typedef QVector< QVector<ScaffNode*> > FdNodeArray2D;
+typedef QVector< QVector<ScaffNode*> > ScaffNodeArray2D;
 
 // Qt meta type
 Q_DECLARE_METATYPE(Vector3)
@@ -28,13 +28,13 @@ double getDistance( ScaffNode* n1, ScaffNode* n2 );
 double getDistance( ScaffNode* n, QVector<ScaffNode*> nset);
 
 // relation among fd nodes
-FdNodeArray2D getConnectedGroups( QVector<ScaffNode*> nodes, double disThr );
+ScaffNodeArray2D getConnectedGroups( QVector<ScaffNode*> nodes, double disThr );
 Geom::Segment detectJointSegment(PatchNode* slave, PatchNode* master);
 bool hasIntersection(ScaffNode* slave, PatchNode* master, double thr);
 
 // helpers
 QVector<QString> getIds(QVector<ScaffNode*> nodes);
-StrArray2D getIds(FdNodeArray2D nodeArray);
+StrArray2D getIds(ScaffNodeArray2D nodeArray);
 
 // relation with plan
 enum PLANE_RELATION{ON_PLANE, POS_PLANE, NEG_PLANE, ISCT_PLANE};

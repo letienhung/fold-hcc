@@ -19,8 +19,6 @@ public:
 	ScaffNode(ScaffNode& other);
 	virtual ~ScaffNode();
 
-	Node* clone() = 0;
-
 	// bundle node return all children, otherwise nothing
 	virtual QVector<ScaffNode*> getSubNodes();
 
@@ -29,37 +27,40 @@ public:
 	bool showCuboid;
 	bool showScaffold;
 	bool showMesh;
-	void draw();
-	virtual void drawMesh();
-	virtual void drawScaffold() = 0;
 	void drawWithName(int name);
 	void setRandomColor();
+	virtual void draw() override;
+	virtual void drawMesh();
+	virtual void drawScaffold() = 0;
 
 	// mesh
 	void encodeMesh();
-	virtual void deformMesh();
 	virtual QString getMeshName();
+	virtual void deformMesh();
 	virtual void cloneMesh();
 
 	// fit cuboid
 	void refit(BOX_FIT_METHOD method);
 
 	// I/O
-	void write(XmlWriter& xw);
-	virtual void exportMesh(QFile &file, int& v_offset);
+	virtual void exportIntoXml(XmlWriter& xw);
+	virtual void exportMeshIndividually(QString meshesFolder);
+	virtual void exportIntoWholeMesh(QFile &wholeMeshFile, int& v_offset);
 
 	// geometry
-	virtual void createScaffold(bool useAid) = 0;
-	Geom::AABB computeAABB();
 	Vector3 center();
+	Geom::AABB computeAABB();
+	virtual void createScaffold(bool useAid) = 0;
 
 	// modification
+	void deformToAttach(Geom::Plane& plane);
+	virtual void setThickness(double thk);
 	virtual void translate(Vector3 t);
+
+	// chop
 	ScaffNode* cloneChopped(Geom::Box& chopBox);
 	virtual ScaffNode* cloneChopped(Geom::Plane& chopper);
 	virtual ScaffNode* cloneChopped(Geom::Plane& chopper1, Geom::Plane& chopper2);
-	void deformToAttach(Geom::Plane& plane);
-	virtual void setThickness(double thk);
 	 
 	// relation with direction
 	virtual bool isPerpTo(Vector3 v, double dotThreshold);
@@ -86,7 +87,7 @@ public:
 
 #define SPLIT_ORIG "splitOriginNode"
 
-#define EDGE_ROD_TAG "isEdgeRodNode"
+#define EDGE_VIRTUAL_TAG "isEdgeVirtualNode"
 #define EDGE_ROD_ORIG "edgeRodOriginNode"
 
 #define	MASTER_TAG "isMasterPatch"

@@ -130,14 +130,12 @@ void ScaffNode::deformMesh()
 	MeshHelper::decodeMeshInBox(mMesh.data(), mBox, meshCoords);
 }
 
-void ScaffNode::write( XmlWriter& xw )
+void ScaffNode::exportIntoXml( XmlWriter& xw )
 {
 	xw.writeOpenTag("node");
 	{
 		xw.writeTaggedString("type", QString::number(mType));
 		xw.writeTaggedString("ID", this->mID);
-
-		// box
 		mBox.write(xw);
 	}
 	xw.writeCloseTag("node");
@@ -267,10 +265,10 @@ void ScaffNode::cloneMesh()
 	showMesh = true;
 }
 
-void ScaffNode::exportMesh(QFile &file, int &v_offset)
+void ScaffNode::exportIntoWholeMesh(QFile &wholeMeshFile, int &v_offset)
 {
 	cloneMesh();
-	QTextStream out(&file);
+	QTextStream out(&wholeMeshFile);
 	out << "# Object " << this->mID << " #\n";
 	out << "# NV = " << mMesh->n_vertices() << " NF = " << mMesh->n_faces() << "\n";
 	SurfaceMesh::Vector3VertexProperty points = mMesh->vertex_property<Vector3>("v:point");
@@ -342,4 +340,9 @@ void ScaffNode::setShowScaffold( bool show )
 void ScaffNode::setShowMesh( bool show )
 {
 	showMesh = show;
+}
+
+void ScaffNode::exportMeshIndividually(QString meshesFolder)
+{
+	MeshHelper::saveOBJ(mMesh.data(), meshesFolder + '/' + mID + ".obj");
 }

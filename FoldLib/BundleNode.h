@@ -10,29 +10,36 @@ public:
 	BundleNode(BundleNode& other);
 	~BundleNode();
 
-	Node* clone();
+	virtual Node* clone() override;
 
-	//void draw();
-	void drawMesh();
-	QString getMeshName();
-	void deformMesh();
-	void cloneMesh();
+	// meshes
+	virtual void drawMesh() override;
+	virtual void deformMesh() override;
+	virtual void cloneMesh() override;
+	virtual	QString getMeshName() override;
 
-	void setThickness(double thk);
+	// thickness
+	virtual void setThickness(double thk) override;
 
-	void exportMesh(QFile &file, int& v_offset);
+	// I/O
+	virtual void exportIntoXml(XmlWriter& xw) override;
+	virtual void exportMeshIndividually(QString meshesFolder) override;
+	virtual void exportIntoWholeMesh(QFile &file, int& v_offset) override;
 
-	QVector<ScaffNode*> getSubNodes();
-
-	ScaffNode* cloneChopped(Geom::Plane& chopper);
-	ScaffNode* cloneChopped(Geom::Plane& chopper1, Geom::Plane& chopper2);
+	// chop
+	virtual ScaffNode* cloneChopped(Geom::Plane& chopper) override;
+	virtual ScaffNode* cloneChopped(Geom::Plane& chopper1, Geom::Plane& chopper2) override;
 
 	// visual
-	void setShowCuboid(bool show);
-	void setShowScaffold(bool show);
-	void setShowMesh(bool show);
+	virtual void setShowCuboid(bool show) override;
+	virtual void setShowScaffold(bool show) override;
+	virtual void setShowMesh(bool show) override;
 
-	void translate(Vector3 v);
+	// transformation
+	virtual void translate(Vector3 v) override;
+
+	// sub-nodes
+	QVector<ScaffNode*> getSubNodes();
 
 public:
 	QVector<ScaffNode*> mNodes;

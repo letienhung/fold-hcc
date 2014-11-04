@@ -16,7 +16,7 @@ void Decomposer::execute()
 	clusterSlaves();
 }
 
-FdNodeArray2D Decomposer::getPerpConnGroups()
+ScaffNodeArray2D Decomposer::getPerpConnGroups()
 {
 	// squeezing direction
 	Geom::AABB aabb = scfd->computeAABB();
@@ -28,32 +28,38 @@ FdNodeArray2D Decomposer::getPerpConnGroups()
 	double connThr = scfd->getConnectThr();
 
 	// ==STEP 1==: nodes perp to squeezing direction
-	QVector<ScaffNode*> perpNodes;
+	QVector<PatchNode*> perpNodes;
 	for (ScaffNode* n : scfd->getScaffNodes())
 	{
-		// perp node
+		// perp node: rod or patch
 		if (n->isPerpTo(scfd->sqzV, perpThr))
 		{
-			perpNodes << n;
+			PatchNode* pn;
+			if (n->mType == ScaffNode::ROD)
+				pn = scfd->changeRodToPatch((RodNode*)n, scfd->sqzV);
+			else
+				pn = (PatchNode*)n;
+
+			perpNodes << pn;
 		}
-		// virtual rod nodes from patch edges
 		else if (n->mType == ScaffNode::PATCH)
 		{
+			// edge rods perp to sqzV
 			PatchNode* pn = (PatchNode*)n;
 			for (RodNode* rn : pn->getEdgeRodNodes())
 			{
 				// add virtual rod nodes 
 				if (rn->isPerpTo(scfd->sqzV, perpThr))
 				{
-					scfd->Structure::Graph::addNode(rn);
-					perpNodes << rn;
-					rn->addTag(EDGE_ROD_TAG);
+					PatchNode* prn = new PatchNode(rn, scfd->sqzV);
+					prn->addTag(EDGE_VIRTUAL_TAG);
+					scfd->Structure::Graph::addNode(prn);
+
+					perpNodes << prn;
 				}
-				// delete if not need
-				else
-				{
-					delete rn;
-				}
+
+				// garbage collection
+				delete rn;
 			}
 		}
 	}
@@ -67,7 +73,7 @@ FdNodeArray2D Decomposer::getPerpConnGroups()
 	for (ScaffNode* n : perpNodes){
 		posNodeMap.insert(skeleton.getProjCoordinates(n->mBox.Center), n);
 	}
-	FdNodeArray2D perpGroups;
+	ScaffNodeArray2D perpGroups;
 	QList<double> perpPos = posNodeMap.uniqueKeys();
 	double pos0 = perpPos.front();
 	perpGroups << posNodeMap.values(pos0).toVector();
@@ -80,7 +86,7 @@ FdNodeArray2D Decomposer::getPerpConnGroups()
 	}
 
 	// ==STEP 3==: perp & connected groups
-	FdNodeArray2D perpConnGroups;
+	ScaffNodeArray2D perpConnGroups;
 	perpConnGroups << perpGroups.front(); // ground
 	for (int i = 1; i < perpGroups.size(); i++){
 		for (QVector<ScaffNode*> connGroup : getConnectedGroups(perpGroups[i], connThr))
@@ -92,7 +98,7 @@ FdNodeArray2D Decomposer::getPerpConnGroups()
 
 void Decomposer::createMasters()
 {
-	FdNodeArray2D perpConnGroups = getPerpConnGroups();
+	ScaffNodeArray2D perpConnGroups = getPerpConnGroups();
 
 	// merge connected groups into patches
 	for(auto pcGroup : perpConnGroups)
@@ -100,9 +106,7 @@ void Decomposer::createMasters()
 		// single node
 		if (pcGroup.size() == 1)
 		{
-			ScaffNode* n = pcGroup.front();
-			if (n->mType == ScaffNode::PATCH)	scfd->masters << (PatchNode*)n;
-			else scfd->masters << scfd->changeRodToPatch((RodNode*)n, scfd->sqzV);
+			scfd->masters << (PatchNode*)pcGroup.front();
 		}
 		// multiple nodes
 		else
@@ -110,7 +114,7 @@ void Decomposer::createMasters()
 			// check if all nodes in the pcGroup is virtual
 			bool allVirtual = true;
 			for (ScaffNode* pcNode : pcGroup){
-				if (!pcNode->hasTag(EDGE_ROD_TAG))
+				if (!pcNode->hasTag(EDGE_VIRTUAL_TAG))
 				{
 					allVirtual = false;
 					break;
@@ -120,9 +124,9 @@ void Decomposer::createMasters()
 			// create bundle master
 			if (!allVirtual)
 				scfd->masters << (PatchNode*)scfd->wrapAsBundleNode(getIds(pcGroup), scfd->sqzV);
-			// each edge rod is converted to a patch master
+			// treat edge virtual nodes individually
 			else for (ScaffNode* pcNode : pcGroup)
-				scfd->masters << scfd->changeRodToPatch((RodNode*)pcNode, scfd->sqzV);
+					scfd->masters << (PatchNode*)pcNode;
 		}
 	}
 
@@ -167,7 +171,7 @@ void Decomposer::updateSlaveMasterRelation()
 
 
 			// virtual edge rod master
-			if (master->hasTag(EDGE_ROD_TAG))
+			if (master->hasTag(EDGE_VIRTUAL_TAG))
 			{
 				// can only attach to its host slave
 				QString masterOrig = master->properties[EDGE_ROD_ORIG].value<QString>();
@@ -189,10 +193,18 @@ void Decomposer::createSlaves()
 {
 	// split slave parts by master patches
 	double connThr = scfd->getConnectThr();
-	for (PatchNode* master : scfd->masters) {
+	for (PatchNode* master : scfd->masters) 
+	{
+		// skip single edge virtual
+		if (master->hasTag(EDGE_VIRTUAL_TAG)) continue;
+
+		// split
 		for (ScaffNode* n : scfd->getScaffNodes())
 		{
+			// skip masters
 			if (n->hasTag(MASTER_TAG)) continue;
+
+			// split connected slaves
 			if (hasIntersection(n, master, connThr))
 				scfd->split(n->mID, master->mPatch.getPlane());
 		}
@@ -218,7 +230,6 @@ void Decomposer::createSlaves()
 	for (int mid : scfd->slave2master[i])
 		scfd->slaves[i]->deformToAttach(scfd->masters[mid]->mPatch.getPlane());
 }
-
 
 void Decomposer::clusterSlaves()
 {
@@ -295,4 +306,3 @@ void Decomposer::clusterSlaves()
 		scfd->slaveClusters << cluster;
 	}
 }
-

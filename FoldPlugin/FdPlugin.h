@@ -48,7 +48,7 @@ public:
 	
 	// helpers
 	Scaffold* activeScaffold();
-	QVector<ScaffNode*> selectedSfNodes();
+	QVector<ScaffNode*> selectedScaffNodes();
 
 public slots:
 	// show options

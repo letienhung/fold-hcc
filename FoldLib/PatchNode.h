@@ -11,21 +11,21 @@ public:
 	PatchNode(RodNode* rodNode, Vector3 v);
 	PatchNode(PatchNode &other);
 	virtual ~PatchNode();
-	Node* clone();
+	virtual Node* clone() override;
 
 public:
 	// create patch
-	void createScaffold(bool useAid);
+	virtual void createScaffold(bool useAid) override;
 
 	// visual
-	void drawScaffold();
+	virtual void drawScaffold() override;
 
 	// geometry
 	double getThickness();
-	void setThickness(double thk);
-	bool isPerpTo(Vector3 v, double dotThreshold);
 	Geom::Plane getSurfacePlane(bool positive);
 	void resize(Geom::Rectangle2& newPatch);
+	virtual void setThickness(double thk) override;
+	virtual bool isPerpTo(Vector3 v, double dotThreshold) override;
 
 	// edges
 	QVector<RodNode*> getEdgeRodNodes();

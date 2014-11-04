@@ -69,3 +69,16 @@ void MeshHelper::deformMeshByBoxes( SurfaceMeshModel* mesh, Geom::Box& fromBox, 
 {
 	decodeMeshInBox(mesh, toBox, encodeMeshInBox(mesh, fromBox));
 }
+
+SurfaceMeshModel* MeshHelper::loadMesh(QString filename)
+{
+	SurfaceMeshModel* mesh(new SurfaceMeshModel(filename));
+	if (mesh->read(qPrintable(filename)))
+	{
+		mesh->update_face_normals();
+		mesh->update_vertex_normals();
+		mesh->updateBoundingBox();
+	}
+
+	return mesh;
+}

@@ -10,5 +10,6 @@ public:
 	static QVector<Vector3> encodeMeshInBox(SurfaceMeshModel* mesh, Geom::Box& box);
 	static bool decodeMeshInBox(SurfaceMeshModel* mesh, Geom::Box& box, QVector<Vector3>& coords);
 	static void deformMeshByBoxes(SurfaceMeshModel* mesh, Geom::Box& fromBox, Geom::Box& toBox);
+	static SurfaceMeshModel* loadMesh(QString filename);
 };
 

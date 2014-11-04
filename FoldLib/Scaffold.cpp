@@ -134,7 +134,7 @@ ScaffNode* Scaffold::getScaffNode(QString id)
 }
 
 
-void Scaffold::exportMesh(QString fname)
+void Scaffold::exportWholeMesh(QString fname)
 {
 	QFile file(fname);
 
@@ -145,7 +145,7 @@ void Scaffold::exportMesh(QString fname)
 	QVector<ScaffNode*> nodes = getScaffNodes();
 	for (ScaffNode *n : nodes){
 		n->deformMesh();
-		n->exportMesh(file, v_offset);
+		n->exportIntoWholeMesh(file, v_offset);
 	}
 	file.close();
 }
@@ -161,15 +161,14 @@ void Scaffold::saveToFile(QString fname)
 	xw.writeRaw("<!--?xml Version = \"1.0\"?-->\n");
 	xw.writeOpenTag("document");
 	{
-		// nodes
+		// #nodes
 		xw.writeTaggedString("cN", QString::number(nbNodes()));
-		for (ScaffNode* node : getScaffNodes())
-		{
-			node->write(xw);
-		}
 
-		// links
+		// #links
 		xw.writeTaggedString("cL", QString::number(nbLinks()));
+
+		// nodes
+		for (ScaffNode* node : getScaffNodes())	node->exportIntoXml(xw);
 	}
 	xw.writeCloseTag("document");
 	file.close();
@@ -177,13 +176,11 @@ void Scaffold::saveToFile(QString fname)
 	// meshes
 	QString meshesFolder = "meshes";
 	QFileInfo fileInfo(fname);
-	QDir graphDir( fileInfo.absolutePath());
-	graphDir.mkdir(meshesFolder);
-	meshesFolder =  graphDir.path() + "/" + meshesFolder;
+	QDir scaffDir(fileInfo.absolutePath());
+	scaffDir.mkdir(meshesFolder);
+	meshesFolder = scaffDir.path() + "/" + meshesFolder;
 	for (ScaffNode* node : getScaffNodes())
-	{
-		MeshHelper::saveOBJ(node->mMesh.data(), meshesFolder + '/' + node->mID + ".obj");
-	}
+		node->exportMeshIndividually(meshesFolder);
 }
 
 void Scaffold::loadFromFile(QString fname)
@@ -204,8 +201,10 @@ void Scaffold::loadFromFile(QString fname)
 		return;
 	}
 	file.close();
+	QDomElement document = doc.firstChildElement("document");
 
-	QDomNodeList nodeList = doc.firstChildElement("document").elementsByTagName("node");
+	// load all nodes
+	QDomNodeList nodeList = document.elementsByTagName("node");
 	for (int i = 0; i < nodeList.size(); i++)
 	{
 		QDomNode node = nodeList.at(i);
@@ -213,29 +212,30 @@ void Scaffold::loadFromFile(QString fname)
 		// scaffold
 		QString nid = node.firstChildElement("ID").text();
 		int ntype = node.firstChildElement("type").text().toInt();
-		Geom::Box box;
-		box.read(node.firstChildElement("box"));
+		Geom::Box box(node.firstChildElement("box"));
 
 		// mesh
-		QString mesh_fname = meshFolder + "/" + nid + ".obj";
-		SurfaceMeshModel* mesh(new SurfaceMeshModel(mesh_fname, nid));
-		if(mesh->read( qPrintable(mesh_fname) ))
-		{
-			mesh->update_face_normals();
-			mesh->update_vertex_normals();
-			mesh->updateBoundingBox();
-		}
+		QString meshFilename = meshFolder + "/" + nid + ".obj";
+		SurfaceMeshModel* mesh = MeshHelper::loadMesh(meshFilename);
+		MeshPtr meshPtr(mesh);
 
 		// create new node
 		ScaffNode* new_node;
-		MeshPtr m(mesh);
-		QString id = m->name;
-		if(ntype == ScaffNode::ROD)
-			new_node = new RodNode(id, box, m);
+		if (ntype == ScaffNode::ROD)
+			new_node = new RodNode(nid, box, meshPtr);
 		else
-			new_node = new PatchNode(id, box, m);
-
+			new_node = new PatchNode(nid, box, meshPtr);
 		Graph::addNode(new_node);
+	}
+
+	// load bundles
+	QDomNodeList bundleList = document.elementsByTagName("bundle");
+	for (int i = 0; i < bundleList.size(); i++)
+	{
+		QDomNode bundle = bundleList.at(i);
+		QDomElement bElement = bundle.toElement();
+		QVector<QString> nodeNames = bElement.text().split(' ').toVector();
+		wrapAsBundleNode(nodeNames);
 	}
 }
 
@@ -499,31 +499,42 @@ void Scaffold::translate(Vector3 v, bool withMesh)
 	}
 }
 
+
+
+void Scaffold::unwrapBundleNode(QString nid)
+{
+	Structure::Node* n = getNode(nid);
+	if (n->hasTag(BUNDLE_TAG))
+	{
+		BundleNode* bnode = (BundleNode*)n;
+		for (ScaffNode* cn : bnode->mNodes)
+		{
+			Structure::Node* cn_copy = cn->clone();
+			Structure::Graph::addNode(cn_copy);
+			if (bnode->hasTag(MASTER_TAG))
+				cn_copy->addTag(MASTER_TAG);
+		}
+
+		removeNode(bnode->mID);
+	}
+}
+
+
 void Scaffold::unwrapBundleNodes()
 {
 	foreach(Structure::Node* n, nodes)
 	{
-		if (n->hasTag(BUNDLE_TAG))
-		{
-			BundleNode* bnode = (BundleNode*)n;
-			for (ScaffNode* cn : bnode->mNodes)
-			{
-				Structure::Node* cn_copy = cn->clone();
-				Structure::Graph::addNode(cn_copy);
-				if (bnode->hasTag(MASTER_TAG))
-					cn_copy->addTag(MASTER_TAG);
-			}
-
-			removeNode(bnode->mID);
-		}
+		unwrapBundleNode(n->mID);
 	}
 }
+
+
 
 void Scaffold::hideEdgeRods()
 {
 	for (ScaffNode* n : getScaffNodes())
 	{
-		if (n->hasTag(EDGE_ROD_TAG))
+		if (n->hasTag(EDGE_VIRTUAL_TAG))
 		{
 			n->isHidden = true;
 		}

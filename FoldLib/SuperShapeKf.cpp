@@ -162,7 +162,7 @@ QVector<ScaffNode*> SuperShapeKf::getUnrelatedMasters(QString regular_mid)
 	QVector<ScaffNode*> urMasters;
 
 	// do nothing for virtual master
-	if (getNode(regular_mid)->hasTag(EDGE_ROD_TAG)) return urMasters;
+	if (getNode(regular_mid)->hasTag(EDGE_VIRTUAL_TAG)) return urMasters;
 
 	// the super master
 	QString super_mid = regular_mid;
@@ -174,7 +174,7 @@ QVector<ScaffNode*> SuperShapeKf::getUnrelatedMasters(QString regular_mid)
 	for(Structure::Node* node : getNodesWithTag(MASTER_TAG))
 	{
 		// skip folded or virtual masters
-		if (node->hasTag(MERGED_PART_TAG) || node->hasTag(EDGE_ROD_TAG)) continue;
+		if (node->hasTag(MERGED_PART_TAG) || node->hasTag(EDGE_VIRTUAL_TAG)) continue;
 
 		// accept if not related
 		if (!relatedMids.contains(node->mID))

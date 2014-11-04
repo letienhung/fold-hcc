@@ -24,6 +24,7 @@ public:
 	Box(const Point& c, const QVector<Vector3>& axis, const Vector3& ext);
 	Box(const Frame& f, const Vector3& ext);
 	Box(const Rectangle& rect, const Vector3& n, const double& height);
+	Box(const QDomNode& node);
 
 	// helper
 	void makeRightHanded();
@@ -112,7 +113,6 @@ public:
 
 	// I/O
 	void write( XmlWriter& xw);
-	void read(QDomNode& node);
 };
 
 }

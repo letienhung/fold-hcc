@@ -15,9 +15,9 @@
 
 #include <iomanip>
 
-FdNodeArray2D getConnectedGroups( QVector<ScaffNode*> nodes, double disThr )
+ScaffNodeArray2D getConnectedGroups( QVector<ScaffNode*> nodes, double disThr )
 {
-	FdNodeArray2D clusters;
+	ScaffNodeArray2D clusters;
 	if (nodes.isEmpty()) return clusters;
 
 	// tags used for searching
@@ -148,7 +148,7 @@ double getDistance( ScaffNode* n, QVector<ScaffNode*> nset )
 	return minDist;
 }
 
-StrArray2D getIds( FdNodeArray2D nodeArray )
+StrArray2D getIds( ScaffNodeArray2D nodeArray )
 {
 	StrArray2D idArray2D;
 	for (QVector<ScaffNode*> ns : nodeArray) idArray2D << getIds(ns);

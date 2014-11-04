@@ -7,17 +7,17 @@ class RodNode final : public ScaffNode
 public:
     RodNode(QString id, Geom::Box &b, MeshPtr m);
 	RodNode(RodNode& other);
-	~RodNode();
+	virtual ~RodNode();
 
-	Node* clone();
+	virtual	Node* clone() override;
 
 public:
-	void drawScaffold();
-	void createScaffold(bool useAid);
+	virtual void drawScaffold() override;
+	virtual void createScaffold(bool useAid) override;
 
-	bool isPerpTo(Vector3 v, double dotThreshold);
+	virtual bool isPerpTo(Vector3 v, double dotThreshold) override;
 
-	void setThickness(double thk);
+	virtual void setThickness(double thk) override;
 
 	// samples
 	virtual QVector<Vector3> sampleBoundabyOfScaffold(int n) override;

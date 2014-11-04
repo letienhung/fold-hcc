@@ -12,7 +12,7 @@ public:
 
 private:
 	// decomposition
-	FdNodeArray2D getPerpConnGroups();
+	ScaffNodeArray2D getPerpConnGroups();
 	void createMasters();
 
 	void updateSlaves();

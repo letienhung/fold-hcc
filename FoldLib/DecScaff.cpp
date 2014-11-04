@@ -111,14 +111,14 @@ UnitScaff* DecScaff::createUnit(QSet<int> sCluster)
 	QString id = QString::number(unitIdx);
 	if (ms.size() == 2					// two masters
 		&& ss.size() == 1				// one slave
-		&& (ms[0]->hasTag(EDGE_ROD_TAG)
-		|| ms[1]->hasTag(EDGE_ROD_TAG)))// one master is edge rod
+		&& (ms[0]->hasTag(EDGE_VIRTUAL_TAG)
+		|| ms[1]->hasTag(EDGE_VIRTUAL_TAG)))// one master is edge rod
 	{
 		unit = new TUnitScaff("TB_" + id, ms, ss, mPairs);
 	}
 	else if (ms.size() == 2				// two masters
-		&& !ms[0]->hasTag(EDGE_ROD_TAG)
-		&& !ms[1]->hasTag(EDGE_ROD_TAG) // both masters are real
+		&& !ms[0]->hasTag(EDGE_VIRTUAL_TAG)
+		&& !ms[1]->hasTag(EDGE_VIRTUAL_TAG) // both masters are real
 		&& areParallel(ss))				// slaves are in parallel
 	{
 		unit = new ZUnitScaff("ZB_" + id, ms, ss, mPairs);
@@ -156,7 +156,7 @@ void DecScaff::computeMasterOrderConstraints()
 	// the base master is the bottom one that is not virtual
 	double minT = maxDouble();
 	for (PatchNode* m : masters){
-		if (!m->hasTag(EDGE_ROD_TAG) && masterTimeStamps[m->mID] < minT){
+		if (!m->hasTag(EDGE_VIRTUAL_TAG) && masterTimeStamps[m->mID] < minT){
 			baseMaster = m;
 			minT = masterTimeStamps[m->mID];
 		}

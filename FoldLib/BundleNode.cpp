@@ -69,11 +69,11 @@ QString BundleNode::getMeshName()
 
 QVector<ScaffNode*> BundleNode::getSubNodes()
 {
-	QVector<ScaffNode*> pnodes;
+	QVector<ScaffNode*> subNodes;
 	for (ScaffNode* n : mNodes)
-		pnodes += n->getSubNodes();
+		subNodes += n->getSubNodes();
 
-	return pnodes;
+	return subNodes;
 }
 
 ScaffNode* BundleNode::cloneChopped( Geom::Plane& chopper )
@@ -172,11 +172,11 @@ void BundleNode::cloneMesh()
 	}
 }
 
-void BundleNode::exportMesh(QFile &file, int& v_offset)
+void BundleNode::exportIntoWholeMesh(QFile &file, int& v_offset)
 {
 	cloneMesh();
 	for (ScaffNode* n : mNodes){
-		n->exportMesh(file, v_offset);
+		n->exportIntoWholeMesh(file, v_offset);
 	}
 }
 
@@ -216,12 +216,23 @@ void BundleNode::translate( Vector3 v )
 		n->translate(v);
 }
 
-//void BundleNode::draw()
-//{
-//	for (ScaffNode* n : mNodes)
-//	{
-//		n->mColor = QColor::fromRgb(180, 180, 180);
-//		n->mColor.setAlphaF(0.78);
-//		n->draw();
-//	}
-//}
+void BundleNode::exportIntoXml(XmlWriter& xw)
+{
+	QStringList subNodeNames;
+
+	// save each sub-node
+	for (ScaffNode* node : mNodes)
+	{
+		node->exportIntoXml(xw);
+		subNodeNames << node->mID;
+	}
+
+	// the bundle
+	xw.writeTaggedString("bundle", subNodeNames.join(' '));
+}
+
+void BundleNode::exportMeshIndividually(QString meshesFolder)
+{
+	for (ScaffNode* node : mNodes)
+		node->exportMeshIndividually(meshesFolder);
+}

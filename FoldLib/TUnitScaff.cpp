@@ -15,7 +15,7 @@ TUnitScaff::TUnitScaff(QString id, QVector<PatchNode*>& ms, QVector<ScaffNode*>&
 void TUnitScaff::sortMasters()
 {
 	// the base and virtual top masters
-	bool vFront = masters.front()->hasTag(EDGE_ROD_TAG);
+	bool vFront = masters.front()->hasTag(EDGE_VIRTUAL_TAG);
 	topMaster = vFront ? masters.front() : masters.last();
 	baseMaster = vFront ? masters.last() : masters.front();
 }

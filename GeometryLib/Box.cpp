@@ -94,6 +94,19 @@ Geom::Box::Box(const Rectangle& rect, const Vector3& n, const double& height)
 	makeRightHanded();
 }
 
+Geom::Box::Box(const QDomNode& node)
+{
+	QString c = node.firstChildElement("c").text();
+	QString x = node.firstChildElement("x").text();
+	QString y = node.firstChildElement("y").text();
+	QString z = node.firstChildElement("z").text();
+	QString e = node.firstChildElement("e").text();
+
+	Center = toVector3(c);
+	Axis.clear();
+	Axis << toVector3(x) << toVector3(y) << toVector3(z);
+	Extent = toVector3(e);
+}
 
 Geom::Box &Geom::Box::operator =(const Box &b)
 {
@@ -542,20 +555,6 @@ void Geom::Box::write( XmlWriter& xw )
 		xw.writeTaggedString("e", qStr(Extent));
 	}
 	xw.writeCloseTag("box");
-}
-
-void Geom::Box::read( QDomNode& node )
-{
-	QString c = node.firstChildElement("c").text();
-	QString x = node.firstChildElement("x").text();
-	QString y = node.firstChildElement("y").text();
-	QString z = node.firstChildElement("z").text();
-	QString e = node.firstChildElement("e").text();
-
-	Center = toVector3(c);
-	Axis.clear();
-	Axis << toVector3(x) << toVector3(y) << toVector3(z);
-	Extent = toVector3(e);
 }
 
 double Geom::Box::getExtent( int aid )

@@ -193,9 +193,9 @@ bool FdPlugin::postSelection( const QPoint& point )
 		}
 
 		// set current color
-		if (qColorDialog && !selectedSfNodes().isEmpty())
+		if (qColorDialog && !selectedScaffNodes().isEmpty())
 		{
-			ScaffNode* selNode = selectedSfNodes().front();
+			ScaffNode* selNode = selectedScaffNodes().front();
 			qColorDialog->setCurrentColor(selNode->mColor);
 		}
 	}
@@ -204,7 +204,7 @@ bool FdPlugin::postSelection( const QPoint& point )
 }
 
 
-QVector<ScaffNode*> FdPlugin::selectedSfNodes()
+QVector<ScaffNode*> FdPlugin::selectedScaffNodes()
 {
 	QVector<ScaffNode*> selNodes;
 
@@ -259,7 +259,7 @@ void FdPlugin::setShowKeyframe( int state )
 void FdPlugin::exportCurrent()
 {
 	QString filename = QFileDialog::getSaveFileName(0, tr("Save Current Scaffold"), nullptr, tr("Mesh Files (*.obj)"));
-	activeScaffold()->exportMesh(filename);
+	activeScaffold()->exportWholeMesh(filename);
 	showMessage("Current mesh has been exported.");
 }
 
@@ -276,7 +276,7 @@ void FdPlugin::exportAllObj()
 	{	
 		filename = basefilename + QString("%1").arg(QString::number(i), 3, '0') + ".obj";
 		f_manager->selectKeyframe(i);
-		selDec->getSelKeyframe()->exportMesh(filename);
+		selDec->getSelKeyframe()->exportWholeMesh(filename);
 	}
 }
 
@@ -339,7 +339,7 @@ void FdPlugin::showColorDialog()
 
 void FdPlugin::updateSelNodesColor( QColor c )
 {
-	for(ScaffNode* n : selectedSfNodes())
+	for(ScaffNode* n : selectedScaffNodes())
 	{
 		if (c.alpha() > 200) c.setAlpha(200);
 		n->mColor = c;
@@ -384,7 +384,7 @@ void FdPlugin::saveSnapshotAll()
 
 void FdPlugin::hideSelectedNodes()
 {
-	QVector<ScaffNode*> snodes = selectedSfNodes();
+	QVector<ScaffNode*> snodes = selectedScaffNodes();
 	for(ScaffNode* n : snodes)
 	{
 		n->isHidden = true;
@@ -538,7 +538,7 @@ void FdPlugin::exportSVG()
 			for (ScaffNode* n : fdnodes)
 			{
 				// skip hidden stuff for clean rendering
-				if (n->hasTag(EDGE_ROD_TAG)) continue;
+				if (n->hasTag(EDGE_VIRTUAL_TAG)) continue;
 
 				if( this->showScaffold )
 				{
@@ -620,7 +620,7 @@ bool FdPlugin::keyPressEvent(QKeyEvent* event)
 		selGraphs << activeScaffold();
 
 		QStringList selectedNodeNames;
-		for(ScaffNode * n : selectedSfNodes()) selectedNodeNames << n->mID;
+		for(ScaffNode * n : selectedScaffNodes()) selectedNodeNames << n->mID;
 
 		// We are changing keyframes
 		if (showKeyframe && f_manager->shapeDec) selGraphs = f_manager->shapeDec->keyframes;
@@ -666,7 +666,16 @@ bool FdPlugin::keyPressEvent(QKeyEvent* event)
 	if (event->modifiers().testFlag(Qt::ControlModifier) &&
 		event->key() == Qt::Key_G)
 	{
+		Scaffold* activeScaff = activeScaffold();
+		QVector<ScaffNode*> selNodes = selectedScaffNodes();
+		// unwrap: single bundle node will be unwrapped
+		if (selNodes.size() == 1)
+			activeScaff->unwrapBundleNode(selNodes.front()->mID);
+		// wrap
+		else activeScaff->wrapAsBundleNode(getIds(selNodes));
 
+		updateScene();
+		return true;
 	}
 
 	return false;
