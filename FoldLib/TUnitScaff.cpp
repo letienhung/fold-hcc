@@ -50,9 +50,11 @@ double TUnitScaff::foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti)
 	// obstacles
 	obstacles = computeObstaclePnts(ssKeyframe, baseMaster->mID, topMaster->mID);
 
-	// debug
-	//visDebug.clearAll();
-	//visDebug.addPoints(obstacles, Qt::blue);
+	{// debug
+		
+		visDebug.clearAll();
+		visDebug.addPoints(obstacles, Qt::blue);
+	}
 
 	// projected coordinates on the base rect
 	baseRect = getBaseRect(ssKeyframe);
@@ -63,13 +65,15 @@ double TUnitScaff::foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti)
 	// projected aabb constraint on the base rect
 	Geom::Rectangle2 aabbCstrProj = getAabbCstrProj(baseRect);
 
-	// debug
-	//FoldOption* dfo = sortedFoldOptions.front();
-	//Geom::Rectangle tmRect = baseRect.get3DRectangle(dfo->regionProj);
-	//visDebug.addRectangle(tmRect, Qt::blue);
-	//visDebug.addRectangle(dfo->region, Qt::blue);
-	//Geom::Rectangle tmRect = baseRect.get3DRectangle(aabbCstrProj);
-	//visDebug.addRectangle(tmRect, Qt::blue);
+	{// debug
+		
+		//FoldOption* dfo = sortedFoldOptions.front();
+		//Geom::Rectangle tmRect = baseRect.get3DRectangle(dfo->regionProj);
+		//visDebug.addRectangle(tmRect, Qt::blue);
+		//visDebug.addRectangle(dfo->region, Qt::blue);
+		//Geom::Rectangle tmRect = baseRect.get3DRectangle(aabbCstrProj);
+		//visDebug.addRectangle(tmRect, Qt::blue);
+	}
 
 	// search for the best available fold option
 	for (FoldOption* fo : sortedFoldOptions)
@@ -85,12 +89,15 @@ double TUnitScaff::foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti)
 			bool inAABB = aabbCstrProj.containsAll(fo->regionProj.getConners(), thr);
 			accepted = !isColliding && inAABB;
 
-			// debug
-			//Geom::Rectangle tmRect = baseRect.get3DRectangle(fo->regionProj);
-			//if (accepted)
-			//	visDebug.addRectangle(tmRect, Qt::green);
-			//else
-			//	visDebug.addRectangle(tmRect, Qt::red);
+			{// debug
+
+				Geom::Rectangle tmRect = baseRect.get3DRectangle(fo->regionProj);
+				if (accepted)
+					visDebug.addRectangle(tmRect, Qt::green);
+				else
+					visDebug.addRectangle(tmRect, Qt::red);
+			}
+
 		}
 
 		// store

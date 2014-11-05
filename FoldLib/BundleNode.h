@@ -3,12 +3,12 @@
 #include "PatchNode.h"
 #include "Frame.h"
 
-class BundleNode final : public PatchNode
+class BundlePatchNode final : public PatchNode
 {
 public:
-    BundleNode(QString id, Geom::Box& b, QVector<ScaffNode*> nodes, Vector3 v = Vector3(0, 0, 0));
-	BundleNode(BundleNode& other);
-	~BundleNode();
+    BundlePatchNode(QString id, Geom::Box& b, QVector<ScaffNode*> nodes, Vector3 v = Vector3(0, 0, 0));
+	BundlePatchNode(BundlePatchNode& other);
+	~BundlePatchNode();
 
 	virtual Node* clone() override;
 

@@ -308,7 +308,7 @@ ScaffNode* Scaffold::wrapAsBundleNode( QVector<QString> nids, Vector3 v )
 	// merge into a bundle node
 	QString bid = getBundleName(ns);
 	Geom::Box box = getBundleBox(ns);
-	BundleNode* bundleNode = new BundleNode(bid, box, ns, v); 
+	BundlePatchNode* bundleNode = new BundlePatchNode(bid, box, ns, v); 
 	Structure::Graph::addNode(bundleNode);
 
 	// remove original nodes
@@ -504,7 +504,7 @@ void Scaffold::unwrapBundleNode(QString nid)
 	Structure::Node* n = getNode(nid);
 	if (n->hasTag(BUNDLE_TAG))
 	{
-		BundleNode* bnode = (BundleNode*)n;
+		BundlePatchNode* bnode = (BundlePatchNode*)n;
 		bnode->restoreSubNodes();
 
 		for (ScaffNode* cn : bnode->subNodes)

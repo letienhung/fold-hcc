@@ -388,9 +388,10 @@ void DecScaff::foldabilize()
 	SuperShapeKf* currKeyframe = getSuperShapeKf(currTime);
 	UnitScaff* next_unit = getBestNextUnit(currTime, currKeyframe);
 
-
-	//return;
-	//int i = 0;
+	{//debug
+		return;
+		//int i = 0;
+	}
 
 	while (next_unit)
 	{
@@ -402,10 +403,11 @@ void DecScaff::foldabilize()
 		double nextTime = currTime + timeLength;
 		next_unit->foldabilize(currKeyframe, TimeInterval(currTime, nextTime));
 
-
-		//i++;
-		//if (i == 3)
-		//return;
+		{//debug
+			//i++;
+			//if (i == 3)
+			//return;
+		}
 
 
 		std::cout << "\n-----------//-----------\n";
@@ -483,7 +485,7 @@ UnitScaff* DecScaff::getBestNextUnit(double currTime, SuperShapeKf* currKeyframe
 	double min_cost = maxDouble();
 	for (UnitScaff* nextUnit : unfoldedUnits)
 	{
-		//if (nextUnit->mID != "ZB_1") continue;
+		if (nextUnit->mID != "TB_2") continue;
 
 		// foldabilize nextUnit
 		std::cout << "*\nEvaluating unit: " << nextUnit->mID.toStdString() << "\n";
@@ -492,8 +494,11 @@ UnitScaff* DecScaff::getBestNextUnit(double currTime, SuperShapeKf* currKeyframe
 		TimeInterval origNextTi = nextUnit->mFoldDuration; // back up
 		double nextCost = foldabilizeUnit(nextUnit, currTime, currKeyframe, nextTime, nextKeyframe);
 
-		//nextUnit->genDebugInfo();
-		//return nullptr;
+		{ // debug
+
+			//nextUnit->genDebugInfo();
+			//return nullptr;
+		}
 		
 		// the folding of nextUnit must be valid, otherwise skip further evaluation
 		if (nextKeyframe->isValid())
@@ -531,6 +536,10 @@ UnitScaff* DecScaff::getBestNextUnit(double currTime, SuperShapeKf* currKeyframe
 		else
 		{
 			std::cout << "Invalid folding.\n";
+		}
+
+		{ // debug
+			return nullptr;
 		}
 
 		delete nextKeyframe; // garbage collection

@@ -2,7 +2,7 @@
 #include "FdUtility.h"
 #include "Numeric.h"
 
-BundleNode::BundleNode( QString id, Geom::Box& b, QVector<ScaffNode*> nodes, Vector3 v )
+BundlePatchNode::BundlePatchNode( QString id, Geom::Box& b, QVector<ScaffNode*> nodes, Vector3 v )
 	:PatchNode(id, b, MeshPtr(nullptr),  v)
 {
 	for (ScaffNode* n : nodes)
@@ -29,7 +29,7 @@ BundleNode::BundleNode( QString id, Geom::Box& b, QVector<ScaffNode*> nodes, Vec
 	addTag(BUNDLE_TAG);
 }
 
-BundleNode::BundleNode(BundleNode& other)
+BundlePatchNode::BundlePatchNode(BundlePatchNode& other)
 	:PatchNode(other)
 {
 	for (ScaffNode* n : other.subNodes)
@@ -39,26 +39,26 @@ BundleNode::BundleNode(BundleNode& other)
 }
 
 
-BundleNode::~BundleNode()
+BundlePatchNode::~BundlePatchNode()
 {
 	for (ScaffNode* n : subNodes)
 		delete n;
 }
 
 
-Structure::Node* BundleNode::clone()
+Structure::Node* BundlePatchNode::clone()
 {
-	return new BundleNode(*this);
+	return new BundlePatchNode(*this);
 }
 
-void BundleNode::drawMesh()
+void BundlePatchNode::drawMesh()
 {
 	deformMesh();
 	for (ScaffNode* n : subNodes)
 		n->drawMesh();
 }
 
-QString BundleNode::getMeshName()
+QString BundlePatchNode::getMeshName()
 {
 	QString name;
 	for (ScaffNode* n : subNodes)
@@ -67,7 +67,7 @@ QString BundleNode::getMeshName()
 	return name;
 }
 
-ScaffNode* BundleNode::cloneChopped( Geom::Plane& chopper )
+ScaffNode* BundlePatchNode::cloneChopped( Geom::Plane& chopper )
 {
 	// clone plain nodes
 	QVector<ScaffNode*> plainNodes;
@@ -91,7 +91,7 @@ ScaffNode* BundleNode::cloneChopped( Geom::Plane& chopper )
 	{
 		QString bid = getBundleName(plainNodes);
 		Geom::Box box = getBundleBox(plainNodes);
-		return new BundleNode(bid, box, plainNodes);
+		return new BundlePatchNode(bid, box, plainNodes);
 
 		// delete plain nodes
 		for (ScaffNode* n : plainNodes)
@@ -101,7 +101,7 @@ ScaffNode* BundleNode::cloneChopped( Geom::Plane& chopper )
 	return nullptr;
 }
 
-ScaffNode* BundleNode::cloneChopped( Geom::Plane& chopper1, Geom::Plane& chopper2 )
+ScaffNode* BundlePatchNode::cloneChopped( Geom::Plane& chopper1, Geom::Plane& chopper2 )
 {
 	Geom::Plane plane1 = chopper1;
 	Geom::Plane plane2 = chopper2;
@@ -134,7 +134,7 @@ ScaffNode* BundleNode::cloneChopped( Geom::Plane& chopper1, Geom::Plane& chopper
 	{
 		QString bid = getBundleName(plainNodes);
 		Geom::Box box = getBundleBox(plainNodes);
-		return new BundleNode(bid, box, plainNodes);
+		return new BundlePatchNode(bid, box, plainNodes);
 
 		// delete plain nodes
 		for (ScaffNode* n : plainNodes)
@@ -144,14 +144,14 @@ ScaffNode* BundleNode::cloneChopped( Geom::Plane& chopper1, Geom::Plane& chopper
 	return nullptr;
 }
 
-void BundleNode::deformMesh()
+void BundlePatchNode::deformMesh()
 {
 	restoreSubNodes();
 	for (ScaffNode* node : subNodes)
 		node->deformMesh();
 }
 
-void BundleNode::cloneMesh()
+void BundlePatchNode::cloneMesh()
 {
 	deformMesh();
 	for (ScaffNode* n : subNodes){
@@ -159,7 +159,7 @@ void BundleNode::cloneMesh()
 	}
 }
 
-void BundleNode::exportIntoWholeMesh(QFile &file, int& v_offset)
+void BundlePatchNode::exportIntoWholeMesh(QFile &file, int& v_offset)
 {
 	cloneMesh();
 	for (ScaffNode* n : subNodes){
@@ -167,35 +167,35 @@ void BundleNode::exportIntoWholeMesh(QFile &file, int& v_offset)
 	}
 }
 
-void BundleNode::setShowCuboid( bool show )
+void BundlePatchNode::setShowCuboid( bool show )
 {
 	ScaffNode::setShowCuboid(show);
 	for (ScaffNode* n : subNodes)
 		n->setShowCuboid(show);
 }
 
-void BundleNode::setShowScaffold( bool show )
+void BundlePatchNode::setShowScaffold( bool show )
 {
 	ScaffNode::setShowScaffold(show);
 	for (ScaffNode* n : subNodes)
 		n->setShowScaffold(show);
 }
 
-void BundleNode::setShowMesh( bool show )
+void BundlePatchNode::setShowMesh( bool show )
 {
 	ScaffNode::setShowMesh(show);
 	for (ScaffNode* n : subNodes)
 		n->setShowMesh(show);
 }
 
-void BundleNode::translate( Vector3 v )
+void BundlePatchNode::translate( Vector3 v )
 {
 	ScaffNode::translate(v);
 	for (ScaffNode* n : subNodes)
 		n->translate(v);
 }
 
-void BundleNode::exportIntoXml(XmlWriter& xw)
+void BundlePatchNode::exportIntoXml(XmlWriter& xw)
 {
 	QStringList subNodeNames;
 
@@ -210,13 +210,13 @@ void BundleNode::exportIntoXml(XmlWriter& xw)
 	xw.writeTaggedString("bundle", subNodeNames.join(' '));
 }
 
-void BundleNode::exportMeshIndividually(QString meshesFolder)
+void BundlePatchNode::exportMeshIndividually(QString meshesFolder)
 {
 	for (ScaffNode* node : subNodes)
 		node->exportMeshIndividually(meshesFolder);
 }
 
-void BundleNode::restoreSubNodes()
+void BundlePatchNode::restoreSubNodes()
 {
 	Geom::Frame bundleFrame = mBox.getFrame();
 	for (int i = 0; i < subNodes.size(); i++)
@@ -227,7 +227,7 @@ void BundleNode::restoreSubNodes()
 	}
 }
 
-void BundleNode::setColor(QColor c)
+void BundlePatchNode::setColor(QColor c)
 {
 	// the patch
 	ScaffNode::setColor(c);
