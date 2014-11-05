@@ -166,12 +166,25 @@ void DecScaff::computeMasterOrderConstraints()
 	QMap<QString, Geom::Rectangle2> proj_rects;
 	Geom::Rectangle base_rect = baseMaster->mPatch;
 	for (PatchNode* m : masters)
+	{
+		// skip virtual 
+		if (m->hasTag(EDGE_VIRTUAL_TAG)) continue;
+
 		proj_rects[m->mID] = base_rect.get2DRectangle(m->mPatch);
+	}
 
 	// check each pair of masters
-	for (int i = 0; i < masters.size(); i++){
+	for (int i = 0; i < masters.size(); i++)
+	{
+		// skip virtual 
+		if (masters[i]->hasTag(EDGE_VIRTUAL_TAG)) continue;
+
 		for (int j = i+1; j < masters.size(); j++)
 		{
+			// skip virtual 
+			if (masters[j]->hasTag(EDGE_VIRTUAL_TAG)) continue;
+
+			// two non-virtual masters
 			QString mi = masters[i]->mID;
 			QString mj = masters[j]->mID;
 
@@ -389,7 +402,7 @@ void DecScaff::foldabilize()
 	UnitScaff* next_unit = getBestNextUnit(currTime, currKeyframe);
 
 	{//debug
-		return;
+		//return;
 		//int i = 0;
 	}
 
@@ -485,7 +498,9 @@ UnitScaff* DecScaff::getBestNextUnit(double currTime, SuperShapeKf* currKeyframe
 	double min_cost = maxDouble();
 	for (UnitScaff* nextUnit : unfoldedUnits)
 	{
-		if (nextUnit->mID != "TB_2") continue;
+		{//debug
+			//if (nextUnit->mID != "TB_2") continue;
+		}
 
 		// foldabilize nextUnit
 		std::cout << "*\nEvaluating unit: " << nextUnit->mID.toStdString() << "\n";
@@ -539,7 +554,7 @@ UnitScaff* DecScaff::getBestNextUnit(double currTime, SuperShapeKf* currKeyframe
 		}
 
 		{ // debug
-			return nullptr;
+			//return nullptr;
 		}
 
 		delete nextKeyframe; // garbage collection
