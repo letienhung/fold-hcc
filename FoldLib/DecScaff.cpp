@@ -261,9 +261,6 @@ void DecScaff::storeDebugInfo(Scaffold* kf, int uidx)
 	// obstacles
 	kf->visDebug.addPoints(unit->getCurrObstacles(), Qt::blue);
 
-	// fold options
-	//kf->visDebug.addRectangles(unit->getCurrAFRs(), Qt::green);
-
 	// solution
 	kf->visDebug.addRectangles(unit->getCurrSlnFRs(), Qt::green);
 }
@@ -320,7 +317,7 @@ void DecScaff::genKeyframes( int N )
 
 		keyframes << kf;
 
-		kf->unwrapBundleNodes();
+		//kf->unwrapBundleNodes();
 		kf->hideEdgeRods();
 
 		// color
@@ -391,8 +388,8 @@ void DecScaff::foldabilize()
 	UnitScaff* next_unit = getBestNextUnit(currTime, currKeyframe);
 
 
-	return;
-
+	//return;
+	//int i = 0;
 
 	while (next_unit)
 	{
@@ -405,6 +402,8 @@ void DecScaff::foldabilize()
 		next_unit->foldabilize(currKeyframe, TimeInterval(currTime, nextTime));
 
 
+		//i++;
+		//if (i == 3)
 		//return;
 
 
@@ -493,7 +492,7 @@ UnitScaff* DecScaff::getBestNextUnit(double currTime, SuperShapeKf* currKeyframe
 		double nextCost = foldabilizeUnit(nextUnit, currTime, currKeyframe, nextTime, nextKeyframe);
 
 		//nextUnit->genDebugInfo();
-		return nullptr;
+		//return nullptr;
 		
 		// the folding of nextUnit must be valid, otherwise skip further evaluation
 		if (nextKeyframe->isValid())

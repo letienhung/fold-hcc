@@ -298,14 +298,18 @@ void FdPlugin::test1()
 	selUnit->visDebug.addScaffold(kf);
 }
 
+#include "ChainScaff.h"
 #include "TUnitScaff.h"
+#include "Segment.h"
 void FdPlugin::test2()
 {
 	TUnitScaff* selUnit = (TUnitScaff*)f_manager->getSelUnit();
 	if (!selUnit) return;
 
-	// fold
-	
+	ChainScaff* tchain = (ChainScaff*)selUnit->tChain;
+	Geom::Segment seg(tchain->baseJoint.P0, tchain->baseJoint.P0 + 10 * tchain->rightDirect);
+	selUnit->visDebug.addSegment(seg, Qt::red);
+	updateScene();
 }
 
 void FdPlugin::showColorDialog()

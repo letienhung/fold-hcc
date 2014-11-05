@@ -86,7 +86,7 @@ void ChainScaff::computeOrientations()
 	rightSeg = Geom::Segment(topJointProj.P0, baseJoint.P0);
 
 	// rightDirect : baseJoint, slaveSeg and rightDirect form right-hand system
-	if (rightSeg.length() / slaveSeg.length() < 0.01)
+	if (rightSeg.length() / slaveSeg.length() < 0.2)
 	{
 		rightDirect = cross(baseJoint.Direction, slaveSeg.Direction);
 		rightDirect = base_rect.getProjectedVector(rightDirect);

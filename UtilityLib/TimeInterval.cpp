@@ -51,7 +51,7 @@ void TimeInterval::set(double t0, double t1)
 	}
 	else 
 	{ 
-		start = 0.0; 
-		end = 1.0; 
+		start = t1; 
+		end = t0; 
 	}
 }
