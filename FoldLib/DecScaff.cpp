@@ -284,7 +284,7 @@ Scaffold* DecScaff::genKeyframe( double t )
 		{
 			// foldabilized unit
 			double lt = unit->mFoldDuration.getLocalTime(t);
-			uk = unit->getKeyframe(lt, true);
+			uk = unit->getKeyframe(lt, false);
 
 			// active unit
 			if (lt > 0 && lt < 1) activeUnitIdx = i;
@@ -315,20 +315,21 @@ void DecScaff::genKeyframes( int N )
 		Scaffold* kf = genKeyframe(i * step);
 		if(!kf) return;
 
-		keyframes << kf;
-
-		//kf->unwrapBundleNodes();
-		kf->hideEdgeRods();
-
 		// color
 		for (ScaffNode* n : kf->getScaffNodes())
 		{
 			double grey = 240;
 			QColor c = (n->hasTag(ACTIVE_NODE_TAG) && !n->hasTag(MASTER_TAG)) ? 
 				QColor::fromRgb(255, 110, 80) : QColor::fromRgb(grey, grey, grey);
-			c.setAlphaF(0.78);
-			n->mColor = c;
+			n->setColor(c);
 		}
+
+		// unwrap bundles to view real parts
+		kf->unwrapBundleNodes();
+		kf->removeNodesWithTag(EDGE_VIRTUAL_TAG);
+
+		// save the key frame
+		keyframes << kf;
 	}
 }
 

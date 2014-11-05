@@ -18,9 +18,6 @@ public:
 	virtual void cloneMesh() override;
 	virtual	QString getMeshName() override;
 
-	// thickness
-	virtual void setThickness(double thk) override;
-
 	// I/O
 	virtual void exportIntoXml(XmlWriter& xw) override;
 	virtual void exportMeshIndividually(QString meshesFolder) override;
@@ -31,6 +28,7 @@ public:
 	virtual ScaffNode* cloneChopped(Geom::Plane& chopper1, Geom::Plane& chopper2) override;
 
 	// visual
+	virtual void setColor(QColor c) override;
 	virtual void setShowCuboid(bool show) override;
 	virtual void setShowScaffold(bool show) override;
 	virtual void setShowMesh(bool show) override;
@@ -39,10 +37,10 @@ public:
 	virtual void translate(Vector3 v) override;
 
 	// sub-nodes
-	QVector<ScaffNode*> getSubNodes();
+	void restoreSubNodes();
 
 public:
-	QVector<ScaffNode*> mNodes;
-	QVector<Geom::Frame::RecordInFrame> mNodeFrameRecords;
+	QVector<ScaffNode*> subNodes;
+	QVector<Geom::Frame::RecordInFrame> subNodeFrameRecords;
 };
 

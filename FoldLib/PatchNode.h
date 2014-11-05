@@ -8,8 +8,8 @@ class PatchNode : public ScaffNode
 {
 public:
     PatchNode(QString id, Geom::Box &b, MeshPtr m, Vector3 v = Vector3(0, 0, 0));
-	PatchNode(RodNode* rodNode, Vector3 v);
 	PatchNode(PatchNode &other);
+	PatchNode(RodNode* rodNode, Vector3 v);
 	virtual ~PatchNode();
 	virtual Node* clone() override;
 
@@ -24,7 +24,6 @@ public:
 	double getThickness();
 	Geom::Plane getSurfacePlane(bool positive);
 	void resize(Geom::Rectangle2& newPatch);
-	virtual void setThickness(double thk) override;
 	virtual bool isPerpTo(Vector3 v, double dotThreshold) override;
 
 	// edges

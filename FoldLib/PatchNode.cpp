@@ -161,12 +161,6 @@ void PatchNode::resize( Geom::Rectangle2& newPatch )
 	createScaffold(true);
 }
 
-void PatchNode::setThickness( double thk )
-{
-	int aid = mBox.getAxisId(mPatch.Normal);
-	mBox.Extent[aid] = 0.5 * thk;
-}
-
 QVector<Vector3> PatchNode::sampleBoundabyOfScaffold(int n)
 {
 	return mPatch.getEdgeSamples(n);

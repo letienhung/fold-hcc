@@ -6,17 +6,17 @@ BundleNode::BundleNode( QString id, Geom::Box& b, QVector<ScaffNode*> nodes, Vec
 	:PatchNode(id, b, MeshPtr(nullptr),  v)
 {
 	for (ScaffNode* n : nodes)
-		mNodes << (ScaffNode*)n->clone();
+		subNodes << (ScaffNode*)n->clone();
 
 	// encode nodes
 	Geom::Frame frame = mBox.getFrame();
-	for (ScaffNode* n : mNodes)
-		mNodeFrameRecords << frame.encodeFrame(n->mBox.getFrame());
+	for (ScaffNode* n : subNodes)
+		subNodeFrameRecords << frame.encodeFrame(n->mBox.getFrame());
 
 	// inherits color from largest child
 	double maxVol = -maxDouble();
 	QColor maxColor;
-	for (ScaffNode* n : mNodes)
+	for (ScaffNode* n : subNodes)
 	{
 		if (n->mBox.volume() > maxVol)
 		{
@@ -32,16 +32,16 @@ BundleNode::BundleNode( QString id, Geom::Box& b, QVector<ScaffNode*> nodes, Vec
 BundleNode::BundleNode(BundleNode& other)
 	:PatchNode(other)
 {
-	for (ScaffNode* n : other.mNodes)
-		mNodes << (ScaffNode*)n->clone();
+	for (ScaffNode* n : other.subNodes)
+		subNodes << (ScaffNode*)n->clone();
 
-	mNodeFrameRecords = other.mNodeFrameRecords;
+	subNodeFrameRecords = other.subNodeFrameRecords;
 }
 
 
 BundleNode::~BundleNode()
 {
-	for (ScaffNode* n : mNodes)
+	for (ScaffNode* n : subNodes)
 		delete n;
 }
 
@@ -54,33 +54,24 @@ Structure::Node* BundleNode::clone()
 void BundleNode::drawMesh()
 {
 	deformMesh();
-	for (ScaffNode* n : mNodes)
+	for (ScaffNode* n : subNodes)
 		n->drawMesh();
 }
 
 QString BundleNode::getMeshName()
 {
 	QString name;
-	for (ScaffNode* n : mNodes)
+	for (ScaffNode* n : subNodes)
 		name += "+" + n->getMeshName();
 
 	return name;
-}
-
-QVector<ScaffNode*> BundleNode::getSubNodes()
-{
-	QVector<ScaffNode*> subNodes;
-	for (ScaffNode* n : mNodes)
-		subNodes += n->getSubNodes();
-
-	return subNodes;
 }
 
 ScaffNode* BundleNode::cloneChopped( Geom::Plane& chopper )
 {
 	// clone plain nodes
 	QVector<ScaffNode*> plainNodes;
-	for (ScaffNode* n : mNodes)
+	for (ScaffNode* n : subNodes)
 	{
 		PLANE_RELATION relation = relationWithPlane(n, chopper, 0.1);
 		if (relation == POS_PLANE)
@@ -118,7 +109,7 @@ ScaffNode* BundleNode::cloneChopped( Geom::Plane& chopper1, Geom::Plane& chopper
 	if (plane2.whichSide(plane1.Constant) < 0) plane2.flip();
 
 	QVector<ScaffNode*> plainNodes;
-	for (ScaffNode* n : mNodes)
+	for (ScaffNode* n : subNodes)
 	{
 		PLANE_RELATION relation1 = relationWithPlane(n, plane1, 0.1);
 		PLANE_RELATION relation2 = relationWithPlane(n, plane2, 0.1);
@@ -155,19 +146,15 @@ ScaffNode* BundleNode::cloneChopped( Geom::Plane& chopper1, Geom::Plane& chopper
 
 void BundleNode::deformMesh()
 {
-	Geom::Frame frame = mBox.getFrame();
-	for (int i = 0; i < mNodes.size(); i++)
-	{
-		Geom::Frame nframe = frame.decodeFrame(mNodeFrameRecords[i]);
-		mNodes[i]->mBox.setFrame(nframe);
-		mNodes[i]->deformMesh();
-	}
+	restoreSubNodes();
+	for (ScaffNode* node : subNodes)
+		node->deformMesh();
 }
 
 void BundleNode::cloneMesh()
 {
 	deformMesh();
-	for (ScaffNode* n : mNodes){
+	for (ScaffNode* n : subNodes){
 		n->cloneMesh();
 	}
 }
@@ -175,44 +162,36 @@ void BundleNode::cloneMesh()
 void BundleNode::exportIntoWholeMesh(QFile &file, int& v_offset)
 {
 	cloneMesh();
-	for (ScaffNode* n : mNodes){
+	for (ScaffNode* n : subNodes){
 		n->exportIntoWholeMesh(file, v_offset);
 	}
-}
-
-void BundleNode::setThickness( double thk )
-{
-	PatchNode::setThickness(thk);
-
-	for (ScaffNode* n : mNodes)
-		n->setThickness(thk);
 }
 
 void BundleNode::setShowCuboid( bool show )
 {
 	ScaffNode::setShowCuboid(show);
-	for (ScaffNode* n : mNodes)
+	for (ScaffNode* n : subNodes)
 		n->setShowCuboid(show);
 }
 
 void BundleNode::setShowScaffold( bool show )
 {
 	ScaffNode::setShowScaffold(show);
-	for (ScaffNode* n : mNodes)
+	for (ScaffNode* n : subNodes)
 		n->setShowScaffold(show);
 }
 
 void BundleNode::setShowMesh( bool show )
 {
 	ScaffNode::setShowMesh(show);
-	for (ScaffNode* n : mNodes)
+	for (ScaffNode* n : subNodes)
 		n->setShowMesh(show);
 }
 
 void BundleNode::translate( Vector3 v )
 {
 	ScaffNode::translate(v);
-	for (ScaffNode* n : mNodes)
+	for (ScaffNode* n : subNodes)
 		n->translate(v);
 }
 
@@ -221,7 +200,7 @@ void BundleNode::exportIntoXml(XmlWriter& xw)
 	QStringList subNodeNames;
 
 	// save each sub-node
-	for (ScaffNode* node : mNodes)
+	for (ScaffNode* node : subNodes)
 	{
 		node->exportIntoXml(xw);
 		subNodeNames << node->mID;
@@ -233,6 +212,29 @@ void BundleNode::exportIntoXml(XmlWriter& xw)
 
 void BundleNode::exportMeshIndividually(QString meshesFolder)
 {
-	for (ScaffNode* node : mNodes)
+	for (ScaffNode* node : subNodes)
 		node->exportMeshIndividually(meshesFolder);
+}
+
+void BundleNode::restoreSubNodes()
+{
+	Geom::Frame bundleFrame = mBox.getFrame();
+	for (int i = 0; i < subNodes.size(); i++)
+	{
+		ScaffNode* sn = subNodes[i];
+		Geom::Frame::RecordInFrame snfr = subNodeFrameRecords[i];
+		sn->setBoxFrame(bundleFrame.decodeFrame(snfr));
+	}
+}
+
+void BundleNode::setColor(QColor c)
+{
+	// the patch
+	ScaffNode::setColor(c);
+
+	// all sub nodes
+	for (ScaffNode* n : subNodes)
+	{
+		n->setColor(c);
+	}
 }

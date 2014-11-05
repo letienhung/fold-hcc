@@ -7,16 +7,12 @@ RodNode::RodNode(QString id, Geom::Box &b, MeshPtr m)
 {
 	mType = ScaffNode::ROD;
 	createScaffold(false);
-
-	mRodColor = mColor.lighter();
-	mRodColor.setAlpha(255);
 }
 
 RodNode::RodNode(RodNode& other)
 	:ScaffNode(other)
 {
 	mRod = other.mRod;
-	mRodColor = other.mRodColor;
 }
 
 RodNode::~RodNode()
@@ -36,7 +32,8 @@ void RodNode::createScaffold(bool useAid)
 
 void RodNode::drawScaffold()
 {
-	mRod.draw(3.0, mRodColor, false);
+	mRod.draw(10.0, mColor.darker(), false);
+	mRod.draw(8.0, mColor, false);
 }
 
 bool RodNode::isPerpTo( Vector3 v, double dotThreshold )
@@ -48,13 +45,6 @@ bool RodNode::isPerpTo( Vector3 v, double dotThreshold )
 Structure::Node* RodNode::clone()
 {
 	return new RodNode(*this);
-}
-
-void RodNode::setThickness( double thk )
-{
-	int aid = mBox.getAxisId(mRod.Direction);
-	mBox.Extent[(aid+1)%3] = thk / 2;
-	mBox.Extent[(aid+2)%3] = thk / 2;
 }
 
 QVector<Vector3> RodNode::sampleBoundabyOfScaffold(int n)

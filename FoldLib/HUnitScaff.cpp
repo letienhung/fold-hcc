@@ -117,11 +117,11 @@ Scaffold* HUnitScaff::getKeyframe(double t, bool useThk)
 	// combine 
 	Scaffold* keyframe = new Scaffold(chainKeyframes, baseMaster->mID, masterChainsMap);
 
-	// thickness of masters
-	if (useThk){
-		for (Structure::Node* n : keyframe->getNodesWithTag(MASTER_TAG))
-			((ScaffNode*)n)->setThickness(thickness);
-	}
+	//// thickness of masters
+	//if (useThk){
+	//	for (Structure::Node* n : keyframe->getNodesWithTag(MASTER_TAG))
+	//		((ScaffNode*)n)->setThickness(thickness);
+	//}
 
 	// local garbage collection
 	for(Scaffold* c : chainKeyframes) delete c;

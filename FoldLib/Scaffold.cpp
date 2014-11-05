@@ -306,11 +306,9 @@ ScaffNode* Scaffold::wrapAsBundleNode( QVector<QString> nids, Vector3 v )
 	if (ns.size() == 1) return ns[0];
 
 	// merge into a bundle node
-	QVector<ScaffNode*> subNodes;
-	for (ScaffNode* n : ns)	subNodes << n->getSubNodes();
-	QString bid = getBundleName(subNodes);
-	Geom::Box box = getBundleBox(subNodes);
-	BundleNode* bundleNode = new BundleNode(bid, box, subNodes, v); 
+	QString bid = getBundleName(ns);
+	Geom::Box box = getBundleBox(ns);
+	BundleNode* bundleNode = new BundleNode(bid, box, ns, v); 
 	Structure::Graph::addNode(bundleNode);
 
 	// remove original nodes
@@ -507,12 +505,20 @@ void Scaffold::unwrapBundleNode(QString nid)
 	if (n->hasTag(BUNDLE_TAG))
 	{
 		BundleNode* bnode = (BundleNode*)n;
-		for (ScaffNode* cn : bnode->mNodes)
+		bnode->restoreSubNodes();
+
+		for (ScaffNode* cn : bnode->subNodes)
 		{
 			Structure::Node* cn_copy = cn->clone();
 			Structure::Graph::addNode(cn_copy);
 			if (bnode->hasTag(MASTER_TAG))
 				cn_copy->addTag(MASTER_TAG);
+
+			// recursively unwrap bundles
+			if (cn_copy->hasTag(BUNDLE_TAG))
+			{
+				unwrapBundleNode(cn_copy->mID);
+			}
 		}
 
 		removeNode(bnode->mID);
@@ -530,13 +536,24 @@ void Scaffold::unwrapBundleNodes()
 
 
 
-void Scaffold::hideEdgeRods()
+void Scaffold::hideNodesWithTag(QString tag)
 {
 	for (ScaffNode* n : getScaffNodes())
 	{
-		if (n->hasTag(EDGE_VIRTUAL_TAG))
+		if (n->hasTag(tag))
 		{
 			n->isHidden = true;
+		}
+	}
+}
+
+void Scaffold::removeNodesWithTag(QString tag)
+{
+	foreach(Structure::Node* n, nodes)
+	{
+		if (n->hasTag(tag))
+		{
+			removeNode(n->mID);
 		}
 	}
 }

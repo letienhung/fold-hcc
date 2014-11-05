@@ -234,7 +234,7 @@ bool onPlane( ScaffNode* n, Geom::Plane& plane )
 	return (relationWithPlane(n, plane, 0.2) == ON_PLANE);
 }
 
-QString getBundleName( const QVector<ScaffNode*>& nodes )
+QString getBundleName(const QVector<ScaffNode*>& nodes)
 {
 	QString bname;
 	for (ScaffNode* n : nodes)
@@ -245,7 +245,7 @@ QString getBundleName( const QVector<ScaffNode*>& nodes )
 	return "(" + bname + ")";
 }
 
-Geom::Box getBundleBox( const QVector<ScaffNode*>& nodes )
+Geom::Box getBundleBox(const QVector<ScaffNode*>& nodes)
 {
 	QVector<Vector3> points;
 	for (ScaffNode* n : nodes)

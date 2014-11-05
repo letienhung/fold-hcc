@@ -79,6 +79,13 @@ void ScaffNode::setRandomColor()
 }
 
 
+void ScaffNode::setColor(QColor c)
+{
+	mColor = c;
+	mColor.setAlphaF(0.78);
+}
+
+
 void ScaffNode::draw()
 {
 	if (isHidden) return;
@@ -229,11 +236,6 @@ QString ScaffNode::getMeshName()
 	else return mMesh->name;
 }
 
-QVector<ScaffNode*> ScaffNode::getSubNodes()
-{
-	return QVector<ScaffNode*>() << this;
-}
-
 void ScaffNode::cloneMesh()
 {
 	deformMesh();
@@ -310,21 +312,18 @@ void ScaffNode::deformToAttach( Geom::Plane& plane )
 
 	// deform
 	createScaffold(true);
-	deformMesh();
 }
 
-// mesh is not translated
-// call deformMesh to update the location of mesh
 void ScaffNode::translate( Vector3 t )
 {
 	mBox.translate(t);
 	createScaffold(true);
 }
 
-void ScaffNode::setThickness( double thk )
+void ScaffNode::setBoxFrame(Geom::Frame frame)
 {
-    Q_UNUSED(thk)
-	// do nothing
+	mBox.setFrame(frame);
+	createScaffold(true);
 }
 
 void ScaffNode::setShowCuboid( bool show )

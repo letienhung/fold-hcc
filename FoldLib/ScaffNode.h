@@ -19,16 +19,10 @@ public:
 	ScaffNode(ScaffNode& other);
 	virtual ~ScaffNode();
 
-	// bundle node return all children, otherwise nothing
-	virtual QVector<ScaffNode*> getSubNodes();
-
 	// visualization
-	bool isHidden;
-	bool showCuboid;
-	bool showScaffold;
-	bool showMesh;
 	void drawWithName(int name);
 	void setRandomColor();
+	virtual void setColor(QColor c);
 	virtual void draw() override;
 	virtual void drawMesh();
 	virtual void drawScaffold() = 0;
@@ -52,9 +46,10 @@ public:
 	Geom::AABB computeAABB();
 	virtual void createScaffold(bool useAid) = 0;
 
-	// modification
+	// modifications
+	// mesh is not touched, call deformMesh to update the location of mesh
 	void deformToAttach(Geom::Plane& plane);
-	virtual void setThickness(double thk);
+	void setBoxFrame(Geom::Frame frame);
 	virtual void translate(Vector3 t);
 
 	// chop
@@ -81,6 +76,12 @@ public:
 	QColor mColor;
 	NODE_TYPE mType;
 	int mAid; // axis index for creating scaffold
+
+	// visualization
+	bool isHidden;
+	bool showCuboid;
+	bool showScaffold;
+	bool showMesh;
 };
 
 #define BUNDLE_TAG "isBundleNode"

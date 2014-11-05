@@ -57,7 +57,8 @@ public:
 	void showScaffold(bool show);
 
 	// rendering
-	void hideEdgeRods();
+	void removeNodesWithTag(QString tag);
+	void hideNodesWithTag(QString tag);
 
 
 public:

@@ -66,7 +66,6 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	// hide
 	plugin->connect(ui->hideSelNodes, SIGNAL(clicked()), SLOT(hideSelectedNodes()));
 	plugin->connect(ui->unhideAllNodes, SIGNAL(clicked()), SLOT(unhideAllNodes()));
-	plugin->connect(ui->hideEdgeRods, SIGNAL(clicked()), SLOT(hideEdgeRods()));
 
 	// parameters
 	plugin->f_manager->connect(ui->connThrRatio, SIGNAL(valueChanged(double)), SLOT(setConnThrRatio(double)));

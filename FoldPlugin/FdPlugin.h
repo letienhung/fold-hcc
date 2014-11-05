@@ -83,7 +83,6 @@ public slots:
 	// hide
 	void hideSelectedNodes();
 	void unhideAllNodes();
-	void hideEdgeRods();
 
 	// debug
 	void test1();

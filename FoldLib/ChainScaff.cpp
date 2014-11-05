@@ -130,8 +130,8 @@ Scaffold* ChainScaff::getKeyframe( double t, bool useThk )
 		fold(t);
 		keyframe = (Scaffold*)this->clone();
 
-		// thickness
-		if (useThk) addThickness(keyframe, t);
+		//// thickness
+		//if (useThk) addThickness(keyframe, t);
 	}
 
 	return keyframe;
@@ -400,9 +400,9 @@ void ChainScaff::addThickness(Scaffold* keyframe, double t)
 			keyParts[j]->translate(offset);
 	}
 
-	// set thickness to chain parts
-	for (int i = 1; i < keyParts.size() - 1; i++)
-		keyParts[i]->setThickness(2 * halfThk);
+	//// set thickness to chain parts
+	//for (int i = 1; i < keyParts.size() - 1; i++)
+	//	keyParts[i]->setThickness(2 * halfThk);
 }
 
 double ChainScaff::getSlaveArea()

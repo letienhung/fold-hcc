@@ -89,7 +89,7 @@ ScaffNode* Hinge::fix()
 	// step 1: fix the frame
 	Geom::Frame free_dhf = (node1->hasTag(FIXED_NODE_TAG))? zyFrame : zxFrame;
 	Geom::Frame free_nf = free_dhf.decodeFrame(free_nr);
-	free_node->mBox.setFrame( free_nf ); 
+	free_node->setBoxFrame( free_nf ); 
 
 	// step 2: snap two nodes
 	Vector3 hc_free = free_node->mBox.getPosition(free_hr.c_box);

@@ -294,7 +294,7 @@ void FdPlugin::test1()
 	for (int i = 0; i < selUnit->chains.size(); i++)
 		selUnit->chains[i]->applyFoldOption(options[i]);
 
-	Scaffold* kf = selUnit->getKeyframe(0.5, 0);
+	Scaffold* kf = selUnit->getKeyframe(0.5, false);
 	selUnit->visDebug.addScaffold(kf);
 }
 
@@ -430,13 +430,6 @@ void FdPlugin::unhideAllNodes()
 			n->isHidden = false;
 	}
 
-	updateScene();
-}
-
-void FdPlugin::hideEdgeRods()
-{
-	Scaffold* activeFd = activeScaffold();
-	if (activeFd) activeFd->hideEdgeRods();
 	updateScene();
 }
 
