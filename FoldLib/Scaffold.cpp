@@ -10,7 +10,7 @@
 
 #include "RodNode.h"
 #include "PatchNode.h"
-#include "BundleNode.h"
+#include "BundlePatchNode.h"
 #include "ScaffLink.h"
 
 #include "AABB.h"

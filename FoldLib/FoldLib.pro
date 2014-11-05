@@ -42,7 +42,7 @@ HEADERS += \
     FoldManager.h \
     FdUtility.h \
     Hinge.h \
-    BundleNode.h \
+    BundlePatchNode.h \
     Decomposer.h \
     Scaffold.h \
     ChainScaff.h \
@@ -68,7 +68,7 @@ SOURCES += \
     FoldManager.cpp \
     FdUtility.cpp \
     Hinge.cpp \
-    BundleNode.cpp \
+    BundlePatchNode.cpp \
     Decomposer.cpp \
     ChainScaff.cpp \
     DecScaff.cpp \
