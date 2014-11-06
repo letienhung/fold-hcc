@@ -66,7 +66,7 @@ void FoldManager::setNbSplits(int N)
 	{
 		for (UnitScaff* unit : shapeDec->units)
 		{
-			unit->maxNbSplits = nbSplits;
+			unit->setNbSplits(nbSplits);
 		}
 	}
 }
@@ -78,7 +78,7 @@ void FoldManager::setNbChunks(int N)
 	{
 		for (UnitScaff* unit : shapeDec->units)
 		{
-			unit->maxNbChunks = nbChunks;
+			unit->setNbChunks(nbChunks);
 		}
 	}
 }
@@ -153,7 +153,7 @@ void FoldManager::setCostWeight(double w)
 	{
 		for (UnitScaff* unit : shapeDec->units)
 		{
-			unit->weight = costWeight;
+			unit->setCostWeight(costWeight);
 		}
 	}
 }
@@ -166,10 +166,10 @@ void FoldManager::setAllParameters()
 	for (UnitScaff* unit : shapeDec->units)
 	{
 		unit->setAabbCstr(box);
-		unit->maxNbSplits = nbSplits;
-		unit->maxNbChunks = nbChunks;
+		unit->setNbSplits(nbSplits);
+		unit->setNbChunks(nbChunks);
 		unit->setThickness(thickness);
-		unit->weight = costWeight;
+		unit->setCostWeight(costWeight);
 	}
 
 	shapeDec->connThrRatio = connThrRatio;

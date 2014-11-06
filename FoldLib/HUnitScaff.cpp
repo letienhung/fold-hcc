@@ -180,9 +180,18 @@ void HUnitScaff::computeAvailFoldOptions(SuperShapeKf* ssKeyframe, HUnitSolution
 			QVector<Vector2> &obs = tmObstaclesProj[top_mid];
 
 			// prune
-			bool isColliding = fo->regionProj.containsAny(obs, -0.01);
-			bool inAABB = sln->aabbCstrProj.containsAll(fo->regionProj.getConners(), 0.01);
+			double thr = 0.05;
+			bool isColliding = fo->regionProj.containsAny(obs, -thr);
+			bool inAABB = sln->aabbCstrProj.containsAll(fo->regionProj.getConners(), thr);
 			accepted = !isColliding && inAABB;
+
+			{// debug
+				Geom::Rectangle tmRect = sln->baseRect.get3DRectangle(fo->regionProj);
+				if (accepted)
+					visDebug.addRectangle(tmRect, Qt::green);
+				else
+					visDebug.addRectangle(tmRect, Qt::red);
+			}
 		}
 
 		// store

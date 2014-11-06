@@ -343,5 +343,6 @@ void ScaffNode::setShowMesh( bool show )
 
 void ScaffNode::exportMeshIndividually(QString meshesFolder)
 {
+	deformMesh();
 	MeshHelper::saveOBJ(mMesh.data(), meshesFolder + '/' + mID + ".obj");
 }

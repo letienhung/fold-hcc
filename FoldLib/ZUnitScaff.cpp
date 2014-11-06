@@ -183,9 +183,22 @@ bool ZUnitScaff::foldabilizeZ(SuperShapeKf* ssKeyframe, TimeInterval ti)
 
 double ZUnitScaff::foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti)
 {
+	double cost;
 	// fold as Z if possible, otherwise fold as H
-	if (foldabilizeZ(ssKeyframe, ti)) return 0;
-	else return hUnit->foldabilize(ssKeyframe, ti);
+	if (foldabilizeZ(ssKeyframe, ti))
+	{
+		cost = 0;
+	}
+	else
+	{
+		cost = hUnit->foldabilize(ssKeyframe, ti);
+
+		{// debug
+			visDebug = hUnit->visDebug;
+		}
+	}
+
+	return cost;
 }
 
 
