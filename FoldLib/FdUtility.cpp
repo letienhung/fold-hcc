@@ -357,7 +357,7 @@ QVector<double> findRoots( QVector<double>& coeff )
 			maxAbs = fabs(c);
 	}
 
-	// scale the coeff
+	// normalize the coeff
 	if (maxAbs > 0)
 	{
 		for (double & c : coeff)

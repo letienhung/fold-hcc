@@ -66,16 +66,25 @@ void FdPlugin::create()
 		widget->ui->showDecomp->setCheckState(showDecomp ? Qt::Checked : Qt::Unchecked);
 		widget->ui->showKeyframe->setCheckState(showKeyframe ? Qt::Checked : Qt::Unchecked);
 
+		Vector3 sqzV = f_manager->sqzV;
+		if		(sqzV.x() ==  1) widget->ui->sqzV->setCurrentIndex(0);
+		else if (sqzV.x() == -1) widget->ui->sqzV->setCurrentIndex(1);
+		else if (sqzV.y() ==  1) widget->ui->sqzV->setCurrentIndex(2);
+		else if (sqzV.y() == -1) widget->ui->sqzV->setCurrentIndex(3);
+		else if (sqzV.z() ==  1) widget->ui->sqzV->setCurrentIndex(4);
+		else					 widget->ui->sqzV->setCurrentIndex(5);
 		widget->ui->costWeight->setValue(f_manager->costWeight);
 		widget->ui->nbSplits->setValue(f_manager->nbSplits);
 		widget->ui->nbChunks->setValue(f_manager->nbChunks);
-		widget->ui->connThrRatio->setValue(f_manager->connThrRatio);
+
 		widget->ui->aabbX->setValue(f_manager->aabbCstrScale[0]);
 		widget->ui->aabbY->setValue(f_manager->aabbCstrScale[1]);
 		widget->ui->aabbZ->setValue(f_manager->aabbCstrScale[2]);
 
 		widget->ui->nbKeyframes->setValue(f_manager->nbKeyframes);
+
 		widget->ui->thickness->setValue(f_manager->thickness);
+		widget->ui->connThrRatio->setValue(f_manager->connThrRatio);
 	}
 
 	// perspective
