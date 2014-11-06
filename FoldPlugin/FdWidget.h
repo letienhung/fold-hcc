@@ -31,6 +31,8 @@ public slots:
 	void setUnitList(QStringList labels);
 	void setChainList(QStringList labels);
 	void setKeyframeSlider(int N);
+	void onKeyframeSliderValueChanged();
+	void onKeyframTimeChanged();
 	
 	void forceShowKeyFrame();
 

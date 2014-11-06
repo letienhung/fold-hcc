@@ -51,7 +51,8 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->f_manager->connect(ui->nbKeyframes, SIGNAL(valueChanged(int)), SLOT(setNbKeyframes(int)));
 	plugin->f_manager->connect(ui->genKeyframes, SIGNAL(clicked()), SLOT(generateKeyframes()));
 	this->connect(plugin->f_manager, SIGNAL(keyframesChanged(int)), SLOT(setKeyframeSlider(int)));
-	plugin->f_manager->connect(ui->keyframeSlider, SIGNAL(valueChanged(int)), SLOT(selectKeyframe(int)));
+	this->connect(ui->keyframeSlider, SIGNAL(valueChanged(int)), SLOT(onKeyframeSliderValueChanged()));
+	this->connect(ui->keyframeTime, SIGNAL(valueChanged(double)), SLOT(onKeyframTimeChanged()));
 	plugin->connect(ui->exportCurrent, SIGNAL(clicked()), SLOT(exportCurrent()));
 	plugin->connect(ui->exportAllObj, SIGNAL(clicked()), SLOT(exportAllObj()));
 	
@@ -104,10 +105,7 @@ void FdWidget::setChainList( QStringList labels )
 
 void FdWidget::setKeyframeSlider( int N )
 {
-	ui->keyframeSlider->setMaximum(N);
-	ui->nbKeyframeSlider->setText(QString::number(N));
-
-	//if(N > 1) forceShowKeyFrame();
+	ui->keyframeSlider->setMaximum(N-1);
 }
 
 void FdWidget::selectUnit()
@@ -128,4 +126,30 @@ void FdWidget::selectChain()
 	{
 		emit(chainSelectionChanged(selItems.front()->text()));
 	}
+}
+
+void FdWidget::onKeyframeSliderValueChanged()
+{
+	int idx = ui->keyframeSlider->value();
+	int N = ui->keyframeSlider->maximum();
+	double t = idx / (double)N;
+
+	ui->keyframeTime->blockSignals(true);
+	ui->keyframeTime->setValue(t);
+	ui->keyframeTime->blockSignals(false);
+
+	plugin->f_manager->selectKeyframe(idx);
+}
+
+void FdWidget::onKeyframTimeChanged()
+{
+	int N = ui->keyframeSlider->maximum();
+	double t = ui->keyframeTime->value();
+	int idx = (int)(t * N);
+
+	ui->keyframeSlider->blockSignals(true);
+	ui->keyframeSlider->setValue(idx);
+	ui->keyframeSlider->blockSignals(false);
+
+	plugin->f_manager->selectKeyframe(idx);
 }

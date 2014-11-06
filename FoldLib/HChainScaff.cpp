@@ -310,7 +310,7 @@ void HChainScaff::computePhaseSeparator()
 	heightSep = A + sqrt(b * b - d * d);
 
 	// angle
-	double sin_angle = heightSep - A;
+	double sin_angle = (heightSep - A) / b;
 	angleSep = asin(RANGED(0, sin_angle, 1));
 }
 

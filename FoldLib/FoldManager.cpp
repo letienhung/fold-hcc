@@ -241,7 +241,7 @@ void FoldManager::updateKeyframeSlider()
 {
 	if (!shapeDec) return;
 
-	emit(keyframesChanged(shapeDec->keyframes.size() - 1));
+	emit(keyframesChanged(shapeDec->keyframes.size()));
 }
 
 Scaffold* FoldManager::activeScaffold()
