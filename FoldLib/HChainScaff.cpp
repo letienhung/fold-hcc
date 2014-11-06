@@ -196,21 +196,23 @@ void HChainScaff::foldUniformHeight(double t)
 	if (h >= heightSep)
 	{
 		double alpha_orig = acos(RANGED(0, d / L, 1));
-		TimeInterval alpha_it(angleSep, alpha_orig);
-		double x = 2 * b * h;
-		double y = 2 * b * d;
-		double z = d * d + h * h + b * b - A * A;
-		double aa = x * x + y * y;
-		double bb = -2 * y * z;
-		double cc = z * z - x * x;
+		double alpha = alpha_orig;
+		if (t > 1e-10)
+		{
+			TimeInterval alpha_it(angleSep, alpha_orig);
+			double x = 2 * b * h;
+			double y = 2 * b * d;
+			double z = d * d + h * h + b * b - A * A;
+			double aa = x * x + y * y;
+			double bb = -2 * y * z;
+			double cc = z * z - x * x;
 
-		double alpha = 0;
-		QVector<double> roots = findRoots(aa, bb, cc);
-		for (double r : roots){
-			alpha = acos(RANGED(0, r, 1));
-			if (alpha_it.contains(alpha)) break;
+			QVector<double> roots = findRoots(aa, bb, cc);
+			for (double r : roots){
+				alpha = acos(RANGED(0, r, 1));
+				if (alpha_it.contains(alpha)) break;
+			}
 		}
-		if (alpha == 0) alpha = alpha_orig; //set original angle if no roots found
 
 		double cos_beta = (d - b * cos(alpha)) / A;
 		double beta = acos(RANGED(0, cos_beta, 1));
@@ -234,44 +236,40 @@ void HChainScaff::foldUniformHeight(double t)
 	// phase-II: return
 	else
 	{
-		TimeInterval alpha_it(0, angleSep);
-		double B = b * b * n * (n - 2);
-		double C = -2 * b * d * (n - 1) * (n - 1);
-		double D = A * A - h * h - b * b - (n - 1) * (n - 1) * d * d;
-		double E = 4 * b * b * h * h - 2 * B * D + C * C;
-		double F = -2 * C * D;
-		double G = D * D - 4 * b * b * h * h;
-		double K = 2 * B * C;
-
 		double alpha = 0, beta = 0;
-		QVector<double> roots = findRoots(B * B, K, E, F, G);
-		for (double r : roots)
-		{
-			if (r < 0) continue;
-
-			alpha = acos(RANGED(0, r, 1));
-			if (alpha_it.contains(alpha))
-			{
-				double cos_beta = (b * r - d) / a;
-				beta = acos(RANGED(0, cos_beta, 1));
-
-				double hh = A * sin(beta) + b * sin(alpha);
-				if (fabs(h - hh) < ZERO_TOLERANCE_LOW)
-					break;
-			}
-		}
-		// angles are sensitive to noise at very beginning or end
-		if (t < 0.01)
+		if (t < 1e-10)
 		{
 			alpha = angleSep;
 			double cos_beta = (b * cos(alpha) - d) / a;
 			beta = acos(RANGED(0, cos_beta, 1));
 		}
-		if (1 - t < 0.01)
+		else
 		{
-			alpha = 0;
-			double cos_beta = (b * cos(alpha) - d) / a;
-			beta = acos(RANGED(0, cos_beta, 1));
+			TimeInterval alpha_it(0, angleSep);
+			double B = b * b * n * (n - 2);
+			double C = -2 * b * d * (n - 1) * (n - 1);
+			double D = A * A - h * h - b * b - (n - 1) * (n - 1) * d * d;
+			double E = 4 * b * b * h * h - 2 * B * D + C * C;
+			double F = -2 * C * D;
+			double G = D * D - 4 * b * b * h * h;
+			double K = 2 * B * C;
+
+			QVector<double> roots = findRoots(B * B, K, E, F, G);
+			for (double r : roots)
+			{
+				if (r < 0) continue;
+
+				alpha = acos(RANGED(0, r, 1));
+				if (alpha_it.contains(alpha))
+				{
+					double cos_beta = (b * r - d) / a;
+					beta = acos(RANGED(0, cos_beta, 1));
+
+					double hh = A * sin(beta) + b * sin(alpha);
+					if (fabs(h - hh) < ZERO_TOLERANCE_LOW)
+						break;
+				}
+			}
 		}
 
 		// set angles

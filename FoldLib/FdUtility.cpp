@@ -349,6 +349,21 @@ QVector<double> findRoots( QVector<double>& coeff )
 {
 	QVector<double> roots;
 
+	// find the max absolute value
+	double maxAbs = 0;
+	for (double c : coeff)
+	{
+		if (fabs(c) > maxAbs)
+			maxAbs = fabs(c);
+	}
+
+	// scale the coeff
+	if (maxAbs > 0)
+	{
+		for (double & c : coeff)
+			c /= maxAbs;
+	}
+
 	// remove zero coeff
 	int n;
 	for (n = 0; n < coeff.size(); n++)

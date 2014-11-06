@@ -23,6 +23,7 @@ namespace RootFinder
 {
 	const double pos_inf = std::numeric_limits<double>::max();
 	const double neg_inf = -std::numeric_limits<double>::max();
+	const double error_tolerance = 1e-10;
 
 	template<typename T> int sign(T x)
 	{
@@ -36,7 +37,6 @@ namespace RootFinder
 
 	bool is_zero(double x)
 	{
-		const double error_tolerance = 0.0001;
 		return (std::fabs(x) < error_tolerance);
 	}
 
