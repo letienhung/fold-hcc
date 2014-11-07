@@ -158,7 +158,7 @@ Scaffold* FdPlugin::activeScaffold()
 	else if (ps->showDecomp)
 		return f_manager->activeScaffold();
 	else
-		return s_manager->scaffold;
+		return f_manager->inputScaffold;
 }
 
 void FdPlugin::showStatus( QString msg )
