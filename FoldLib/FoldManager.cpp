@@ -62,117 +62,66 @@ void FoldManager::setNbKeyframes(int N)
 void FoldManager::setNbSplits(int N)
 {
 	nbSplits = N;
-	if (shapeDec)
-	{
-		for (UnitScaff* unit : shapeDec->units)
-		{
-			unit->setNbSplits(nbSplits);
-		}
-	}
+	updateParameters();
 }
 
 void FoldManager::setNbChunks(int N)
 {
 	nbChunks = N;
-	if (shapeDec)
-	{
-		for (UnitScaff* unit : shapeDec->units)
-		{
-			unit->setNbChunks(nbChunks);
-		}
-	}
+	updateParameters();
 }
 
 void FoldManager::setThickness(double thk)
 {
 	thickness = thk;
-	if (shapeDec)
-	{
-		for (UnitScaff* unit : shapeDec->units)
-		{
-			unit->setThickness(thickness);
-		}
-	}
+	updateParameters();
 }
 
 void FoldManager::setConnThrRatio(double thr)
 {
 	connThrRatio = thr;
-	if (shapeDec)
-	{
-		shapeDec->connThrRatio = connThrRatio;
-	}
+	updateParameters();
 }
 
 void FoldManager::setAabbX(double x)
 {
 	aabbCstrScale[0] = x;
-	if (shapeDec)
-	{
-		Geom::Box box = shapeDec->computeAABB().box();
-		box.scale(aabbCstrScale);
-		for (UnitScaff* unit : shapeDec->units)
-		{
-			unit->setAabbCstr(box);
-		}
-	}
+	updateParameters();
 }
 
 void FoldManager::setAabbY(double y)
 {
 	aabbCstrScale[1] = y;
-	if (shapeDec)
-	{
-		Geom::Box box = shapeDec->computeAABB().box();
-		box.scale(aabbCstrScale);
-		for (UnitScaff* unit : shapeDec->units)
-		{
-			unit->setAabbCstr(box);
-		}
-	}
+	updateParameters();
 }
 
 void FoldManager::setAabbZ(double z)
 {
 	aabbCstrScale[2] = z;
 	if (shapeDec)
-	{
-		Geom::Box box = shapeDec->computeAABB().box();
-		box.scale(aabbCstrScale);
-		for (UnitScaff* unit : shapeDec->units)
-		{
-			unit->setAabbCstr(box);
-		}
-	}
+	updateParameters();
 }
 
 void FoldManager::setCostWeight(double w)
 {
 	costWeight = w;
 	if (shapeDec)
-	{
-		for (UnitScaff* unit : shapeDec->units)
-		{
-			unit->setCostWeight(costWeight);
-		}
-	}
+	updateParameters();
 }
 
-void FoldManager::setAllParameters()
+void FoldManager::updateParameters()
 {
-	Geom::Box box = shapeDec->computeAABB().box();
-	box.scale(aabbCstrScale);
-
-	for (UnitScaff* unit : shapeDec->units)
+	if (shapeDec)
 	{
-		unit->setAabbCstr(box);
-		unit->setNbSplits(nbSplits);
-		unit->setNbChunks(nbChunks);
-		unit->setThickness(thickness);
-		unit->setCostWeight(costWeight);
-	}
+		shapeDec->aabbCstrScale = aabbCstrScale;
+		shapeDec->nbSplits = nbSplits;
+		shapeDec->nbChunks = nbChunks;
+		shapeDec->costWeight = costWeight;
+		shapeDec->connThrRatio = connThrRatio;
+		shapeDec->thickness = thickness;
 
-	shapeDec->connThrRatio = connThrRatio;
+		shapeDec->setParameters();
+	}
 }
 
 // selection
@@ -288,7 +237,7 @@ void FoldManager::foldabilize()
 	// foldabilize
 	message("Decomposing...");
 	decompose();
-	setAllParameters();
+	updateParameters();
 	message("Foldabilizing...");
 	shapeDec->foldabilize(); 
 	

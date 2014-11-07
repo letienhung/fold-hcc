@@ -26,6 +26,8 @@ ScaffManager::~ScaffManager()
 
 void ScaffManager::createScaffold()
 {
+	if (!wholeMesh) return;
+
 	SegMeshLoader sml(wholeMesh);
 	QVector<SurfaceMeshModel*> subMeshes = sml.getSegMeshes();
 

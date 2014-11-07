@@ -17,11 +17,14 @@ public:
 	~DecScaff();
 
 public:
-	// squeezing direction
+	// parameters
 	Vector3 sqzV;
-
-	// threshold
+	Vector3 aabbCstrScale;
+	int nbSplits;
+	int nbChunks;
+	double costWeight;
 	double connThrRatio;
+	double thickness;
 
 	// masters
 	QVector<PatchNode*> masters;
@@ -31,8 +34,8 @@ public:
 	QVector< QSet<int> > slave2master;
 	QVector< QSet<int> > slaveClusters;
 
-	// blocks
-	int selBlockIdx;
+	// units
+	int selUnitIdx;
 	QVector<UnitScaff*> units;
 
 	// more about masters
@@ -49,23 +52,29 @@ public:
 	QVector<Scaffold*> keyframes;
 
 private:
-	// block 
+	// unit 
 	void computeUnitImportance();
 
 	// master order constraints
 	void computeMasterOrderConstraints();
 
-	// create blocks
+	// create units
 	bool areParallel(QVector<ScaffNode*>& ns);
 	UnitScaff* createUnit(QSet<int> sCluster);
 	void createUnits();
 
-	// store debug info in keyframe
+	// interlocking units
+	void foldabilizeInterlockUnits(double currTime, SuperShapeKf* currKeyframe);
+
+	// store debug info in key frame
 	void storeDebugInfo(Scaffold* kf, int uidx);
 
 public:
 	// threshold for connectivity
 	double getConnectThr();
+
+	// parameters
+	void setParameters();
 
 	// foldabilization
 	void foldabilize();

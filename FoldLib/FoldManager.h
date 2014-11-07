@@ -20,24 +20,10 @@ public:
 	// decomposition
 	DecScaff* shapeDec;
 
-	// keyframes
-	int nbKeyframes;
-
-	// parameters
-	Vector3 sqzV;
-	Vector3 aabbCstrScale;
-
-	int nbSplits;
-	int nbChunks;
-	double costWeight;
-
-	double connThrRatio;
-	double thickness;
-
 	// timing
 	double elapsedTime;
 
-public:
+private:
 	// update Ui
 	void updateUnitList();
 	void updateChainList();
@@ -51,6 +37,9 @@ public:
 	// statistics
 	void genStat();
 	void exportStat();
+
+	// update parameters
+	void updateParameters();
 
 public slots:
 	/// Main pipeline	
@@ -67,7 +56,6 @@ public slots:
 	void setAabbY(double y);
 	void setAabbZ(double z);
 	void setCostWeight(double w);
-	void setAllParameters();
 
 	// decompose
 	void decompose();

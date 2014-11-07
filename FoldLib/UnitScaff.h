@@ -75,28 +75,32 @@ public:
 	PatchNode* baseMaster;
 	QVector<PatchNode*> masters;
 
-public:
-	//*** PARAMETERS
-	// aabb constraint
-	Geom::Box aabbCstr;
-
 	// time
 	double timeScale; 
 	TimeInterval mFoldDuration;
 
-	// upper bound for modification
-	int maxNbSplits;
-	int maxNbChunks;
-
-	// trade-off weight for computing cost
-	double weight;
-
 	// normalized importance wrt. patch area
 	double importance; 
 
-	// thickness
-	bool useThickness;
-	double thickness;
+	//*** PARAMETERS
+	struct Parameters
+	{
+		// aabb constraint
+		Geom::Box aabbCstr;
+
+		// upper bound for modification
+		int maxNbSplits;
+		int maxNbChunks;
+
+		// trade-off weight for computing cost
+		double weight;
+
+		// thickness
+		bool useThickness;
+		double thickness;
+	}parameters;
+
+
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW

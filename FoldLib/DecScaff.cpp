@@ -36,7 +36,7 @@ DecScaff::DecScaff(QString id, Scaffold* scaffold, Vector3 v, double connThr)
 	timeScale = 1.0 / totalDuration;
 
 	// selection
-	selBlockIdx = -1;
+	selUnitIdx = -1;
 	keyframeIdx = -1;
 	//////////////////////////////////////////////////////////////////////////
 	//QVector<Geom::Segment> normals;
@@ -212,8 +212,8 @@ void DecScaff::computeMasterOrderConstraints()
 
 UnitScaff* DecScaff::getSelUnit()
 {
-	if (selBlockIdx >= 0 && selBlockIdx < units.size())
-		return units[selBlockIdx];
+	if (selUnitIdx >= 0 && selUnitIdx < units.size())
+		return units[selUnitIdx];
 	else
 		return nullptr;
 }
@@ -240,10 +240,10 @@ QStringList DecScaff::getUnitLabels()
 void DecScaff::selectUnit( QString id )
 {
 	// select layer named id
-	selBlockIdx = -1;
+	selUnitIdx = -1;
 	for (int i = 0; i < units.size(); i++){
 		if (units[i]->mID == id){
-			selBlockIdx = i;
+			selUnitIdx = i;
 			break;
 		}
 	}
@@ -394,7 +394,7 @@ void DecScaff::foldabilize()
 		u->mFoldDuration.set(1.0, 2.0); // t > 1.0 means not be folded
 	}
 
-	// choose best free block
+	// choose best free unit
 	std::cout << "\n============================="
 			  << "\n============START============\n";
 	double currTime = 0.0;
@@ -432,32 +432,66 @@ void DecScaff::foldabilize()
 		next_unit = getBestNextUnit(currTime, currKeyframe);
 	}
 
-	// remaining blocks (if any) are interlocking
-	QVector<UnitScaff*> units_copy = units;
-	units.clear();
-	QVector<int> intlkUnitIdx;
-	for (int uid = 0; uid < units_copy.size(); uid ++)
-	{
-		UnitScaff* u = units_copy[uid];
-		if (u->mFoldDuration.start < 1) units << u;
-		else intlkUnitIdx << uid;
-	}
+	// interlocking units
+	foldabilizeInterlockUnits(currTime, currKeyframe);
 
-	// merge them as single block to foldabilize
-	if (!intlkUnitIdx.isEmpty())
-	{
-		std::cout << "\n=====MERGE INTERLOCKING======\n";
-		QSet<int> sCluster;
-		for (int uidx : intlkUnitIdx)
-			sCluster += slaveClusters[uidx];
-		
-		UnitScaff* mergedBlock = createUnit(sCluster);
-		mergedBlock->foldabilize(currKeyframe, TimeInterval(currTime, 1.0));
-	}
-
+	// finish
 	delete currKeyframe;
 	std::cout << "\n============FINISH============\n";
 }
+
+
+void DecScaff::foldabilizeInterlockUnits(double currTime, SuperShapeKf* currKeyframe)
+{
+	// the map between old unit indices to the new ones
+	QVector<int> newUnitIdx;
+	QVector<UnitScaff*> oldUnits = units;
+	units.clear();
+
+	// delete interlocking units
+	QVector<int> itlkUnitIdx;
+	for (int i = 0; i < oldUnits.size(); i++){
+		if (oldUnits[i]->mFoldDuration.start < 1){
+			// units has been foldabilized
+			units << oldUnits[i];
+			newUnitIdx << units.size() - 1;
+		}else{
+			// interlocking units
+			itlkUnitIdx << i;
+			newUnitIdx << -1;
+			delete oldUnits[i];
+		}
+	}
+
+	// do nothing if no interlocking
+	if (itlkUnitIdx.isEmpty()) return;
+	std::cout << "\n=====MERGE INTERLOCKING======\n";
+
+	// gather all interlocking slaves
+	QSet<int> itlkSlaves;
+	for (int ui : itlkUnitIdx){
+		itlkSlaves += slaveClusters[ui];
+		// map deleted unit to the new location
+		newUnitIdx[ui] = units.size();
+	}
+
+	// merge them as single unit to foldabilize
+	UnitScaff* mergedUnit = createUnit(itlkSlaves);
+	units << mergedUnit;
+	mergedUnit->initFoldSolution();
+	mergedUnit->foldabilize(currKeyframe, TimeInterval(currTime, 1.0));
+
+
+	// update master to unit map for keyframe generation
+	for (QString mid : masterUnitMap.keys()){
+		foreach(int ui_old, masterUnitMap[mid]){
+			int ui_new = newUnitIdx[ui_old];
+			masterUnitMap[mid].remove(ui_old);
+			masterUnitMap[mid].insert(ui_new);
+		}
+	}
+}
+
 
 double DecScaff::foldabilizeUnit(UnitScaff* unit, double currTime, SuperShapeKf* currKf,
 										double& nextTime, SuperShapeKf*& nextKf)
@@ -592,4 +626,20 @@ void DecScaff::computeUnitImportance()
 
 	for (UnitScaff* u : units)
 		u->setImportance(u->getTotalSlaveArea() / totalA);
+}
+
+void DecScaff::setParameters()
+{
+	Geom::Box box = computeAABB().box();
+	box.scale(aabbCstrScale);
+
+	for (UnitScaff* unit : units)
+	{
+		unit->setAabbCstr(box);
+		unit->setNbSplits(nbSplits);
+		unit->setNbChunks(nbChunks);
+		unit->setCostWeight(costWeight);
+
+		unit->setThickness(thickness);
+	}
 }
