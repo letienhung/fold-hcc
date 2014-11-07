@@ -30,13 +30,8 @@ public:
 	double getNbTopMasters();	// #top masters: decides the folding duration
 	double getTotalSlaveArea(); // the total area of slave patches
 
-	// parameter setters
-	virtual void setNbSplits(int n);
-	virtual void setNbChunks(int n);
-	virtual void setAabbCstr(Geom::Box aabb);
-	virtual void setCostWeight(double w);
+	// importance
 	virtual void setImportance(double imp);
-	virtual void setThickness(double thk);
 
 	// debug info from the current solution
 	virtual QVector<Vector3> getCurrObstacles() = 0;
@@ -66,7 +61,6 @@ public:
 	virtual double	foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti) = 0;
 
 public:
-	//*** ENTITIES
 	// chains
 	int selChainIdx;
 	QVector<ChainScaff*> chains;
@@ -81,26 +75,6 @@ public:
 
 	// normalized importance wrt. patch area
 	double importance; 
-
-	//*** PARAMETERS
-	struct Parameters
-	{
-		// aabb constraint
-		Geom::Box aabbCstr;
-
-		// upper bound for modification
-		int maxNbSplits;
-		int maxNbChunks;
-
-		// trade-off weight for computing cost
-		double weight;
-
-		// thickness
-		bool useThickness;
-		double thickness;
-	}parameters;
-
-
 
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW

@@ -2,6 +2,7 @@
 #include "FdUtility.h"
 #include "RodNode.h"
 #include "Numeric.h"
+#include "ParSingleton.h"
 
 ChainScaff::ChainScaff( ScaffNode* slave, PatchNode* base, PatchNode* top)
 	: Scaffold(slave->mID)
@@ -155,8 +156,9 @@ FoldOption* ChainScaff::genFoldOption(QString id, bool isRight, double width, do
 	return fn;
 }
 
-QVector<FoldOption*> ChainScaff::genRegularFoldOptions( int nSplits, int nChunks, int maxNbChunks )
+QVector<FoldOption*> ChainScaff::genRegularFoldOptions( int nSplits, int nChunks )
 {
+	int maxNbChunks = ParSingleton::instance()->maxNbChunks;
 	double chunkWidth = 1.0/double(maxNbChunks);
 	double usedWidth = chunkWidth * nChunks;
 
@@ -177,11 +179,12 @@ QVector<FoldOption*> ChainScaff::genRegularFoldOptions( int nSplits, int nChunks
 	return options;
 }
 
-FoldOption* ChainScaff::genDeleteFoldOption( int nSplits )
+FoldOption* ChainScaff::genDeleteFoldOption()
 {
-	// keep the number of slipts for computing the cost
+	// keep the number of splits for computing the cost
 	QString fnid = mID + "_delete";
-	FoldOption* delete_fn = new FoldOption(fnid, true, 0, 0, nSplits);
+	int nS = ParSingleton::instance()->maxNbSplits;
+	FoldOption* delete_fn = new FoldOption(fnid, true, 0, 0, nS);
 	return delete_fn;
 }
 

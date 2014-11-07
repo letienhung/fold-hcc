@@ -13,7 +13,7 @@ class FdWidget : public QWidget
     Q_OBJECT
 
 public:
-    explicit FdWidget(FdPlugin *fp, QWidget *parent = 0);
+    explicit FdWidget(FdPlugin *fdp, QWidget *parent = 0);
     ~FdWidget();
 
 public:

@@ -16,12 +16,12 @@
 #include "AABB.h"
 #include "MinOBB.h"
 #include "CustomDrawObjects.h"
+#include "ParSingleton.h"
 
 
 Scaffold::Scaffold(QString id /*= ""*/)
 	:Graph(id)
 {
-	showAABB = false;
 	path = "";
 }
 
@@ -29,7 +29,6 @@ Scaffold::Scaffold( Scaffold& other )
 	:Graph(other)
 {
 	path = other.path + "_cloned";
-	showAABB = false;
 }
 
 // construct from combination using regular masters shared between scaffs
@@ -279,13 +278,12 @@ void Scaffold::drawAABB()
 	}
 }
 
-
 void Scaffold::draw()
 {
 	Structure::Graph::draw();
 
 	// draw aabb
-	if (showAABB) drawAABB();
+	if (ParSingleton::instance()->showAABB) drawAABB();
 
 	// debug
 	visDebug.draw();
@@ -422,24 +420,6 @@ QVector<ScaffNode*> Scaffold::split( QString nid, QVector<Geom::Plane>& planes )
 	removeNode(nid);
 
 	return chopped;
-}
-
-void Scaffold::showCuboids( bool show )
-{
-	for (ScaffNode* n : getScaffNodes())
-		n->setShowCuboid(show);
-}
-
-void Scaffold::showScaffold( bool show )
-{
-	for (ScaffNode* n : getScaffNodes())
-		n->setShowScaffold(show);
-}
-
-void Scaffold::showMeshes( bool show )
-{
-	for (ScaffNode* n : getScaffNodes())
-		n->setShowMesh(show);
 }
 
 void Scaffold::changeNodeType( ScaffNode* n )

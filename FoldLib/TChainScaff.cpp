@@ -1,5 +1,6 @@
 #include "TChainScaff.h"
 #include "Numeric.h"
+#include "ParSingleton.h"
 
 TChainScaff::TChainScaff(ScaffNode* slave, PatchNode* base, PatchNode* top)
 :ChainScaff(slave, base, top)
@@ -90,13 +91,14 @@ void TChainScaff::fold(double t)
 	restoreConfiguration();
 }
 
-QVector<FoldOption*> TChainScaff::genRegularFoldOptions(int maxNbSplits, int maxNbChunks)
+QVector<FoldOption*> TChainScaff::genRegularFoldOptions()
 {
 	// enumerate all possible combination of nS and nC
 	QVector<FoldOption*> options;
-	for (int nS = 0; nS <= maxNbSplits; nS ++)
-	for (int nC = 1; nC <= maxNbChunks; nC++)
-		options << ChainScaff::genRegularFoldOptions(nS, nC, maxNbChunks);
+	ParSingleton* ps = ParSingleton::instance();
+	for (int nS = 0; nS <= ps->maxNbSplits; nS ++)
+	for (int nC = 1; nC <= ps->maxNbChunks; nC++)
+		options << ChainScaff::genRegularFoldOptions(nS, nC);
 
 	return options;
 }

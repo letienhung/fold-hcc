@@ -167,27 +167,6 @@ void BundlePatchNode::exportIntoWholeMesh(QFile &file, int& v_offset)
 	}
 }
 
-void BundlePatchNode::setShowCuboid( bool show )
-{
-	ScaffNode::setShowCuboid(show);
-	for (ScaffNode* n : subNodes)
-		n->setShowCuboid(show);
-}
-
-void BundlePatchNode::setShowScaffold( bool show )
-{
-	ScaffNode::setShowScaffold(show);
-	for (ScaffNode* n : subNodes)
-		n->setShowScaffold(show);
-}
-
-void BundlePatchNode::setShowMesh( bool show )
-{
-	ScaffNode::setShowMesh(show);
-	for (ScaffNode* n : subNodes)
-		n->setShowMesh(show);
-}
-
 void BundlePatchNode::translate( Vector3 v )
 {
 	ScaffNode::translate(v);

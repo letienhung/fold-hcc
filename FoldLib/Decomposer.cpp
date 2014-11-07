@@ -3,6 +3,7 @@
 #include "DecScaff.h"
 #include "TUnitScaff.h"
 #include "HUnitScaff.h"
+#include "ParSingleton.h"
 
 Decomposer::Decomposer(DecScaff* ss)
 {
@@ -19,9 +20,10 @@ void Decomposer::execute()
 ScaffNodeArray2D Decomposer::getPerpConnGroups()
 {
 	// squeezing direction
+	Vector3 sqzV = ParSingleton::instance()->sqzV;
 	Geom::AABB aabb = scfd->computeAABB();
 	Geom::Box box = aabb.box();
-	int sqzAId = aabb.box().getAxisId(scfd->sqzV);
+	int sqzAId = aabb.box().getAxisId(sqzV);
 
 	// threshold
 	double perpThr = 0.1;
@@ -32,11 +34,11 @@ ScaffNodeArray2D Decomposer::getPerpConnGroups()
 	for (ScaffNode* n : scfd->getScaffNodes())
 	{
 		// perp node: rod or patch
-		if (n->isPerpTo(scfd->sqzV, perpThr))
+		if (n->isPerpTo(sqzV, perpThr))
 		{
 			PatchNode* pn;
 			if (n->mType == ScaffNode::ROD)
-				pn = scfd->changeRodToPatch((RodNode*)n, scfd->sqzV);
+				pn = scfd->changeRodToPatch((RodNode*)n, sqzV);
 			else
 				pn = (PatchNode*)n;
 
@@ -49,9 +51,9 @@ ScaffNodeArray2D Decomposer::getPerpConnGroups()
 			for (RodNode* rn : pn->getEdgeRodNodes())
 			{
 				// add virtual rod nodes 
-				if (rn->isPerpTo(scfd->sqzV, perpThr))
+				if (rn->isPerpTo(sqzV, perpThr))
 				{
-					PatchNode* prn = new PatchNode(rn, scfd->sqzV);
+					PatchNode* prn = new PatchNode(rn, sqzV);
 					prn->addTag(EDGE_VIRTUAL_TAG);
 					scfd->Structure::Graph::addNode(prn);
 
@@ -99,6 +101,7 @@ ScaffNodeArray2D Decomposer::getPerpConnGroups()
 void Decomposer::createMasters()
 {
 	ScaffNodeArray2D perpConnGroups = getPerpConnGroups();
+	Vector3 sqzV = ParSingleton::instance()->sqzV;
 
 	// merge connected groups into patches
 	for(auto pcGroup : perpConnGroups)
@@ -123,7 +126,7 @@ void Decomposer::createMasters()
 
 			// create bundle master
 			if (!allVirtual)
-				scfd->masters << (PatchNode*)scfd->wrapAsBundleNode(getIds(pcGroup), scfd->sqzV);
+				scfd->masters << (PatchNode*)scfd->wrapAsBundleNode(getIds(pcGroup), sqzV);
 			// treat edge virtual nodes individually
 			else for (ScaffNode* pcNode : pcGroup)
 					scfd->masters << (PatchNode*)pcNode;
@@ -134,7 +137,7 @@ void Decomposer::createMasters()
 	for (PatchNode* m : scfd->masters)
 	{
 		// consistent normal with sqzV
-		if (dot(m->mPatch.Normal, scfd->sqzV) < 0)
+		if (dot(m->mPatch.Normal, sqzV) < 0)
 			m->mPatch.flipNormal();
 
 		// tag

@@ -60,11 +60,6 @@ public:
 	// relation with direction
 	virtual bool isPerpTo(Vector3 v, double dotThreshold);
 
-	// visualization
-	virtual void setShowCuboid(bool show);
-	virtual void setShowScaffold(bool show);
-	virtual void setShowMesh(bool show);
-
 	// samples
 	virtual QVector<Vector3> sampleBoundabyOfScaffold(int n) = 0;
 
@@ -79,9 +74,6 @@ public:
 
 	// visualization
 	bool isHidden;
-	bool showCuboid;
-	bool showScaffold;
-	bool showMesh;
 };
 
 #define BUNDLE_TAG "isBundleNode"

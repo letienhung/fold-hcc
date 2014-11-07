@@ -25,10 +25,9 @@ public:
 public:
 	// fold options
 	FoldOption* genFoldOption(QString id, bool isRight, double width, double startPos, int nSplits); // regular option
-	FoldOption* genDeleteFoldOption(int nSplits);	// deleting option
-	QVector<FoldOption*> genRegularFoldOptions(int nS, int nC, int maxNbChunks);	// regular options with nS and nC
-	virtual QVector<FoldOption*> genRegularFoldOptions(int maxNbSplits, int maxNbChunks) = 0; 
-													// regular options with no more than maxNbSplits and maxNbChunks
+	FoldOption* genDeleteFoldOption();	// deleting option
+	QVector<FoldOption*> genRegularFoldOptions(int nS, int nC);	// regular options with nS and nC
+	virtual QVector<FoldOption*> genRegularFoldOptions() = 0;	// all regular options
 
 	// fold region
 	virtual Geom::Rectangle getFoldRegion(FoldOption* fn) = 0;

@@ -4,6 +4,7 @@
 #include "ChainScaff.h"
 #include "TChainScaff.h"
 #include "GeomUtility.h"
+#include "ParSingleton.h"
 
 UnitScaff::UnitScaff(QString id, QVector<PatchNode*>& ms, QVector<ScaffNode*>& ss,
 	QVector< QVector<QString> >&) : Scaffold(id)
@@ -19,17 +20,8 @@ UnitScaff::UnitScaff(QString id, QVector<PatchNode*>& ms, QVector<ScaffNode*>& s
 	// selected chain index
 	selChainIdx = -1;
 
-	// upper bound of modification
-	maxNbSplits = 1;
-	maxNbChunks = 2;
-
-	// cost weight
-	weight = 0.05;
-	importance = 0;  // importance 
-	
-	// thickness
-	thickness = 2;
-	useThickness = false;
+	// importance 
+	importance = 0;  
 }
 
 void UnitScaff::computeChainImportances()
@@ -49,37 +41,6 @@ UnitScaff::~UnitScaff()
 {
 	for (ChainScaff* c : chains)
 		delete c;
-}
-
-
-void UnitScaff::setAabbCstr(Geom::Box aabb)
-{
-	aabbCstr = aabb;
-}
-
-void UnitScaff::setNbSplits(int n)
-{
-	maxNbSplits = n;
-}
-
-void UnitScaff::setNbChunks(int n)
-{
-	maxNbChunks = n;
-}
-
-void UnitScaff::setCostWeight(double w)
-{
-	weight = w;
-}
-
-void UnitScaff::setThickness(double thk)
-{
-	thickness = thk;
-	for (ChainScaff* chain : chains)
-	{
-		chain->halfThk = thickness / 2;
-		chain->baseOffset = thickness / 2;
-	}
 }
 
 void UnitScaff::setImportance(double imp)
@@ -246,6 +207,7 @@ QVector<Vector3> UnitScaff::computeObstaclePnts(SuperShapeKf* ssKeyframe, QStrin
 
 Geom::Rectangle2 UnitScaff::getAabbCstrProj(Geom::Rectangle& base_rect)
 {
+	Geom::Box aabbCstr = ParSingleton::instance()->aabbCstr;
 	int aid = aabbCstr.getAxisId(base_rect.Normal);
 	Geom::Rectangle aabbCrossSect = aabbCstr.getCrossSection(aid, 0);
 

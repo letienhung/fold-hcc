@@ -9,16 +9,13 @@
 #include "RodNode.h"
 #include "PatchNode.h"
 #include "PcaOBB.h"
+#include "ParSingleton.h"
 
 ScaffNode::ScaffNode(QString id)
 	: Node(id)
 {
 	mType = NONE;
 	setRandomColor();
-
-	showCuboid = true;
-	showScaffold = true;
-	showMesh = true;
 
 	mAid = 0;
 
@@ -37,10 +34,6 @@ ScaffNode::ScaffNode(QString id, Geom::Box &b, MeshPtr m )
 	mType = NONE;
 	setRandomColor();
 
-	showCuboid = true;
-	showScaffold = true;
-	showMesh = true;
-
 	mAid = 0;
 
 	isHidden = false;
@@ -56,10 +49,6 @@ ScaffNode::ScaffNode(ScaffNode& other)
 
 	mColor = other.mColor;
 	mType = other.mType;
-
-	showCuboid = true;
-	showScaffold = true; 
-	showMesh = false;
 
 	mAid = other.mAid;
 	isHidden = other.isHidden;
@@ -90,17 +79,18 @@ void ScaffNode::draw()
 {
 	if (isHidden) return;
 
-	if (showScaffold)
+	ParSingleton* fp = ParSingleton::instance();
+	if (fp->showScaffold)
 	{
 		drawScaffold();
 	}
 
-	if (showMesh)
+	if (fp->showMesh)
 	{
 		drawMesh();
 	}
 
-	if (showCuboid)
+	if (fp->showCuboid)
 	{
 		// faces
 		mBox.draw(mColor);
@@ -263,8 +253,6 @@ void ScaffNode::cloneMesh()
 	mesh->updateBoundingBox();
 
 	mMesh = MeshPtr(mesh);
-
-	showMesh = true;
 }
 
 void ScaffNode::exportIntoWholeMesh(QFile &wholeMeshFile, int &v_offset)
@@ -324,21 +312,6 @@ void ScaffNode::setBoxFrame(Geom::Frame frame)
 {
 	mBox.setFrame(frame);
 	createScaffold(true);
-}
-
-void ScaffNode::setShowCuboid( bool show )
-{
-	showCuboid = show;
-}
-
-void ScaffNode::setShowScaffold( bool show )
-{
-	showScaffold = show;
-}
-
-void ScaffNode::setShowMesh( bool show )
-{
-	showMesh = show;
 }
 
 void ScaffNode::exportMeshIndividually(QString meshesFolder)

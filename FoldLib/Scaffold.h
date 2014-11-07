@@ -52,9 +52,6 @@ public:
 	// visualization
 	virtual void draw() override;
 	void drawAABB();
-	void showCuboids(bool show);
-	void showMeshes(bool show);
-	void showScaffold(bool show);
 
 	// rendering
 	void removeNodesWithTag(QString tag);
@@ -63,7 +60,6 @@ public:
 
 public:
 	QString path;
-	bool showAABB;
 
 	// visual debugger
 	VisualDebugger visDebug;

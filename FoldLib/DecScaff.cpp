@@ -9,16 +9,13 @@
 #include "HUnitScaff.h"
 #include "ZUnitScaff.h"
 #include "Decomposer.h"
+#include "ParSingleton.h"
 
-DecScaff::DecScaff(QString id, Scaffold* scaffold, Vector3 v, double connThr)
+DecScaff::DecScaff(QString id, Scaffold* scaffold)
 	: Scaffold(*scaffold), baseMaster(nullptr) // clone the FdGraph
 {
 	path = QFileInfo(path).absolutePath();
 	mID = id;
-	sqzV = v;
-
-	// threshold
-	connThrRatio = connThr;
 
 	// decompose into units
 	createUnits();
@@ -38,11 +35,6 @@ DecScaff::DecScaff(QString id, Scaffold* scaffold, Vector3 v, double connThr)
 	// selection
 	selUnitIdx = -1;
 	keyframeIdx = -1;
-	//////////////////////////////////////////////////////////////////////////
-	//QVector<Geom::Segment> normals;
-	//for (PatchNode* m, masters)
-	//	normals << Geom::Segment(m->mPatch.Center, m->mPatch.Center + 10 * m->mPatch.Normal);
-	//addDebugSegments(normals);
 }
 
 DecScaff::~DecScaff()
@@ -151,6 +143,7 @@ void DecScaff::computeMasterOrderConstraints()
 {
 	// time stamps: bottom-up
 	double tScale;
+	Vector3 sqzV = ParSingleton::instance()->sqzV;
 	QMap<QString, double> masterTimeStamps = getTimeStampsNormalized(masters, sqzV, tScale);
 
 	// the base master is the bottom one that is not virtual
@@ -269,7 +262,7 @@ void DecScaff::storeDebugInfo(Scaffold* kf, int uidx)
 	}
 
 	// aabb constraint
-	kf->visDebug.addBox(unit->aabbCstr, Qt::cyan);
+	kf->visDebug.addBox(ParSingleton::instance()->aabbCstr, Qt::cyan);
 
 	// obstacles
 	kf->visDebug.addPoints(unit->getCurrObstacles(), Qt::blue);
@@ -318,10 +311,11 @@ Scaffold* DecScaff::genKeyframe( double t )
 	return keyframe;
 }
 
-void DecScaff::genKeyframes( int N )
+void DecScaff::genKeyframes()
 {
 	keyframes.clear();
 
+	int N = ParSingleton::instance()->nbKeyframes;
 	double step = 1.0 / (N-1);
 	for (int i = 0; i < N; i++)
 	{
@@ -375,7 +369,7 @@ SuperShapeKf* DecScaff::getSuperShapeKf( double t )
 
 	// create super shape key frame
 	// super masters sharing common regular masters will be grouped
-	SuperShapeKf* superShapeKf = new SuperShapeKf(superKf, masterOrderGreater, sqzV);
+	SuperShapeKf* superShapeKf = new SuperShapeKf(superKf, masterOrderGreater);
 
 	// garbage collection
 	delete superKf;
@@ -615,6 +609,7 @@ void DecScaff::selectKeyframe( int idx )
 
 double DecScaff::getConnectThr()
 {
+	double connThrRatio = ParSingleton::instance()->connThrRatio;
 	return connThrRatio * computeAABB().radius();
 }
 
@@ -626,20 +621,4 @@ void DecScaff::computeUnitImportance()
 
 	for (UnitScaff* u : units)
 		u->setImportance(u->getTotalSlaveArea() / totalA);
-}
-
-void DecScaff::setParameters()
-{
-	Geom::Box box = computeAABB().box();
-	box.scale(aabbCstrScale);
-
-	for (UnitScaff* unit : units)
-	{
-		unit->setAabbCstr(box);
-		unit->setNbSplits(nbSplits);
-		unit->setNbChunks(nbChunks);
-		unit->setCostWeight(costWeight);
-
-		unit->setThickness(thickness);
-	}
 }

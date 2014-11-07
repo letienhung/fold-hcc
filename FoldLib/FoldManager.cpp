@@ -1,28 +1,16 @@
 #include "FoldManager.h"
 #include "FdUtility.h"
 #include "ChainScaff.h"
+#include "ParSingleton.h"
 
 #include <QFileDialog>
 #include <QDir>
-
 #include <QElapsedTimer>
 
 FoldManager::FoldManager()
 {
 	inputScaffold = nullptr;
 	shapeDec = nullptr;
-
-	sqzV = Vector3(0, 0, 1);
-	aabbCstrScale = Vector3(1, 1, 1);
-
-	nbSplits = 1; 
-	nbChunks = 2;
-	costWeight = 0.5;
-
-	connThrRatio = 0.07;
-	thickness = 0;
-
-	nbKeyframes = 50;
 }
 
 FoldManager::~FoldManager()
@@ -40,88 +28,6 @@ void FoldManager::setInputScaffold( Scaffold* input )
 
 	updateUnitList();
 	updateKeyframeSlider();
-}
-
-// parameters
-void FoldManager::setSqzV( QString sqzV_str )
-{
-	sqzV = Vector3(0, 0, 0);
-	if (sqzV_str == "X") sqzV[0] = 1;
-	if (sqzV_str == "Y") sqzV[1] = 1;
-	if (sqzV_str == "Z") sqzV[2] = 1;
-	if (sqzV_str == "-X") sqzV[0] = -1;
-	if (sqzV_str == "-Y") sqzV[1] = -1;
-	if (sqzV_str == "-Z") sqzV[2] = -1;
-}
-
-void FoldManager::setNbKeyframes(int N)
-{
-	nbKeyframes = N;
-}
-
-void FoldManager::setNbSplits(int N)
-{
-	nbSplits = N;
-	updateParameters();
-}
-
-void FoldManager::setNbChunks(int N)
-{
-	nbChunks = N;
-	updateParameters();
-}
-
-void FoldManager::setThickness(double thk)
-{
-	thickness = thk;
-	updateParameters();
-}
-
-void FoldManager::setConnThrRatio(double thr)
-{
-	connThrRatio = thr;
-	updateParameters();
-}
-
-void FoldManager::setAabbX(double x)
-{
-	aabbCstrScale[0] = x;
-	updateParameters();
-}
-
-void FoldManager::setAabbY(double y)
-{
-	aabbCstrScale[1] = y;
-	updateParameters();
-}
-
-void FoldManager::setAabbZ(double z)
-{
-	aabbCstrScale[2] = z;
-	if (shapeDec)
-	updateParameters();
-}
-
-void FoldManager::setCostWeight(double w)
-{
-	costWeight = w;
-	if (shapeDec)
-	updateParameters();
-}
-
-void FoldManager::updateParameters()
-{
-	if (shapeDec)
-	{
-		shapeDec->aabbCstrScale = aabbCstrScale;
-		shapeDec->nbSplits = nbSplits;
-		shapeDec->nbChunks = nbChunks;
-		shapeDec->costWeight = costWeight;
-		shapeDec->connThrRatio = connThrRatio;
-		shapeDec->thickness = thickness;
-
-		shapeDec->setParameters();
-	}
 }
 
 // selection
@@ -206,8 +112,15 @@ void FoldManager::decompose()
 {
 	if (shapeDec) delete shapeDec;
 
-	shapeDec = new DecScaff("", inputScaffold, sqzV, connThrRatio);
+	// create decomposition
+	shapeDec = new DecScaff("", inputScaffold);
 
+	// calculate aabb constraint
+	Geom::Box aabb = shapeDec->computeAABB().box();
+	aabb.scale(ParSingleton::instance()->aabbCstrScale);
+	ParSingleton::instance()->aabbCstr = aabb;
+
+	// update unit list and key frame slider
 	updateUnitList();
 	updateKeyframeSlider();
 }
@@ -217,8 +130,7 @@ void FoldManager::generateKeyframes()
 	// generate
 	if (shapeDec)
 	{
-		setThickness(thickness);
-		shapeDec->genKeyframes(nbKeyframes);
+		shapeDec->genKeyframes();
 	}
 
 	// update slider on UI
@@ -237,7 +149,6 @@ void FoldManager::foldabilize()
 	// foldabilize
 	message("Decomposing...");
 	decompose();
-	updateParameters();
 	message("Foldabilizing...");
 	shapeDec->foldabilize(); 
 	
@@ -247,7 +158,7 @@ void FoldManager::foldabilize()
 
 	// generate key frames
 	message("Generating keyframes...");
-	shapeDec->genKeyframes(nbKeyframes);
+	shapeDec->genKeyframes();
 	updateKeyframeSlider();
 	message("Generating keyframes...Done!");
 
@@ -284,15 +195,15 @@ void FoldManager::exportStat()
 	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) return;
 	QTextStream out(&file);
 
-	// input
-	out << QString("%1 = %2, %3, %4\n").arg("sqzDirct").arg(sqzV[0]).arg(sqzV[1]).arg(sqzV[2]);
-	out << QString("%1 = %2, %3, %4\n").arg("aabbCstrScale").arg(aabbCstrScale[0]).arg(aabbCstrScale[1]).arg(aabbCstrScale[2]);
-	out << QString("%1 = %2\n\n").arg("connThrRatio").arg(connThrRatio);
-
 	// fold parameters
-	out << QString("%1 = %2\n").arg("nbSplits").arg(nbSplits);
-	out << QString("%1 = %2\n\n").arg("nbChunks").arg(nbChunks);
-	out << QString("%1 = %2\n").arg("costWeight").arg(costWeight);
+	ParSingleton* ps = ParSingleton::instance();
+	out << QString("%1 = %2, %3, %4\n").arg("sqzDirct").arg(ps->sqzV[0]).arg(ps->sqzV[1]).arg(ps->sqzV[2]);
+	out << QString("%1 = %2, %3, %4\n").arg("aabbCstrScale").arg(ps->aabbCstrScale[0]).arg(ps->aabbCstrScale[1]).arg(ps->aabbCstrScale[2]);
+	out << QString("%1 = %2\n\n").arg("connThrRatio").arg(ps->connThrRatio);
+
+	out << QString("%1 = %2\n").arg("maxNbSplits").arg(ps->maxNbSplits);
+	out << QString("%1 = %2\n\n").arg("maxNbChunks").arg(ps->maxNbChunks);
+	out << QString("%1 = %2\n").arg("splitWeight").arg(ps->splitWeight);
 
 	// timing
 	out << QString("%1 = %2\n").arg("elapsedTime").arg(elapsedTime);

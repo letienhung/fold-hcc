@@ -8,6 +8,7 @@
 #include <QProcess>
 #include "MeshHelper.h"
 #include "PCA.h"
+#include "ParSingleton.h"
 
 #include <QFileInfo>
 #include <QFileDialog>
@@ -34,13 +35,9 @@ FdPlugin::FdPlugin()
 	this->connect(f_manager, SIGNAL(message(QString)), SLOT(showStatus(QString)));
 	
 	// visual tags
-	showKeyframe = false;
-	showDecomp = false;
-	showAABB = false;
-	showCuboid = false;
-	showScaffold = true;
-	showMesh = false;
 	drawNodeOrder = false;
+	ParSingleton* ps = ParSingleton::instance();
+	this->connect(ps, SIGNAL(visualOptionChanged()), SLOT(updateScene()));
 
 	// color dialog
 	qColorDialog = nullptr;
@@ -59,32 +56,33 @@ void FdPlugin::create()
 		mainWindow()->addDockWidget(Qt::RightDockWidgetArea, dockwidget);
 
 		// default settings
-		widget->ui->showCuboid->setCheckState(showCuboid ? Qt::Checked : Qt::Unchecked);
-		widget->ui->showScaffold->setCheckState(showScaffold ? Qt::Checked : Qt::Unchecked);
-		widget->ui->showMesh->setCheckState(showMesh ? Qt::Checked : Qt::Unchecked);
-		widget->ui->showAABB->setCheckState(showAABB ? Qt::Checked : Qt::Unchecked);
-		widget->ui->showDecomp->setCheckState(showDecomp ? Qt::Checked : Qt::Unchecked);
-		widget->ui->showKeyframe->setCheckState(showKeyframe ? Qt::Checked : Qt::Unchecked);
+		ParSingleton* ps = ParSingleton::instance();
+		widget->ui->showCuboid->setCheckState(ps->showCuboid ? Qt::Checked : Qt::Unchecked);
+		widget->ui->showScaffold->setCheckState(ps->showScaffold ? Qt::Checked : Qt::Unchecked);
+		widget->ui->showMesh->setCheckState(ps->showMesh ? Qt::Checked : Qt::Unchecked);
+		widget->ui->showAABB->setCheckState(ps->showAABB ? Qt::Checked : Qt::Unchecked);
+		widget->ui->showDecomp->setCheckState(ps->showDecomp ? Qt::Checked : Qt::Unchecked);
+		widget->ui->showKeyframe->setCheckState(ps->showKeyframe ? Qt::Checked : Qt::Unchecked);
 
-		Vector3 sqzV = f_manager->sqzV;
+		Vector3 sqzV = ps->sqzV;
 		if		(sqzV.x() ==  1) widget->ui->sqzV->setCurrentIndex(0);
 		else if (sqzV.x() == -1) widget->ui->sqzV->setCurrentIndex(1);
 		else if (sqzV.y() ==  1) widget->ui->sqzV->setCurrentIndex(2);
 		else if (sqzV.y() == -1) widget->ui->sqzV->setCurrentIndex(3);
 		else if (sqzV.z() ==  1) widget->ui->sqzV->setCurrentIndex(4);
-		else					 widget->ui->sqzV->setCurrentIndex(5);
-		widget->ui->costWeight->setValue(f_manager->costWeight);
-		widget->ui->nbSplits->setValue(f_manager->nbSplits);
-		widget->ui->nbChunks->setValue(f_manager->nbChunks);
+		else if (sqzV.z() == -1) widget->ui->sqzV->setCurrentIndex(5);
+		widget->ui->costWeight->setValue(ps->splitWeight);
+		widget->ui->nbSplits->setValue(ps->maxNbSplits);
+		widget->ui->nbChunks->setValue(ps->maxNbChunks);
 
-		widget->ui->aabbX->setValue(f_manager->aabbCstrScale[0]);
-		widget->ui->aabbY->setValue(f_manager->aabbCstrScale[1]);
-		widget->ui->aabbZ->setValue(f_manager->aabbCstrScale[2]);
+		widget->ui->aabbX->setValue(ps->aabbCstrScale[0]);
+		widget->ui->aabbY->setValue(ps->aabbCstrScale[1]);
+		widget->ui->aabbZ->setValue(ps->aabbCstrScale[2]);
 
-		widget->ui->nbKeyframes->setValue(f_manager->nbKeyframes);
+		widget->ui->nbKeyframes->setValue(ps->nbKeyframes);
 
-		widget->ui->thickness->setValue(f_manager->thickness);
-		widget->ui->connThrRatio->setValue(f_manager->connThrRatio);
+		widget->ui->thickness->setValue(ps->thickness);
+		widget->ui->connThrRatio->setValue(ps->connThrRatio);
 	}
 
 	// perspective
@@ -124,24 +122,15 @@ void FdPlugin::drawWithNames()
 
 void FdPlugin::updateScene()
 {
-	// update visual options
-	Scaffold* active = activeScaffold();
-	if (active)
-	{
-		active->showAABB = showAABB;
-		active->showCuboids(showCuboid);
-		active->showScaffold(showScaffold);
-		active->showMeshes(showMesh);
-	}
-
 	drawArea()->updateGL();
 }
 
 void FdPlugin::resetScene()
 {
 	// show options
-	showDecomp = false;
-	showKeyframe = false;
+	ParSingleton* ps = ParSingleton::instance();
+	ps->showDecomp = false;
+	ps->showKeyframe = false;
 	widget->ui->showDecomp->setCheckState(Qt::Unchecked);
 	widget->ui->showKeyframe->setCheckState(Qt::Unchecked);
 	
@@ -163,9 +152,10 @@ void FdPlugin::resetScene()
 
 Scaffold* FdPlugin::activeScaffold()
 {
-	if (showKeyframe) 
+	ParSingleton* ps = ParSingleton::instance();
+	if (ps->showKeyframe) 
 		return f_manager->getSelKeyframe();
-	else if (showDecomp)
+	else if (ps->showDecomp)
 		return f_manager->activeScaffold();
 	else
 		return s_manager->scaffold;
@@ -227,43 +217,6 @@ QVector<ScaffNode*> FdPlugin::selectedScaffNodes()
 	return selNodes;
 }
 
-
-
-void FdPlugin::setShowDecomp( int state )
-{
-	showDecomp = (state == Qt::Checked);
-	updateScene();
-}
-
-void FdPlugin::setShowAABB( int state )
-{
-	showAABB = (state == Qt::Checked);
-	updateScene();
-}
-
-void FdPlugin::setShowCuboid( int state )
-{
-	showCuboid = (state == Qt::Checked);
-	updateScene();
-}
-
-void FdPlugin::setShowScaffold( int state )
-{
-	showScaffold = (state == Qt::Checked);
-	updateScene();
-}
-
-void FdPlugin::setShowMesh( int state )
-{
-	showMesh = (state == Qt::Checked);
-	updateScene();
-}
-
-void FdPlugin::setShowKeyframe( int state )
-{
-	showKeyframe = (state == Qt::Checked);
-	updateScene();
-}
 
 void FdPlugin::exportCurrent()
 {
@@ -383,7 +336,6 @@ void FdPlugin::saveSnapshotAll()
 	DecScaff* shapeDec = f_manager->shapeDec;
 	if (!shapeDec) return;
 
-	showKeyframe = true;
 	QString filename = shapeDec->path + "/snapshot";
 	drawArea()->setSnapshotFormat("PNG");
 	drawArea()->setSnapshotQuality(100);
@@ -399,6 +351,7 @@ void FdPlugin::saveSnapshotAll()
 
 void FdPlugin::hideSelectedNodes()
 {
+	bool showKeyframe = ParSingleton::instance()->showKeyframe;
 	QVector<ScaffNode*> snodes = selectedScaffNodes();
 	for(ScaffNode* n : snodes)
 	{
@@ -461,7 +414,7 @@ void FdPlugin::exportPNG()
 	DecScaff* shapeDec = f_manager->shapeDec;
 	if (!shapeDec) return;
 
-	showKeyframe = true;
+	ParSingleton::instance()->setShowKeyframe(true);
 
 	QString filename = QFileDialog::getSaveFileName(0, tr("Save Current Scaffold"), nullptr, tr("PNG file (*.png)"));
 	QString basefilename = filename;
@@ -492,6 +445,8 @@ void FdPlugin::exportSVG()
 	QVector<Scaffold *> activeFds;
 	activeFds << activeFd;
 
+	ParSingleton* ps = ParSingleton::instance();
+
 	QString filename, basefilename;
 	int ci = 0;
 	if(widget->ui->isSVGsequence->isChecked())
@@ -500,7 +455,7 @@ void FdPlugin::exportSVG()
 
 		// keyframes
 		QVector<Scaffold*> selGraphs; 
-		if (showKeyframe && f_manager->shapeDec) selGraphs = f_manager->shapeDec->keyframes;
+		if (ps->showKeyframe && f_manager->shapeDec) selGraphs = f_manager->shapeDec->keyframes;
 		for(Scaffold* g : selGraphs) activeFds << g;
 	}
 
@@ -534,7 +489,7 @@ void FdPlugin::exportSVG()
 
 			QVector<ScaffNode*> fdnodes = afd->getScaffNodes();
 
-			if(this->showCuboid)
+			if(ps->showCuboid)
 			{
 				std::sort( fdnodes.begin(), fdnodes.end(), CompareFdNode() );
 			}
@@ -548,7 +503,7 @@ void FdPlugin::exportSVG()
 				// skip hidden stuff for clean rendering
 				if (n->hasTag(EDGE_VIRTUAL_TAG)) continue;
 
-				if( this->showScaffold )
+				if( ps->showScaffold )
 				{
 					if (n->mType == ScaffNode::PATCH)
 					{
@@ -568,7 +523,7 @@ void FdPlugin::exportSVG()
 						out << QString("' %1/>\n").arg( style + QString("fill='%1' stroke='%2'").arg( n->mColor.name() ).arg( n->mColor.darker().name() ) );
 					}
 				}
-				else if( this->showCuboid )
+				else if( ps->showCuboid )
 				{
 					out << "<g>\n";
 
@@ -631,7 +586,8 @@ bool FdPlugin::keyPressEvent(QKeyEvent* event)
 		for(ScaffNode * n : selectedScaffNodes()) selectedNodeNames << n->mID;
 
 		// We are changing keyframes
-		if (showKeyframe && f_manager->shapeDec) selGraphs = f_manager->shapeDec->keyframes;
+		ParSingleton* ps = ParSingleton::instance();
+		if (ps->showKeyframe && f_manager->shapeDec) selGraphs = f_manager->shapeDec->keyframes;
 		
 		for(Scaffold* g : selGraphs)
 		{

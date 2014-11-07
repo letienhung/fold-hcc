@@ -1,6 +1,7 @@
 #include "TUnitScaff.h"
 #include "TChainScaff.h"
 #include "Numeric.h"
+#include "ParSingleton.h"
 
 TUnitScaff::TUnitScaff(QString id, QVector<PatchNode*>& ms, QVector<ScaffNode*>& ss,
 	QVector< QVector<QString> >& mPairs) :UnitScaff(id, ms, ss, mPairs)
@@ -120,15 +121,15 @@ void TUnitScaff::initFoldSolution()
 	// generate all fold options
 	sortedFoldOptions.clear();
 	Geom::Rectangle base_rect = baseMaster->mPatch;
-	for (FoldOption* fo : tChain->genRegularFoldOptions(maxNbSplits, maxNbChunks))
+	for (FoldOption* fo : tChain->genRegularFoldOptions())
 	{
 		fo->regionProj = base_rect.get2DRectangle(fo->region);
-		fo->computeCost(weight, maxNbSplits, 1);
+		fo->computeCost(1);
 		fo->index = sortedFoldOptions.size();
 		sortedFoldOptions << fo;
 	}
-	FoldOption* dfo = tChain->genDeleteFoldOption(maxNbSplits);
-	dfo->computeCost(weight, maxNbSplits, 1);
+	FoldOption* dfo = tChain->genDeleteFoldOption();
+	dfo->computeCost(1);
 	dfo->index = sortedFoldOptions.size();
 	sortedFoldOptions << dfo;
 

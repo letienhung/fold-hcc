@@ -254,7 +254,7 @@
           <item row="1" column="2" alignment="Qt::AlignHCenter">
            <widget class="QLabel" name="label_14">
             <property name="text">
-             <string>costWeight</string>
+             <string>split_w</string>
             </property>
            </widget>
           </item>

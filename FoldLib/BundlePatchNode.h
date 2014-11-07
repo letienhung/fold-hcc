@@ -29,9 +29,6 @@ public:
 
 	// visual
 	virtual void setColor(QColor c) override;
-	virtual void setShowCuboid(bool show) override;
-	virtual void setShowScaffold(bool show) override;
-	virtual void setShowMesh(bool show) override;
 
 	// transformation
 	virtual void translate(Vector3 v) override;

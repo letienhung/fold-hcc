@@ -58,9 +58,6 @@ void VisualDebugger::draw()
 	// scaffold
 	for (Scaffold* ds : scaffolds){
 		if (ds)	{
-			ds->showCuboids(false);
-			ds->showScaffold(true);
-			ds->showMeshes(false);
 			ds->draw();
 		}
 	}

@@ -23,7 +23,6 @@ public:
 	// timing
 	double elapsedTime;
 
-private:
 	// update Ui
 	void updateUnitList();
 	void updateChainList();
@@ -38,24 +37,10 @@ private:
 	void genStat();
 	void exportStat();
 
-	// update parameters
-	void updateParameters();
-
 public slots:
 	/// Main pipeline	
 	// input
 	void setInputScaffold(Scaffold* fdg);
-
-	// parameters
-	void setSqzV (QString sqzV_str);
-	void setNbSplits(int N);
-	void setNbChunks(int N);
-	void setThickness(double thk);
-	void setConnThrRatio(double thr);
-	void setAabbX(double x);
-	void setAabbY(double y);
-	void setAabbZ(double z);
-	void setCostWeight(double w);
 
 	// decompose
 	void decompose();
@@ -64,7 +49,6 @@ public slots:
 	void foldabilize();
 
 	// keyframes
-	void setNbKeyframes(int N);
 	void generateKeyframes();
 
 	// output

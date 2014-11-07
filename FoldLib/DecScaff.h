@@ -13,19 +13,10 @@
 class DecScaff final : public Scaffold
 {
 public:
-    DecScaff(QString id, Scaffold* scaffold, Vector3 v, double connThr);
+    DecScaff(QString id, Scaffold* scaffold);
 	~DecScaff();
 
 public:
-	// parameters
-	Vector3 sqzV;
-	Vector3 aabbCstrScale;
-	int nbSplits;
-	int nbChunks;
-	double costWeight;
-	double connThrRatio;
-	double thickness;
-
 	// masters
 	QVector<PatchNode*> masters;
 
@@ -73,9 +64,6 @@ public:
 	// threshold for connectivity
 	double getConnectThr();
 
-	// parameters
-	void setParameters();
-
 	// foldabilization
 	void foldabilize();
 	double foldabilizeUnit(UnitScaff* unit, double currTime, SuperShapeKf* currKf,
@@ -83,7 +71,7 @@ public:
 	UnitScaff* getBestNextUnit(double currT, SuperShapeKf* currKeyframe);
 
 	// key frame
-	void genKeyframes(int N);
+	void genKeyframes();
 	Scaffold* genKeyframe(double t);
 	SuperShapeKf* getSuperShapeKf(double t);
 

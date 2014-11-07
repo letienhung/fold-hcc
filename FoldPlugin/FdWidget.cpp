@@ -1,12 +1,13 @@
 #include "FdWidget.h"
 #include "ui_FdWidget.h"
+#include "ParSingleton.h"
 
-FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
+FdWidget::FdWidget(FdPlugin *fdp, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::FdWidget)
 {
     ui->setupUi(this);
-	plugin = fp;
+	plugin = fdp;
 
 	// structural abstraction
 	plugin->s_manager->connect(ui->fitMethod, SIGNAL(currentIndexChanged(int)), SLOT(setFitMethod(int)));
@@ -19,19 +20,26 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->s_manager->connect(ui->loadScaffold, SIGNAL(clicked()), SLOT(loadScaffold()));
 
 	// visual options
-	plugin->connect(ui->showDecomp, SIGNAL(stateChanged(int)), SLOT(setShowDecomp(int)));
-	plugin->connect(ui->showKeyframe, SIGNAL(stateChanged(int)), SLOT(setShowKeyframe(int)));
+	ParSingleton* ps = ParSingleton::instance();
+	ps->connect(ui->showDecomp, SIGNAL(stateChanged(int)), SLOT(setShowDecomp(int)));
+	ps->connect(ui->showKeyframe, SIGNAL(stateChanged(int)), SLOT(setShowKeyframe(int)));
 
-	plugin->connect(ui->showCuboid, SIGNAL(stateChanged(int)), SLOT(setShowCuboid(int)));
-	plugin->connect(ui->showScaffold, SIGNAL(stateChanged(int)), SLOT(setShowScaffold(int)));
-	plugin->connect(ui->showMesh, SIGNAL(stateChanged(int)), SLOT(setShowMesh(int)));
-	plugin->connect(ui->showAABB, SIGNAL(stateChanged(int)), SLOT(setShowAABB(int)));
+	ps->connect(ui->showCuboid, SIGNAL(stateChanged(int)), SLOT(setShowCuboid(int)));
+	ps->connect(ui->showScaffold, SIGNAL(stateChanged(int)), SLOT(setShowScaffold(int)));
+	ps->connect(ui->showMesh, SIGNAL(stateChanged(int)), SLOT(setShowMesh(int)));
+	ps->connect(ui->showAABB, SIGNAL(stateChanged(int)), SLOT(setShowAABB(int)));
 
 	// foldabilize
-	plugin->f_manager->connect(ui->sqzV, SIGNAL(currentIndexChanged(QString)), SLOT(setSqzV(QString)));
-	plugin->f_manager->connect(ui->nbSplits, SIGNAL(valueChanged(int)), SLOT(setNbSplits(int)));
-	plugin->f_manager->connect(ui->nbChunks, SIGNAL(valueChanged(int)), SLOT(setNbChunks(int)));
-	plugin->f_manager->connect(ui->thickness, SIGNAL(valueChanged(double)), SLOT(setThickness(double)));
+	ps->connect(ui->sqzV, SIGNAL(currentIndexChanged(QString)), SLOT(setSqzV(QString)));
+	ps->connect(ui->nbSplits, SIGNAL(valueChanged(int)), SLOT(setNbSplits(int)));
+	ps->connect(ui->nbChunks, SIGNAL(valueChanged(int)), SLOT(setNbChunks(int)));
+	ps->connect(ui->thickness, SIGNAL(valueChanged(double)), SLOT(setThickness(double)));
+	ps->connect(ui->connThrRatio, SIGNAL(valueChanged(double)), SLOT(setConnThrRatio(double)));
+	ps->connect(ui->aabbX, SIGNAL(valueChanged(double)), SLOT(setAabbX(double)));
+	ps->connect(ui->aabbY, SIGNAL(valueChanged(double)), SLOT(setAabbY(double)));
+	ps->connect(ui->aabbZ, SIGNAL(valueChanged(double)), SLOT(setAabbZ(double)));
+	ps->connect(ui->costWeight, SIGNAL(valueChanged(double)), SLOT(setCostWeight(double)));
+
 	plugin->f_manager->connect(ui->foldabilize, SIGNAL(clicked()), SLOT(foldabilize()));
 
 	// export
@@ -48,7 +56,7 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	plugin->f_manager->connect(this, SIGNAL(chainSelectionChanged(QString)), SLOT(selectChain(QString)));
 
 	// key frames
-	plugin->f_manager->connect(ui->nbKeyframes, SIGNAL(valueChanged(int)), SLOT(setNbKeyframes(int)));
+	ps->connect(ui->nbKeyframes, SIGNAL(valueChanged(int)), SLOT(setNbKeyframes(int)));
 	plugin->f_manager->connect(ui->genKeyframes, SIGNAL(clicked()), SLOT(generateKeyframes()));
 	this->connect(plugin->f_manager, SIGNAL(keyframesChanged(int)), SLOT(setKeyframeSlider(int)));
 	this->connect(ui->keyframeSlider, SIGNAL(valueChanged(int)), SLOT(onKeyframeSliderValueChanged()));
@@ -67,13 +75,6 @@ FdWidget::FdWidget(FdPlugin *fp, QWidget *parent) :
 	// hide
 	plugin->connect(ui->hideSelNodes, SIGNAL(clicked()), SLOT(hideSelectedNodes()));
 	plugin->connect(ui->unhideAllNodes, SIGNAL(clicked()), SLOT(unhideAllNodes()));
-
-	// parameters
-	plugin->f_manager->connect(ui->connThrRatio, SIGNAL(valueChanged(double)), SLOT(setConnThrRatio(double)));
-	plugin->f_manager->connect(ui->aabbX, SIGNAL(valueChanged(double)), SLOT(setAabbX(double)));
-	plugin->f_manager->connect(ui->aabbY, SIGNAL(valueChanged(double)), SLOT(setAabbY(double)));
-	plugin->f_manager->connect(ui->aabbZ, SIGNAL(valueChanged(double)), SLOT(setAabbZ(double)));
-	plugin->f_manager->connect(ui->costWeight, SIGNAL(valueChanged(double)), SLOT(setCostWeight(double)));
 
 	// test
 	plugin->connect(ui->test1, SIGNAL(clicked()), SLOT(test1()));

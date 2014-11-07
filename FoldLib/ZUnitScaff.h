@@ -26,12 +26,7 @@ private:
 
 public:
 	// setter
-	virtual void setNbSplits(int n) override;
-	virtual void setNbChunks(int n) override;
-	virtual void setAabbCstr(Geom::Box aabb) override;
-	virtual void setCostWeight(double w) override;
 	virtual void setImportance(double imp) override;
-	virtual void setThickness(double thk) override;
 
 public:
 	// key frame

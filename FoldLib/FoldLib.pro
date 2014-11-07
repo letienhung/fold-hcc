@@ -60,7 +60,7 @@ HEADERS += \
     SuperShapeKf.h \
     FoldOptGraph.h \
     VisualDebugger.h \
-    FoldPrameters.h
+    ParSingleton.h
 
 SOURCES += \
     PatchNode.cpp \
@@ -86,5 +86,5 @@ SOURCES += \
     SuperShapeKf.cpp \
     FoldOptGraph.cpp \
     VisualDebugger.cpp \
-    FoldPrameters.cpp
+    ParSingleton.cpp
 

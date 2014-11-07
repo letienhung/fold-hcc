@@ -10,6 +10,7 @@
 #include <QQueue>
 #include "Numeric.h"
 #include "FdUtility.h"
+#include "ParSingleton.h"
 
 
 ChainNode::ChainNode( int idx, QString id )
@@ -67,15 +68,18 @@ FoldOption::~FoldOption()
 
 }
 
-double FoldOption::computeCost(double w, int maxNbSplits, double impt)
+double FoldOption::computeCost(double impt)
 {
+	ParSingleton* ps = ParSingleton::instance();
+
 	// split
-	double a = nSplits / (double)maxNbSplits;
+	double a = nSplits / (double)ps->maxNbSplits;
 
 	// shrinking
 	double b = 1 - scale;
 
 	// blended cost \in [0, 1]
+	double w = ps->splitWeight;
 	double c = w * a + (1 - w) * b;
 
 	// normalized cost by chain importance

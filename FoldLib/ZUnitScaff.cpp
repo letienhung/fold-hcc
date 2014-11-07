@@ -104,41 +104,10 @@ void ZUnitScaff::computeFoldRegionProj(bool toRight)
 	regionProj = Geom::computeBoundingBox(samples, baseJoint2.Direction);
 }
 
-
-void ZUnitScaff::setNbSplits(int n)
-{
-	UnitScaff::setNbSplits(n);
-	hUnit->setNbSplits(n);
-}
-
-void ZUnitScaff::setNbChunks(int n)
-{
-	UnitScaff::setNbChunks(n);
-	hUnit->setNbChunks(n);
-}
-
-void ZUnitScaff::setAabbCstr(Geom::Box aabb)
-{
-	UnitScaff::setAabbCstr(aabb);
-	hUnit->setAabbCstr(aabb);
-}
-
 void ZUnitScaff::setImportance(double imp)
 {
 	UnitScaff::setImportance(imp);
 	hUnit->setImportance(imp);
-}
-
-void ZUnitScaff::setCostWeight(double w)
-{
-	UnitScaff::setCostWeight(w);
-	hUnit->setCostWeight(w);
-}
-
-void ZUnitScaff::setThickness(double thk)
-{
-	UnitScaff::setThickness(thk);
-	hUnit->setThickness(thk);
 }
 
 bool ZUnitScaff::foldabilizeZ(SuperShapeKf* ssKeyframe, TimeInterval ti)

@@ -1,5 +1,6 @@
 #include "HChainScaff.h"
 #include "Numeric.h"
+#include "ParSingleton.h"
 
 HChainScaff::HChainScaff(ScaffNode* slave, PatchNode* base, PatchNode* top)
 	:ChainScaff(slave, base, top)
@@ -312,13 +313,14 @@ void HChainScaff::computePhaseSeparator()
 	angleSep = asin(RANGED(0, sin_angle, 1));
 }
 
-QVector<FoldOption*> HChainScaff::genRegularFoldOptions(int maxNbSplits, int maxNbChunks)
+QVector<FoldOption*> HChainScaff::genRegularFoldOptions()
 {
 	// enumerate all possible combination of nS and nC
 	QVector<FoldOption*> options;
-	for (int nS = 1; nS <= maxNbSplits; nS += 2)
-	for (int nC = 1; nC <= maxNbChunks; nC++)
-		options << ChainScaff::genRegularFoldOptions(nS, nC, maxNbChunks);
+	ParSingleton* ps = ParSingleton::instance();
+	for (int nS = 1; nS <= ps->maxNbSplits; nS += 2)
+	for (int nC = 1; nC <= ps->maxNbChunks; nC++)
+		options << ChainScaff::genRegularFoldOptions(nS, nC);
 
 	return options;
 }

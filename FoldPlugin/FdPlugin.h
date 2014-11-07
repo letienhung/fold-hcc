@@ -32,14 +32,6 @@ public:
 	ScaffManager* s_manager;
 	FoldManager* f_manager;
 
-	bool showDecomp;
-	bool showKeyframe;
-
-	bool showAABB;
-	bool showCuboid;
-	bool showScaffold;
-	bool showMesh;
-
 	bool drawNodeOrder;
 
 	QColorDialog* qColorDialog;
@@ -51,15 +43,6 @@ public:
 	QVector<ScaffNode*> selectedScaffNodes();
 
 public slots:
-	// show options
-	void setShowDecomp(int state);
-	void setShowKeyframe(int state);
-
-	void setShowAABB(int state);
-	void setShowCuboid(int state);
-	void setShowScaffold(int state);
-	void setShowMesh(int state);
-
 	// scene and message
 	void updateScene();
 	void resetScene();

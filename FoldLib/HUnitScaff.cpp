@@ -77,19 +77,19 @@ void HUnitScaff::initFoldSolution()
 	for (int i = 0; i < chains.size(); i++)
 	{
 		// regular option
-		for (FoldOption* fo : chains[i]->genRegularFoldOptions(maxNbSplits, maxNbChunks))
+		for (FoldOption* fo : chains[i]->genRegularFoldOptions())
 		{
 			fo->chainIdx = i;
 			fo->regionProj = base_rect.get2DRectangle(fo->region);
-			fo->computeCost(weight, maxNbSplits, chains[i]->importance);
+			fo->computeCost(chains[i]->importance);
 			fo->index = allFoldOptions.size();
 			allFoldOptions << fo;
 		}
 
 		// delete option
-		FoldOption* dfo = chains[i]->genDeleteFoldOption(maxNbSplits);
+		FoldOption* dfo = chains[i]->genDeleteFoldOption();
 		dfo->chainIdx = i;
-		dfo->computeCost(weight, maxNbSplits, chains[i]->importance);
+		dfo->computeCost(chains[i]->importance);
 		dfo->index = allFoldOptions.size();
 		allFoldOptions << dfo;
 	}

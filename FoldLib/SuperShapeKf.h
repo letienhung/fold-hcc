@@ -10,7 +10,7 @@ class UnitScaff;
 class SuperShapeKf final : public Scaffold
 {
 public:
-	SuperShapeKf(Scaffold* superKeyframe, StringSetMap moc_g, Vector3 sqzV);
+	SuperShapeKf(Scaffold* superKeyframe, StringSetMap moc_g);
 
 	// valid only if all order constraints are met
 	bool isValid();
@@ -27,8 +27,5 @@ public:
 
 	// the oder constrains using super masters
 	StringSetMap mocGreater, mocLess;
-
-	// the squeezing direction
-	Vector3 sqzV;
 };
 
