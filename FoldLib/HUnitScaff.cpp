@@ -163,6 +163,11 @@ void HUnitScaff::computeAvailFoldOptions(SuperShapeKf* ssKeyframe, HUnitSolution
 	// update obstacles
 	computeObstacles(ssKeyframe, sln);
 
+	{// debug
+		visDebug.clearAll();
+		visDebug.addPoints(sln->obstacles, Qt::blue);
+	}
+
 	// prune fold options
 	sln->afoIndices.clear();
 	for (int i = 0; i < allFoldOptions.size(); i++)
@@ -189,8 +194,8 @@ void HUnitScaff::computeAvailFoldOptions(SuperShapeKf* ssKeyframe, HUnitSolution
 				Geom::Rectangle tmRect = sln->baseRect.get3DRectangle(fo->regionProj);
 				if (accepted)
 					visDebug.addRectangle(tmRect, Qt::green);
-				else
-					visDebug.addRectangle(tmRect, Qt::red);
+				//else
+					//visDebug.addRectangle(tmRect, Qt::red);
 			}
 		}
 

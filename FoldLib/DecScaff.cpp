@@ -396,7 +396,7 @@ void DecScaff::foldabilize()
 	UnitScaff* next_unit = getBestNextUnit(currTime, currKeyframe);
 
 	{//debug
-		//return;
+		return;
 		//int i = 0;
 	}
 
