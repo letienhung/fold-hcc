@@ -73,7 +73,7 @@ public:
 	// key frame
 	void genKeyframes();
 	Scaffold* genKeyframe(double t);
-	SuperShapeKf* getSuperShapeKf(double t);
+	SuperShapeKf* genSuperShapeKf(double t);
 
 public:
 	Scaffold* activeScaffold();

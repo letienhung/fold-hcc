@@ -340,7 +340,7 @@ void DecScaff::genKeyframes()
 	}
 }
 
-SuperShapeKf* DecScaff::getSuperShapeKf( double t )
+SuperShapeKf* DecScaff::genSuperShapeKf( double t )
 {
 	// super key frame for each block
 	QVector<Scaffold*> uSuperKf;
@@ -356,16 +356,50 @@ SuperShapeKf* DecScaff::getSuperShapeKf( double t )
 		else
 		{
 			double lt = unit->mFoldDuration.getLocalTime(t);
-			uk_super = unit->getSuperKeyframe(lt);
+			uk_super = unit->genSuperKeyframe(lt);
 		}
 
 		uSuperKf << uk_super;
+
+		{// debug
+			//std::cout << "***" << units[i]->mID.toStdString() << "\n";
+			//QSet<QString> uniqueNodes;
+			//for (Structure::Node* n : uk_super->nodes)
+			//{
+			//	std::cout << n->mID.toStdString() << std::endl;
+			//	uniqueNodes << n->mID;
+			//}
+		}
 	}
 
 	// combine using regular masters shared between units
 	// whilst all super masters and slaves will be cloned into the superKf
 	// based on the base master
 	Scaffold *superKf = new Scaffold(uSuperKf, baseMaster->mID, masterUnitMap);
+
+	{// debug
+		//std::cout << "\n\n***keyframe nodes = " << superKf->nodes.size() << "\n";
+		//QSet<QString> uniqueNodes;
+		//for (Structure::Node* n : superKf->nodes)
+		//{
+		//	std::cout << n->mID.toStdString() << std::endl;
+		//	uniqueNodes << n->mID;
+		//}
+
+		//if (uniqueNodes.size() != superKf->nodes.size())
+		//{
+		//	std::cout << "\nWARNING: repeated nodes in super keyframe!\n";
+		//}
+
+		//std::cout << "\n\n***keyframe nodes = " << uniqueNodes.size() << "\n";
+		//for (QString nid : uniqueNodes)
+		//{
+		//	std::cout << nid.toStdString() << std::endl;
+		//}
+
+	}
+
+
 
 	// create super shape key frame
 	// super masters sharing common regular masters will be grouped
@@ -392,11 +426,11 @@ void DecScaff::foldabilize()
 	std::cout << "\n============================="
 			  << "\n============START============\n";
 	double currTime = 0.0;
-	SuperShapeKf* currKeyframe = getSuperShapeKf(currTime);
+	SuperShapeKf* currKeyframe = genSuperShapeKf(currTime);
 	UnitScaff* next_unit = getBestNextUnit(currTime, currKeyframe);
 
 	{//debug
-		return;
+		//return;
 		//int i = 0;
 	}
 
@@ -422,7 +456,7 @@ void DecScaff::foldabilize()
 		// get best next
 		currTime = nextTime;
 		delete currKeyframe;
-		currKeyframe = getSuperShapeKf(currTime);
+		currKeyframe = genSuperShapeKf(currTime);
 		next_unit = getBestNextUnit(currTime, currKeyframe);
 	}
 
@@ -496,7 +530,7 @@ double DecScaff::foldabilizeUnit(UnitScaff* unit, double currTime, SuperShapeKf*
 	double cost = unit->foldabilize(currKf, TimeInterval(currTime, nextTime));
 
 	// get the next super key frame 
-	nextKf = getSuperShapeKf(nextTime);
+	nextKf = genSuperShapeKf(nextTime);
 
 	// the normalized cost wrt. the importance
 	cost *= unit->importance;
@@ -550,6 +584,11 @@ UnitScaff* DecScaff::getBestNextUnit(double currTime, SuperShapeKf* currKeyframe
 			// cost of folding remaining unfolded units
 			for (UnitScaff* next2Unit : unfoldedUnits)
 			{
+
+				{//debug
+					if (next2Unit->mID != "HB_2") continue;
+				}
+
 				// skip nextUnit
 				if (next2Unit == nextUnit) continue;
 

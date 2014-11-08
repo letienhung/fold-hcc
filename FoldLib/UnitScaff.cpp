@@ -117,7 +117,7 @@ void UnitScaff::genDebugInfo()
 
 // The super keyframe is the keyframe + superPatch
 // which is an additional patch representing the folded block
-Scaffold* UnitScaff::getSuperKeyframe(double t)
+Scaffold* UnitScaff::genSuperKeyframe(double t)
 {
 	// regular key frame w\o thickness
 	Scaffold* keyframe = getKeyframe(t, false);
@@ -191,16 +191,20 @@ bool UnitScaff::isExternalPart(ScaffNode* snode)
 QVector<Vector3> UnitScaff::computeObstaclePnts(SuperShapeKf* ssKeyframe, QString base_mid, QString top_mid)
 {
 	// obstacle parts
-	QVector<ScaffNode*> candidateParts, obstParts;
+	QVector<ScaffNode*> candidateParts; 
 	candidateParts << ssKeyframe->getInbetweenParts(base_mid, top_mid);
 	candidateParts << ssKeyframe->getUnrelatedMasters(base_mid);
 	candidateParts << ssKeyframe->getUnrelatedMasters(top_mid);
-	for (ScaffNode* sn : candidateParts) if (isExternalPart(sn)) obstParts << sn;
+	QSet<ScaffNode*> obstParts;
+	for (ScaffNode* sn : candidateParts){
+		if (isExternalPart(sn)) obstParts << sn;
+	}
 
 	// sample obstacle parts
 	QVector<Vector3> obstPnts;
-	for (ScaffNode* obsPart : obstParts)
+	for (ScaffNode* obsPart : obstParts){
 		obstPnts << obsPart->sampleBoundabyOfScaffold(100);
+	}
 
 	return obstPnts;
 }

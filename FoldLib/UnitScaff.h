@@ -44,7 +44,7 @@ public:
 	//*** CORE
 	// key frame
 	virtual Scaffold*	getKeyframe(double t, bool useThk) = 0; // intermediate config. at local time t
-	Scaffold*			getSuperKeyframe(double t);	// key frame with super master that merges all collapsed masters
+	Scaffold*			genSuperKeyframe(double t);	// key frame with super master that merges all collapsed masters
 
 	// initialize fold solution: generate all fold options and clear solutions
 	virtual void initFoldSolution() = 0;

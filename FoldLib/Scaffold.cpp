@@ -71,15 +71,18 @@ Scaffold::Scaffold(QVector<Scaffold*> scaffs, QString baseMid,
 			for(Structure::Node* n : scaff->nodes)
 			{
 				// regular masters
-				if (masterCombined.contains(n->mID) 
-					&& !masterCombined[n->mID])
+				if (masterCombined.contains(n->mID))
 				{
 					// combine unvisited masters
-					Structure::Graph::addNode(n->clone());
-					masterCombined[n->mID] = true;
+					// but skip visited masters
+					if (!masterCombined[n->mID])
+					{
+						Structure::Graph::addNode(n->clone());
+						masterCombined[n->mID] = true;
 
-					// store as active
-					activeMids.enqueue(n->mID);
+						// store as active
+						activeMids.enqueue(n->mID);
+					}
 				}
 				// clone all other nodes
 				else

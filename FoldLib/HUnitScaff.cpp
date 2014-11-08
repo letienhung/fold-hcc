@@ -160,11 +160,14 @@ void HUnitScaff::computeObstacles(SuperShapeKf* ssKeyframe, HUnitSolution* sln)
 
 void HUnitScaff::computeAvailFoldOptions(SuperShapeKf* ssKeyframe, HUnitSolution* sln)
 {
+	{// debug
+		visDebug.clearAll();
+	}
+
 	// update obstacles
 	computeObstacles(ssKeyframe, sln);
 
 	{// debug
-		visDebug.clearAll();
 		visDebug.addPoints(sln->obstacles, Qt::blue);
 	}
 

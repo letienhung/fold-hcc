@@ -147,7 +147,6 @@ QVector<ScaffNode*> SuperShapeKf::getInbetweenParts(QString base_mid, QString to
 			Geom::Segment sklt = sn->mBox.getSkeleton(aid);
 			double t0 = timeLine.getProjTime(sklt.P0);
 			double t1 = timeLine.getProjTime(sklt.P1);
-			if (t0 > t1) std::swap(t0, t1);
 			TimeInterval sTi(t0, t1);
 
 			if (ti.overlaps(sTi))	inbetweens << sn;
