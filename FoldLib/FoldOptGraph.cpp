@@ -84,6 +84,13 @@ double FoldOption::computeCost(double impt)
 
 	// normalized cost by chain importance
 	cost = c * impt;
+	//cost = c;
+
+	// high penalty on deleting
+	if (scale == 0)
+	{
+		cost *= 100;
+	}
 
 	// return
 	return cost;
