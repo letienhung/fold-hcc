@@ -34,6 +34,7 @@ private:
 	// key steps for foldabilization
 	void computeObstacles(SuperShapeKf* ssKeyframe, HUnitSolution* sln);
 	void computeAvailFoldOptions(SuperShapeKf* ssKeyframe, HUnitSolution* sln);
+	bool findExistedSolution(HUnitSolution* sln);
 	void findOptimalSolution(HUnitSolution* sln);
 
 	// collision graph

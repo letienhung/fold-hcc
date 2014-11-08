@@ -265,7 +265,7 @@ void DecScaff::storeDebugInfo(Scaffold* kf, int uidx)
 	kf->visDebug.addBox(ParSingleton::instance()->aabbCstr, Qt::cyan);
 
 	// obstacles
-	kf->visDebug.addPoints(unit->getCurrObstacles(), Qt::blue);
+	//kf->visDebug.addPoints(unit->getCurrObstacles(), Qt::blue);
 
 	// solution
 	kf->visDebug.addRectangles(unit->getCurrSlnFRs(), Qt::green);

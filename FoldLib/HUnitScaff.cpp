@@ -207,6 +207,28 @@ void HUnitScaff::computeAvailFoldOptions(SuperShapeKf* ssKeyframe, HUnitSolution
 	}
 }
 
+bool HUnitScaff::findExistedSolution(HUnitSolution* sln)
+{
+	currSlnIdx = -1;
+	for (int i = 0; i < testedSlns.size(); i++)
+	{
+		HUnitSolution* tSln = testedSlns[i];
+		if (tSln->afoIndices == sln->afoIndices)
+		{
+			// update the obstacles for debug
+			tSln->obstacles = sln->obstacles;
+
+			// set the current
+			currSlnIdx = i;
+
+			// return the cost
+			return true;
+		}
+	}
+
+	return false;
+}
+
 FoldOptGraph* HUnitScaff::createCollisionGraph(const QVector<int>& afo)
 {
 	FoldOptGraph* collFog = new FoldOptGraph();
@@ -392,37 +414,26 @@ double HUnitScaff::foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti)
 	computeAvailFoldOptions(ssKeyframe, fdSln);
 
 	// search for existed solutions
-	currSlnIdx = -1;
-	for (int i = 0; i < testedSlns.size(); i++)
+	if (findExistedSolution(fdSln))
 	{
-		HUnitSolution* tSln = testedSlns[i];
-		if (tSln->afoIndices == fdSln->afoIndices)
-		{
-			// update the obstacles for debug
-			tSln->obstacles = fdSln->obstacles;
+		// garbage collection
+		delete fdSln;
+	}
+	else
+	{
+		// find new solution
+		findOptimalSolution(fdSln);
 
-			// garbage collection
-			delete fdSln;
-
-			// set the current
-			currSlnIdx = i;
-
-			// return the cost
-			return tSln->cost;
-		}
+		// store the solution
+		currSlnIdx = testedSlns.size();
+		testedSlns << fdSln;
 	}
 
-	// find new solution
-	findOptimalSolution(fdSln);
-
-	// store the solution
-	currSlnIdx = testedSlns.size();
-	testedSlns << fdSln;
-
 	// apply the solution
+	HUnitSolution* currSln = testedSlns[currSlnIdx];
 	for (int i = 0; i < chains.size(); i++)
 	{
-		int foIdx = testedSlns[currSlnIdx]->chainSln[i];
+		int foIdx = currSln->chainSln[i];
 		if (foIdx >= 0 && foIdx < allFoldOptions.size())
 			chains[i]->applyFoldOption(allFoldOptions[foIdx]);
 		else
@@ -430,7 +441,7 @@ double HUnitScaff::foldabilize(SuperShapeKf* ssKeyframe, TimeInterval ti)
 	}
 
 	// return the cost (\in [0, 1])
-	return fdSln->cost;
+	return currSln->cost;
 }
 
 
