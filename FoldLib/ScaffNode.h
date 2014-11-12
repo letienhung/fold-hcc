@@ -8,6 +8,8 @@
 #include "AABB.h"
 #include "FdUtility.h"
 
+class PatchNode;
+
 class ScaffNode : public Structure::Node
 {
 public: 
@@ -49,6 +51,7 @@ public:
 	// modifications
 	// mesh is not touched, call deformMesh to update the location of mesh
 	void deformToAttach(Geom::Plane& plane);
+	void deformToAttach(PatchNode* pnode);
 	void setBoxFrame(Geom::Frame frame);
 	virtual void translate(Vector3 t);
 

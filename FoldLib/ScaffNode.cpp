@@ -302,6 +302,13 @@ void ScaffNode::deformToAttach( Geom::Plane& plane )
 	createScaffold(true);
 }
 
+void ScaffNode::deformToAttach( PatchNode* pnode )
+{
+	int side = pnode->mPatch.whichSide(this->center());
+	Geom::Plane surface = pnode->getSurfacePlane(side > 0);
+	deformToAttach(surface);
+}
+
 void ScaffNode::translate( Vector3 t )
 {
 	mBox.translate(t);
