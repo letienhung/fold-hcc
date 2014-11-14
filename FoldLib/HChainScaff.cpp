@@ -40,9 +40,11 @@ void HChainScaff::computeOrientations()
 	baseJoint = baseEdge.translated(slaveSeg.P0 - baseEdge.Center);
 	topJoint = topEdge.translated(slaveSeg.P1 - topEdge.Center);
 
-	// rightDirect : baseJoint, slaveSeg and rightDirect form right-hand system
-	// threshold: 5 degrees of slanting
-	if (rightSeg.length() / slaveSeg.length() < 0.2)
+	// right segment and right direction
+	// baseJoint, slaveSeg and rightDirect are right-handed
+	Vector3 topCentreProj = baseSurface.getProjection(topJoint.Center);
+	rightSeg.set(topCentreProj, baseJoint.Center);
+	if (rightSeg.length() / slaveSeg.length() < 0.1) // around 5 degrees
 	{
 		rightDirect = cross(baseJoint.Direction, slaveSeg.Direction);
 		rightDirect = baseSurface.getProjectedVector(rightDirect);
@@ -52,8 +54,7 @@ void HChainScaff::computeOrientations()
 	{
 		rightDirect = rightSeg.Direction;
 		Vector3 crossSlaveRight = cross(slaveSeg.Direction, rightDirect);
-		if (dot(crossSlaveRight, baseJoint.Direction) < 0)
-		{
+		if (dot(crossSlaveRight, baseJoint.Direction) < 0){
 			baseJoint.flip(); topJoint.flip();
 		}
 	}
