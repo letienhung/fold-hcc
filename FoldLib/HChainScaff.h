@@ -7,9 +7,6 @@ class HChainScaff final : public ChainScaff
 public:
 	HChainScaff(ScaffNode* slave, PatchNode* base, PatchNode* top);
 
-	// basic orientations
-	virtual void computeOrientations() override;
-
 	// fold option
 	virtual Geom::Rectangle getFoldRegion(FoldOption* fn) override;
 

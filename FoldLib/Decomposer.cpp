@@ -227,11 +227,6 @@ void Decomposer::createSlaves()
 			nDeleted++;
 		}
 	}
-
-	// deform each slave slightly so that it attaches to masters perfectly
-	for (int i = 0; i < scfd->slaves.size(); i++)
-	for (int mid : scfd->slave2master[i])
-		scfd->slaves[i]->deformToAttach(scfd->masters[mid]->mPatch.getPlane());
 }
 
 void Decomposer::clusterSlaves()

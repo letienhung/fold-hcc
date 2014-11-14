@@ -7,6 +7,8 @@ TChainScaff::TChainScaff(ScaffNode* slave, PatchNode* base, PatchNode* top)
 {
 }
 
+
+
 Geom::Rectangle TChainScaff::getFoldRegion(FoldOption* fn)
 {
 	Geom::Rectangle base_rect = baseMaster->mPatch;

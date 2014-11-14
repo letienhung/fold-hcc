@@ -91,8 +91,16 @@ Structure::Node* PatchNode::clone()
 
 Geom::Rectangle PatchNode::getSurfaceRect(bool positive)
 {
+	// the axis idx along with the patch normal
 	int aid = mBox.getAxisId(mPatch.Normal);
-	double t = positive ? 1 : -1;
+
+	// direction
+	double t = 0;
+	if (dot(mBox.Axis[aid], mPatch.Normal) > 0)
+		t = positive ? 1 : -1;
+	else
+		t = positive ? -1 : 1;
+
 	return mBox.getCrossSection(aid, t);
 }
 

@@ -3,59 +3,135 @@
 #include "RodNode.h"
 #include "Numeric.h"
 #include "ParSingleton.h"
+#include "DistSegRect.h"
 
 ChainScaff::ChainScaff( ScaffNode* slave, PatchNode* base, PatchNode* top)
 	: Scaffold(slave->mID)
 {
-	// slave
-	if (slave->mType == ScaffNode::ROD)
-	{
-		if(!baseMaster) return;
+	// masters, slave, and thickness
+	setupMasters(base, top);
+	setupSlave(slave);
+	setupThickness();
 
-		// convert slave into patch if need
-		RodNode* slaveRod = (RodNode*)slave;
-		Vector3 rodV = slaveRod->mRod.Direction;
-		Vector3 baseV = base->mPatch.Normal;
-		Vector3 crossRodVBaseV = cross(rodV, baseV);
-		Vector3 slavePatchNorm;
-		if (crossRodVBaseV.norm() < 0.1)	
-			slavePatchNorm = baseMaster->mPatch.Axis[0];
-		else slavePatchNorm = cross(crossRodVBaseV, rodV);
-		slavePatchNorm.normalize();
-		
-		origSlave = new PatchNode(slaveRod, slavePatchNorm);
-	}else
-	{
-		origSlave = (PatchNode*)slave->clone();
-	}
-	chainParts << (PatchNode*)origSlave->clone();
-	Structure::Graph::addNode(chainParts[0]);
+	// basic orientations
+	computeBasicOrientations();
+	computeRightDirection();
+	showBasicOrientations();
 
-	// masters
+	// fold parameters
+	duration.set(1, 2);
+	foldToRight = true;
+	isDeleted = false;
+	importance = 0;
+}
+
+void ChainScaff::setupMasters(PatchNode* base, PatchNode* top)
+{
 	baseMaster = (PatchNode*)base->clone();
 	topMaster = (PatchNode*)top->clone();
 	Graph::addNode(baseMaster);
 	Graph::addNode(topMaster);
+}
 
-	// thickness
+void ChainScaff::setupSlave(ScaffNode* slave)
+{
+	// clone
+	if (slave->mType == ScaffNode::ROD)
+	{
+		// convert slave into patch if need
+		RodNode* slaveRod = (RodNode*)slave;
+		Vector3 rodV = slaveRod->mRod.Direction;
+		Vector3 baseV = baseMaster->mPatch.Normal;
+		Vector3 crossRodVBaseV = cross(rodV, baseV);
+		Vector3 slavePatchNorm;
+		if (crossRodVBaseV.norm() < 0.1)
+			slavePatchNorm = baseMaster->mPatch.Axis[0];
+		else slavePatchNorm = cross(crossRodVBaseV, rodV);
+		slavePatchNorm.normalize();
+
+		origSlave = new PatchNode(slaveRod, slavePatchNorm);
+	}
+	else{
+		origSlave = (PatchNode*)slave->clone();
+	}
+
+	// deform to attach masters perfectly
+	origSlave->deformToAttach(baseMaster->getSurfacePlane(true));
+	if (!topMaster->hasTag(EDGE_VIRTUAL_TAG)) // skip top virtual for T-chain
+		origSlave->deformToAttach(topMaster->getSurfacePlane(false));
+
+	// save parts
+	chainParts << (PatchNode*)origSlave->clone();
+	Structure::Graph::addNode(chainParts[0]);
+}
+
+void ChainScaff::setupThickness()
+{
 	topHThk = topMaster->getThickness() / 2;
 	baseHThk = baseMaster->getThickness() / 2;
 	slaveHThk = origSlave->getThickness() / 2;
+}
 
-	// set up orientations
-	computeOrientations();
 
-	// fold duration
-	duration.set(1, 2);
+void ChainScaff::computeBasicOrientations()
+{
+	// the top and base patch edges 
+	QVector<Geom::Segment> perpEdges = origSlave->mPatch.getPerpEdges(baseMaster->mPatch.Normal);
+	Geom::DistSegRect dsr0(perpEdges[0], baseMaster->mPatch);
+	Geom::DistSegRect dsr1(perpEdges[1], baseMaster->mPatch);
+	Geom::Segment topEdge = perpEdges[0];
+	Geom::Segment baseEdge = perpEdges[1];
+	if (dsr0.get() < dsr1.get()) {
+		baseEdge = perpEdges[0]; topEdge = perpEdges[1];
+	}
+	if (dot(topEdge.Direction, baseEdge.Direction) < 0) topEdge.flip();
 
-	// side
-	foldToRight = true;
+	// the up right segment
+	Geom::Rectangle baseSurface = baseMaster->getSurfaceRect(true);
+	Geom::Segment topEdgeProj = baseSurface.getProjection(topEdge);
+	upSeg.set(topEdgeProj.Center, topEdge.Center);
+	double topTrimRatio = slaveHThk / upSeg.length();
+	double baseTrimRatio = slaveHThk / upSeg.length();
+	if (topMaster->hasTag(EDGE_VIRTUAL_TAG)) topTrimRatio = 0;
+	upSeg.cropRange01(baseTrimRatio, 1 - topTrimRatio);
 
-	// delete
-	isDeleted = false;
+	// slaveSeg : bottom to up
+	slaveSeg.set(baseEdge.Center, topEdge.Center);
+	slaveSeg.cropRange01(baseTrimRatio, 1 - topTrimRatio);
 
-	// importance 
-	importance = 0;
+	// the joints
+	baseJoint = baseEdge.translated(slaveSeg.P0 - baseEdge.Center);
+	topJoint = topEdge.translated(slaveSeg.P1 - topEdge.Center);
+}
+
+
+void ChainScaff::computeRightDirection()
+{
+	// right segment and right direction
+	// baseJoint, slaveSeg and rightDirect are right-handed
+	Geom::Rectangle baseSurface = baseMaster->getSurfaceRect(true);
+	Geom::Rectangle baseSurfaceVirtual = baseSurface;
+	baseSurfaceVirtual.translate(slaveHThk * upSeg.Direction);
+	Vector3 topCentreProj = baseSurfaceVirtual.getProjection(topJoint.Center);
+	rightSeg.set(topCentreProj, baseJoint.Center);
+	if (rightSeg.length() / slaveSeg.length() < 0.1) // around 5 degrees
+	{
+		rightDirect = cross(baseJoint.Direction, slaveSeg.Direction);
+		rightDirect = baseSurface.getProjectedVector(rightDirect);
+		rightDirect.normalize();
+	}
+	else
+	{
+		rightDirect = rightSeg.Direction;
+		Vector3 crossSlaveRight = cross(slaveSeg.Direction, rightDirect);
+		if (dot(crossSlaveRight, baseJoint.Direction) < 0){
+			baseJoint.flip(); topJoint.flip();
+		}
+	}
+
+	// flip slave patch so that its norm is to the right
+	if (dot(origSlave->mPatch.Normal, rightDirect) < 0)
+		origSlave->mPatch.flipNormal();
 }
 
 ChainScaff::~ChainScaff()
@@ -181,8 +257,6 @@ void ChainScaff::resetChainParts(FoldOption* fn)
 	chainParts = distPartMap.values().toVector();
 
 	// debug
-	//addDebugSegment(getShrunkTopTraj());
-	//addDebugSegment(getShrunkSlaveSeg());
 	visDebug.addPlanes(cutPlanes, Qt::red);
 }
 
@@ -283,83 +357,95 @@ void ChainScaff::applyFoldOption( FoldOption* fn)
 }
 
 
-void ChainScaff::addThickness(Scaffold* keyframe, double t)
-{
-	if (!baseMaster) return;
-
-	// get parts in key frame
-	QVector<PatchNode*> keyParts;
-	keyParts << (PatchNode*)keyframe->getNode(baseMaster->mID);
-	for (PatchNode* cpart : chainParts) keyParts << (PatchNode*)keyframe->getNode(cpart->mID);
-	keyParts << (PatchNode*)keyframe->getNode(topMaster->mID);
-
-	// move parts up for thickness
-	for (int i = 1; i < keyParts.size(); i++)
-	{
-		// compute offset caused by thickness between part_i and part_i_1
-		Vector3 offset(0, 0, 0);
-		Vector3 v1(0, 0, 0), v2(0, 0, 0);
-		if (i == 1)
-		{
-			// base
-			Geom::Rectangle rect1 = keyParts[i]->mPatch;
-			v2 = keyParts[0]->mPatch.Normal; //up
-
-			double dotNN = dot(rect1.Normal, v2);
-			if (dotNN > ZERO_TOLERANCE_LOW) v1 = rect1.Normal;
-			else if (dotNN < -ZERO_TOLERANCE_LOW) v1 = -rect1.Normal;
-
-			offset = halfThk * v1 + baseOffset * v2;
-		}
-		else if (i == keyParts.size() - 1)
-		{
-			// top
-			v1 = keyParts[0]->mPatch.Normal; //up
-			Geom::Rectangle rect2 = keyParts[i - 1]->mPatch;
-
-			double dotNN = dot(v1, rect2.Normal);
-			if (dotNN > ZERO_TOLERANCE_LOW) v2 = -rect2.Normal;
-			else if (dotNN < -ZERO_TOLERANCE_LOW) v2 = rect2.Normal;
-
-			offset = halfThk * (v1 - v2);
-		}
-		else
-		{
-			// chain parts
-			Geom::Rectangle rect1 = keyParts[i]->mPatch;
-			Geom::Rectangle rect2 = keyParts[i - 1]->mPatch;
-
-			// flattened
-			if (1 - t < ZERO_TOLERANCE_LOW)
-			{
-				v1 = baseMaster->mPatch.Normal;
-				v2 = -v1;
-			}
-			else
-			{
-				int side2to1 = rect1.whichSide(rect2.Center);
-				if (side2to1 == 1) v1 = -rect1.Normal;
-				else if (side2to1 == -1) v1 = rect1.Normal;
-
-				int side1to2 = rect2.whichSide(rect1.Center);
-				if (side1to2 == 1) v2 = -rect2.Normal;
-				else if (side1to2 == -1) v2 = rect2.Normal;
-			}
-
-			offset = halfThk * (v1 - v2);
-		}
-
-		// translate parts above
-		for (int j = i; j < keyParts.size(); j++)
-			keyParts[j]->translate(offset);
-	}
-
-	//// set thickness to chain parts
-	//for (int i = 1; i < keyParts.size() - 1; i++)
-	//	keyParts[i]->setThickness(2 * halfThk);
-}
+//void ChainScaff::addThickness(Scaffold* keyframe, double t)
+//{
+//	if (!baseMaster) return;
+//
+//	// get parts in key frame
+//	QVector<PatchNode*> keyParts;
+//	keyParts << (PatchNode*)keyframe->getNode(baseMaster->mID);
+//	for (PatchNode* cpart : chainParts) keyParts << (PatchNode*)keyframe->getNode(cpart->mID);
+//	keyParts << (PatchNode*)keyframe->getNode(topMaster->mID);
+//
+//	// move parts up for thickness
+//	for (int i = 1; i < keyParts.size(); i++)
+//	{
+//		// compute offset caused by thickness between part_i and part_i_1
+//		Vector3 offset(0, 0, 0);
+//		Vector3 v1(0, 0, 0), v2(0, 0, 0);
+//		if (i == 1)
+//		{
+//			// base
+//			Geom::Rectangle rect1 = keyParts[i]->mPatch;
+//			v2 = keyParts[0]->mPatch.Normal; //up
+//
+//			double dotNN = dot(rect1.Normal, v2);
+//			if (dotNN > ZERO_TOLERANCE_LOW) v1 = rect1.Normal;
+//			else if (dotNN < -ZERO_TOLERANCE_LOW) v1 = -rect1.Normal;
+//
+//			offset = halfThk * v1 + baseOffset * v2;
+//		}
+//		else if (i == keyParts.size() - 1)
+//		{
+//			// top
+//			v1 = keyParts[0]->mPatch.Normal; //up
+//			Geom::Rectangle rect2 = keyParts[i - 1]->mPatch;
+//
+//			double dotNN = dot(v1, rect2.Normal);
+//			if (dotNN > ZERO_TOLERANCE_LOW) v2 = -rect2.Normal;
+//			else if (dotNN < -ZERO_TOLERANCE_LOW) v2 = rect2.Normal;
+//
+//			offset = halfThk * (v1 - v2);
+//		}
+//		else
+//		{
+//			// chain parts
+//			Geom::Rectangle rect1 = keyParts[i]->mPatch;
+//			Geom::Rectangle rect2 = keyParts[i - 1]->mPatch;
+//
+//			// flattened
+//			if (1 - t < ZERO_TOLERANCE_LOW)
+//			{
+//				v1 = baseMaster->mPatch.Normal;
+//				v2 = -v1;
+//			}
+//			else
+//			{
+//				int side2to1 = rect1.whichSide(rect2.Center);
+//				if (side2to1 == 1) v1 = -rect1.Normal;
+//				else if (side2to1 == -1) v1 = rect1.Normal;
+//
+//				int side1to2 = rect2.whichSide(rect1.Center);
+//				if (side1to2 == 1) v2 = -rect2.Normal;
+//				else if (side1to2 == -1) v2 = rect2.Normal;
+//			}
+//
+//			offset = halfThk * (v1 - v2);
+//		}
+//
+//		// translate parts above
+//		for (int j = i; j < keyParts.size(); j++)
+//			keyParts[j]->translate(offset);
+//	}
+//
+//	//// set thickness to chain parts
+//	//for (int i = 1; i < keyParts.size() - 1; i++)
+//	//	keyParts[i]->setThickness(2 * halfThk);
+//}
 
 double ChainScaff::getSlaveArea()
 {
 	return origSlave->mPatch.area();
+}
+
+void ChainScaff::showBasicOrientations()
+{
+	// debug
+	visDebug.addSegment(baseJoint, Qt::blue);
+	visDebug.addSegment(topJoint, Qt::blue);
+	visDebug.addSegment(slaveSeg, Qt::black);
+	visDebug.addSegment(upSeg, Qt::green);
+	visDebug.addSegment(rightSeg, Qt::red);
+	Geom::Segment rightV(baseJoint.P0, baseJoint.P0 + baseJoint.length() * rightDirect);
+	visDebug.addSegment(rightV, Qt::red);
 }

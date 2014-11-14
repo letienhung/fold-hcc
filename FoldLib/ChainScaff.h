@@ -11,13 +11,20 @@ public:
 	~ChainScaff();
 
 	// set up
-	virtual void computeOrientations() = 0;
+	void setupMasters(PatchNode* base, PatchNode* top);
+	void setupSlave(ScaffNode* slave);
+	void setupThickness();
+	void computeBasicOrientations();
+	void computeRightDirection();
+
+	// debug
+	void showBasicOrientations();
 
 	// time interval
 	void setFoldDuration(double t0, double t1);
 
 	// thickness
-	void addThickness(Scaffold* keyframe, double t);
+	//void addThickness(Scaffold* keyframe, double t);
 
 	// the area of original slave patch
 	double getSlaveArea();
@@ -46,6 +53,7 @@ public:
 	Scaffold* getKeyframe(double t, bool useThk);
 
 public:
+	// parts
 	PatchNode*			topMaster;	// top
 	PatchNode*			baseMaster;	// base							
 	PatchNode*			origSlave;	// original slave
@@ -61,24 +69,23 @@ public:
 			:-----> (x)baseJoint	|
 	   rightSeg/rightDirect		baseRect
 	*/
-	Geom::Segment		baseJoint;	// joint between slave and base
-	Geom::Segment		topJoint;	// joint between slave and top
-	Geom::Segment		slaveSeg;	// 2D abstraction, perp to joints (base to top)
-	Geom::Segment		rightSeg;	// right direction, perp to joints
-	Geom::Segment		upSeg;		// up right segment from topCenter's projection to topCenter
-	Vector3				rightDirect;// direction of rightSeg; or the cross product of baseJoint and slaveSeg
-
-	QVector<ScaffLink*>	rightLinks;	// right hinges 
-	QVector<ScaffLink*>	leftLinks;	// left hinges
-	QVector<ScaffLink*>	activeLinks;// active hinges
-
-	TimeInterval		duration;	// time interval
-	bool				foldToRight;// folding side
-
-	bool				isDeleted;	// deleted fold option has been applied to this chain
-	double				importance;	// normalized importance wrt. patch area
-
+	// basic orientations
+	Geom::Segment	baseJoint;	// joint between slave and base
+	Geom::Segment	topJoint;	// joint between slave and top
+	Geom::Segment	upSeg;		// up right segment from topCenter's projection to topCenter
+	Geom::Segment	slaveSeg;	// 2D abstraction, perp to joints (base to top)
+	Geom::Segment	rightSeg;	// right direction, perp to joints
+	Vector3			rightDirect;// direction of rightSeg; or the cross product of baseJoint and slaveSeg
 
 	// thickness
-	double topHThk, baseHThk, slaveHThk;	// *** half thickness
+	double topHThk, baseHThk, slaveHThk;	// half thickness
+
+	// links
+	QVector<ScaffLink*>	rightLinks, leftLinks, activeLinks;
+
+	// fold parameters
+	TimeInterval	duration;	// time interval
+	bool			foldToRight;// folding side
+	bool			isDeleted;	// deleted fold option has been applied to this chain
+	double			importance;	// normalized importance wrt. patch area
 };

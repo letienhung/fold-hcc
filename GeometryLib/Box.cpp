@@ -17,6 +17,7 @@ int Geom::Box::NB_FACES = 6;
 int Geom::Box::NB_EDGES = 12;
 int Geom::Box::NB_VERTICES = 8;
 
+// all edges have the same direction with the axis
 int Geom::Box::EDGE[12][2] = {
 	0, 1,
 	3, 2,
@@ -26,10 +27,10 @@ int Geom::Box::EDGE[12][2] = {
 	1, 5,
 	2, 6,
 	3, 7,
-	0, 3, 
-	1, 2,
-	5, 6,
-	4, 7
+	3, 0, 
+	2, 1,
+	6, 5,
+	7, 4
 };
 
 int Geom::Box::QUAD_FACE[6][4] = 

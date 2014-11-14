@@ -1,7 +1,6 @@
 #include "HChainScaff.h"
 #include "Numeric.h"
 #include "ParSingleton.h"
-#include "DistSegRect.h"
 
 HChainScaff::HChainScaff(ScaffNode* slave, PatchNode* base, PatchNode* top)
 	:ChainScaff(slave, base, top)
@@ -9,61 +8,6 @@ HChainScaff::HChainScaff(ScaffNode* slave, PatchNode* base, PatchNode* top)
 	// uniform
 	useUniformHeight = true;
 }
-
-
-void HChainScaff::computeOrientations()
-{
-	// the top and base patch edges 
-	QVector<Geom::Segment> perpEdges = origSlave->mPatch.getPerpEdges(baseMaster->mPatch.Normal);
-	Geom::DistSegRect dsr0(perpEdges[0], baseMaster->mPatch);
-	Geom::DistSegRect dsr1(perpEdges[1], baseMaster->mPatch);
-	Geom::Segment topEdge = perpEdges[0];
-	Geom::Segment baseEdge = perpEdges[1];
-	if (dsr0.get() < dsr1.get()) {
-		baseEdge = perpEdges[0]; topEdge = perpEdges[1];
-	}
-	if (dot(topEdge.Direction, baseEdge.Direction) < 0) topEdge.flip();
-
-	// the up right segment
-	Geom::Rectangle baseSurface = baseMaster->getSurfaceRect(true);
-	Geom::Segment topEdgeProj = baseSurface.getProjection(topEdge);
-	upSeg.set(topEdgeProj.Center, baseEdge.Center);
-	double topTrimRatio = topHThk / upSeg.length();
-	double baseTrimRatio = baseHThk / upSeg.length();
-	upSeg.cropRange01(baseTrimRatio, 1 - topTrimRatio);
-
-	// slaveSeg : bottom to up
-	slaveSeg.set(baseEdge.Center, topEdge.Center);
-	slaveSeg.cropRange01(baseTrimRatio, 1 - topTrimRatio);
-
-	// the joints
-	baseJoint = baseEdge.translated(slaveSeg.P0 - baseEdge.Center);
-	topJoint = topEdge.translated(slaveSeg.P1 - topEdge.Center);
-
-	// right segment and right direction
-	// baseJoint, slaveSeg and rightDirect are right-handed
-	Vector3 topCentreProj = baseSurface.getProjection(topJoint.Center);
-	rightSeg.set(topCentreProj, baseJoint.Center);
-	if (rightSeg.length() / slaveSeg.length() < 0.1) // around 5 degrees
-	{
-		rightDirect = cross(baseJoint.Direction, slaveSeg.Direction);
-		rightDirect = baseSurface.getProjectedVector(rightDirect);
-		rightDirect.normalize();
-	}
-	else
-	{
-		rightDirect = rightSeg.Direction;
-		Vector3 crossSlaveRight = cross(slaveSeg.Direction, rightDirect);
-		if (dot(crossSlaveRight, baseJoint.Direction) < 0){
-			baseJoint.flip(); topJoint.flip();
-		}
-	}
-
-	// flip slave patch so that its norm is to the right
-	if (dot(origSlave->mPatch.Normal, rightDirect) < 0)
-		origSlave->mPatch.flipNormal();
-}
-
 
 Geom::Rectangle HChainScaff::getFoldRegion(FoldOption* fn)
 {
