@@ -266,14 +266,17 @@ void ChainScaff::resetHingeLinks(FoldOption* fn)
 	qDeleteAll(links);	links.clear();
 	rightLinks.clear(); leftLinks.clear();
 
-	// hinge links between base and slave
+	// basic orientations
 	Geom::Segment bJoint = baseJoint;
-	Vector3 upV = slaveSeg.Direction;
+	double jointLen = bJoint.length();
+	Vector3 slaveV = slaveSeg.Direction;
 	Vector3 jointV = bJoint.Direction;
-	if(chainParts.empty()) return;
-	Hinge* hingeR = new Hinge(chainParts[0], baseMaster, bJoint.P0, upV,  rightDirect, jointV, bJoint.length());
+
+	// ***hinge links between base and slave
+	Hinge* hingeR = new Hinge(chainParts[0], baseMaster, 
+		bJoint.P0, slaveV, rightDirect, jointV, jointLen);
 	Hinge* hingeL = new Hinge(chainParts[0], baseMaster, 
-		bJoint.P1, upV, -rightDirect, -jointV, bJoint.length());
+		bJoint.P1, slaveV, -rightDirect, -jointV, jointLen);
 	ScaffLink* linkR = new ScaffLink(chainParts[0], baseMaster, hingeR);
 	ScaffLink* linkL = new ScaffLink(chainParts[0], baseMaster, hingeL);
 	Graph::addLink(linkR);	
@@ -281,26 +284,26 @@ void ChainScaff::resetHingeLinks(FoldOption* fn)
 	rightLinks << linkR; 
 	leftLinks << linkL;
 
-	// hinge links between two parts in the chain
+	// ***hinge links between two parts in the chain
 	double l = slaveSeg.length();
 	double d = rightSeg.length();
 	double step = (l - d) / (fn->nSplits + 1);
 	if (!fn->rightSide){
-		bJoint.translate(d * slaveSeg.Direction);
+		bJoint.translate(d * slaveV);
 	}
 
+	// shift along the salve normal (the right)
+	Vector3 jointOffsetR;// = slaveHThk * origSlave->mPatch.Normal;
 	for (int i = 1; i < chainParts.size(); i++)
 	{
 		PatchNode* part1 = chainParts[i];
 		PatchNode* part2 = chainParts[i-1];
 
-		bJoint.translate(step * slaveSeg.Direction);
-		Vector3 upV = slaveSeg.Direction;
-		Vector3 jointV = bJoint.Direction;
+		bJoint.translate(step * slaveV);
 		Hinge* hingeR = new Hinge(part1, part2, 
-			bJoint.P0, upV, -upV, jointV, bJoint.length());
+			bJoint.P0 + jointOffsetR, slaveV, -slaveV, jointV, jointLen);
 		Hinge* hingeL = new Hinge(part1, part2, 
-			bJoint.P1, upV, -upV, -jointV, bJoint.length());
+			bJoint.P1 - jointOffsetR, slaveV, -slaveV, -jointV, jointLen);
 
 		ScaffLink* linkR = new ScaffLink(part1, part2, hingeR);
 		ScaffLink* linkL = new ScaffLink(part1, part2, hingeL);
