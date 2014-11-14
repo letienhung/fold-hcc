@@ -37,15 +37,16 @@ ChainScaff::ChainScaff( ScaffNode* slave, PatchNode* base, PatchNode* top)
 	Graph::addNode(baseMaster);
 	Graph::addNode(topMaster);
 
+	// thickness
+	topHThk = topMaster->getThickness() / 2;
+	baseHThk = baseMaster->getThickness() / 2;
+	slaveHThk = origSlave->getThickness() / 2;
+
 	// set up orientations
 	computeOrientations();
 
 	// fold duration
 	duration.set(1, 2);
-
-	// thickness
-	halfThk = 0;
-	baseOffset = 0;
 
 	// side
 	foldToRight = true;
@@ -55,61 +56,11 @@ ChainScaff::ChainScaff( ScaffNode* slave, PatchNode* base, PatchNode* top)
 
 	// importance 
 	importance = 0;
-
-	//// debug
-	//addDebugSegment(baseJoint);
-	//addDebugSegment(slaveSeg);
-	//addDebugSegment(rightSeg);
-	//addDebugSegment(Geom::Segment(baseJoint.P0, baseJoint.P0 + rightSegV));
 }
 
 ChainScaff::~ChainScaff()
 {
 	delete origSlave;
-}
-
-void ChainScaff::computeOrientations()
-{
-	// joints : the same direction
-	baseJoint = detectJointSegment(origSlave, baseMaster);
-	topJoint = detectJointSegment(origSlave, topMaster);
-	if (dot(topJoint.Direction, baseJoint.Direction) < 0) topJoint.flip();
-
-	// slaveSeg : bottom to up
-	Vector3 bJointP0 = baseJoint.P0;
-	Geom::Rectangle slave_rect = origSlave->mPatch;
-	slaveSeg = slave_rect.getSkeleton(slave_rect.getPerpAxis(baseJoint.Direction));
-	if (slaveSeg.getProjCoordinates(bJointP0) > 0.5) slaveSeg.flip();
-
-	// rightSeg : from top center projection to base
-	Geom::Rectangle base_rect = baseMaster->mPatch;
-	Geom::Segment topJointProj = base_rect.getProjection(topJoint);
-	rightSeg = Geom::Segment(topJointProj.P0, baseJoint.P0);
-
-	// rightDirect : baseJoint, slaveSeg and rightDirect form right-hand system
-	if (rightSeg.length() / slaveSeg.length() < 0.2)
-	{
-		rightDirect = cross(baseJoint.Direction, slaveSeg.Direction);
-		rightDirect = base_rect.getProjectedVector(rightDirect);
-		rightDirect.normalize();
-	}
-	else
-	{
-		rightDirect = rightSeg.Direction;
-		Vector3 crossSlaveRight = cross(slaveSeg.Direction, rightDirect);
-		if (dot(crossSlaveRight, baseJoint.Direction) < 0)
-		{
-			baseJoint.flip(); topJoint.flip();
-		}
-	}
-
-	// flip slave patch so that its norm is to the right
-	if (dot(origSlave->mPatch.Normal, rightDirect) < 0)
-		origSlave->mPatch.flipNormal();
-
-	// up right segment
-	Vector3 topCenterProj = base_rect.getProjection(topMaster->center());
-	upSeg = Geom::Segment(topCenterProj, topMaster->center());
 }
 
 // the keyframe cannot be nullptr

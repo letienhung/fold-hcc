@@ -88,18 +88,22 @@ Structure::Node* PatchNode::clone()
 	return new PatchNode(*this);
 }
 
+
+Geom::Rectangle PatchNode::getSurfaceRect(bool positive)
+{
+	int aid = mBox.getAxisId(mPatch.Normal);
+	double t = positive ? 1 : -1;
+	return mBox.getCrossSection(aid, t);
+}
+
+
 Geom::Plane PatchNode::getSurfacePlane( bool positive)
 {
 	int aid = mBox.getAxisId(mPatch.Normal);
 	double extent = mBox.getExtent(aid);
 	Geom::Plane plane = mPatch.getPlane();
-
-	if (positive) plane.translate(extent * mPatch.Normal);
-	else {
-		plane.translate(-extent * mPatch.Normal);
-		plane = plane.opposite();
-	}
-
+	if (positive)	plane.translate( extent * mPatch.Normal);
+	else			plane.translate(-extent * mPatch.Normal);
 	return plane;
 }
 

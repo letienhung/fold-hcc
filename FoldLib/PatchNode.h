@@ -23,6 +23,7 @@ public:
 	// geometry
 	double getThickness();
 	Geom::Plane getSurfacePlane(bool positive);
+	Geom::Rectangle getSurfaceRect(bool positive);
 	void resize(Geom::Rectangle2& newPatch);
 	virtual bool isPerpTo(Vector3 v, double dotThreshold) override;
 

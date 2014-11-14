@@ -7,6 +7,9 @@ class HChainScaff final : public ChainScaff
 public:
 	HChainScaff(ScaffNode* slave, PatchNode* base, PatchNode* top);
 
+	// basic orientations
+	virtual void computeOrientations() override;
+
 	// fold option
 	virtual Geom::Rectangle getFoldRegion(FoldOption* fn) override;
 
@@ -26,7 +29,7 @@ public:
 public:
 	// phase separator
 	double				heightSep;	// the height separates phase I and II
-	double				angleSep;	// angle between b and basez
+	double				angleSep;	// angle between b and base
 
 	// uniform option
 	bool useUniformHeight;

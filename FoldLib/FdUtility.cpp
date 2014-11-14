@@ -162,19 +162,6 @@ QVector<QString> getIds( QVector<ScaffNode*> nodes )
 	return ids;
 }
 
-Geom::Segment detectJointSegment( PatchNode* slave, PatchNode* master )
-{
-	Vector3 panelNormal = master->mPatch.Normal;
-	QVector<Geom::Segment> perpEdges = slave->mPatch.getPerpEdges(panelNormal);
-
-	Geom::DistSegRect dsr1(perpEdges[0], master->mPatch);
-	Geom::DistSegRect dsr2(perpEdges[1], master->mPatch);
-	Geom::Segment jointSeg = (dsr1.get() < dsr2.get()) ? 
-							perpEdges[0] : perpEdges[1];
-
-	return jointSeg;
-}
-
 Geom::Box fitBox( QVector<Vector3>& pnts, BOX_FIT_METHOD method )
 {
 	Geom::Box box;

@@ -11,7 +11,7 @@ public:
 	~ChainScaff();
 
 	// set up
-	void computeOrientations();
+	virtual void computeOrientations() = 0;
 
 	// time interval
 	void setFoldDuration(double t0, double t1);

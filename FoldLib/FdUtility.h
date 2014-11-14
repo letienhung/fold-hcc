@@ -29,7 +29,6 @@ double getDistance( ScaffNode* n, QVector<ScaffNode*> nset);
 
 // relation among fd nodes
 ScaffNodeArray2D getConnectedGroups( QVector<ScaffNode*> nodes, double disThr );
-Geom::Segment detectJointSegment(PatchNode* slave, PatchNode* master);
 bool hasIntersection(ScaffNode* slave, PatchNode* master, double thr);
 
 // helpers
