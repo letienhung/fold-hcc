@@ -67,81 +67,31 @@ QString BundlePatchNode::getMeshName()
 	return name;
 }
 
-ScaffNode* BundlePatchNode::cloneChopped( Geom::Plane& chopper )
+ScaffNode* BundlePatchNode::cloneChoppedBetween(Vector3 p0, Vector3 p1)
 {
-	// clone plain nodes
-	QVector<ScaffNode*> plainNodes;
+	QVector<ScaffNode*> cns;
 	for (ScaffNode* n : subNodes)
 	{
-		PLANE_RELATION relation = relationWithPlane(n, chopper, 0.1);
-		if (relation == POS_PLANE)
-			plainNodes << (ScaffNode*)n->clone();
-		else if (relation == ISCT_PLANE)
-			plainNodes << n->cloneChopped(chopper);
+		ScaffNode* cn = n->cloneChoppedBetween(p0, p1);
+		if (cn) cns << cn;
 	}
 
-	// return single plain fd node
-	if (plainNodes.size() == 1)
+	if (cns.isEmpty)
 	{
-		return (ScaffNode*)plainNodes.front();
+		return nullptr;
 	}
-
-	// return a bundle node
-	if (plainNodes.size() > 1)
+	else if (cns.size() == 1)
 	{
-		QString bid = getBundleName(plainNodes);
-		Geom::Box box = getBundleBox(plainNodes);
-		return new BundlePatchNode(bid, box, plainNodes);
-
-		// delete plain nodes
-		for (ScaffNode* n : plainNodes)
-			delete n;
+		return cns.front();
 	}
-
-	return nullptr;
-}
-
-ScaffNode* BundlePatchNode::cloneChopped( Geom::Plane& chopper1, Geom::Plane& chopper2 )
-{
-	Geom::Plane plane1 = chopper1;
-	Geom::Plane plane2 = chopper2;
-	if (plane1.whichSide(plane2.Constant) < 0) plane1.flip();
-	if (plane2.whichSide(plane1.Constant) < 0) plane2.flip();
-
-	QVector<ScaffNode*> plainNodes;
-	for (ScaffNode* n : subNodes)
+	else
 	{
-		PLANE_RELATION relation1 = relationWithPlane(n, plane1, 0.1);
-		PLANE_RELATION relation2 = relationWithPlane(n, plane2, 0.1);
-		if (relation1 == POS_PLANE && relation2 == POS_PLANE)
-			plainNodes << (ScaffNode*)n->clone();
-		else if (relation1 == ISCT_PLANE && relation2 == ISCT_PLANE)
-			plainNodes << n->cloneChopped(plane1, plane2);
-		else if (relation1 == ISCT_PLANE)
-			plainNodes << n->cloneChopped(plane1);
-		else if (relation2 == ISCT_PLANE)
-			plainNodes << n->cloneChopped(plane2);
+		QString bid = getBundleName(cns);
+		Geom::Box box = getBundleBox(cns);
+		ScaffNode* bn =  new BundlePatchNode(bid, box, cns);
+		for (ScaffNode* cn : cns) delete cn;
+		return bn;
 	}
-
-	// return single plain fd node
-	if (plainNodes.size() == 1)
-	{
-		return (ScaffNode*)plainNodes.front();
-	}
-
-	// return a bundle node
-	if (plainNodes.size() > 1)
-	{
-		QString bid = getBundleName(plainNodes);
-		Geom::Box box = getBundleBox(plainNodes);
-		return new BundlePatchNode(bid, box, plainNodes);
-
-		// delete plain nodes
-		for (ScaffNode* n : plainNodes)
-			delete n;
-	}
-
-	return nullptr;
 }
 
 void BundlePatchNode::deformMesh()

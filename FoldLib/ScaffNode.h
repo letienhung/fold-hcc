@@ -52,13 +52,14 @@ public:
 	// mesh is not touched, call deformMesh to update the location of mesh
 	void deformToAttach(Geom::Plane& plane);
 	void deformToAttach(PatchNode* pnode);
+	void setBox(Geom::Box box);
 	void setBoxFrame(Geom::Frame frame);
+	void scale01(int aid, double t0, double t1);
 	virtual void translate(Vector3 t);
 
 	// chop
-	ScaffNode* cloneChopped(Geom::Box& chopBox);
-	virtual ScaffNode* cloneChopped(Geom::Plane& chopper);
-	virtual ScaffNode* cloneChopped(Geom::Plane& chopper1, Geom::Plane& chopper2);
+	virtual ScaffNode* cloneChoppedBetween(Vector3 p0, Vector3 p1);
+	virtual ScaffNode* cloneChoppedAside(Vector3 p0, Vector3 d);
 	 
 	// relation with direction
 	virtual bool isPerpTo(Vector3 v, double dotThreshold);

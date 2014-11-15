@@ -346,14 +346,7 @@ ScaffNode* Scaffold::addNode(MeshPtr mesh, Geom::Box& box)
 	return node;
 }
 
-QVector<ScaffNode*> Scaffold::split( QString nid, Geom::Plane& plane)
-{
-	return split(nid, QVector<Geom::Plane>() << plane);
-}
 
-// if cut planes intersect with the part, the part is split and replaced by chopped parts
-// otherwise the original part remains
-// the return value could either be the original part or the chopped fragment parts
 QVector<ScaffNode*> Scaffold::split( QString nid, QVector<Geom::Plane>& planes )
 {
 	ScaffNode* fn = (ScaffNode*) getNode(nid);
@@ -386,18 +379,18 @@ QVector<ScaffNode*> Scaffold::split( QString nid, QVector<Geom::Plane>& planes )
 	// the front end
 	Geom::Plane frontPlane = sortedPlanes.front();
 	if (frontPlane.whichSide(sklt.P0) < 0) frontPlane.flip();
-	chopped << fn->cloneChopped(frontPlane);
+	chopped << fn->cloneChoppedBetween(frontPlane);
 
 	// the middle section bounded by two planes
 	for (int i = 0; i < sortedPlanes.size()-1; i++)
 	{
-		chopped << fn->cloneChopped(sortedPlanes[i], sortedPlanes[i+1]);
+		chopped << fn->cloneChoppedBetween(sortedPlanes[i], sortedPlanes[i+1]);
 	}
 
 	// the back end
 	Geom::Plane backPlane = sortedPlanes.back();
 	if (backPlane.whichSide(sklt.P1) < 0) backPlane.flip();
-	chopped << fn->cloneChopped(backPlane);
+	chopped << fn->cloneChoppedBetween(backPlane);
 
 	// change node id and add to graph
 	QString origMId = nid;
@@ -423,6 +416,16 @@ QVector<ScaffNode*> Scaffold::split( QString nid, QVector<Geom::Plane>& planes )
 	removeNode(nid);
 
 	return chopped;
+}
+
+QVector<ScaffNode*> Scaffold::split(QString nid, Geom::Plane plane)
+{
+
+}
+
+QVector<ScaffNode*> Scaffold::split(QString nid, QVector<Vector3> cutPnts)
+{
+
 }
 
 void Scaffold::changeNodeType( ScaffNode* n )

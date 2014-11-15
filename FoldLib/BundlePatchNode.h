@@ -24,8 +24,7 @@ public:
 	virtual void exportIntoWholeMesh(QFile &file, int& v_offset) override;
 
 	// chop
-	virtual ScaffNode* cloneChopped(Geom::Plane& chopper) override;
-	virtual ScaffNode* cloneChopped(Geom::Plane& chopper1, Geom::Plane& chopper2) override;
+	virtual ScaffNode* cloneChoppedBetween(Vector3 p0, Vector3 p1) override;
 
 	// visual
 	virtual void setColor(QColor c) override;

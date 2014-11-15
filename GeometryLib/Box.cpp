@@ -190,7 +190,7 @@ void Geom::Box::scale( int axisId, double t0, double t1 )
 	Center += dt * Extent[axisId] * Axis[axisId];
 
 	// change extent
-	Extent[axisId] *= (t1 - t0) / 2;
+	Extent[axisId] *= fabs(t1 - t0) / 2;
 }
 
 bool Geom::Box::hasFaceCoplanarWith( Line line )

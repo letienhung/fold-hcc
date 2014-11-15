@@ -174,51 +174,43 @@ SurfaceMesh::Vector3 ScaffNode::center()
 	return mBox.Center;
 }
 
-// clone partial node on the positive side of the chopper plane
-ScaffNode* ScaffNode::cloneChopped( Geom::Plane& chopper )
+ScaffNode* ScaffNode::cloneChoppedBetween(Vector3 p0, Vector3 p1)
 {
-	// cut point along skeleton
-	int aid = mBox.getAxisId(chopper.Normal);
+	Vector3 p0p1 = p0 - p1;
+	int aid = mBox.getAxisId(p0p1);
 	Geom::Segment sklt = mBox.getSkeleton(aid);
-	Vector3 cutPoint = chopper.getIntersection(sklt);
-	Vector3 endPoint = (chopper.signedDistanceTo(sklt.P0) > 0) ?
-						sklt.P0 : sklt.P1;
+	double t0 = sklt.getProjCoordinates(p0);
+	double t1 = sklt.getProjCoordinates(p1);
 
-	// chop box
-	Geom::Box chopBox = mBox;
-	chopBox.Center = (cutPoint + endPoint) * 0.5;
-	chopBox.Extent[aid] = (cutPoint - endPoint).norm() * 0.5;
-
-	return cloneChopped(chopBox);
-}
-
-ScaffNode* ScaffNode::cloneChopped( Geom::Plane& chopper1, Geom::Plane& chopper2 )
-{
-	// cut point along skeleton
-	int aid = mBox.getAxisId(chopper1.Normal);
-	Geom::Segment sklt = mBox.getSkeleton(aid);
-	Vector3 cutPoint1 = chopper1.getIntersection(sklt);
-	Vector3 cutPoint2 = chopper2.getIntersection(sklt);
-
-	// chop box
-	Geom::Box chopBox = mBox;
-	chopBox.Center = (cutPoint1 + cutPoint2) * 0.5;
-	chopBox.Extent[aid] = (cutPoint1 - cutPoint2).norm() * 0.5;
-
-	return cloneChopped(chopBox);
-}
-
-ScaffNode* ScaffNode::cloneChopped( Geom::Box& chopBox )
-{
-	ScaffNode *choppedNode;
-	if (mType == ScaffNode::ROD)
-		choppedNode = new RodNode(mMesh->name, chopBox, mMesh);
+	if ((t0 <= 0 && t1 <= 0) || (t0 >= 1 && t1 >= 1))
+		return nullptr;
 	else
-		choppedNode = new PatchNode(mMesh->name, chopBox, mMesh);
-	choppedNode->meshCoords = meshCoords;
+	{
+		t0 = RANGED(0, t0, 1);
+		t1 = RANGED(0, t1, 1);
 
-	return choppedNode;
+		Geom::Box chopBox = mBox;
+		double tc = (t0 + t1) * 0.5;
+		chopBox.Center = sklt.getPosition01(tc);
+		double scale = fabs(t0 - t1);
+		chopBox.Extent[aid] *= scale;
+
+		ScaffNode* cloned = (ScaffNode*)clone();
+		cloned->setBox(chopBox);
+		return cloned;
+	}
 }
+
+
+ScaffNode* ScaffNode::cloneChoppedAside(Vector3 p0, Vector3 d)
+{
+	int aid = mBox.getAxisId(d);
+	Geom::Segment sklt = mBox.getSkeleton(aid);
+	Vector3 p1 = (dot(d, sklt.Direction) > 0) ? sklt.P1 : sklt.P0;
+
+	return cloneChoppedBetween(p0, p1);
+}
+
 
 QString ScaffNode::getMeshName()
 {
@@ -320,6 +312,25 @@ void ScaffNode::setBoxFrame(Geom::Frame frame)
 	mBox.setFrame(frame);
 	createScaffold(true);
 }
+
+void ScaffNode::setBox(Geom::Box box)
+{
+	mBox = box;
+	createScaffold(true);
+}
+
+
+void ScaffNode::scale01(int aid, double t0, double t1)
+{
+	Geom::Box chopBox = mBox;
+	mBox.scale()
+
+	double tc = (t0 + t1) * 0.5;
+	chopBox.Center = sklt.getPosition01(tc);
+	double scale = fabs(t0 - t1);
+	chopBox.Extent[aid] *= scale;
+}
+
 
 void ScaffNode::exportMeshIndividually(QString meshesFolder)
 {

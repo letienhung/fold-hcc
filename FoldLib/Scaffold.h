@@ -35,8 +35,8 @@ public:
 	void unwrapBundleNodes();
 	void unwrapBundleNode(QString nid);
 	ScaffNode* wrapAsBundleNode(QVector<QString> nids, Vector3 v = Vector3(0, 0, 0));
-	QVector<ScaffNode*> split(QString nid, Geom::Plane& plane);
-	QVector<ScaffNode*> split(QString nid, QVector<Geom::Plane>& planes);
+	QVector<ScaffNode*> split(QString nid, QVector<Vector3> cutPnts);
+	QVector<ScaffNode*> split(QString nid, Geom::Plane plane);
 
 	// I/O
 	void saveToFile(QString fname);
